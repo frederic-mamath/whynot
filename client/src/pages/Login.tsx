@@ -1,18 +1,18 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { trpc } from '../lib/trpc';
-import { setToken } from '../lib/auth';
+import { useState, FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { trpc } from "../lib/trpc";
+import { setToken } from "../lib/auth";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
       setToken(data.token);
-      navigate('/dashboard');
+      navigate("/dashboard");
     },
     onError: (err) => {
       setError(err.message);
@@ -21,7 +21,7 @@ export default function Login() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     loginMutation.mutate({ email, password });
   };
 
@@ -54,6 +54,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="on"
               placeholder="••••••••"
             />
           </div>
@@ -63,7 +64,7 @@ export default function Login() {
             className="btn btn-primary"
             disabled={loginMutation.isLoading}
           >
-            {loginMutation.isLoading ? 'Signing in...' : 'Sign In'}
+            {loginMutation.isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
