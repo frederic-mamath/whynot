@@ -32,22 +32,32 @@ export function generateAgoraToken(options: TokenOptions): string {
     expirationTimeInSeconds = 3600, // Default: 1 hour
   } = options;
 
-  const currentTimestamp = Math.floor(Date.now() / 1000);
-  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
-
   // Convert role to Agora role
   const agoraRole = role === 'host' ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
 
+  console.log('🔑 Generating Agora token:', {
+    appId: APP_ID,
+    channelName,
+    uid,
+    role,
+    agoraRole,
+    tokenExpire: expirationTimeInSeconds,
+    privilegeExpire: expirationTimeInSeconds,
+  });
+
   // Generate token
+  // NOTE: tokenExpire and privilegeExpire are DURATIONS in seconds, not timestamps
   const token = RtcTokenBuilder.buildTokenWithUid(
     APP_ID,
     APP_CERTIFICATE,
     channelName,
     uid,
     agoraRole,
-    privilegeExpiredTs,
-    privilegeExpiredTs
+    expirationTimeInSeconds, // Duration: token valid for X seconds from now
+    expirationTimeInSeconds  // Duration: privilege valid for X seconds from now
   );
+
+  console.log('✅ Token generated successfully');
 
   return token;
 }
