@@ -2,9 +2,9 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trpc } from '../../lib/trpc';
 import { isAuthenticated } from '../../lib/auth';
-import styles from './CreateChannel.module.scss';
+import styles from './CreateChannelPage.module.scss';
 
-export default function CreateChannel() {
+export default function CreateChannelPage() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(10);

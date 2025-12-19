@@ -8,7 +8,7 @@ import AgoraRTC, {
 } from 'agora-rtc-sdk-ng';
 import { trpc } from '../../lib/trpc';
 import { isAuthenticated } from '../../lib/auth';
-import styles from './Channel.module.scss';
+import styles from './ChannelPage.module.scss';
 
 interface ChannelConfig {
   appId: string;
@@ -16,26 +16,30 @@ interface ChannelConfig {
   channelName: string;
 }
 
-export default function Channel() {
+export default function ChannelPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
 
   // Agora state
   const [client, setClient] = useState<IAgoraRTCClient | null>(null);
-  const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
-  const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
-  const [remoteUsers, setRemoteUsers] = useState<Map<number, IAgoraRTCRemoteUser>>(new Map());
-  
+  const [localVideoTrack, setLocalVideoTrack] =
+    useState<ICameraVideoTrack | null>(null);
+  const [localAudioTrack, setLocalAudioTrack] =
+    useState<IMicrophoneAudioTrack | null>(null);
+  const [remoteUsers, setRemoteUsers] = useState<
+    Map<number, IAgoraRTCRemoteUser>
+  >(new Map());
+
   // UI state
   const [joined, setJoined] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Check authentication
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [navigate]);
 
@@ -56,7 +60,7 @@ export default function Channel() {
   // Leave channel mutation
   const leaveMutation = trpc.channel.leave.useMutation({
     onSuccess: () => {
-      navigate('/channels');
+      navigate("/channels");
     },
   });
 
@@ -65,26 +69,26 @@ export default function Channel() {
     try {
       // Create client
       const agoraClient = AgoraRTC.createClient({
-        mode: 'rtc',
-        codec: 'vp8',
+        mode: "rtc",
+        codec: "vp8",
       });
 
       // Event: Remote user published
-      agoraClient.on('user-published', async (user, mediaType) => {
+      agoraClient.on("user-published", async (user, mediaType) => {
         await agoraClient.subscribe(user, mediaType);
-        
-        if (mediaType === 'video') {
+
+        if (mediaType === "video") {
           setRemoteUsers((prev) => new Map(prev).set(user.uid as number, user));
         }
-        
-        if (mediaType === 'audio') {
+
+        if (mediaType === "audio") {
           user.audioTrack?.play();
         }
       });
 
       // Event: Remote user unpublished
-      agoraClient.on('user-unpublished', (user, mediaType) => {
-        if (mediaType === 'video') {
+      agoraClient.on("user-unpublished", (user, mediaType) => {
+        if (mediaType === "video") {
           setRemoteUsers((prev) => {
             const newMap = new Map(prev);
             newMap.delete(user.uid as number);
@@ -94,7 +98,7 @@ export default function Channel() {
       });
 
       // Event: Remote user left
-      agoraClient.on('user-left', (user) => {
+      agoraClient.on("user-left", (user) => {
         setRemoteUsers((prev) => {
           const newMap = new Map(prev);
           newMap.delete(user.uid as number);
@@ -107,7 +111,7 @@ export default function Channel() {
         config.appId,
         config.channelName,
         config.token,
-        null
+        null,
       );
 
       // Create and publish local tracks
@@ -122,10 +126,10 @@ export default function Channel() {
       setJoined(true);
 
       // Play local video
-      videoTrack.play('local-player');
+      videoTrack.play("local-player");
     } catch (err: any) {
-      console.error('Failed to initialize Agora:', err);
-      setError(err.message || 'Failed to join channel');
+      console.error("Failed to initialize Agora:", err);
+      setError(err.message || "Failed to join channel");
     }
   };
 
@@ -179,18 +183,21 @@ export default function Channel() {
     if (channelId) {
       leaveMutation.mutate({ channelId: Number(channelId) });
     }
-    
+
     localVideoTrack?.close();
     localAudioTrack?.close();
     await client?.leave();
-    navigate('/channels');
+    navigate("/channels");
   };
 
   if (error) {
     return (
       <div className={styles.channelError}>
         <div className={styles.errorMessage}>{error}</div>
-        <button className="btn btn-primary" onClick={() => navigate('/channels')}>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate("/channels")}
+        >
           Back to Channels
         </button>
       </div>
@@ -223,8 +230,14 @@ export default function Channel() {
 
         {/* Remote videos */}
         {Array.from(remoteUsers.entries()).map(([uid, user]) => (
-          <div key={uid} className={`${styles.videoContainer} ${styles.remote}`}>
-            <div id={`remote-player-${uid}`} className={styles.videoPlayer}></div>
+          <div
+            key={uid}
+            className={`${styles.videoContainer} ${styles.remote}`}
+          >
+            <div
+              id={`remote-player-${uid}`}
+              className={styles.videoPlayer}
+            ></div>
             <div className={styles.videoLabel}>User {uid}</div>
           </div>
         ))}
@@ -232,19 +245,19 @@ export default function Channel() {
 
       <div className={styles.channelControls}>
         <button
-          className={`${styles.btnControl} ${audioMuted ? styles.muted : ''}`}
+          className={`${styles.btnControl} ${audioMuted ? styles.muted : ""}`}
           onClick={toggleAudio}
-          title={audioMuted ? 'Unmute' : 'Mute'}
+          title={audioMuted ? "Unmute" : "Mute"}
         >
-          {audioMuted ? '🔇' : '🎤'}
+          {audioMuted ? "🔇" : "🎤"}
         </button>
 
         <button
-          className={`${styles.btnControl} ${videoMuted ? styles.muted : ''}`}
+          className={`${styles.btnControl} ${videoMuted ? styles.muted : ""}`}
           onClick={toggleVideo}
-          title={videoMuted ? 'Turn on camera' : 'Turn off camera'}
+          title={videoMuted ? "Turn on camera" : "Turn off camera"}
         >
-          {videoMuted ? '📹' : '📷'}
+          {videoMuted ? "📹" : "📷"}
         </button>
 
         <button

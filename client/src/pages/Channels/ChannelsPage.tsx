@@ -2,9 +2,9 @@ import { trpc } from '../../lib/trpc';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { isAuthenticated } from '../../lib/auth';
-import styles from './Channels.module.scss';
+import styles from './ChannelsPage.module.scss';
 
-export default function Channels() {
+export default function ChannelsPage() {
   const navigate = useNavigate();
   const { data: channels, isLoading } = trpc.channel.list.useQuery();
 
