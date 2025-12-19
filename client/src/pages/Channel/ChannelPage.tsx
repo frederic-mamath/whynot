@@ -137,14 +137,44 @@ export default function ChannelPage() {
       console.log('   - Token (first 30 chars):', config.token.substring(0, 30));
 
       // Join channel with the same UID that was used to generate the token
-      const assignedUid = await agoraClient.join(
-        config.appId,
-        config.channelName,
-        config.token,
-        config.uid, // IMPORTANT: Use the same UID that was used to generate the token
-      );
+      // If we get UID_CONFLICT, it means we're already connected - leave first
+      let assignedUid;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          assignedUid = await agoraClient.join(
+            config.appId,
+            config.channelName,
+            config.token,
+            config.uid,
+          );
+          console.log('✅ Successfully joined Agora channel with UID:', assignedUid);
+          break; // Success, exit the loop
+        } catch (err: any) {
+          if (err.code === 'UID_CONFLICT' && retryCount < maxRetries) {
+            retryCount++;
+            console.warn(`⚠️ UID conflict detected (attempt ${retryCount}/${maxRetries}), leaving and rejoining...`);
+            try {
+              await agoraClient.leave();
+            } catch (leaveErr) {
+              console.warn('Error leaving channel:', leaveErr);
+            }
+            // Wait with exponential backoff
+            const waitTime = 1000 * retryCount;
+            console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          } else {
+            // Either not a UID_CONFLICT or we've exhausted retries
+            throw err;
+          }
+        }
+      }
 
-      console.log('✅ Successfully joined Agora channel with UID:', assignedUid);
+      if (!assignedUid) {
+        throw new Error('Failed to join channel after retries');
+      }
 
       // Create and publish local tracks
       const videoTrack = await AgoraRTC.createCameraVideoTrack();
@@ -160,6 +190,12 @@ export default function ChannelPage() {
       // Play local video
       videoTrack.play("local-player");
     } catch (err: any) {
+      // Don't show error if it was a UID_CONFLICT that we handled
+      if (err.code === 'UID_CONFLICT') {
+        console.log('⚠️ UID_CONFLICT was handled, ignoring error display');
+        return;
+      }
+      
       console.error('❌ Failed to initialize Agora:', err);
       console.error('❌ Error details:', {
         name: err.name,
@@ -182,9 +218,22 @@ export default function ChannelPage() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      localVideoTrack?.close();
-      localAudioTrack?.close();
-      client?.leave();
+      console.log('🧹 Cleaning up Agora connection...');
+      if (localVideoTrack) {
+        localVideoTrack.stop();
+        localVideoTrack.close();
+      }
+      if (localAudioTrack) {
+        localAudioTrack.stop();
+        localAudioTrack.close();
+      }
+      if (client) {
+        client.leave().then(() => {
+          console.log('✅ Successfully left Agora channel');
+        }).catch((err) => {
+          console.error('❌ Error leaving channel:', err);
+        });
+      }
     };
   }, [client, localVideoTrack, localAudioTrack]);
 
@@ -219,14 +268,44 @@ export default function ChannelPage() {
 
   // Leave channel
   const handleLeave = async () => {
-    if (channelId) {
-      leaveMutation.mutate({ channelId: Number(channelId) });
+    try {
+      console.log('👋 Leaving channel...');
+      
+      // Stop and close tracks first
+      if (localVideoTrack) {
+        localVideoTrack.stop();
+        localVideoTrack.close();
+      }
+      if (localAudioTrack) {
+        localAudioTrack.stop();
+        localAudioTrack.close();
+      }
+      
+      // Leave Agora channel
+      if (client) {
+        await client.leave();
+        console.log('✅ Left Agora channel');
+      }
+      
+      // Clear state
+      setClient(null);
+      setLocalVideoTrack(null);
+      setLocalAudioTrack(null);
+      setRemoteUsers(new Map());
+      setJoined(false);
+      
+      // Notify backend
+      if (channelId) {
+        leaveMutation.mutate({ channelId: Number(channelId) });
+      }
+      
+      // Navigate away
+      navigate("/channels");
+    } catch (err) {
+      console.error('❌ Error leaving channel:', err);
+      // Navigate anyway
+      navigate("/channels");
     }
-
-    localVideoTrack?.close();
-    localAudioTrack?.close();
-    await client?.leave();
-    navigate("/channels");
   };
 
   if (error) {
