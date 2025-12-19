@@ -8,6 +8,9 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Channels from './pages/Channels';
+import CreateChannel from './pages/CreateChannel';
+import Channel from './pages/Channel';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -34,6 +37,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/channels" element={<Channels />} />
+            <Route path="/create-channel" element={<CreateChannel />} />
+            <Route path="/channel/:channelId" element={<Channel />} />
           </Routes>
         </BrowserRouter>
       </QueryClientProvider>

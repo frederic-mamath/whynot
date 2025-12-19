@@ -1,0 +1,260 @@
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import AgoraRTC, {
+  IAgoraRTCClient,
+  ICameraVideoTrack,
+  IMicrophoneAudioTrack,
+  IAgoraRTCRemoteUser,
+} from 'agora-rtc-sdk-ng';
+import { trpc } from '../../lib/trpc';
+import { isAuthenticated } from '../../lib/auth';
+import styles from './Channel.module.scss';
+
+interface ChannelConfig {
+  appId: string;
+  token: string;
+  channelName: string;
+}
+
+export default function Channel() {
+  const { channelId } = useParams<{ channelId: string }>();
+  const navigate = useNavigate();
+
+  // Agora state
+  const [client, setClient] = useState<IAgoraRTCClient | null>(null);
+  const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
+  const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
+  const [remoteUsers, setRemoteUsers] = useState<Map<number, IAgoraRTCRemoteUser>>(new Map());
+  
+  // UI state
+  const [joined, setJoined] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [videoMuted, setVideoMuted] = useState(false);
+  const [error, setError] = useState('');
+
+  // Check authentication
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  // Join channel mutation
+  const joinMutation = trpc.channel.join.useMutation({
+    onSuccess: async (data) => {
+      await initializeAgora({
+        appId: data.appId,
+        token: data.token,
+        channelName: data.channel.id.toString(),
+      });
+    },
+    onError: (err) => {
+      setError(err.message);
+    },
+  });
+
+  // Leave channel mutation
+  const leaveMutation = trpc.channel.leave.useMutation({
+    onSuccess: () => {
+      navigate('/channels');
+    },
+  });
+
+  // Initialize Agora client
+  const initializeAgora = async (config: ChannelConfig) => {
+    try {
+      // Create client
+      const agoraClient = AgoraRTC.createClient({
+        mode: 'rtc',
+        codec: 'vp8',
+      });
+
+      // Event: Remote user published
+      agoraClient.on('user-published', async (user, mediaType) => {
+        await agoraClient.subscribe(user, mediaType);
+        
+        if (mediaType === 'video') {
+          setRemoteUsers((prev) => new Map(prev).set(user.uid as number, user));
+        }
+        
+        if (mediaType === 'audio') {
+          user.audioTrack?.play();
+        }
+      });
+
+      // Event: Remote user unpublished
+      agoraClient.on('user-unpublished', (user, mediaType) => {
+        if (mediaType === 'video') {
+          setRemoteUsers((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(user.uid as number);
+            return newMap;
+          });
+        }
+      });
+
+      // Event: Remote user left
+      agoraClient.on('user-left', (user) => {
+        setRemoteUsers((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(user.uid as number);
+          return newMap;
+        });
+      });
+
+      // Join channel
+      await agoraClient.join(
+        config.appId,
+        config.channelName,
+        config.token,
+        null
+      );
+
+      // Create and publish local tracks
+      const videoTrack = await AgoraRTC.createCameraVideoTrack();
+      const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+
+      await agoraClient.publish([videoTrack, audioTrack]);
+
+      setClient(agoraClient);
+      setLocalVideoTrack(videoTrack);
+      setLocalAudioTrack(audioTrack);
+      setJoined(true);
+
+      // Play local video
+      videoTrack.play('local-player');
+    } catch (err: any) {
+      console.error('Failed to initialize Agora:', err);
+      setError(err.message || 'Failed to join channel');
+    }
+  };
+
+  // Join channel on mount
+  useEffect(() => {
+    if (channelId) {
+      joinMutation.mutate({ channelId: Number(channelId) });
+    }
+  }, [channelId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      localVideoTrack?.close();
+      localAudioTrack?.close();
+      client?.leave();
+    };
+  }, [client, localVideoTrack, localAudioTrack]);
+
+  // Play remote videos when users update
+  useEffect(() => {
+    remoteUsers.forEach((user, uid) => {
+      if (user.videoTrack) {
+        const playerId = `remote-player-${uid}`;
+        const playerElement = document.getElementById(playerId);
+        if (playerElement) {
+          user.videoTrack.play(playerId);
+        }
+      }
+    });
+  }, [remoteUsers]);
+
+  // Toggle audio
+  const toggleAudio = async () => {
+    if (localAudioTrack) {
+      await localAudioTrack.setEnabled(!audioMuted);
+      setAudioMuted(!audioMuted);
+    }
+  };
+
+  // Toggle video
+  const toggleVideo = async () => {
+    if (localVideoTrack) {
+      await localVideoTrack.setEnabled(!videoMuted);
+      setVideoMuted(!videoMuted);
+    }
+  };
+
+  // Leave channel
+  const handleLeave = async () => {
+    if (channelId) {
+      leaveMutation.mutate({ channelId: Number(channelId) });
+    }
+    
+    localVideoTrack?.close();
+    localAudioTrack?.close();
+    await client?.leave();
+    navigate('/channels');
+  };
+
+  if (error) {
+    return (
+      <div className={styles.channelError}>
+        <div className={styles.errorMessage}>{error}</div>
+        <button className="btn btn-primary" onClick={() => navigate('/channels')}>
+          Back to Channels
+        </button>
+      </div>
+    );
+  }
+
+  if (!joined) {
+    return (
+      <div className={styles.channelLoading}>
+        <div>Joining channel...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.channelPage}>
+      <div className={styles.channelHeader}>
+        <h2>Live Channel</h2>
+        <button className="btn btn-secondary" onClick={handleLeave}>
+          Leave Channel
+        </button>
+      </div>
+
+      <div className={styles.videoGrid}>
+        {/* Local video */}
+        <div className={`${styles.videoContainer} ${styles.local}`}>
+          <div id="local-player" className={styles.videoPlayer}></div>
+          <div className={styles.videoLabel}>You</div>
+        </div>
+
+        {/* Remote videos */}
+        {Array.from(remoteUsers.entries()).map(([uid, user]) => (
+          <div key={uid} className={`${styles.videoContainer} ${styles.remote}`}>
+            <div id={`remote-player-${uid}`} className={styles.videoPlayer}></div>
+            <div className={styles.videoLabel}>User {uid}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.channelControls}>
+        <button
+          className={`${styles.btnControl} ${audioMuted ? styles.muted : ''}`}
+          onClick={toggleAudio}
+          title={audioMuted ? 'Unmute' : 'Mute'}
+        >
+          {audioMuted ? '🔇' : '🎤'}
+        </button>
+
+        <button
+          className={`${styles.btnControl} ${videoMuted ? styles.muted : ''}`}
+          onClick={toggleVideo}
+          title={videoMuted ? 'Turn on camera' : 'Turn off camera'}
+        >
+          {videoMuted ? '📹' : '📷'}
+        </button>
+
+        <button
+          className={`${styles.btnControl} ${styles.leave}`}
+          onClick={handleLeave}
+          title="Leave channel"
+        >
+          📞
+        </button>
+      </div>
+    </div>
+  );
+}

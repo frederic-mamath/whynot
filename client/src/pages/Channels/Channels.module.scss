@@ -1,0 +1,71 @@
+.channelsContainer {
+  min-height: 100vh;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.channelsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  color: white;
+}
+
+.channelsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.channelCard {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.channelInfo {
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #1a202c;
+  }
+}
+
+.channelMeta {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: #718096;
+  margin-top: 8px;
+}
+
+.participantCount {
+  // Styles specific to participant count
+}
+
+.badgePrivate {
+  background: #fed7d7;
+  color: #c53030;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: white;
+  grid-column: 1 / -1;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: white;
+  font-size: 18px;
+}

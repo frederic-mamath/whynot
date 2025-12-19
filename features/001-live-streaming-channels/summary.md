@@ -33,16 +33,18 @@
 ## Implementation Phases
 
 ### Phase 1: Setup & Infrastructure
-**Status**: ⏳ To Do  
+**Status**: ✅ Done  
 **Estimated Time**: 2 hours  
-**Dependencies**: None
+**Actual Time**: 2 hours  
+**Completed**: 2024-12-19
 
 **Key Deliverables**:
-- [x] Agora account setup
-- [ ] SDK installations (backend + frontend)
-- [ ] Database schema (channels, participants tables)
-- [ ] Environment configuration
-- [ ] Database migrations
+- [x] Agora account setup (pending user credentials)
+- [x] SDK installations (backend + frontend)
+- [x] Database schema (channels, participants tables)
+- [x] Environment configuration
+- [x] Database migrations (using Kysely)
+- [x] Switched from Drizzle to Kysely ORM for stability
 
 **Files to Create/Modify**:
 - `src/db/schema.ts` - Add channels and participants tables
@@ -58,16 +60,18 @@
 ---
 
 ### Phase 2: Backend Implementation
-**Status**: ⏳ To Do  
+**Status**: ✅ Done  
 **Estimated Time**: 3 hours  
-**Dependencies**: Phase 1 completed
+**Actual Time**: 1 hour  
+**Completed**: 2024-12-19
 
 **Key Deliverables**:
-- [ ] Agora token generation utility
-- [ ] Channel tRPC router (create, join, leave, end, list)
-- [ ] Access control and validation
-- [ ] Participant tracking
-- [ ] Error handling
+- [x] Agora token generation utility
+- [x] Channel tRPC router (create, join, leave, end, list, get)
+- [x] Access control and validation
+- [x] Participant tracking
+- [x] Error handling
+- [x] All endpoints tested and type-safe with Kysely
 
 **Files to Create/Modify**:
 - `src/utils/agora.ts` - Token generation

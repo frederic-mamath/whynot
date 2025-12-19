@@ -7,7 +7,7 @@ export interface Database {
 }
 
 export interface UsersTable {
-  id: number;
+  id: Generated<number>;
   email: string;
   password: string;
   is_verified: boolean;
@@ -16,7 +16,7 @@ export interface UsersTable {
 }
 
 export interface ChannelsTable {
-  id: number;
+  id: Generated<number>;
   name: string;
   host_id: number;
   status: string;
@@ -27,10 +27,13 @@ export interface ChannelsTable {
 }
 
 export interface ChannelParticipantsTable {
-  id: number;
+  id: Generated<number>;
   channel_id: number;
   user_id: number;
   joined_at: Date;
   left_at: Date | null;
   role: string;
 }
+
+// Import Generated type
+import { Generated } from 'kysely';
