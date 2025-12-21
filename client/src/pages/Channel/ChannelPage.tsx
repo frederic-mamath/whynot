@@ -9,6 +9,7 @@ import AgoraRTC, {
 import { trpc } from '../../lib/trpc';
 import { isAuthenticated } from '../../lib/auth';
 import { toast } from 'sonner';
+import { Button } from '../../components/ui/button';
 import styles from './ChannelPage.module.scss';
 
 interface ChannelConfig {
@@ -37,6 +38,8 @@ export default function ChannelPage() {
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
   const [error, setError] = useState("");
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [screenTrack, setScreenTrack] = useState<ICameraVideoTrack | null>(null);
 
   // Check authentication
   useEffect(() => {
@@ -317,6 +320,83 @@ export default function ChannelPage() {
     }
   };
 
+  // Toggle screen share
+  const toggleScreenShare = async () => {
+    if (!client) return;
+
+    try {
+      if (!isScreenSharing) {
+        // Start screen sharing
+        toast.info('Starting screen share...');
+        const screenVideoTrack = await AgoraRTC.createScreenVideoTrack({
+          encoderConfig: '1080p_1',
+        });
+
+        // Unpublish camera
+        if (localVideoTrack) {
+          await client.unpublish([localVideoTrack]);
+          localVideoTrack.stop();
+          localVideoTrack.close();
+        }
+
+        // Publish screen
+        await client.publish([screenVideoTrack as any]);
+        setScreenTrack(screenVideoTrack as any);
+        setIsScreenSharing(true);
+        toast.success('Screen sharing started!');
+
+        // Play screen share locally
+        setTimeout(() => {
+          const localPlayerElement = document.getElementById("local-player");
+          if (localPlayerElement) {
+            (screenVideoTrack as any).play("local-player");
+          }
+        }, 100);
+
+        // Listen for screen share stop (user clicks browser's stop button)
+        (screenVideoTrack as any).on('track-ended', () => {
+          stopScreenShare();
+        });
+      } else {
+        // Stop screen sharing
+        await stopScreenShare();
+      }
+    } catch (err: any) {
+      console.error('Screen share error:', err);
+      toast.error('Failed to share screen: ' + err.message);
+    }
+  };
+
+  const stopScreenShare = async () => {
+    if (!client || !screenTrack) return;
+
+    try {
+      // Unpublish and close screen track
+      await client.unpublish([screenTrack as any]);
+      screenTrack.stop();
+      screenTrack.close();
+      setScreenTrack(null);
+      setIsScreenSharing(false);
+
+      // Re-publish camera
+      const videoTrack = await AgoraRTC.createCameraVideoTrack();
+      await client.publish([videoTrack]);
+      setLocalVideoTrack(videoTrack);
+      
+      setTimeout(() => {
+        const localPlayerElement = document.getElementById("local-player");
+        if (localPlayerElement) {
+          videoTrack.play("local-player");
+        }
+      }, 100);
+
+      toast.success('Screen sharing stopped');
+    } catch (err: any) {
+      console.error('Error stopping screen share:', err);
+      toast.error('Failed to stop screen share');
+    }
+  };
+
   // Leave channel
   const handleLeave = async () => {
     try {
@@ -424,29 +504,41 @@ export default function ChannelPage() {
       </div>
 
       <div className={styles.channelControls}>
-        <button
-          className={`${styles.btnControl} ${audioMuted ? styles.muted : ""}`}
+        <Button
+          variant={audioMuted ? "destructive" : "secondary"}
+          size="lg"
           onClick={toggleAudio}
           title={audioMuted ? "Unmute" : "Mute"}
         >
           {audioMuted ? "🔇" : "🎤"}
-        </button>
+        </Button>
 
-        <button
-          className={`${styles.btnControl} ${videoMuted ? styles.muted : ""}`}
+        <Button
+          variant={videoMuted ? "destructive" : "secondary"}
+          size="lg"
           onClick={toggleVideo}
           title={videoMuted ? "Turn on camera" : "Turn off camera"}
         >
           {videoMuted ? "📹" : "📷"}
-        </button>
+        </Button>
 
-        <button
-          className={`${styles.btnControl} ${styles.leave}`}
+        <Button
+          variant={isScreenSharing ? "default" : "outline"}
+          size="lg"
+          onClick={toggleScreenShare}
+          title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
+        >
+          {isScreenSharing ? "🛑" : "🖥️"}
+        </Button>
+
+        <Button
+          variant="destructive"
+          size="lg"
           onClick={handleLeave}
           title="Leave channel"
         >
           📞
-        </button>
+        </Button>
       </div>
     </div>
   );
