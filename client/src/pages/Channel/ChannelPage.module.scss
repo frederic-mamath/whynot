@@ -3,6 +3,7 @@
   background: #1a202c;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .channelHeader {
@@ -36,7 +37,14 @@
   aspect-ratio: 16 / 9;
 
   &.local {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 280px;
+    height: auto;
     border: 3px solid #667eea;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
   &.remote {

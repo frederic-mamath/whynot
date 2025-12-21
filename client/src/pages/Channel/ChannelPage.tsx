@@ -8,6 +8,7 @@ import AgoraRTC, {
 } from 'agora-rtc-sdk-ng';
 import { trpc } from '../../lib/trpc';
 import { isAuthenticated } from '../../lib/auth';
+import { toast } from 'sonner';
 import styles from './ChannelPage.module.scss';
 
 interface ChannelConfig {
@@ -103,6 +104,7 @@ export default function ChannelPage() {
 
         if (mediaType === "video") {
           setRemoteUsers((prev) => new Map(prev).set(user.uid as number, user));
+          toast.success(`User ${user.uid} joined with video`);
         }
 
         if (mediaType === "audio") {
@@ -128,6 +130,7 @@ export default function ChannelPage() {
           newMap.delete(user.uid as number);
           return newMap;
         });
+        toast.info(`User ${user.uid} left the channel`);
       });
 
       console.log('🔌 Joining Agora channel...');
@@ -177,18 +180,32 @@ export default function ChannelPage() {
       }
 
       // Create and publish local tracks
+      console.log('🎥 Creating local video and audio tracks...');
       const videoTrack = await AgoraRTC.createCameraVideoTrack();
       const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      console.log('✅ Local tracks created');
 
       await agoraClient.publish([videoTrack, audioTrack]);
+      console.log('✅ Local tracks published');
 
       setClient(agoraClient);
       setLocalVideoTrack(videoTrack);
       setLocalAudioTrack(audioTrack);
       setJoined(true);
+      
+      toast.success('Successfully joined the channel!');
 
-      // Play local video
-      videoTrack.play("local-player");
+      // Wait for DOM to update, then play local video
+      setTimeout(() => {
+        const localPlayerElement = document.getElementById("local-player");
+        console.log('🎬 Playing local video to element:', localPlayerElement);
+        if (localPlayerElement) {
+          videoTrack.play("local-player");
+          console.log('✅ Local video playing');
+        } else {
+          console.error('❌ local-player element not found!');
+        }
+      }, 100);
     } catch (err: any) {
       // Don't show error if it was a UID_CONFLICT that we handled
       if (err.code === 'UID_CONFLICT') {
@@ -205,6 +222,7 @@ export default function ChannelPage() {
         stack: err.stack,
       });
       setError(err.message || "Failed to join channel");
+      toast.error(`Failed to join channel: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -237,6 +255,37 @@ export default function ChannelPage() {
     };
   }, [client, localVideoTrack, localAudioTrack]);
 
+  // Play local video when track is available
+  useEffect(() => {
+    if (localVideoTrack && joined) {
+      const playLocalVideo = () => {
+        const localPlayerElement = document.getElementById("local-player");
+        console.log('🎬 Attempting to play local video:', {
+          track: localVideoTrack,
+          element: localPlayerElement,
+        });
+        if (localPlayerElement) {
+          try {
+            localVideoTrack.play("local-player");
+            console.log('✅ Local video started playing');
+          } catch (err) {
+            console.error('❌ Failed to play local video:', err);
+          }
+        } else {
+          console.error('❌ local-player element not found in DOM');
+        }
+      };
+
+      // Try immediately
+      playLocalVideo();
+      
+      // Also try after a small delay in case DOM isn't ready
+      const timeout = setTimeout(playLocalVideo, 200);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [localVideoTrack, joined]);
+
   // Play remote videos when users update
   useEffect(() => {
     remoteUsers.forEach((user, uid) => {
@@ -255,6 +304,7 @@ export default function ChannelPage() {
     if (localAudioTrack) {
       await localAudioTrack.setEnabled(!audioMuted);
       setAudioMuted(!audioMuted);
+      toast.success(audioMuted ? 'Microphone unmuted' : 'Microphone muted');
     }
   };
 
@@ -263,6 +313,7 @@ export default function ChannelPage() {
     if (localVideoTrack) {
       await localVideoTrack.setEnabled(!videoMuted);
       setVideoMuted(!videoMuted);
+      toast.success(videoMuted ? 'Camera turned on' : 'Camera turned off');
     }
   };
 
@@ -340,25 +391,36 @@ export default function ChannelPage() {
       </div>
 
       <div className={styles.videoGrid}>
-        {/* Local video */}
-        <div className={`${styles.videoContainer} ${styles.local}`}>
-          <div id="local-player" className={styles.videoPlayer}></div>
-          <div className={styles.videoLabel}>You</div>
-        </div>
-
-        {/* Remote videos */}
-        {Array.from(remoteUsers.entries()).map(([uid, user]) => (
-          <div
-            key={uid}
-            className={`${styles.videoContainer} ${styles.remote}`}
-          >
-            <div
-              id={`remote-player-${uid}`}
-              className={styles.videoPlayer}
-            ></div>
-            <div className={styles.videoLabel}>User {uid}</div>
+        {/* Remote videos only - show message if no remote users */}
+        {Array.from(remoteUsers.entries()).length === 0 ? (
+          <div style={{ 
+            color: 'white', 
+            textAlign: 'center', 
+            padding: '40px',
+            gridColumn: '1 / -1'
+          }}>
+            Waiting for other participants to join...
           </div>
-        ))}
+        ) : (
+          Array.from(remoteUsers.entries()).map(([uid, user]) => (
+            <div
+              key={uid}
+              className={`${styles.videoContainer} ${styles.remote}`}
+            >
+              <div
+                id={`remote-player-${uid}`}
+                className={styles.videoPlayer}
+              ></div>
+              <div className={styles.videoLabel}>User {uid}</div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Local video - fixed in bottom right corner */}
+      <div className={`${styles.videoContainer} ${styles.local}`}>
+        <div id="local-player" className={styles.videoPlayer}></div>
+        <div className={styles.videoLabel}>You</div>
       </div>
 
       <div className={styles.channelControls}>
