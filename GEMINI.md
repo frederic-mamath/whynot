@@ -100,37 +100,165 @@ toast.warning('Network quality is poor');
 
 ---
 
-## Color Utilities
+## Styling Approach
 
-### Tailwind CSS Classes
-Use Tailwind utility classes for consistent spacing, colors, and layouts:
+### Tailwind CSS Utility-First
+This project uses **Tailwind CSS** for all styling with a utility-first approach. CSS Modules have been completely removed in favor of Tailwind utilities.
+
+#### Benefits
+- **Consistency**: Design tokens ensure visual consistency
+- **Performance**: Automatic purging removes unused CSS
+- **Developer Experience**: IntelliSense support, no context switching
+- **Maintainability**: Styles co-located with components
+- **Responsive**: Built-in responsive utilities
+
+### Styling Guidelines
+
+#### 1. Use Tailwind Utilities Directly
+**Always apply Tailwind classes directly in JSX/TSX**:
 
 ```tsx
-// Spacing
-className="px-4 py-2 mt-4 mb-8"
+// ✅ DO: Use Tailwind utilities directly
+<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md">
+  <h3 className="text-xl font-semibold text-gray-900">Channel Name</h3>
+  <Button>Join</Button>
+</div>
 
-// Colors
-className="bg-blue-500 text-white hover:bg-blue-600"
-
-// Flexbox
-className="flex items-center justify-between gap-4"
-
-// Grid
-className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+// ❌ DON'T: Create CSS modules
+import styles from './Component.module.scss'; // Deprecated
 ```
 
-### CSS Modules
-For component-specific styles, use CSS Modules with Tailwind:
+#### 2. Conditional Styling with `cn()`
+Use the `cn()` utility for conditional classes:
 
-```scss
-// ChannelPage.module.scss
-.channelContainer {
-  @apply min-h-screen flex flex-col;
+```tsx
+import { cn } from '../../lib/utils';
+
+<Button
+  className={cn(
+    "px-4 py-2",
+    isActive && "bg-indigo-500 text-white",
+    isDisabled && "opacity-50 cursor-not-allowed"
+  )}
+/>
+```
+
+#### 3. Responsive Design
+Leverage Tailwind's responsive prefixes:
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Responsive grid: 1 column mobile, 2 tablet, 3 desktop */}
+</div>
+
+<nav className="flex-col md:flex-row">
+  {/* Stack vertically on mobile, horizontally on desktop */}
+</nav>
+```
+
+#### 4. Complex Layouts
+For complex layouts, extract to components instead of using `@apply`:
+
+```tsx
+// ✅ DO: Create reusable components
+function ChannelCard({ channel }: { channel: Channel }) {
+  return (
+    <div className="bg-white rounded-xl p-6 flex flex-col gap-4">
+      <h3 className="text-xl font-semibold">{channel.name}</h3>
+      <Button>Join</Button>
+    </div>
+  );
 }
 
-.channelControls {
-  @apply flex gap-4 justify-center items-center;
-}
+// ❌ DON'T: Use @apply in CSS modules
+// .channelCard { @apply bg-white rounded-xl p-6 ... }
+```
+
+### Common Patterns
+
+#### Spacing
+```tsx
+// Padding & Margin
+className="p-4"       // padding: 1rem all sides
+className="px-6 py-4" // padding-x: 1.5rem, padding-y: 1rem
+className="mt-8 mb-4" // margin-top: 2rem, margin-bottom: 1rem
+
+// Gap (for flex/grid)
+className="flex gap-4"        // gap: 1rem
+className="grid gap-x-6 gap-y-4" // gap-x: 1.5rem, gap-y: 1rem
+```
+
+#### Colors
+```tsx
+// Background
+className="bg-white"
+className="bg-gray-900"
+className="bg-indigo-500"
+
+// Text
+className="text-gray-900"
+className="text-white"
+className="text-red-700"
+
+// Borders
+className="border border-gray-300"
+className="border-2 border-indigo-500"
+```
+
+#### Layout
+```tsx
+// Flexbox
+className="flex items-center justify-between gap-4"
+className="flex flex-col md:flex-row"
+
+// Grid
+className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6"
+className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+
+// Positioning
+className="fixed bottom-20 right-5 z-100"
+className="absolute top-3 left-3"
+className="relative"
+```
+
+#### Typography
+```tsx
+className="text-base font-normal"    // 16px, 400
+className="text-lg font-medium"      // 18px, 500
+className="text-xl font-semibold"    // 20px, 600
+className="text-2xl font-bold"       // 24px, 700
+```
+
+#### Shadows & Borders
+```tsx
+className="shadow-sm"      // subtle shadow
+className="shadow-md"      // medium shadow
+className="shadow-lg"      // large shadow
+className="rounded-lg"     // border-radius: 0.5rem
+className="rounded-xl"     // border-radius: 0.75rem
+```
+
+### Component-Specific Styling
+
+#### Video Grid Layout
+```tsx
+<div className="flex-1 grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4 p-4">
+  {/* Auto-fitting grid for video streams */}
+</div>
+```
+
+#### Fixed Overlays
+```tsx
+<div className="fixed bottom-[100px] right-5 w-[280px] border-3 border-indigo-500 z-[100]">
+  {/* Local video feed in corner */}
+</div>
+```
+
+#### Cards
+```tsx
+<div className="bg-white rounded-xl p-6 flex flex-col gap-4 shadow-md">
+  {/* Channel card */}
+</div>
 ```
 
 ---
@@ -138,29 +266,41 @@ For component-specific styles, use CSS Modules with Tailwind:
 ## Component Structure
 
 ### Standard Component Pattern
+For reusable components (not pages):
 ```
 ComponentName/
-├── ComponentName.tsx         # Main component logic
-├── ComponentName.module.scss # Scoped styles (if needed)
-└── index.ts                  # Re-export
+├── ComponentName.tsx    # Main component logic and Tailwind styles
+└── index.ts            # Re-export
+```
+
+For page components:
+```
+pages/
+├── PageName/
+│   ├── PageName.tsx    # Page component with Tailwind styles
+│   └── index.ts        # Re-export
 ```
 
 ### Example
 ```tsx
-// Button usage in a component
+// Modern component with Tailwind
 import { Button } from '../../components/ui/button';
-import styles from './MyComponent.module.scss';
+import { cn } from '../../lib/utils';
 
-export default function MyComponent() {
+export default function ChannelCard({ channel, isActive }: Props) {
   return (
-    <div className={styles.container}>
-      <Button variant="default" size="lg">
-        Click Me
-      </Button>
+    <div className={cn(
+      "bg-white rounded-xl p-6 flex flex-col gap-4 shadow-md transition-all",
+      isActive && "ring-2 ring-indigo-500"
+    )}>
+      <h3 className="text-xl font-semibold text-gray-900">{channel.name}</h3>
+      <Button variant="default">Join Channel</Button>
     </div>
   );
 }
 ```
+
+**Note**: CSS Modules (`.module.scss` files) are deprecated and should not be used.
 
 ---
 
@@ -264,14 +404,25 @@ import { cn } from '../../lib/utils';
 
 ## Migration Checklist
 
-When converting existing components:
+When creating new components or updating existing ones:
 
-- [ ] Replace `<button>` with `<Button>` from shadcn
-- [ ] Replace custom toast with Sonner
-- [ ] Use Tailwind classes instead of inline styles
-- [ ] Add proper accessibility attributes
+- [x] Replace `<button>` with `<Button>` from shadcn
+- [x] Replace custom toast with Sonner
+- [x] Use Tailwind classes instead of CSS modules
+- [x] Use Tailwind classes instead of inline styles
+- [x] Add proper accessibility attributes
 - [ ] Test keyboard navigation
 - [ ] Verify responsive design
+- [x] Remove all `.module.scss` files (completed)
+
+### Completed Migrations
+- ✅ NavBar component
+- ✅ NetworkQuality component
+- ✅ ParticipantList component
+- ✅ ChannelPage
+- ✅ CreateChannelPage
+- ✅ ChannelsPage
+- ✅ All CSS modules removed from codebase
 
 ---
 
