@@ -10,6 +10,8 @@ import { trpc } from '../../lib/trpc';
 import { isAuthenticated } from '../../lib/auth';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/button';
+import ParticipantList from '../../components/ParticipantList';
+import NetworkQuality from '../../components/NetworkQuality';
 import styles from './ChannelPage.module.scss';
 
 interface ChannelConfig {
@@ -40,6 +42,8 @@ export default function ChannelPage() {
   const [error, setError] = useState("");
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [screenTrack, setScreenTrack] = useState<ICameraVideoTrack | null>(null);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const [channelConfig, setChannelConfig] = useState<ChannelConfig | null>(null);
 
   // Check authentication
   useEffect(() => {
@@ -51,12 +55,14 @@ export default function ChannelPage() {
   // Join channel mutation
   const joinMutation = trpc.channel.join.useMutation({
     onSuccess: async (data) => {
-      await initializeAgora({
+      const config = {
         appId: data.appId,
         token: data.token,
         channelName: data.channel.id.toString(),
         uid: data.uid,
-      });
+      };
+      setChannelConfig(config);
+      await initializeAgora(config);
     },
     onError: (err) => {
       setError(err.message);
@@ -465,6 +471,7 @@ export default function ChannelPage() {
     <div className={styles.channelPage}>
       <div className={styles.channelHeader}>
         <h2>Live Channel</h2>
+        <NetworkQuality client={client} />
         <button className="btn btn-secondary" onClick={handleLeave}>
           Leave Channel
         </button>
@@ -532,6 +539,15 @@ export default function ChannelPage() {
         </Button>
 
         <Button
+          variant="outline"
+          size="lg"
+          onClick={() => setShowParticipants(true)}
+          title="Show participants"
+        >
+          👥 ({Array.from(remoteUsers.values()).length + 1})
+        </Button>
+
+        <Button
           variant="destructive"
           size="lg"
           onClick={handleLeave}
@@ -540,6 +556,14 @@ export default function ChannelPage() {
           📞
         </Button>
       </div>
+
+      {/* Participant List Modal */}
+      <ParticipantList
+        localUserId={channelConfig?.uid || 0}
+        remoteUsers={Array.from(remoteUsers.values())}
+        isOpen={showParticipants}
+        onClose={() => setShowParticipants(false)}
+      />
     </div>
   );
 }

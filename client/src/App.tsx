@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { trpc } from './lib/trpc';
 import { getToken } from './lib/auth';
 import NavBar from './components/NavBar';
+import ErrorBoundary from './components/ErrorBoundary';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -30,22 +31,24 @@ function App() {
   );
 
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <NavBar />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/channels" element={<Channels />} />
-            <Route path="/create-channel" element={<CreateChannel />} />
-            <Route path="/channel/:channelId" element={<Channel />} />
-          </Routes>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </trpc.Provider>
+    <ErrorBoundary>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <NavBar />
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/channels" element={<Channels />} />
+              <Route path="/create-channel" element={<CreateChannel />} />
+              <Route path="/channel/:channelId" element={<Channel />} />
+            </Routes>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </ErrorBoundary>
   );
 }
 
