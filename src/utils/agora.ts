@@ -1,4 +1,5 @@
-import { RtcTokenBuilder, RtcRole } from 'agora-token';
+import agoraToken from 'agora-token';
+const { RtcTokenBuilder, RtcRole } = agoraToken;
 
 const getCredentials = () => {
   const APP_ID = process.env.AGORA_APP_ID;
