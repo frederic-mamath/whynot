@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
+import { Button } from "../ui/button";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function NavBar() {
       <div className="p-8">
         <Link to="/">NotWhat</Link>
 
+        <Button onClick={() => console.log("Hi")}>Hello</Button>
         <div>
           {authenticated ? (
             <>
