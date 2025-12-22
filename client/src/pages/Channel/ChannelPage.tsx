@@ -491,38 +491,43 @@ export default function ChannelPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Video className="size-5 text-primary" />
-                Live Channel
+            <div className="flex items-center gap-2 sm:gap-4">
+              <h2 className="text-base sm:text-xl font-semibold flex items-center gap-2">
+                <Video className="size-4 sm:size-5 text-primary" />
+                <span className="hidden sm:inline">Live Channel</span>
               </h2>
               <NetworkQuality client={client} />
             </div>
-            <Button variant="destructive" onClick={handleLeave}>
-              <PhoneOff className="size-4 mr-2" />
-              Leave Channel
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={handleLeave}
+              className="text-xs sm:text-sm"
+            >
+              <PhoneOff className="size-3 sm:size-4 sm:mr-2" />
+              <span className="hidden sm:inline">Leave</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Video Grid */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-2 sm:p-4">
         <div className="max-w-7xl mx-auto h-full">
           {Array.from(remoteUsers.entries()).length === 0 ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <UsersIcon className="size-16 mx-auto text-muted-foreground" />
-                <h3 className="text-lg font-semibold">Waiting for participants</h3>
-                <p className="text-muted-foreground">
+            <div className="h-full flex items-center justify-center p-4">
+              <div className="text-center space-y-3 sm:space-y-4">
+                <UsersIcon className="size-12 sm:size-16 mx-auto text-muted-foreground" />
+                <h3 className="text-base sm:text-lg font-semibold">Waiting for participants</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Invite others to join this channel
                 </p>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 h-full">
               {Array.from(remoteUsers.entries()).map(([uid, user]) => (
                 <div
                   key={uid}
@@ -532,7 +537,7 @@ export default function ChannelPage() {
                     id={`remote-player-${uid}`}
                     className="w-full h-full"
                   ></div>
-                  <div className="absolute bottom-3 left-3 px-3 py-1 bg-background/80 backdrop-blur-sm rounded-md text-sm font-medium">
+                  <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 px-2 sm:px-3 py-1 bg-background/80 backdrop-blur-sm rounded-md text-xs sm:text-sm font-medium">
                     User {uid}
                   </div>
                 </div>
@@ -543,25 +548,26 @@ export default function ChannelPage() {
       </div>
 
       {/* Local Video (Picture-in-Picture) */}
-      <div className="fixed bottom-24 right-6 w-64 z-50">
+      <div className="fixed bottom-20 sm:bottom-24 right-2 sm:right-6 w-32 sm:w-48 md:w-64 z-50">
         <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg aspect-video">
           <div id="local-player" className="w-full h-full"></div>
-          <div className="absolute bottom-2 left-2 px-2 py-1 bg-background/80 backdrop-blur-sm rounded text-xs font-medium">
+          <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-background/80 backdrop-blur-sm rounded text-[10px] sm:text-xs font-medium">
             You
           </div>
         </div>
       </div>
 
       {/* Control Bar */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-card border border-border rounded-full shadow-lg px-4 py-3 flex items-center gap-2">
+      <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 px-2 w-full sm:w-auto">
+        <div className="bg-card border border-border rounded-full shadow-lg px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-center gap-1 sm:gap-2 max-w-full overflow-x-auto">
           <Button
             variant={audioMuted ? "destructive" : "secondary"}
             size="icon"
             onClick={toggleAudio}
             title={audioMuted ? "Unmute" : "Mute"}
+            className="shrink-0"
           >
-            {audioMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+            {audioMuted ? <MicOff className="size-4 sm:size-5" /> : <Mic className="size-4 sm:size-5" />}
           </Button>
 
           <Button
@@ -569,8 +575,9 @@ export default function ChannelPage() {
             size="icon"
             onClick={toggleVideo}
             title={videoMuted ? "Turn on camera" : "Turn off camera"}
+            className="shrink-0"
           >
-            {videoMuted ? <VideoOff className="size-5" /> : <Video className="size-5" />}
+            {videoMuted ? <VideoOff className="size-4 sm:size-5" /> : <Video className="size-4 sm:size-5" />}
           </Button>
 
           <Button
@@ -578,33 +585,36 @@ export default function ChannelPage() {
             size="icon"
             onClick={toggleScreenShare}
             title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
+            className="shrink-0 hidden sm:flex"
           >
-            <MonitorUp className="size-5" />
+            <MonitorUp className="size-4 sm:size-5" />
           </Button>
 
-          <div className="w-px h-8 bg-border mx-1"></div>
+          <div className="w-px h-6 sm:h-8 bg-border mx-0.5 sm:mx-1 hidden sm:block"></div>
 
           <Button
             variant="secondary"
             size="icon"
             onClick={() => setShowParticipants(true)}
             title="Show participants"
+            className="shrink-0 relative"
           >
-            <UsersIcon className="size-5" />
-            <span className="absolute -top-1 -right-1 size-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+            <UsersIcon className="size-4 sm:size-5" />
+            <span className="absolute -top-1 -right-1 size-4 sm:size-5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs flex items-center justify-center font-medium">
               {Array.from(remoteUsers.values()).length + 1}
             </span>
           </Button>
 
-          <div className="w-px h-8 bg-border mx-1"></div>
+          <div className="w-px h-6 sm:h-8 bg-border mx-0.5 sm:mx-1"></div>
 
           <Button
             variant="destructive"
             size="icon"
             onClick={handleLeave}
             title="Leave channel"
+            className="shrink-0"
           >
-            <PhoneOff className="size-5" />
+            <PhoneOff className="size-4 sm:size-5" />
           </Button>
         </div>
       </div>

@@ -8,11 +8,134 @@ This project uses **Shadcn UI** as its primary design system built on top of **T
 
 ## Core Philosophy
 
-1. **Shadcn First** - Always prefer Shadcn components over custom implementations
-2. **Tailwind for Utilities** - Use Tailwind classes for spacing, layout, and custom styling
-3. **Design Consistency** - Follow the design tokens and color system
-4. **Type Safety** - Full TypeScript support for all components
-5. **Accessibility** - WCAG compliant components by default
+1. **Mobile First** - Design and code for mobile devices first, then enhance for larger screens
+2. **Shadcn First** - Always prefer Shadcn components over custom implementations
+3. **Tailwind for Utilities** - Use Tailwind classes for spacing, layout, and custom styling
+4. **Design Consistency** - Follow the design tokens and color system
+5. **Type Safety** - Full TypeScript support for all components
+6. **Accessibility** - WCAG compliant components by default
+
+---
+
+## Mobile-First Responsive Design
+
+### Philosophy
+- **Start Small**: Begin with mobile layout (320px+)
+- **Progressive Enhancement**: Add complexity for larger screens
+- **Touch-Friendly**: Minimum 44x44px touch targets
+- **Performance**: Optimize for slower mobile connections
+
+### Breakpoints
+Tailwind's default breakpoints (use sparingly):
+```css
+/* Mobile first - no prefix needed */
+default: 0px      /* Mobile devices */
+sm: 640px         /* Small tablets */
+md: 768px         /* Tablets */
+lg: 1024px        /* Laptops */
+xl: 1280px        /* Desktops */
+2xl: 1536px       /* Large screens */
+```
+
+### Best Practices
+
+#### ✅ DO: Mobile First
+```tsx
+// Start with mobile, add complexity for larger screens
+<div className="flex flex-col md:flex-row gap-4">
+  <Button size="sm" className="w-full md:w-auto">Action</Button>
+</div>
+
+// Hide on mobile, show on desktop
+<span className="hidden md:inline">Desktop Text</span>
+
+// Show on mobile, hide on desktop
+<Menu className="md:hidden" />
+```
+
+#### ❌ DON'T: Desktop First
+```tsx
+// Bad: Desktop classes without mobile defaults
+<div className="lg:flex-row lg:gap-4">  // Missing mobile layout!
+
+// Bad: Assuming desktop
+<div className="grid-cols-3">  // Breaks on mobile
+```
+
+### Common Responsive Patterns
+
+#### Navigation
+```tsx
+// Mobile: Hamburger menu
+// Desktop: Full navigation
+<nav>
+  <div className="md:hidden">
+    <MobileMenu />
+  </div>
+  <div className="hidden md:flex items-center gap-4">
+    <NavLinks />
+  </div>
+</nav>
+```
+
+#### Grid Layouts
+```tsx
+// 1 column mobile → 2 tablet → 3 desktop
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {items.map(item => <Card key={item.id} />)}
+</div>
+```
+
+#### Typography
+```tsx
+// Responsive text sizes
+<h1 className="text-2xl md:text-4xl lg:text-5xl font-bold">
+  Heading
+</h1>
+<p className="text-sm md:text-base">Body text</p>
+```
+
+#### Spacing
+```tsx
+// Responsive padding/margin
+<div className="p-4 md:p-6 lg:p-8">
+  <div className="space-y-4 md:space-y-6">
+    Content
+  </div>
+</div>
+```
+
+#### Buttons
+```tsx
+// Full width mobile, auto desktop
+<Button className="w-full md:w-auto">Submit</Button>
+
+// Stack mobile, inline desktop
+<div className="flex flex-col md:flex-row gap-2">
+  <Button>Cancel</Button>
+  <Button>Submit</Button>
+</div>
+```
+
+#### Container Widths
+```tsx
+// Consistent max-width with responsive padding
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  Content
+</div>
+```
+
+### Touch Targets
+Minimum size: 44x44px for touch-friendly UI
+```tsx
+// Icon buttons
+<Button size="icon" className="size-11">  {/* 44px minimum */}
+  <Menu className="size-5" />
+</Button>
+
+// Regular buttons (already meet minimum)
+<Button size="sm">OK</Button>  {/* 36px height, but wider */}
+```
 
 ---
 
