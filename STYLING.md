@@ -32,9 +32,17 @@ This project uses **Shadcn UI** as its primary design system built on top of **T
   "class-variance-authority": "^0.7.1",
   "clsx": "^2.1.1",
   "tailwind-merge": "^3.4.0",
-  "@radix-ui/react-slot": "^1.2.4"
+  "@radix-ui/react-slot": "^1.2.4",
+  "lucide-react": "^0.562.0"
 }
 ```
+
+### Icon Library
+- **Lucide React** - Modern icon library ([lucide.dev](https://lucide.dev/))
+  - 1000+ beautiful, consistent icons
+  - Perfect integration with Shadcn components
+  - Tree-shakeable (import only what you need)
+  - TypeScript support
 
 ---
 
@@ -99,7 +107,70 @@ Defined in `client/src/index.css`:
 
 ## Component Guidelines
 
-### 1. Button Component
+### 1. Icons with Lucide React
+
+**Library**: [lucide.dev](https://lucide.dev/)
+
+#### Import
+```tsx
+import { Search, User, Settings, Home, Plus } from 'lucide-react';
+```
+
+#### Basic Usage
+```tsx
+// Standalone icon
+<Search className="size-5 text-muted-foreground" />
+
+// With custom size
+<User className="size-6 text-primary" />
+
+// In button
+<Button variant="ghost" size="icon">
+  <Settings className="size-4" />
+</Button>
+
+// With text
+<Button>
+  <Plus className="size-4" />
+  Create Channel
+</Button>
+```
+
+#### Icon Sizes
+| Class | Size | Use Case |
+|-------|------|----------|
+| `size-3` | 12px | Very small, badges |
+| `size-4` | 16px | Buttons, inline text |
+| `size-5` | 20px | Standalone icons |
+| `size-6` | 24px | Headers, emphasis |
+| `size-8` | 32px | Large UI elements |
+
+#### Common Icons
+```tsx
+// Navigation
+import { Home, Video, Users, Settings } from 'lucide-react';
+
+// Actions
+import { Plus, Edit, Trash2, Send, Save, Search } from 'lucide-react';
+
+// Media controls
+import { Mic, MicOff, Video, VideoOff, Share2, PhoneOff } from 'lucide-react';
+
+// UI
+import { Menu, X, ChevronDown, MoreVertical, Bell } from 'lucide-react';
+
+// Status
+import { Check, AlertCircle, Info, XCircle, Loader2 } from 'lucide-react';
+```
+
+#### Best Practices
+- ✅ Use `size-4` for icons inside buttons
+- ✅ Use semantic colors: `text-primary`, `text-destructive`, `text-muted-foreground`
+- ✅ Add `title` or `aria-label` for accessibility
+- ✅ Use conditional rendering for toggle states (Mic/MicOff)
+- ❌ Don't use hardcoded sizes like `w-4 h-4` (use `size-4`)
+
+### 2. Button Component
 
 **Location**: `client/src/components/ui/Button/Button.tsx`
 
@@ -311,6 +382,7 @@ When creating or updating components:
 
 ### ✅ Implemented
 - Button (all variants)
+- ChannelControls (example component with icons)
 
 ### 🎯 Priority Components to Add
 
@@ -337,6 +409,35 @@ When creating or updating components:
 ---
 
 ## Examples from Codebase
+
+### ChannelControls Component (with Lucide Icons)
+```tsx
+import Button from '@/components/ui/Button';
+import { Mic, MicOff, Video, VideoOff, Share2, PhoneOff, Users } from 'lucide-react';
+
+<div className="flex items-center justify-center gap-2 p-4">
+  {/* Audio toggle */}
+  <Button
+    variant={audioMuted ? "destructive" : "secondary"}
+    size="icon"
+    onClick={toggleAudio}
+    title={audioMuted ? "Unmute" : "Mute"}
+  >
+    {audioMuted ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+  </Button>
+  
+  {/* Participants with count */}
+  <Button variant="outline" onClick={showParticipants}>
+    <Users className="size-4" />
+    <span className="ml-2">{participantCount}</span>
+  </Button>
+  
+  {/* Leave call */}
+  <Button variant="destructive" size="icon" onClick={leave}>
+    <PhoneOff className="size-4" />
+  </Button>
+</div>
+```
 
 ### NavBar Component Pattern
 ```tsx
