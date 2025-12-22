@@ -18,7 +18,7 @@ Replace all plain HTML elements and emoji icons with Shadcn components and Lucid
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Add Core Shadcn Components | 📝 PLANNING |
+| Phase 1 | Add Core Shadcn Components | ✅ DONE |
 | Phase 2 | Migrate Authentication Pages | 📝 PLANNING |
 | Phase 3 | Migrate Navigation & Layout | 📝 PLANNING |
 | Phase 4 | Migrate Dashboard & Channels | 📝 PLANNING |
@@ -29,6 +29,9 @@ Replace all plain HTML elements and emoji icons with Shadcn components and Lucid
 
 ### ✅ Completed
 - Button component (Shadcn)
+- Input component (Shadcn)
+- Label component (Shadcn)
+- Card component (Shadcn - with all sub-components)
 - ChannelControls component (with Lucide icons)
 
 ### ⏳ Remaining
@@ -48,10 +51,7 @@ Replace all plain HTML elements and emoji icons with Shadcn components and Lucid
 - NetworkQuality.tsx
 - ParticipantList.tsx
 
-**New Shadcn Components Needed (8)**:
-- Input
-- Label
-- Card
+**New Shadcn Components Needed (5)**:
 - Dialog
 - Badge
 - Avatar
@@ -86,4 +86,4 @@ Replace all plain HTML elements and emoji icons with Shadcn components and Lucid
 - Phases can be paused and resumed at boundaries
 
 ## Status
-📝 **PLANNING** - Track created, phases being defined
+⏳ **IN PROGRESS** - Phase 1 complete, ready for Phase 2

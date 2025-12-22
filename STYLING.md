@@ -170,7 +170,195 @@ import { Check, AlertCircle, Info, XCircle, Loader2 } from 'lucide-react';
 - ✅ Use conditional rendering for toggle states (Mic/MicOff)
 - ❌ Don't use hardcoded sizes like `w-4 h-4` (use `size-4`)
 
-### 2. Button Component
+### 2. Input Component
+
+**Location**: `client/src/components/ui/Input/Input.tsx`
+
+#### Import
+```tsx
+import Input from '@/components/ui/Input';
+```
+
+#### Basic Usage
+```tsx
+<Input type="email" placeholder="you@example.com" />
+<Input type="password" placeholder="Enter password" />
+<Input type="text" value={value} onChange={handleChange} />
+```
+
+#### With Label
+```tsx
+<div className="space-y-2">
+  <Label htmlFor="email">Email Address</Label>
+  <Input id="email" type="email" placeholder="you@example.com" />
+</div>
+```
+
+#### States
+```tsx
+// Disabled
+<Input disabled placeholder="Disabled input" />
+
+// With error (add custom styling)
+<Input className="border-destructive" placeholder="Error state" />
+
+// Full width
+<Input className="w-full" />
+```
+
+#### Common Input Types
+```tsx
+<Input type="text" />       // Text
+<Input type="email" />      // Email
+<Input type="password" />   // Password
+<Input type="number" />     // Number
+<Input type="tel" />        // Telephone
+<Input type="url" />        // URL
+<Input type="search" />     // Search
+<Input type="date" />       // Date picker
+```
+
+---
+
+### 3. Label Component
+
+**Location**: `client/src/components/ui/Label/Label.tsx`
+
+#### Import
+```tsx
+import Label from '@/components/ui/Label';
+```
+
+#### Basic Usage
+```tsx
+<Label htmlFor="username">Username</Label>
+<Input id="username" />
+```
+
+#### Complete Form Field
+```tsx
+<div className="space-y-2">
+  <Label htmlFor="email">Email Address</Label>
+  <Input 
+    id="email" 
+    type="email" 
+    placeholder="you@example.com"
+    required
+  />
+  <p className="text-sm text-muted-foreground">
+    We'll never share your email.
+  </p>
+</div>
+```
+
+#### Best Practices
+- ✅ Always use `htmlFor` prop matching input's `id`
+- ✅ Place Label above Input for better UX
+- ✅ Use `text-destructive` for error labels
+- ❌ Don't skip labels - they're critical for accessibility
+
+---
+
+### 4. Card Component
+
+**Location**: `client/src/components/ui/Card/Card.tsx`
+
+#### Import
+```tsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
+```
+
+#### Basic Card
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Card description or subtitle</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Card content goes here</p>
+  </CardContent>
+</Card>
+```
+
+#### Card with Footer
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Channel Name</CardTitle>
+    <CardDescription>12 / 50 participants</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Live video streaming channel</p>
+  </CardContent>
+  <CardFooter>
+    <Button className="w-full">Join Channel</Button>
+  </CardFooter>
+</Card>
+```
+
+#### Card with Icons
+```tsx
+import { Video, Users } from 'lucide-react';
+
+<Card>
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Video className="size-5" />
+      Live Channel
+    </CardTitle>
+    <CardDescription className="flex items-center gap-2">
+      <Users className="size-4" />
+      24 participants
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Join the conversation</p>
+  </CardContent>
+</Card>
+```
+
+#### Card Grid Layout
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <Card>
+    <CardHeader>
+      <CardTitle>Card 1</CardTitle>
+    </CardHeader>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Card 2</CardTitle>
+    </CardHeader>
+  </Card>
+  <Card>
+    <CardHeader>
+      <CardTitle>Card 3</CardTitle>
+    </CardHeader>
+  </Card>
+</div>
+```
+
+#### Interactive Card
+```tsx
+<Card className="hover:shadow-lg transition-shadow cursor-pointer">
+  <CardHeader>
+    <CardTitle>Clickable Card</CardTitle>
+  </CardHeader>
+</Card>
+```
+
+#### Best Practices
+- ✅ Use CardHeader for titles and descriptions
+- ✅ Use CardContent for main content
+- ✅ Use CardFooter for actions (buttons)
+- ✅ Add hover effects with `hover:shadow-lg transition-shadow`
+- ✅ Use grid layouts for card collections
+- ❌ Don't nest Cards unnecessarily
+
+---
+
+### 5. Button Component
 
 **Location**: `client/src/components/ui/Button/Button.tsx`
 
@@ -382,6 +570,9 @@ When creating or updating components:
 
 ### ✅ Implemented
 - Button (all variants)
+- Input (all input types)
+- Label (form labels)
+- Card (with Header, Title, Description, Content, Footer)
 - ChannelControls (example component with icons)
 
 ### 🎯 Priority Components to Add
