@@ -1,7 +1,12 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Plus, Video, Lock, Users, ArrowLeft } from 'lucide-react';
 import { trpc } from '../../lib/trpc';
 import { isAuthenticated } from '../../lib/auth';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Label from '../../components/ui/Label';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/Card';
 
 export default function CreateChannelPage() {
   const navigate = useNavigate();
@@ -42,64 +47,90 @@ export default function CreateChannelPage() {
   };
 
   return (
-    <div>
-      <div>
-        <h1>Create Live Channel</h1>
-        <p>Start a new live video/audio channel</p>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Button variant="ghost" onClick={() => navigate('/channels')}>
+          <ArrowLeft className="size-4 mr-2" />
+          Back to channels
+        </Button>
 
-        {error && <div>{error}</div>}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Video className="size-6" />
+              Create Live Channel
+            </CardTitle>
+            <CardDescription>Start a new live video/audio channel</CardDescription>
+          </CardHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name">Channel Name</label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="My Awesome Stream"
-              required
-              minLength={3}
-              maxLength={100}
-            />
-          </div>
+          <CardContent>
+            {error && (
+              <div className="mb-4 p-3 rounded-md bg-destructive/10 border border-destructive text-destructive text-sm">
+                {error}
+              </div>
+            )}
 
-          <div>
-            <label htmlFor="maxParticipants">Max Participants</label>
-            <input
-              type="number"
-              id="maxParticipants"
-              value={maxParticipants}
-              onChange={(e) => setMaxParticipants(Number(e.target.value))}
-              min={2}
-              max={50}
-            />
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Channel Name</Label>
+                <Input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="My Awesome Stream"
+                  required
+                  minLength={3}
+                  maxLength={100}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Choose a descriptive name for your channel (3-100 characters)
+                </p>
+              </div>
 
-          <div>
-            <label>
-              <input
-                type="checkbox"
-                checked={isPrivate}
-                onChange={(e) => setIsPrivate(e.target.checked)}
-              />
-              <span>Make this channel private</span>
-            </label>
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="maxParticipants" className="flex items-center gap-2">
+                  <Users className="size-4" />
+                  Max Participants
+                </Label>
+                <Input
+                  type="number"
+                  id="maxParticipants"
+                  value={maxParticipants}
+                  onChange={(e) => setMaxParticipants(Number(e.target.value))}
+                  min={2}
+                  max={50}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Maximum number of participants (2-50)
+                </p>
+              </div>
 
-          <button
-            type="submit"
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? 'Creating...' : 'Create Channel'}
-          </button>
-        </form>
+              <div className="flex items-center space-x-2 rounded-lg border border-border p-4">
+                <input
+                  type="checkbox"
+                  id="isPrivate"
+                  checked={isPrivate}
+                  onChange={(e) => setIsPrivate(e.target.checked)}
+                  className="size-4 rounded border-input"
+                />
+                <Label htmlFor="isPrivate" className="flex items-center gap-2 cursor-pointer">
+                  <Lock className="size-4" />
+                  Make this channel private
+                </Label>
+              </div>
 
-        <div>
-          <a onClick={() => navigate('/channels')}>
-            ← Back to channels
-          </a>
-        </div>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending}
+                className="w-full"
+              >
+                <Plus className="size-4 mr-2" />
+                {createMutation.isPending ? 'Creating...' : 'Create Channel'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
