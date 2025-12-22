@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
-import { trpc } from '../lib/trpc';
-import { removeToken, isAuthenticated } from '../lib/auth';
-import { useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import { trpc } from "../lib/trpc";
+import { removeToken, isAuthenticated } from "../lib/auth";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -9,13 +9,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [navigate]);
 
   const handleLogout = () => {
     removeToken();
-    navigate('/');
+    navigate("/");
   };
 
   if (isLoading) {
@@ -30,12 +30,8 @@ export default function Dashboard() {
     return (
       <div>
         <div>
-          <div>
-            {error.message}
-          </div>
-          <button onClick={() => navigate('/login')}>
-            Go to Login
-          </button>
+          <div>{error.message}</div>
+          <button onClick={() => navigate("/login")}>Go to Login</button>
         </div>
       </div>
     );
@@ -47,36 +43,34 @@ export default function Dashboard() {
         <div>
           <div>
             <h1>Dashboard</h1>
-            <button onClick={handleLogout}>
-              Logout
-            </button>
+            <button onClick={handleLogout}>Logout</button>
           </div>
 
           <div>
             <h2>Your Profile</h2>
-            
+
             <div>
               <div>
                 <span>User ID</span>
                 <span>{user?.id}</span>
               </div>
-              
+
               <div>
                 <span>Email</span>
                 <span>{user?.email}</span>
               </div>
-              
+
               <div>
                 <span>Status</span>
-                <span>
-                  {user?.isVerified ? '✅ Verified' : '⏳ Pending'}
-                </span>
+                <span>{user?.isVerified ? "✅ Verified" : "⏳ Pending"}</span>
               </div>
-              
+
               <div>
                 <span>Member Since</span>
                 <span>
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : "N/A"}
                 </span>
               </div>
             </div>
