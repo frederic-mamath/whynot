@@ -9,6 +9,7 @@ import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
 import Container from '../components/Container';
+import AssociateProductModal from '../components/AssociateProductModal';
 
 export default function EditProductPage() {
   const { id, productId } = useParams<{ id: string; productId: string }>();
@@ -21,6 +22,7 @@ export default function EditProductPage() {
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [showAssociateModal, setShowAssociateModal] = useState(false);
 
   const { data: product, isLoading } = trpc.product.get.useQuery(
     { productId: productIdNum },
@@ -229,12 +231,20 @@ export default function EditProductPage() {
           <p className="text-sm text-gray-600 mb-4">
             Associate this product with channels to make it available for promotion
           </p>
-          <Button variant="outline" disabled>
+          <Button variant="outline" onClick={() => setShowAssociateModal(true)}>
             <LinkIcon className="w-4 h-4 mr-2" />
-            Manage Associations (Coming Soon)
+            Manage Associations
           </Button>
         </div>
       </Container>
+
+      {showAssociateModal && (
+        <AssociateProductModal
+          productId={productIdNum}
+          shopId={shopIdNum}
+          onClose={() => setShowAssociateModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -316,4 +316,22 @@ export const productRouter = router({
         p.shop_name
       ));
     }),
+
+  listChannelAssociations: protectedProcedure
+    .input(z.object({ productId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const associations = await db
+        .selectFrom('channel_products')
+        .innerJoin('channels', 'channels.id', 'channel_products.channel_id')
+        .select([
+          'channel_products.channel_id as channelId',
+          'channel_products.created_at as createdAt',
+          'channels.name as channelName',
+        ])
+        .where('channel_products.product_id', '=', input.productId)
+        .orderBy('channel_products.created_at', 'desc')
+        .execute();
+
+      return associations;
+    }),
 });
