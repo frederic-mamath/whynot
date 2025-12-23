@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { trpc } from '../lib/trpc';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -9,14 +9,14 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateShopPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Keep for form success redirect
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const createShopMutation = trpc.shop.create.useMutation({
     onSuccess: (shop) => {
       toast.success('Shop created successfully!');
-      navigate(`/shops/${shop.id}`);
+      navigate(`/shop/${shop.id}`);
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create shop');
@@ -39,13 +39,11 @@ export default function CreateShopPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <Button
-        variant="ghost"
-        onClick={() => navigate('/shops')}
-        className="mb-6"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Shops
+      <Button variant="ghost" className="mb-6" asChild>
+        <Link to="/shops">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Shops
+        </Link>
       </Button>
 
       <div className="bg-white rounded-lg border border-gray-200 p-8">
@@ -85,12 +83,8 @@ export default function CreateShopPage() {
             >
               {createShopMutation.isPending ? 'Creating...' : 'Create Shop'}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/shops')}
-            >
-              Cancel
+            <Button type="button" variant="outline" asChild>
+              <Link to="/shops">Cancel</Link>
             </Button>
           </div>
         </form>

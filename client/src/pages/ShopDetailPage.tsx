@@ -12,7 +12,7 @@ import AddVendorModal from '../components/AddVendorModal/AddVendorModal';
 
 export default function ShopDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Keep for delete redirect
   const shopId = parseInt(id || '0');
 
   const [isEditing, setIsEditing] = useState(false);
@@ -102,13 +102,11 @@ export default function ShopDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Button
-        variant="ghost"
-        onClick={() => navigate('/shops')}
-        className="mb-6"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Shops
+      <Button variant="ghost" className="mb-6" asChild>
+        <Link to="/shops">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Shops
+        </Link>
       </Button>
 
       <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">

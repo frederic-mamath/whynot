@@ -16,6 +16,8 @@ import ChannelPage from './pages/ChannelPage';
 import ShopsPage from './pages/ShopsPage';
 import CreateShopPage from './pages/CreateShopPage';
 import ShopDetailPage from './pages/ShopDetailPage';
+import ProductsPage from './pages/ProductsPage';
+import ShopLayout from './pages/ShopLayout';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -49,7 +51,10 @@ function App() {
               <Route path="/channel/:channelId" element={<ChannelPage />} />
               <Route path="/shops" element={<ShopsPage />} />
               <Route path="/shops/create" element={<CreateShopPage />} />
-              <Route path="/shops/:id" element={<ShopDetailPage />} />
+              <Route path="/shops/:id" element={<ShopLayout />}>
+                <Route index element={<ShopDetailPage />} />
+                <Route path="products" element={<ProductsPage />} />
+              </Route>
             </Routes>
           </BrowserRouter>
         </QueryClientProvider>
