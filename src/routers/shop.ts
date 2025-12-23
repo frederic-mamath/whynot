@@ -3,6 +3,7 @@ import { router, protectedProcedure } from "../trpc";
 import { db } from "../db";
 import { TRPCError } from "@trpc/server";
 import { requireShopOwner, requireShopAccess } from "../middleware/shopOwner";
+import { mapShopToShopOutboundDto, mapShopWithRoleToShopWithRoleOutboundDto, mapCreateShopInboundDtoToShop } from "../mappers";
 
 export const shopRouter = router({
   create: protectedProcedure
@@ -13,23 +14,16 @@ export const shopRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const shopData = mapCreateShopInboundDtoToShop(input, ctx.user.id);
+      
       const shop = await db
         .insertInto("shops")
         .values({
-          name: input.name,
-          description: input.description || null,
-          owner_id: ctx.user.id,
+          ...shopData,
           created_at: new Date(),
           updated_at: new Date(),
         })
-        .returning([
-          "id",
-          "name",
-          "description",
-          "owner_id",
-          "created_at",
-          "updated_at",
-        ])
+        .returningAll()
         .executeTakeFirstOrThrow();
 
       await db
@@ -42,11 +36,11 @@ export const shopRouter = router({
         })
         .execute();
 
-      return shop;
+      return mapShopToShopOutboundDto(shop);
     }),
 
   list: protectedProcedure.query(async ({ ctx }) => {
-    const shops = await db
+    const results = await db
       .selectFrom("shops")
       .innerJoin("user_shop_roles", "user_shop_roles.shop_id", "shops.id")
       .select([
@@ -61,7 +55,17 @@ export const shopRouter = router({
       .where("user_shop_roles.user_id", "=", ctx.user.id)
       .execute();
 
-    return shops;
+    return results.map(r => mapShopWithRoleToShopWithRoleOutboundDto(
+      {
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        owner_id: r.owner_id,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      },
+      r.role
+    ));
   }),
 
   get: protectedProcedure
@@ -80,7 +84,7 @@ export const shopRouter = router({
         });
       }
 
-      return shop;
+      return mapShopToShopOutboundDto(shop);
     }),
 
   update: protectedProcedure
@@ -106,14 +110,7 @@ export const shopRouter = router({
         .updateTable("shops")
         .set(updateData)
         .where("id", "=", input.shopId)
-        .returning([
-          "id",
-          "name",
-          "description",
-          "owner_id",
-          "created_at",
-          "updated_at",
-        ])
+        .returningAll()
         .executeTakeFirst();
 
       if (!shop) {
@@ -123,7 +120,7 @@ export const shopRouter = router({
         });
       }
 
-      return shop;
+      return mapShopToShopOutboundDto(shop);
     }),
 
   delete: protectedProcedure

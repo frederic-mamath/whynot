@@ -3,6 +3,7 @@ import { router, protectedProcedure } from '../trpc';
 import { db } from '../db';
 import { TRPCError } from '@trpc/server';
 import type { Context } from '../types/context';
+import { mapProductToProductOutboundDto, mapProductWithShopToProductWithShopOutboundDto, mapCreateProductInboundDtoToProduct, mapUpdateProductInboundDtoToProduct } from '../mappers';
 
 async function requireProductAccess(ctx: Context, shopId: number): Promise<void> {
   if (!ctx.user) {
@@ -41,32 +42,26 @@ export const productRouter = router({
     .mutation(async ({ ctx, input }) => {
       await requireProductAccess(ctx, input.shopId);
 
+      const productData = mapCreateProductInboundDtoToProduct({
+        shopId: input.shopId,
+        name: input.name,
+        description: input.description,
+        price: input.price,
+        imageUrl: input.imageUrl ?? null,
+      });
+
       const product = await db
         .insertInto('products')
         .values({
-          shop_id: input.shopId,
-          name: input.name,
-          description: input.description || null,
-          price: input.price ? input.price.toFixed(2) : null,
-          image_url: input.imageUrl || null,
+          ...productData,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date(),
         })
-        .returning([
-          'id',
-          'shop_id',
-          'name',
-          'description',
-          'price',
-          'image_url',
-          'is_active',
-          'created_at',
-          'updated_at',
-        ])
+        .returningAll()
         .executeTakeFirstOrThrow();
 
-      return product;
+      return mapProductToProductOutboundDto(product);
     }),
 
   list: protectedProcedure
@@ -90,7 +85,7 @@ export const productRouter = router({
       }
 
       const products = await query.execute();
-      return products;
+      return products.map(mapProductToProductOutboundDto);
     }),
 
   get: protectedProcedure
@@ -110,7 +105,7 @@ export const productRouter = router({
       }
 
       await requireProductAccess(ctx, product.shop_id);
-      return product;
+      return mapProductToProductOutboundDto(product);
     }),
 
   update: protectedProcedure
@@ -140,34 +135,25 @@ export const productRouter = router({
 
       await requireProductAccess(ctx, existing.shop_id);
 
-      const updateData: any = {
-        updated_at: new Date(),
-      };
-
-      if (input.name !== undefined) updateData.name = input.name;
-      if (input.description !== undefined) updateData.description = input.description;
-      if (input.price !== undefined) updateData.price = input.price.toFixed(2);
-      if (input.imageUrl !== undefined) updateData.image_url = input.imageUrl;
-      if (input.isActive !== undefined) updateData.is_active = input.isActive;
+      const updateData = mapUpdateProductInboundDtoToProduct({
+        name: input.name,
+        description: input.description,
+        price: input.price,
+        imageUrl: input.imageUrl,
+        isActive: input.isActive,
+      });
 
       const product = await db
         .updateTable('products')
-        .set(updateData)
+        .set({
+          ...updateData,
+          updated_at: new Date(),
+        })
         .where('id', '=', input.productId)
-        .returning([
-          'id',
-          'shop_id',
-          'name',
-          'description',
-          'price',
-          'image_url',
-          'is_active',
-          'created_at',
-          'updated_at',
-        ])
+        .returningAll()
         .executeTakeFirstOrThrow();
 
-      return product;
+      return mapProductToProductOutboundDto(product);
     }),
 
   delete: protectedProcedure
@@ -315,6 +301,19 @@ export const productRouter = router({
         .orderBy('products.created_at', 'desc')
         .execute();
 
-      return products;
+      return products.map(p => mapProductWithShopToProductWithShopOutboundDto(
+        {
+          id: p.id,
+          shop_id: p.shop_id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          image_url: p.image_url,
+          is_active: p.is_active,
+          created_at: p.created_at,
+          updated_at: p.updated_at,
+        },
+        p.shop_name
+      ));
     }),
 });

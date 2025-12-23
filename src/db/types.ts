@@ -15,6 +15,8 @@ export interface UsersTable {
   id: Generated<number>;
   email: string;
   password: string;
+  firstname: string | null;
+  lastname: string | null;
   is_verified: boolean;
   created_at: Date;
   updated_at: Date;

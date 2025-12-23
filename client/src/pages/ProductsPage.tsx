@@ -1,25 +1,23 @@
-import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Plus, ArrowLeft, Package } from 'lucide-react';
-import { trpc } from '../lib/trpc';
-import { Button } from '../components/ui/button';
-import ProductCard from '../components/ProductCard';
-import { toast } from 'sonner';
+import { useParams, Link } from "react-router-dom";
+import { Plus, ArrowLeft, Package } from "lucide-react";
+import { trpc } from "../lib/trpc";
+import { Button } from "../components/ui/button";
+import ProductCard from "../components/ProductCard";
 
 export default function ProductsPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;
 
   const { data: shop, isLoading: shopLoading } = trpc.shop.get.useQuery(
     { shopId: shopIdNum },
-    { enabled: shopIdNum > 0 }
+    { enabled: shopIdNum > 0 },
   );
 
-  const { data: products, isLoading: productsLoading } = trpc.product.list.useQuery(
-    { shopId: shopIdNum },
-    { enabled: shopIdNum > 0 }
-  );
+  const { data: products, isLoading: productsLoading } =
+    trpc.product.list.useQuery(
+      { shopId: shopIdNum },
+      { enabled: shopIdNum > 0 },
+    );
 
   if (shopLoading || productsLoading) {
     return (
@@ -76,7 +74,10 @@ export default function ProductsPage() {
         {products && products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
-              <Link key={product.id} to={`/shops/${shopIdNum}/products/${product.id}/edit`}>
+              <Link
+                key={product.id}
+                to={`/shops/${shopIdNum}/products/${product.id}/edit`}
+              >
                 <ProductCard product={product} />
               </Link>
             ))}

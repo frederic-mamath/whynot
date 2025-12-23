@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { trpc } from '../lib/trpc';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Label } from '../components/ui/label';
-import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Package } from 'lucide-react';
-import { toast } from 'sonner';
-import VendorList from '../components/VendorList/VendorList';
-import AddVendorModal from '../components/AddVendorModal/AddVendorModal';
+import { useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { trpc } from "../lib/trpc";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
+import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Package } from "lucide-react";
+import { toast } from "sonner";
+import VendorList from "../components/VendorList/VendorList";
+import AddVendorModal from "../components/AddVendorModal/AddVendorModal";
 
 export default function ShopDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate(); // Keep for delete redirect
-  const shopId = parseInt(id || '0');
+  const shopId = parseInt(id || "0");
 
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [showAddVendor, setShowAddVendor] = useState(false);
 
   const { data: shop, isLoading } = trpc.shop.get.useQuery(
@@ -26,38 +26,38 @@ export default function ShopDetailPage() {
       enabled: shopId > 0,
       onSuccess: (data) => {
         setName(data.name);
-        setDescription(data.description || '');
+        setDescription(data.description || "");
       },
-    }
+    },
   );
 
   const utils = trpc.useUtils();
 
   const updateShopMutation = trpc.shop.update.useMutation({
     onSuccess: () => {
-      toast.success('Shop updated successfully');
+      toast.success("Shop updated successfully");
       setIsEditing(false);
       utils.shop.get.invalidate({ shopId });
       utils.shop.list.invalidate();
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to update shop');
+      toast.error(error.message || "Failed to update shop");
     },
   });
 
   const deleteShopMutation = trpc.shop.delete.useMutation({
     onSuccess: () => {
-      toast.success('Shop deleted successfully');
-      navigate('/shops');
+      toast.success("Shop deleted successfully");
+      navigate("/shops");
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete shop');
+      toast.error(error.message || "Failed to delete shop");
     },
   });
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error('Shop name is required');
+      toast.error("Shop name is required");
       return;
     }
 
@@ -69,7 +69,11 @@ export default function ShopDetailPage() {
   };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this shop? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this shop? This action cannot be undone.",
+      )
+    ) {
       deleteShopMutation.mutate({ shopId });
     }
   };
@@ -77,7 +81,7 @@ export default function ShopDetailPage() {
   const handleCancel = () => {
     if (shop) {
       setName(shop.name);
-      setDescription(shop.description || '');
+      setDescription(shop.description || "");
     }
     setIsEditing(false);
   };
@@ -98,7 +102,7 @@ export default function ShopDetailPage() {
     );
   }
 
-  const isOwner = shop.role === 'shop-owner';
+  const isOwner = shop.role === "shop-owner";
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -140,12 +144,12 @@ export default function ShopDetailPage() {
               <>
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold">{shop.name}</h1>
-                  {shop.role === 'shop-owner' && (
+                  {shop.role === "shop-owner" && (
                     <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded">
                       Owner
                     </span>
                   )}
-                  {shop.role === 'vendor' && (
+                  {shop.role === "vendor" && (
                     <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
                       Vendor
                     </span>
@@ -170,11 +174,7 @@ export default function ShopDetailPage() {
                     <Save className="mr-2 h-4 w-4" />
                     Save
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleCancel}
-                    size="sm"
-                  >
+                  <Button variant="outline" onClick={handleCancel} size="sm">
                     <X className="mr-2 h-4 w-4" />
                     Cancel
                   </Button>
