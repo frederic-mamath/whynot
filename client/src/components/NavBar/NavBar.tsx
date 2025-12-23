@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Video, Home, Plus, LogOut, LogIn, UserPlus, Menu, X } from "lucide-react";
+import { Video, Home, Plus, LogOut, LogIn, UserPlus, Menu, X, Store } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
 import Button from "../ui/Button";
@@ -51,6 +51,13 @@ export default function NavBar() {
                   <Link to="/channels">
                     <Video className="size-4 mr-2" />
                     Channels
+                  </Link>
+                </Button>
+
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/shops">
+                    <Store className="size-4 mr-2" />
+                    Shops
                   </Link>
                 </Button>
 
@@ -135,6 +142,13 @@ export default function NavBar() {
                     <Link to="/channels" onClick={closeMobileMenu}>
                       <Video className="size-4 mr-2" />
                       Channels
+                    </Link>
+                  </Button>
+
+                  <Button variant="ghost" className="justify-start" asChild>
+                    <Link to="/shops" onClick={closeMobileMenu}>
+                      <Store className="size-4 mr-2" />
+                      Shops
                     </Link>
                   </Button>
 
