@@ -1,6 +1,10 @@
 node_modules
 dist
+
 .env
+.env.staging
+
 .DS_Store
 
 debug
+
