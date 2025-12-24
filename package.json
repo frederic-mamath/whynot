@@ -7,6 +7,9 @@
     "dev": "tsx watch src/index.ts",
     "dev:client": "vite",
     "build": "tsc && vite build",
+    "build:server": "tsc",
+    "build:client": "vite build",
+    "build:client:staging": "vite build && scp -rp client/dist/* o2:~/whynot.mamath.fr",
     "start": "node dist/index.js",
     "preview": "vite preview",
     "migrate": "tsx migrate.ts"
