@@ -1,7 +1,7 @@
-import { ProductsTable } from '../db/types';
+import { Product, ProductsTable } from '../db/types';
 import { ProductOutboundDto, ProductInboundDto, ProductUpdateInboundDto, ProductWithShopOutboundDto } from '../types/dto/product.dto';
 
-export function mapProductToProductOutboundDto(product: ProductsTable): ProductOutboundDto {
+export function mapProductToProductOutboundDto(product: Product): ProductOutboundDto {
   return {
     id: product.id,
     shopId: product.shop_id,
@@ -16,7 +16,7 @@ export function mapProductToProductOutboundDto(product: ProductsTable): ProductO
 }
 
 export function mapProductWithShopToProductWithShopOutboundDto(
-  product: ProductsTable,
+  product: Product,
   shopName: string
 ): ProductWithShopOutboundDto {
   return {

@@ -1,4 +1,4 @@
-import { Kysely, Generated } from 'kysely';
+import { Kysely, Generated, Selectable } from 'kysely';
 
 export interface Database {
   users: UsersTable;
@@ -86,4 +86,13 @@ export interface VendorPromotedProductsTable {
   promoted_at: Date;
   unpromoted_at: Date | null;
 }
+
+export type User = Selectable<UsersTable>;
+export type Shop = Selectable<ShopsTable>;
+export type Product = Selectable<ProductsTable>;
+export type Channel = Selectable<ChannelsTable>;
+export type ChannelParticipant = Selectable<ChannelParticipantsTable>;
+export type UserShopRole = Selectable<UserShopRolesTable>;
+export type ChannelProduct = Selectable<ChannelProductsTable>;
+export type VendorPromotedProduct = Selectable<VendorPromotedProductsTable>;
 

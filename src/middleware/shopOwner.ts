@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { Context } from '../context';
+import { Context } from '../types/context';
 import { db } from '../db';
 
 export async function requireShopOwner(

@@ -53,7 +53,11 @@ export const productRouter = router({
       const product = await db
         .insertInto('products')
         .values({
-          ...productData,
+          shop_id: productData.shop_id,
+          name: productData.name,
+          description: productData.description,
+          price: productData.price,
+          image_url: productData.image_url,
           is_active: true,
           created_at: new Date(),
           updated_at: new Date(),

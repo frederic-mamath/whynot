@@ -1,7 +1,7 @@
-import { UsersTable } from '../db/types';
+import { User, UsersTable } from '../db/types';
 import { UserOutboundDto, UserInboundDto } from '../types/dto/user.dto';
 
-export function mapUserToUserOutboundDto(user: UsersTable): UserOutboundDto {
+export function mapUserToUserOutboundDto(user: User): UserOutboundDto {
   return {
     id: user.id,
     email: user.email,

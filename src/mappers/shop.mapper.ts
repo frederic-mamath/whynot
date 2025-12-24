@@ -1,7 +1,7 @@
-import { ShopsTable, UserShopRolesTable } from '../db/types';
+import { Shop, ShopsTable } from '../db/types';
 import { ShopOutboundDto, ShopInboundDto, ShopWithRoleOutboundDto } from '../types/dto/shop.dto';
 
-export function mapShopToShopOutboundDto(shop: ShopsTable): ShopOutboundDto {
+export function mapShopToShopOutboundDto(shop: Shop): ShopOutboundDto {
   return {
     id: shop.id,
     name: shop.name,
@@ -13,7 +13,7 @@ export function mapShopToShopOutboundDto(shop: ShopsTable): ShopOutboundDto {
 }
 
 export function mapShopWithRoleToShopWithRoleOutboundDto(
-  shop: ShopsTable,
+  shop: Shop,
   role: 'shop-owner' | 'vendor'
 ): ShopWithRoleOutboundDto {
   return {

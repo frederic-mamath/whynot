@@ -19,7 +19,9 @@ export const shopRouter = router({
       const shop = await db
         .insertInto("shops")
         .values({
-          ...shopData,
+          name: shopData.name,
+          description: shopData.description,
+          owner_id: shopData.owner_id,
           created_at: new Date(),
           updated_at: new Date(),
         })

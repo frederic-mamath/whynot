@@ -163,7 +163,7 @@ export const vendorPromotionRouter = router({
           'products.price as product_price',
           'products.image_url as product_image',
           'users.id as vendor_id',
-          'users.username as vendor_name',
+          'users.email as vendor_name',
           'shops.id as shop_id',
           'shops.name as shop_name',
         ])
