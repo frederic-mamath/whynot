@@ -6,6 +6,9 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
+console.log({
+  env: process.env,
+});
 const pool = new Pool({
   host: process.env.DB_HOST || "localhost",
   port: parseInt(process.env.DB_PORT || "5432", 10),
