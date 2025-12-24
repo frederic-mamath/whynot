@@ -1,16 +1,22 @@
-import express from 'express';
-import cors from 'cors';
-import * as trpcExpress from '@trpc/server/adapters/express';
-import { appRouter } from './routers';
-import { Context } from './types/context';
-import { verifyToken } from './utils/auth';
-import { logger } from './utils/logger';
-import * as dotenv from 'dotenv';
+import express from "express";
+import cors from "cors";
+import * as trpcExpress from "@trpc/server/adapters/express";
+import { appRouter } from "./routers";
+import { Context } from "./types/context";
+import { verifyToken } from "./utils/auth";
+import { logger } from "./utils/logger";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// @ts-ignore
+if (typeof PhusionPassenger !== "undefined") {
+  // @ts-ignore
+  PhusionPassenger.configure({ autoInstall: false });
+}
 
 app.use(cors());
 app.use(express.json());
@@ -19,40 +25,51 @@ app.use(logger);
 const createContext = ({
   req,
 }: trpcExpress.CreateExpressContextOptions): Context => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  
+  const token = req.headers.authorization?.replace("Bearer ", "");
+
   if (token) {
     const payload = verifyToken(token);
     if (payload) {
       return { userId: payload.userId };
     }
   }
-  
+
   return {};
 };
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
 
 // tRPC endpoint
 app.use(
-  '/trpc',
+  "/trpc",
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,
     onError: ({ path, error }) => {
-      const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      const timestamp = new Date()
+        .toISOString()
+        .replace("T", " ")
+        .substring(0, 19);
       console.error(`${timestamp} ERROR [${path}]:`, error.message);
-      if (error.code === 'INTERNAL_SERVER_ERROR') {
-        console.error('Stack:', error.stack);
+      if (error.code === "INTERNAL_SERVER_ERROR") {
+        console.error("Stack:", error.stack);
       }
     },
-  })
+  }),
 );
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-  console.log(`tRPC endpoint: http://localhost:${port}/trpc`);
-});
+// @ts-ignore
+if (typeof PhusionPassenger !== "undefined") {
+  app.listen("passenger", () => {
+    console.log(`Server running on https://api.whynot.mamath.fr:${port}`);
+    console.log(`tRPC endpoint: https://api.whynot.mamath.fr:${port}/trpc`);
+  });
+} else {
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+    console.log(`tRPC endpoint: http://localhost:${port}/trpc`);
+  });
+}
