@@ -1,8 +1,14 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
-import { db } from '../db';
+import { 
+  vendorPromotedProductRepository, 
+  productRepository, 
+  userShopRoleRepository,
+  channelProductRepository 
+} from '../repositories';
 import { TRPCError } from '@trpc/server';
 import type { Context } from '../types/context';
+import { db } from '../db';
 
 async function requireVendorAccess(ctx: Context, productId: number): Promise<void> {
   if (!ctx.user) {
@@ -12,27 +18,18 @@ async function requireVendorAccess(ctx: Context, productId: number): Promise<voi
     });
   }
 
-  const product = await db
-    .selectFrom('products')
-    .select(['shop_id'])
-    .where('id', '=', productId)
-    .executeTakeFirst();
+  const shopId = await productRepository.getShopId(productId);
 
-  if (!product) {
+  if (!shopId) {
     throw new TRPCError({
       code: 'NOT_FOUND',
       message: 'Product not found',
     });
   }
 
-  const role = await db
-    .selectFrom('user_shop_roles')
-    .select(['role'])
-    .where('user_id', '=', ctx.user.id)
-    .where('shop_id', '=', product.shop_id)
-    .executeTakeFirst();
+  const hasAccess = await userShopRoleRepository.hasShopAccess(ctx.user.id, shopId);
 
-  if (!role) {
+  if (!hasAccess) {
     throw new TRPCError({
       code: 'FORBIDDEN',
       message: 'You do not have access to this product',
@@ -51,54 +48,38 @@ export const vendorPromotionRouter = router({
     .mutation(async ({ ctx, input }) => {
       await requireVendorAccess(ctx, input.productId);
 
-      const association = await db
-        .selectFrom('channel_products')
-        .select(['id'])
-        .where('channel_id', '=', input.channelId)
-        .where('product_id', '=', input.productId)
-        .executeTakeFirst();
+      // Check if product is associated with channel
+      const isAssociated = await channelProductRepository.isAssociated(
+        input.channelId,
+        input.productId
+      );
 
-      if (!association) {
+      if (!isAssociated) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message: 'Product must be associated with the channel before promotion',
         });
       }
 
-      const existing = await db
-        .selectFrom('vendor_promoted_products')
-        .select(['id'])
-        .where('channel_id', '=', input.channelId)
-        .where('vendor_id', '=', ctx.user.id)
-        .where('product_id', '=', input.productId)
-        .where('unpromoted_at', 'is', null)
-        .executeTakeFirst();
+      // Check if already promoting
+      const alreadyPromoting = await vendorPromotedProductRepository.isPromoting(
+        input.channelId,
+        ctx.user.id,
+        input.productId
+      );
 
-      if (existing) {
+      if (alreadyPromoting) {
         throw new TRPCError({
           code: 'CONFLICT',
           message: 'You are already promoting this product',
         });
       }
 
-      const promotion = await db
-        .insertInto('vendor_promoted_products')
-        .values({
-          channel_id: input.channelId,
-          vendor_id: ctx.user.id,
-          product_id: input.productId,
-          promoted_at: new Date(),
-          unpromoted_at: null,
-        })
-        .returning([
-          'id',
-          'channel_id',
-          'vendor_id',
-          'product_id',
-          'promoted_at',
-          'unpromoted_at',
-        ])
-        .executeTakeFirstOrThrow();
+      const promotion = await vendorPromotedProductRepository.promote(
+        input.channelId,
+        ctx.user.id,
+        input.productId
+      );
 
       return promotion;
     }),
@@ -113,42 +94,33 @@ export const vendorPromotionRouter = router({
     .mutation(async ({ ctx, input }) => {
       await requireVendorAccess(ctx, input.productId);
 
-      const promotion = await db
-        .selectFrom('vendor_promoted_products')
-        .select(['id'])
-        .where('channel_id', '=', input.channelId)
-        .where('vendor_id', '=', ctx.user.id)
-        .where('product_id', '=', input.productId)
-        .where('unpromoted_at', 'is', null)
-        .executeTakeFirst();
+      const isPromoting = await vendorPromotedProductRepository.isPromoting(
+        input.channelId,
+        ctx.user.id,
+        input.productId
+      );
 
-      if (!promotion) {
+      if (!isPromoting) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Active promotion not found',
         });
       }
 
-      const updated = await db
-        .updateTable('vendor_promoted_products')
-        .set({ unpromoted_at: new Date() })
-        .where('id', '=', promotion.id)
-        .returning([
-          'id',
-          'channel_id',
-          'vendor_id',
-          'product_id',
-          'promoted_at',
-          'unpromoted_at',
-        ])
-        .executeTakeFirstOrThrow();
+      await vendorPromotedProductRepository.unpromote(
+        input.channelId,
+        ctx.user.id,
+        input.productId
+      );
 
-      return updated;
+      return { success: true };
     }),
 
   listActive: protectedProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ ctx, input }) => {
+      // Note: Complex query with multiple joins, keeping direct db access
+      // Could be refactored if needed
       const promotions = await db
         .selectFrom('vendor_promoted_products')
         .innerJoin('products', 'products.id', 'vendor_promoted_products.product_id')
@@ -184,6 +156,7 @@ export const vendorPromotionRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      // Note: Complex query with joins, keeping direct db access
       const promotions = await db
         .selectFrom('vendor_promoted_products')
         .innerJoin('products', 'products.id', 'vendor_promoted_products.product_id')
@@ -208,6 +181,7 @@ export const vendorPromotionRouter = router({
   myActivePromotions: protectedProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ ctx, input }) => {
+      // Note: Complex query with joins, keeping direct db access
       const promotions = await db
         .selectFrom('vendor_promoted_products')
         .innerJoin('products', 'products.id', 'vendor_promoted_products.product_id')
@@ -233,6 +207,7 @@ export const vendorPromotionRouter = router({
   availableProducts: protectedProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ ctx, input }) => {
+      // Note: Very complex query with subquery and joins, keeping direct db access
       const userShops = await db
         .selectFrom('user_shop_roles')
         .select(['shop_id'])

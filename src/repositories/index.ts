@@ -19,3 +19,4 @@ export { productRepository } from './ProductRepository';
 export { channelProductRepository } from './ChannelProductRepository';
 export { channelRepository } from './ChannelRepository';
 export { channelParticipantRepository } from './ChannelParticipantRepository';
+export { vendorPromotedProductRepository } from './VendorPromotedProductRepository';
