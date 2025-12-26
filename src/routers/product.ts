@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from '../trpc';
-import { db } from '../db';
+import { productRepository, channelProductRepository, userShopRoleRepository } from '../repositories';
 import { TRPCError } from '@trpc/server';
 import type { Context } from '../types/context';
 import { mapProductToProductOutboundDto, mapProductWithShopToProductWithShopOutboundDto, mapCreateProductInboundDtoToProduct, mapUpdateProductInboundDtoToProduct } from '../mappers';
@@ -13,14 +13,9 @@ async function requireProductAccess(ctx: Context, shopId: number): Promise<void>
     });
   }
 
-  const role = await db
-    .selectFrom('user_shop_roles')
-    .select(['role'])
-    .where('user_id', '=', ctx.user.id)
-    .where('shop_id', '=', shopId)
-    .executeTakeFirst();
+  const hasAccess = await userShopRoleRepository.hasShopAccess(ctx.user.id, shopId);
 
-  if (!role) {
+  if (!hasAccess) {
     throw new TRPCError({
       code: 'FORBIDDEN',
       message: 'You do not have access to this shop',
@@ -50,20 +45,7 @@ export const productRouter = router({
         imageUrl: input.imageUrl ?? null,
       });
 
-      const product = await db
-        .insertInto('products')
-        .values({
-          shop_id: productData.shop_id,
-          name: productData.name,
-          description: productData.description,
-          price: productData.price,
-          image_url: productData.image_url,
-          is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
-        })
-        .returningAll()
-        .executeTakeFirstOrThrow();
+      const product = await productRepository.save(productData);
 
       return mapProductToProductOutboundDto(product);
     }),
@@ -78,28 +60,18 @@ export const productRouter = router({
     .query(async ({ ctx, input }) => {
       await requireProductAccess(ctx, input.shopId);
 
-      let query = db
-        .selectFrom('products')
-        .selectAll()
-        .where('shop_id', '=', input.shopId)
-        .orderBy('created_at', 'desc');
-
-      if (input.activeOnly) {
-        query = query.where('is_active', '=', true);
-      }
-
-      const products = await query.execute();
+      const products = await productRepository.findByShopId(
+        input.shopId,
+        input.activeOnly
+      );
+      
       return products.map(mapProductToProductOutboundDto);
     }),
 
   get: protectedProcedure
     .input(z.object({ productId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const product = await db
-        .selectFrom('products')
-        .selectAll()
-        .where('id', '=', input.productId)
-        .executeTakeFirst();
+      const product = await productRepository.findById(input.productId);
 
       if (!product) {
         throw new TRPCError({
@@ -124,20 +96,16 @@ export const productRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const existing = await db
-        .selectFrom('products')
-        .select(['shop_id'])
-        .where('id', '=', input.productId)
-        .executeTakeFirst();
+      const shopId = await productRepository.getShopId(input.productId);
 
-      if (!existing) {
+      if (!shopId) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Product not found',
         });
       }
 
-      await requireProductAccess(ctx, existing.shop_id);
+      await requireProductAccess(ctx, shopId);
 
       const updateData = mapUpdateProductInboundDtoToProduct({
         name: input.name,
@@ -147,15 +115,14 @@ export const productRouter = router({
         isActive: input.isActive,
       });
 
-      const product = await db
-        .updateTable('products')
-        .set({
-          ...updateData,
-          updated_at: new Date(),
-        })
-        .where('id', '=', input.productId)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+      const product = await productRepository.updateById(input.productId, updateData);
+
+      if (!product) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Product not found',
+        });
+      }
 
       return mapProductToProductOutboundDto(product);
     }),
@@ -163,25 +130,18 @@ export const productRouter = router({
   delete: protectedProcedure
     .input(z.object({ productId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await db
-        .selectFrom('products')
-        .select(['shop_id'])
-        .where('id', '=', input.productId)
-        .executeTakeFirst();
+      const shopId = await productRepository.getShopId(input.productId);
 
-      if (!existing) {
+      if (!shopId) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Product not found',
         });
       }
 
-      await requireProductAccess(ctx, existing.shop_id);
+      await requireProductAccess(ctx, shopId);
 
-      await db
-        .deleteFrom('products')
-        .where('id', '=', input.productId)
-        .execute();
+      await productRepository.deleteById(input.productId);
 
       return { success: true };
     }),
@@ -194,57 +154,33 @@ export const productRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const product = await db
-        .selectFrom('products')
-        .select(['shop_id'])
-        .where('id', '=', input.productId)
-        .executeTakeFirst();
+      const shopId = await productRepository.getShopId(input.productId);
 
-      if (!product) {
+      if (!shopId) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Product not found',
         });
       }
 
-      await requireProductAccess(ctx, product.shop_id);
+      await requireProductAccess(ctx, shopId);
 
-      const channel = await db
-        .selectFrom('channels')
-        .select(['id'])
-        .where('id', '=', input.channelId)
-        .executeTakeFirst();
+      const alreadyAssociated = await channelProductRepository.isAssociated(
+        input.channelId,
+        input.productId
+      );
 
-      if (!channel) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
-        });
-      }
-
-      const existing = await db
-        .selectFrom('channel_products')
-        .select(['id'])
-        .where('channel_id', '=', input.channelId)
-        .where('product_id', '=', input.productId)
-        .executeTakeFirst();
-
-      if (existing) {
+      if (alreadyAssociated) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Product already associated with this channel',
+          message: 'Product is already associated with this channel',
         });
       }
 
-      const association = await db
-        .insertInto('channel_products')
-        .values({
-          channel_id: input.channelId,
-          product_id: input.productId,
-          created_at: new Date(),
-        })
-        .returning(['id', 'channel_id', 'product_id', 'created_at'])
-        .executeTakeFirstOrThrow();
+      const association = await channelProductRepository.associate(
+        input.channelId,
+        input.productId
+      );
 
       return association;
     }),
@@ -257,26 +193,18 @@ export const productRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const product = await db
-        .selectFrom('products')
-        .select(['shop_id'])
-        .where('id', '=', input.productId)
-        .executeTakeFirst();
+      const shopId = await productRepository.getShopId(input.productId);
 
-      if (!product) {
+      if (!shopId) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Product not found',
         });
       }
 
-      await requireProductAccess(ctx, product.shop_id);
+      await requireProductAccess(ctx, shopId);
 
-      await db
-        .deleteFrom('channel_products')
-        .where('channel_id', '=', input.channelId)
-        .where('product_id', '=', input.productId)
-        .execute();
+      await channelProductRepository.remove(input.channelId, input.productId);
 
       return { success: true };
     }),
@@ -284,58 +212,8 @@ export const productRouter = router({
   listByChannel: protectedProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const products = await db
-        .selectFrom('channel_products')
-        .innerJoin('products', 'products.id', 'channel_products.product_id')
-        .innerJoin('shops', 'shops.id', 'products.shop_id')
-        .select([
-          'products.id',
-          'products.shop_id',
-          'products.name',
-          'products.description',
-          'products.price',
-          'products.image_url',
-          'products.is_active',
-          'products.created_at',
-          'products.updated_at',
-          'shops.name as shop_name',
-        ])
-        .where('channel_products.channel_id', '=', input.channelId)
-        .where('products.is_active', '=', true)
-        .orderBy('products.created_at', 'desc')
-        .execute();
-
-      return products.map(p => mapProductWithShopToProductWithShopOutboundDto(
-        {
-          id: p.id,
-          shop_id: p.shop_id,
-          name: p.name,
-          description: p.description,
-          price: p.price,
-          image_url: p.image_url,
-          is_active: p.is_active,
-          created_at: p.created_at,
-          updated_at: p.updated_at,
-        },
-        p.shop_name
-      ));
-    }),
-
-  listChannelAssociations: protectedProcedure
-    .input(z.object({ productId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const associations = await db
-        .selectFrom('channel_products')
-        .innerJoin('channels', 'channels.id', 'channel_products.channel_id')
-        .select([
-          'channel_products.channel_id as channelId',
-          'channel_products.created_at as createdAt',
-          'channels.name as channelName',
-        ])
-        .where('channel_products.product_id', '=', input.productId)
-        .orderBy('channel_products.created_at', 'desc')
-        .execute();
-
-      return associations;
+      const products = await productRepository.findByChannelId(input.channelId);
+      return products.map(mapProductToProductOutboundDto);
     }),
 });
+

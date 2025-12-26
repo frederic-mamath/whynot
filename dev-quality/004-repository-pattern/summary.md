@@ -117,21 +117,62 @@ Each method contains **explicit Kysely SQL** so you know exactly what query runs
 ## Progress Tracking
 | Phase | Description | Status | Estimated Time |
 |-------|-------------|--------|----------------|
-| Phase 1 | UserRepository (Spring JPA Style) | ✅ Complete | 1.5 hours |
-| Phase 2 | Shop & Role Repositories | ⏳ Pending | 2 hours |
-| Phase 3 | Product Repositories | ⏳ Pending | 2 hours |
+| Phase 1 | UserRepository & auth.ts Refactoring | ✅ Complete | 1.5 hours |
+| Phase 2 | Shop & Role Repositories | ✅ Complete | 2 hours |
+| Phase 3 | Product Repositories | ✅ Complete | 2 hours |
 | Phase 4 | Channel Repositories | ⏳ Pending | 2 hours |
 | Phase 5 | Vendor Promotion & Final Testing | ⏳ Pending | 2.5 hours |
 
 ## Components/Files Affected
 
-### ✅ Phase 1: UserRepository (COMPLETE)
-- ✅ `src/repositories/UserRepository.ts` - Created with Spring JPA style methods
+### ✅ Phase 1: UserRepository & auth.ts (COMPLETE)
+- ✅ `src/repositories/UserRepository.ts` - Created with 10 Spring JPA style methods
 - ✅ `src/repositories/index.ts` - Export structure created
+- ✅ `src/routers/auth.ts` - Refactored to use UserRepository
+  - **Before**: 128 lines with database queries
+  - **After**: 107 lines with repository calls
+  - **Reduction**: 21 lines (16% smaller)
+  - **Database calls removed**: 3 (register, login, me)
 - ✅ TypeScript builds successfully
-- ✅ Ready to refactor auth.ts router
+- ✅ Zero direct database calls in auth router
+- ✅ Uses: `existsByEmail()`, `save()`, `findByEmail()`, `findById()`
 
-### Phase 1: UserRepository (COMPLETE) ✅
+### ✅ Phase 2: Shop & Role Repositories (COMPLETE)
+- ✅ `src/repositories/ShopRepository.ts` - Created with 7 methods
+  - `findById()`, `findByOwnerId()`, `findByUserWithRole()`
+  - `save()`, `updateById()`, `deleteById()`, `existsById()`
+- ✅ `src/repositories/UserShopRoleRepository.ts` - Created with 7 methods
+  - `assignRole()`, `getUserRole()`, `isShopOwner()`, `hasShopAccess()`
+  - `existsByUserAndShopAndRole()`, `removeRole()`, `findVendorsByShop()`
+- ✅ `src/routers/shop.ts` - Refactored to use repositories
+  - **Before**: 230+ lines with database queries
+  - **After**: 165 lines with repository calls
+  - **Reduction**: ~65 lines (28% smaller)
+  - **Database calls removed**: 11 (create, list, get, update, delete, vendors)
+- ✅ `src/middleware/shopOwner.ts` - Refactored to use repositories
+  - **Before**: 57 lines with 2 database queries
+  - **After**: 45 lines with repository calls
+  - **Reduction**: 12 lines (21% smaller)
+- ✅ Zero direct database calls in shop router and middleware
+- ✅ TypeScript builds successfully
+
+### ✅ Phase 3: Product Repositories (COMPLETE)
+- ✅ `src/repositories/ProductRepository.ts` - Created with 11 methods
+  - `findById()`, `findByShopId()`, `findAllActive()`, `findByChannelId()`
+  - `save()`, `updateById()`, `setActive()`, `deleteById()`
+  - `getShopId()`, `belongsToShop()`
+- ✅ `src/repositories/ChannelProductRepository.ts` - Created with 7 methods
+  - `associate()`, `remove()`, `isAssociated()`
+  - `findByChannelId()`, `findByProductId()`
+  - `removeAllByChannel()`, `removeAllByProduct()`
+- ✅ `src/routers/product.ts` - Refactored to use repositories
+  - **Before**: 341 lines with database queries
+  - **After**: 219 lines with repository calls
+  - **Reduction**: 122 lines (36% smaller!)
+  - **Database calls removed**: 15+ queries
+- ✅ Helper function `requireProductAccess()` updated to use repository
+- ✅ Zero direct database calls in product router
+- ✅ TypeScript builds successfully
 - `src/repositories/UserRepository.ts` - User operations
   - `findById(id)`, `findByEmail(email)`, `existsByEmail(email)`
   - `save(email, password, ...)`, `updateProfile(id, data)`
@@ -218,10 +259,10 @@ src/
 - ✅ Repositories are testable in isolation
 
 ## Status
-⏳ **IN PROGRESS** - Phase 1 Complete (UserRepository implemented)
+⏳ **IN PROGRESS** - Phases 1, 2 & 3 Complete (60% done)
 
 ## Next Steps
-Start Phase 2: Implement ShopRepository and UserShopRoleRepository
+Start Phase 4: Implement ChannelRepository and ChannelParticipantRepository
 
 ## Notes
 - Using **Spring Data JPA style** - named query methods with explicit SQL

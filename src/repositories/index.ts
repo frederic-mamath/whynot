@@ -15,7 +15,8 @@
 export { userRepository } from './UserRepository';
 export { shopRepository } from './ShopRepository';
 export { userShopRoleRepository } from './UserShopRoleRepository';
+export { productRepository } from './ProductRepository';
+export { channelProductRepository } from './ChannelProductRepository';
 
 // More repositories will be added in later phases:
-// export { productRepository } from './ProductRepository';
 // export { channelRepository } from './ChannelRepository';
