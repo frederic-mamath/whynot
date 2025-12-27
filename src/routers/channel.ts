@@ -1,6 +1,6 @@
 import { router, publicProcedure } from '../trpc';
 import { z } from 'zod';
-import { channelRepository, channelParticipantRepository } from '../repositories';
+import { channelRepository, channelParticipantRepository, shopRepository } from '../repositories';
 import { TRPCError } from '@trpc/server';
 import { generateAgoraToken, getAgoraAppId } from '../utils/agora';
 import { sql } from 'kysely';
@@ -24,6 +24,15 @@ export const channelRouter = router({
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to create a channel',
+        });
+      }
+
+      // Check if user has at least one shop
+      const userShops = await shopRepository.findByOwnerId(ctx.userId);
+      if (userShops.length === 0) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You must have at least one shop to create a channel',
         });
       }
 

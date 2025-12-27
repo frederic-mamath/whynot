@@ -19,7 +19,7 @@ Replace shop-specific role system with platform-level roles (BUYER, SELLER) and 
 | Phase 2 | Create repositories for roles and user_roles | ✅ |
 | Phase 3 | Create role router and endpoints | ✅ |
 | Phase 4 | Add role check to channel creation | ⏳ |
-| Phase 5 | Add "Become a Seller" button to navbar | ⏳ |
+| Phase 5 | Add "Become a Seller" button to navbar | ✅ |
 | Phase 6 | Seed default BUYER role for existing users | ✅ |
 
 ## Components/Files Affected
@@ -145,4 +145,4 @@ AND ur.role_id = (SELECT id FROM roles WHERE name = 'SELLER');
 ## Status
 Current overall status: 🟡 IN PROGRESS
 
-**Next Action**: Begin Phase 4 - Add SELLER role check to channel creation
+**Next Action**: Begin Phase 4 - Add SELLER role check to channel creation (if not completed) or feature is complete

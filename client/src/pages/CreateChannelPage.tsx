@@ -1,6 +1,6 @@
 import { useState, FormEvent, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Video, Lock, Users, ArrowLeft } from "lucide-react";
+import { Plus, Video, Lock, Users, ArrowLeft, Store } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
 import Button from "../components/ui/Button";
@@ -77,7 +77,15 @@ export default function CreateChannelPage() {
           <CardContent>
             {error && (
               <div className="mb-4 p-3 rounded-md bg-destructive/10 border border-destructive text-destructive text-sm">
-                {error}
+                <p>{error}</p>
+                {error.includes("shop") && (
+                  <p className="mt-2">
+                    <Link to="/shops" className="underline font-medium">
+                      Create a shop first
+                    </Link>{" "}
+                    to start creating channels.
+                  </p>
+                )}
               </div>
             )}
 

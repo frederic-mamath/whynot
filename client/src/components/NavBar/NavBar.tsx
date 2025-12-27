@@ -10,6 +10,7 @@ import {
   Menu,
   Store,
   X,
+  BadgeCheck,
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
@@ -22,6 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import { toast } from "sonner";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -31,6 +33,40 @@ export default function NavBar() {
   const { data: user } = trpc.auth.me.useQuery(undefined, {
     enabled: authenticated,
   });
+
+  const { data: userRoles } = trpc.role.myRoles.useQuery(undefined, {
+    enabled: authenticated,
+  });
+
+  const utils = trpc.useUtils();
+
+  const requestSellerRole = trpc.role.requestSellerRole.useMutation({
+    onSuccess: (data) => {
+      toast.success("Request Submitted", {
+        description: data.message,
+      });
+      utils.role.myRoles.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Request Failed", {
+        description: error.message,
+      });
+    },
+  });
+
+  const isSeller = userRoles?.roles.includes('SELLER') ?? false;
+
+  const hasPendingRequest = userRoles?.details.some(
+    (role) => role.role_name === 'SELLER' && role.activated_at === null
+  ) ?? false;
+
+  const handleRequestSellerRole = async () => {
+    try {
+      await requestSellerRole.mutateAsync();
+    } catch (error) {
+      // Error handled by onError callback
+    }
+  };
 
   const handleLogout = () => {
     removeToken();
@@ -72,12 +108,26 @@ export default function NavBar() {
                   </Link>
                 </Button>
 
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/shops">
-                    <Store className="size-4 mr-2" />
-                    Shops
-                  </Link>
-                </Button>
+                {isSeller && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/shops">
+                      <Store className="size-4 mr-2" />
+                      Shops
+                    </Link>
+                  </Button>
+                )}
+
+                {!isSeller && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRequestSellerRole}
+                    disabled={hasPendingRequest || requestSellerRole.isPending}
+                  >
+                    <BadgeCheck className="size-4 mr-2" />
+                    {hasPendingRequest ? 'Pending' : 'Become a Seller'}
+                  </Button>
+                )}
 
                 <Button variant="default" size="sm" asChild>
                   <Link to="/create-channel">
@@ -173,12 +223,29 @@ export default function NavBar() {
                         </Link>
                       </Button>
 
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/shops" onClick={closeSheet}>
-                          <Store className="size-4 mr-2" />
-                          Shops
-                        </Link>
-                      </Button>
+                      {isSeller && (
+                        <Button variant="ghost" className="justify-start" asChild>
+                          <Link to="/shops" onClick={closeSheet}>
+                            <Store className="size-4 mr-2" />
+                            Shops
+                          </Link>
+                        </Button>
+                      )}
+
+                      {!isSeller && (
+                        <Button
+                          variant="outline"
+                          className="justify-start"
+                          onClick={() => {
+                            handleRequestSellerRole();
+                            closeSheet();
+                          }}
+                          disabled={hasPendingRequest || requestSellerRole.isPending}
+                        >
+                          <BadgeCheck className="size-4 mr-2" />
+                          {hasPendingRequest ? 'Pending' : 'Become Seller'}
+                        </Button>
+                      )}
 
                       <Button
                         variant="default"

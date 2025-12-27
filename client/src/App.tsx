@@ -20,6 +20,8 @@ import ProductsPage from "./pages/ProductsPage";
 import CreateProductPage from "./pages/CreateProductPage";
 import EditProductPage from "./pages/EditProductPage";
 import ShopLayout from "./pages/ShopLayout";
+import { Toaster } from "./components/ui/sonner";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -52,9 +54,9 @@ function App() {
               <Route path="/channels" element={<ChannelsPage />} />
               <Route path="/create-channel" element={<CreateChannelPage />} />
               <Route path="/channel/:channelId" element={<ChannelPage />} />
-              <Route path="/shops" element={<ShopsPage />} />
-              <Route path="/shops/create" element={<CreateShopPage />} />
-              <Route path="/shops/:id" element={<ShopLayout />}>
+              <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
+              <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />
+              <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
                 <Route index element={<ShopDetailPage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/create" element={<CreateProductPage />} />
@@ -64,6 +66,7 @@ function App() {
                 />
               </Route>
             </Routes>
+            <Toaster />
           </BrowserRouter>
         </QueryClientProvider>
       </trpc.Provider>

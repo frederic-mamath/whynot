@@ -273,4 +273,19 @@ Following STYLING.md conventions:
 - Use design tokens (`bg-primary`, `text-foreground`, etc.)
 
 ## Status
-⏳ NOT STARTED
+✅ COMPLETED
+
+## Implementation Notes
+- Added BadgeCheck icon import from lucide-react
+- Added useToast hook import
+- Added userRoles query using trpc.role.myRoles
+- Added requestSellerRole mutation with success/error handling
+- Added helper functions: isSeller and hasPendingRequest
+- Added handleRequestSellerRole function
+- Added "Become a Seller" button to desktop navigation (between Shops and Create)
+- Added "Become Seller" button to mobile Sheet menu (same position)
+- Button shows only for non-sellers (buyers)
+- Button shows "Pending" state when request exists but not activated
+- Button disabled during mutation and when pending
+- Toast notifications for success and error states
+- Query invalidation on success to update UI state
