@@ -2,12 +2,61 @@
 
 ## Design System
 
-**Shadcn UI** + **Tailwind CSS** + **Lucide Icons**
+**Shadcn UI** + **Tailwind CSS** + **Lucide Icons** + **Dark Mode**
 
 - Always use Shadcn components from `client/src/components/ui/`
 - If component doesn't exist, check [Shadcn docs](https://ui.shadcn.com/)
 - All styling via Tailwind CSS utilities (no CSS modules)
 - Icons from [Lucide React](https://lucide.dev/)
+- Dark mode powered by `next-themes`
+
+## Dark Mode
+
+### Theme Provider
+The app uses `ThemeProvider` from `client/src/components/ThemeProvider` to manage theme state.
+
+```tsx
+import { ThemeProvider } from "./components/ThemeProvider";
+
+<ThemeProvider defaultTheme="system" storageKey="whynot-ui-theme">
+  {/* Your app */}
+</ThemeProvider>
+```
+
+### Using Theme in Components
+```tsx
+import { useTheme } from "../components/ThemeProvider";
+
+function MyComponent() {
+  const { theme, setTheme } = useTheme();
+  
+  return (
+    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+      Toggle theme
+    </button>
+  );
+}
+```
+
+### Theme Toggle Component
+Use the `ThemeToggle` component for a pre-built theme switcher:
+```tsx
+import ThemeToggle from "../components/ui/ThemeToggle";
+
+<ThemeToggle />
+```
+
+Cycles through: Light → Dark → System → Light
+
+### Dark Mode Classes
+Tailwind automatically applies dark mode classes when `.dark` is on the root element:
+```tsx
+<div className="bg-white dark:bg-gray-900 text-black dark:text-white">
+  Automatically adapts to theme
+</div>
+```
+
+However, prefer using **design tokens** (e.g., `bg-background`, `text-foreground`) which automatically adapt to the current theme.
 
 ## Approach
 

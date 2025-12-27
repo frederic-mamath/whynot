@@ -22,6 +22,7 @@ import EditProductPage from "./pages/EditProductPage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -42,34 +43,36 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            <NavBar />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/channels" element={<ChannelsPage />} />
-              <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><CreateChannelPage /></ProtectedRoute>} />
-              <Route path="/channel/:channelId" element={<ChannelPage />} />
-              <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
-              <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />
-              <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
-                <Route index element={<ShopDetailPage />} />
-                <Route path="products" element={<ProductsPage />} />
-                <Route path="products/create" element={<CreateProductPage />} />
-                <Route
-                  path="products/:productId/edit"
-                  element={<EditProductPage />}
-                />
-              </Route>
-            </Routes>
-            <Toaster />
-          </BrowserRouter>
-        </QueryClientProvider>
-      </trpc.Provider>
+      <ThemeProvider defaultTheme="system" storageKey="whynot-ui-theme">
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+              <NavBar />
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/channels" element={<ChannelsPage />} />
+                <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><CreateChannelPage /></ProtectedRoute>} />
+                <Route path="/channel/:channelId" element={<ChannelPage />} />
+                <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
+                <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />
+                <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
+                  <Route index element={<ShopDetailPage />} />
+                  <Route path="products" element={<ProductsPage />} />
+                  <Route path="products/create" element={<CreateProductPage />} />
+                  <Route
+                    path="products/:productId/edit"
+                    element={<EditProductPage />}
+                  />
+                </Route>
+              </Routes>
+              <Toaster />
+            </BrowserRouter>
+          </QueryClientProvider>
+        </trpc.Provider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

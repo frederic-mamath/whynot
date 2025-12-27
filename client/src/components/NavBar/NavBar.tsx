@@ -24,6 +24,7 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { toast } from "sonner";
+import ThemeToggle from "../ui/ThemeToggle";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ export default function NavBar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             {authenticated ? (
               <>
                 <Button variant="ghost" size="sm" asChild>
@@ -195,6 +197,9 @@ export default function NavBar() {
                 </SheetClose>
               </SheetHeader>
               <div className="flex flex-col h-full pt-6">
+                <div className="flex items-center justify-end mb-4">
+                  <ThemeToggle />
+                </div>
                 {authenticated ? (
                   <>
                     {user && (
