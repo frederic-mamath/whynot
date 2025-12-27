@@ -19,10 +19,10 @@ Replace the current `user_shop_roles` table with a proper RBAC system using `rol
 ## Progress Tracking
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Database Schema Migration | 📝 PLANNING |
-| Phase 2 | Backend Repository & Logic | 📝 PLANNING |
-| Phase 3 | Middleware & Access Control | 📝 PLANNING |
-| Phase 4 | Frontend UI & Integration | 📝 PLANNING |
+| Phase 1 | Database Schema Migration | 🚀 READY |
+| Phase 2 | Backend Repository & Service | 📝 PLANNING |
+| Phase 3 | Frontend UI & Integration | 📝 PLANNING |
+| Phase 4 | Testing & Documentation | 📝 PLANNING |
 
 ## Database Schema Changes
 
@@ -41,10 +41,11 @@ None yet
 ### ⏳ Remaining
 
 #### Database
-- `migrations/008_create_roles_table.ts`
-- `migrations/009_create_user_roles_table.ts`
-- `migrations/010_migrate_user_shop_roles_to_rbac.ts`
-- `migrations/011_drop_user_shop_roles.ts`
+- `migrations/XXX_create_roles_table.ts`
+- `migrations/XXX_create_user_roles_table.ts`
+- `migrations/XXX_seed_default_roles.ts`
+- `migrations/XXX_assign_buyer_role_to_users.ts`
+- `migrations/XXX_drop_user_shop_roles.ts`
 
 #### Backend (@features/roles)
 - `features/roles/repository/role.repository.ts`
@@ -73,4 +74,9 @@ None yet
 - [ ] Type-safe role checking throughout application
 
 ## Status
-📝 **PLANNING** - Ready to begin implementation
+🚀 **READY TO START** - Phase 1 ready for implementation
+
+## Notes
+- No docker-compose changes needed (using .env for DB connection)
+- Migrations will auto-number when created
+- Admin role activation done directly in database for now
