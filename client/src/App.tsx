@@ -52,7 +52,7 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/channels" element={<ChannelsPage />} />
-              <Route path="/create-channel" element={<CreateChannelPage />} />
+              <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><CreateChannelPage /></ProtectedRoute>} />
               <Route path="/channel/:channelId" element={<ChannelPage />} />
               <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
               <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />

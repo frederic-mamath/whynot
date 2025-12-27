@@ -22,11 +22,19 @@ export default function CreateChannelPage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [error, setError] = useState("");
 
+  const { data: userShops, isLoading: isLoadingShops } = trpc.shop.list.useQuery();
+
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate("/login");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!isLoadingShops && userShops && userShops.length === 0) {
+      setError("You must have at least one shop to create a channel");
+    }
+  }, [userShops, isLoadingShops]);
 
   const createMutation = trpc.channel.create.useMutation({
     onSuccess: (data) => {
@@ -40,6 +48,11 @@ export default function CreateChannelPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!userShops || userShops.length === 0) {
+      setError("You must have at least one shop to create a channel");
+      return;
+    }
 
     if (name.length < 3) {
       setError("Channel name must be at least 3 characters");
@@ -147,7 +160,7 @@ export default function CreateChannelPage() {
 
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={createMutation.isPending || !userShops || userShops.length === 0}
                 className="w-full"
               >
                 <Plus className="size-4 mr-2" />

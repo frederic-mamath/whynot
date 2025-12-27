@@ -1,15 +1,20 @@
 import { trpc } from '../lib/trpc';
 import { useNavigate, Link } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Video, Users, Lock, Plus } from 'lucide-react';
+import { Video, Users, Lock, Plus, Store } from 'lucide-react';
 import { isAuthenticated } from '../lib/auth';
 import Button from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/Card';
 import { Skeleton } from '../components/ui/skeleton';
+import { Alert, AlertDescription } from '../components/ui/alert';
 
 export default function ChannelsPage() {
   const navigate = useNavigate();
   const { data: channels, isLoading } = trpc.channel.list.useQuery();
+  const { data: userRoles, isLoading: isLoadingRoles } = trpc.role.myRoles.useQuery();
+  const { data: userShops, isLoading: isLoadingShops } = trpc.shop.list.useQuery(undefined, {
+    enabled: userRoles?.roles.includes('SELLER'),
+  });
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -17,7 +22,11 @@ export default function ChannelsPage() {
     }
   }, [navigate]);
 
-  if (isLoading) {
+  const isSeller = userRoles?.roles.includes('SELLER');
+  const hasShop = (userShops?.length ?? 0) > 0;
+  const canCreateChannel = isSeller && hasShop;
+
+  if (isLoading || isLoadingRoles) {
     return (
       <div className="min-h-screen bg-background p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
@@ -53,27 +62,48 @@ export default function ChannelsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Live Channels</h1>
-          <Button asChild>
-            <Link to="/create-channel">
-              <Plus className="size-4 mr-2" />
-              Create Channel
-            </Link>
-          </Button>
-        </div>
-
-        {channels?.length === 0 ? (
-          <div className="text-center py-12">
-            <Video className="size-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No active channels</h3>
-            <p className="text-muted-foreground mb-4">
-              Be the first to create a live channel!
-            </p>
+          {canCreateChannel ? (
             <Button asChild>
               <Link to="/create-channel">
                 <Plus className="size-4 mr-2" />
                 Create Channel
               </Link>
             </Button>
+          ) : (
+            <Alert className="max-w-md">
+              <Store className="size-4" />
+              <AlertDescription>
+                {!isSeller
+                  ? 'Only sellers can create channels. Request seller access from the menu.'
+                  : 'You need at least one shop to create a channel.'}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        {channels?.length === 0 ? (
+          <div className="text-center py-12">
+            <Video className="size-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No active channels</h3>
+            {canCreateChannel ? (
+              <>
+                <p className="text-muted-foreground mb-4">
+                  Be the first to create a live channel!
+                </p>
+                <Button asChild>
+                  <Link to="/create-channel">
+                    <Plus className="size-4 mr-2" />
+                    Create Channel
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <p className="text-muted-foreground">
+                {!isSeller
+                  ? 'Only sellers with shops can create channels.'
+                  : 'You need at least one shop to create a channel.'}
+              </p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
