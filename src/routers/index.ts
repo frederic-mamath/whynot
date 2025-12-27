@@ -4,6 +4,7 @@ import { channelRouter } from './channel';
 import { shopRouter } from './shop';
 import { productRouter } from './product';
 import { vendorPromotionRouter } from './vendorPromotion';
+import { roleRouter } from './role';
 
 export const appRouter = router({
   auth: authRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   shop: shopRouter,
   product: productRouter,
   vendorPromotion: vendorPromotionRouter,
+  role: roleRouter,
 });
 
 export type AppRouter = typeof appRouter;

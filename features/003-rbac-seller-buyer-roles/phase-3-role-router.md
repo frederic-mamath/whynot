@@ -255,4 +255,14 @@ const hasSeller2 = await trpc.role.hasRole.query({ roleName: 'SELLER' });
 ```
 
 ## Status
-⏳ NOT STARTED
+✅ COMPLETED
+
+### Implementation Notes
+- Created `src/routers/role.ts` with 3 endpoints:
+  - `requestSellerRole` - Creates pending user_role entry
+  - `myRoles` - Returns user's active roles
+  - `hasRole` - Checks if user has specific role
+- Exported role router in `src/routers/index.ts`
+- All endpoints use repository pattern (no direct DB access)
+- Proper error handling with TRPCError codes
+- Build successful with no TypeScript errors

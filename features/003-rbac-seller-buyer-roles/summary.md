@@ -17,7 +17,7 @@ Replace shop-specific role system with platform-level roles (BUYER, SELLER) and 
 |-------|-------------|--------|
 | Phase 1 | Create roles and user_roles tables with migration | ✅ |
 | Phase 2 | Create repositories for roles and user_roles | ✅ |
-| Phase 3 | Create role router and endpoints | ⏳ |
+| Phase 3 | Create role router and endpoints | ✅ |
 | Phase 4 | Add role check to channel creation | ⏳ |
 | Phase 5 | Add "Become a Seller" button to navbar | ⏳ |
 | Phase 6 | Seed default BUYER role for existing users | ✅ |
@@ -31,9 +31,10 @@ Replace shop-specific role system with platform-level roles (BUYER, SELLER) and 
 - `src/repositories/RoleRepository.ts` - Role repository with @Query methods
 - `src/repositories/UserRoleRepository.ts` - UserRole repository with @Query methods
 - `src/repositories/index.ts` - Export new repositories
+- `src/routers/role.ts` - Role router with 3 endpoints (requestSellerRole, myRoles, hasRole)
+- `src/routers/index.ts` - Export role router in appRouter
 
 ### ⏳ Remaining
-- `src/routers/role.ts` - Role request endpoint
 - `src/routers/channel.ts` - Add SELLER role check
 - `client/src/components/NavBar/NavBar.tsx` - Add "Become a Seller" button
 
@@ -144,4 +145,4 @@ AND ur.role_id = (SELECT id FROM roles WHERE name = 'SELLER');
 ## Status
 Current overall status: 🟡 IN PROGRESS
 
-**Next Action**: Begin Phase 3 - Create role router and endpoints
+**Next Action**: Begin Phase 4 - Add SELLER role check to channel creation
