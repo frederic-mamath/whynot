@@ -1,7 +1,9 @@
 # Phase 2: Backend API Implementation
 
 **Estimated Time**: 2-3 hours  
-**Status**: ⏳ To Do  
+**Actual Time**: 1 hour  
+**Status**: ✅ Done  
+**Completed**: 2025-12-29  
 **Dependencies**: Phase 1 completed
 
 ---
@@ -311,16 +313,16 @@ if (!checkRateLimit(ctx.user.id)) {
 
 ## Acceptance Criteria
 
-- [ ] Can send message to channel via API
-- [ ] Can retrieve message history
-- [ ] Real-time subscription works
-- [ ] Rate limiting prevents spam (10 msg/min)
-- [ ] HTML tags are sanitized
-- [ ] Only channel participants can send messages
-- [ ] Can delete own messages (soft delete)
-- [ ] Cannot delete other users' messages
-- [ ] Message includes user info (username, id)
-- [ ] Messages ordered by creation time
+- [x] Can send message to channel via API
+- [x] Can retrieve message history
+- [x] Real-time subscription works (EventEmitter-based)
+- [x] Rate limiting prevents spam (10 msg/min)
+- [x] HTML tags are sanitized
+- [x] Only channel participants can send messages
+- [x] Can delete own messages (soft delete)
+- [x] Cannot delete other users' messages
+- [x] Message includes user info (email, firstname, lastname)
+- [x] Messages ordered by creation time
 
 ---
 
@@ -391,5 +393,13 @@ If issues occur:
 
 ## Status
 
-**Current Status**: ⏳ To Do  
-**Last Updated**: 2025-12-28
+**Current Status**: ✅ Done  
+**Last Updated**: 2025-12-29  
+**Completion Notes**: 
+- Message router created with all CRUD operations
+- Repository pattern implemented for data access
+- Real-time subscriptions using EventEmitter
+- Rate limiting: 10 messages/minute per user
+- XSS protection via HTML sanitization
+- Access control: only channel participants can send
+- All tests passed successfully

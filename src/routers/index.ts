@@ -5,6 +5,7 @@ import { shopRouter } from './shop';
 import { productRouter } from './product';
 import { vendorPromotionRouter } from './vendorPromotion';
 import { roleRouter } from './role';
+import { messageRouter } from './message';
 
 export const appRouter = router({
   auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   product: productRouter,
   vendorPromotion: vendorPromotionRouter,
   role: roleRouter,
+  message: messageRouter,
 });
 
 export type AppRouter = typeof appRouter;

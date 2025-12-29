@@ -50,7 +50,7 @@ export interface MessagesTable {
   channel_id: number;
   user_id: number;
   content: string;
-  created_at: Date;
+  created_at: Generated<Date>;
   deleted_at: Date | null;
 }
 
