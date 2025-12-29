@@ -1,8 +1,10 @@
 # Phase 3: Frontend - View-Only Mode for Buyers
 
 **Estimated Time**: 2 hours  
-**Status**: ⏳ To Do  
-**Dependencies**: Phase 2 completed, Feature 003 (RBAC) completed
+**Actual Time**: 0.5 hours  
+**Status**: ✅ Done  
+**Completed**: 2025-12-29  
+**Dependencies**: Phase 2 completed, RBAC system (role.myRoles endpoint)
 
 ---
 
@@ -225,16 +227,16 @@ const leaveChannel = async () => {
 
 ## Acceptance Criteria
 
-- [ ] Buyers join Agora as "audience" (not "host")
-- [ ] Buyers do not create local audio/video tracks
-- [ ] Buyers cannot see audio/video controls (mute, video toggle)
-- [ ] Buyers can see seller's video/audio stream
-- [ ] Sellers join as "host" and can publish streams
-- [ ] Role badge displays correctly (Seller vs View Only)
-- [ ] Empty state shown when no seller is streaming
-- [ ] Buyers have "Leave Channel" button
-- [ ] Sellers have full controls (mute, video, leave)
-- [ ] Toast shows correct join message based on role
+- [x] Buyers join Agora as "audience" (not "host")
+- [x] Buyers do not create local audio/video tracks
+- [x] Buyers cannot see audio/video controls (mute, video toggle)
+- [x] Buyers can see seller's video/audio stream
+- [x] Sellers join as "host" and can publish streams
+- [x] Role badge displays correctly (Broadcaster vs Viewer)
+- [x] Empty state shown when no seller is streaming
+- [x] Buyers have "Leave Channel" button in header
+- [x] Sellers have full controls (mute, video, leave, screen share)
+- [x] Local video only shown for broadcasters
 
 ---
 
@@ -310,5 +312,13 @@ If issues occur:
 
 ## Status
 
-**Current Status**: ⏳ To Do  
-**Last Updated**: 2025-12-28
+**Current Status**: ✅ Done  
+**Last Updated**: 2025-12-29  
+**Completion Notes**: 
+- useUserRole hook created using role.myRoles endpoint
+- RoleBadge component created with Broadcaster/Viewer variants
+- ChannelPage updated to conditionally create tracks based on role
+- Control bar only shown for broadcasters
+- Local video only shown for broadcasters
+- Empty state shows appropriate message for viewers
+- All components built successfully

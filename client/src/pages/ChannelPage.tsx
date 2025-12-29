@@ -10,7 +10,8 @@ import {
   Users as UsersIcon,
   Wifi,
   WifiOff,
-  ArrowLeft
+  ArrowLeft,
+  Eye
 } from 'lucide-react';
 import AgoraRTC, {
   IAgoraRTCClient,
@@ -24,6 +25,8 @@ import ParticipantList from '../components/ParticipantList';
 import NetworkQuality from '../components/NetworkQuality';
 import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
+import { useUserRole } from '../hooks/useUserRole';
+import { RoleBadge } from '../components/RoleBadge';
 
 interface ChannelConfig {
   appId: string;
@@ -35,6 +38,7 @@ interface ChannelConfig {
 export default function ChannelPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
+  const { role, canPublish, isLoading: roleLoading } = useUserRole();
 
   // Agora state
   const [client, setClient] = useState<IAgoraRTCClient | null>(null);
@@ -199,33 +203,38 @@ export default function ChannelPage() {
         throw new Error('Failed to join channel after retries');
       }
 
-      // Create and publish local tracks
-      console.log('🎥 Creating local video and audio tracks...');
-      const videoTrack = await AgoraRTC.createCameraVideoTrack();
-      const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-      console.log('✅ Local tracks created');
+      // Only create and publish tracks for sellers (broadcasters)
+      if (canPublish) {
+        console.log('🎥 Creating local video and audio tracks (broadcaster mode)...');
+        const videoTrack = await AgoraRTC.createCameraVideoTrack();
+        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        console.log('✅ Local tracks created');
 
-      await agoraClient.publish([videoTrack, audioTrack]);
-      console.log('✅ Local tracks published');
+        await agoraClient.publish([videoTrack, audioTrack]);
+        console.log('✅ Local tracks published');
+
+        setLocalVideoTrack(videoTrack);
+        setLocalAudioTrack(audioTrack);
+        
+        // Wait for DOM to update, then play local video
+        setTimeout(() => {
+          const localPlayerElement = document.getElementById("local-player");
+          console.log('🎬 Playing local video to element:', localPlayerElement);
+          if (localPlayerElement) {
+            videoTrack.play("local-player");
+            console.log('✅ Local video playing');
+          } else {
+            console.error('❌ local-player element not found!');
+          }
+        }, 100);
+      } else {
+        console.log('👁️ Joined as viewer (audience mode) - not publishing tracks');
+      }
 
       setClient(agoraClient);
-      setLocalVideoTrack(videoTrack);
-      setLocalAudioTrack(audioTrack);
       setJoined(true);
       
-      console.log('Successfully joined the channel!');
-
-      // Wait for DOM to update, then play local video
-      setTimeout(() => {
-        const localPlayerElement = document.getElementById("local-player");
-        console.log('🎬 Playing local video to element:', localPlayerElement);
-        if (localPlayerElement) {
-          videoTrack.play("local-player");
-          console.log('✅ Local video playing');
-        } else {
-          console.error('❌ local-player element not found!');
-        }
-      }, 100);
+      console.log(`Successfully joined the channel as ${canPublish ? 'broadcaster' : 'viewer'}!`);
     } catch (err: any) {
       // Don't show error if it was a UID_CONFLICT that we handled
       if (err.code === 'UID_CONFLICT') {
@@ -419,7 +428,7 @@ export default function ChannelPage() {
     try {
       console.log('👋 Leaving channel...');
       
-      // Stop and close tracks first
+      // Stop and close tracks if they exist (only for broadcasters)
       if (localVideoTrack) {
         localVideoTrack.stop();
         localVideoTrack.close();
@@ -427,6 +436,10 @@ export default function ChannelPage() {
       if (localAudioTrack) {
         localAudioTrack.stop();
         localAudioTrack.close();
+      }
+      if (screenTrack) {
+        screenTrack.stop();
+        screenTrack.close();
       }
       
       // Leave Agora channel
@@ -439,6 +452,7 @@ export default function ChannelPage() {
       setClient(null);
       setLocalVideoTrack(null);
       setLocalAudioTrack(null);
+      setScreenTrack(null);
       setRemoteUsers(new Map());
       setJoined(false);
       
@@ -500,6 +514,7 @@ export default function ChannelPage() {
                 <Video className="size-4 sm:size-5 text-primary" />
                 <span className="hidden sm:inline">Live Channel</span>
               </h2>
+              <RoleBadge role={role} />
               <NetworkQuality client={client} />
             </div>
             <Button 
@@ -521,11 +536,23 @@ export default function ChannelPage() {
           {Array.from(remoteUsers.entries()).length === 0 ? (
             <div className="h-full flex items-center justify-center p-4">
               <div className="text-center space-y-3 sm:space-y-4">
-                <UsersIcon className="size-12 sm:size-16 mx-auto text-muted-foreground" />
-                <h3 className="text-base sm:text-lg font-semibold">Waiting for participants</h3>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Invite others to join this channel
-                </p>
+                {canPublish ? (
+                  <>
+                    <UsersIcon className="size-12 sm:size-16 mx-auto text-muted-foreground" />
+                    <h3 className="text-base sm:text-lg font-semibold">Waiting for participants</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Invite others to join this channel
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="size-12 sm:size-16 mx-auto text-muted-foreground" />
+                    <h3 className="text-base sm:text-lg font-semibold">Waiting for broadcaster</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      The stream will appear when the broadcaster starts
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           ) : (
@@ -549,55 +576,58 @@ export default function ChannelPage() {
         </div>
       </div>
 
-      {/* Local Video (Picture-in-Picture) */}
-      <div className="fixed bottom-20 sm:bottom-24 right-2 sm:right-6 w-32 sm:w-48 md:w-64 z-50">
-        <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg aspect-video">
-          <div id="local-player" className="w-full h-full"></div>
-          <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-background/80 backdrop-blur-sm rounded text-[10px] sm:text-xs font-medium">
-            You
+      {/* Local Video (Picture-in-Picture) - Only for Broadcasters */}
+      {canPublish && localVideoTrack && (
+        <div className="fixed bottom-20 sm:bottom-24 right-2 sm:right-6 w-32 sm:w-48 md:w-64 z-50">
+          <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg aspect-video">
+            <div id="local-player" className="w-full h-full"></div>
+            <div className="absolute bottom-1 sm:bottom-2 left-1 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-background/80 backdrop-blur-sm rounded text-[10px] sm:text-xs font-medium">
+              You
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Control Bar */}
-      <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 px-2 w-full sm:w-auto">
-        <div className="bg-card border border-border rounded-full shadow-lg px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-center gap-1 sm:gap-2 max-w-full overflow-x-auto">
-          <Button
-            variant={audioMuted ? "destructive" : "secondary"}
-            size="icon"
-            onClick={toggleAudio}
-            title={audioMuted ? "Unmute" : "Mute"}
-            className="shrink-0"
-          >
-            {audioMuted ? <MicOff className="size-4 sm:size-5" /> : <Mic className="size-4 sm:size-5" />}
-          </Button>
+      {/* Control Bar - Only for Broadcasters */}
+      {canPublish && (
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 px-2 w-full sm:w-auto">
+          <div className="bg-card border border-border rounded-full shadow-lg px-2 sm:px-4 py-2 sm:py-3 flex items-center justify-center gap-1 sm:gap-2 max-w-full overflow-x-auto">
+            <Button
+              variant={audioMuted ? "destructive" : "secondary"}
+              size="icon"
+              onClick={toggleAudio}
+              title={audioMuted ? "Unmute" : "Mute"}
+              className="shrink-0"
+            >
+              {audioMuted ? <MicOff className="size-4 sm:size-5" /> : <Mic className="size-4 sm:size-5" />}
+            </Button>
 
-          <Button
-            variant={videoMuted ? "destructive" : "secondary"}
-            size="icon"
-            onClick={toggleVideo}
-            title={videoMuted ? "Turn on camera" : "Turn off camera"}
-            className="shrink-0"
-          >
-            {videoMuted ? <VideoOff className="size-4 sm:size-5" /> : <Video className="size-4 sm:size-5" />}
-          </Button>
+            <Button
+              variant={videoMuted ? "destructive" : "secondary"}
+              size="icon"
+              onClick={toggleVideo}
+              title={videoMuted ? "Turn on camera" : "Turn off camera"}
+              className="shrink-0"
+            >
+              {videoMuted ? <VideoOff className="size-4 sm:size-5" /> : <Video className="size-4 sm:size-5" />}
+            </Button>
 
-          <Button
-            variant={isScreenSharing ? "default" : "secondary"}
-            size="icon"
-            onClick={toggleScreenShare}
-            title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
-            className="shrink-0 hidden sm:flex"
-          >
-            <MonitorUp className="size-4 sm:size-5" />
-          </Button>
+            <Button
+              variant={isScreenSharing ? "default" : "secondary"}
+              size="icon"
+              onClick={toggleScreenShare}
+              title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
+              className="shrink-0 hidden sm:flex"
+            >
+              <MonitorUp className="size-4 sm:size-5" />
+            </Button>
 
-          <div className="w-px h-6 sm:h-8 bg-border mx-0.5 sm:mx-1 hidden sm:block"></div>
+            <div className="w-px h-6 sm:h-8 bg-border mx-0.5 sm:mx-1 hidden sm:block"></div>
 
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={() => setShowParticipants(true)}
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => setShowParticipants(true)}
             title="Show participants"
             className="shrink-0 relative"
           >
@@ -620,6 +650,7 @@ export default function ChannelPage() {
           </Button>
         </div>
       </div>
+      )}
 
       <ParticipantList
         localUserId={channelConfig?.uid || 0}

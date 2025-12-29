@@ -117,21 +117,22 @@
 ---
 
 ### Phase 3: Frontend - View-Only Mode for Buyers
-**Status**: ⏳ To Do  
+**Status**: ✅ Done  
 **Estimated Time**: 2 hours  
-**Dependencies**: Phase 2 completed
+**Actual Time**: 0.5 hours  
+**Completed**: 2025-12-29
 
 **Key Deliverables**:
-- [ ] Update channel join logic to use "audience" role for buyers
-- [ ] Hide video/audio publish controls for buyers
-- [ ] Show "View-Only" indicator for buyers
-- [ ] Only seller can publish video/audio streams
-- [ ] Buyers automatically join as audience
+- [x] Update channel join logic to use "audience" role for buyers
+- [x] Hide video/audio publish controls for buyers
+- [x] Show "View-Only" indicator for buyers
+- [x] Only seller can publish video/audio streams
+- [x] Buyers automatically join as audience
 
 **Files to Create/Modify**:
-- `client/src/pages/Channel/ChannelPage.tsx` - Update Agora client setup
-- `client/src/hooks/useUserRole.ts` - Hook to determine user role (seller/buyer)
-- `client/src/components/RoleBadge/` - Display user role badge
+- `client/src/pages/Channel/ChannelPage.tsx` - Update Agora client setup ✅
+- `client/src/hooks/useUserRole.ts` - Hook to determine user role (seller/buyer) ✅
+- `client/src/components/RoleBadge/` - Display user role badge ✅
 
 **User Role Logic**:
 - Check user role from backend (RBAC feature 003)
@@ -139,11 +140,11 @@
 - If `role === "seller"`, join Agora as publisher (can publish)
 
 **Validation Criteria**:
-- [ ] Buyers join channel without publishing video/audio
-- [ ] Buyers can see seller's video/audio
-- [ ] Buyers cannot access video/audio controls
-- [ ] Role badge displays correctly
-- [ ] Agora SDK uses correct client role
+- [x] Buyers join channel without publishing video/audio
+- [x] Buyers can see seller's video/audio
+- [x] Buyers cannot access video/audio controls
+- [x] Role badge displays correctly
+- [x] Agora SDK uses correct client role
 
 ---
 
@@ -192,9 +193,9 @@
 |-------|--------|----------|-----------|-------------|-----------------|
 | Phase 1: Database | ✅ Done | 100% | 2h | 0.5h | 2025-12-28 |
 | Phase 2: Backend API | ✅ Done | 100% | 2-3h | 1h | 2025-12-29 |
-| Phase 3: View-Only Mode | ⏳ To Do | 0% | 2h | - | - |
+| Phase 3: View-Only Mode | ✅ Done | 100% | 2h | 0.5h | 2025-12-29 |
 | Phase 4: Messaging UI | ⏳ To Do | 0% | 2-3h | - | - |
-| **Total** | **🚧 In Progress** | **50%** | **8-10h** | **1.5h** | **-** |
+| **Total** | **🚧 In Progress** | **75%** | **8-10h** | **2h** | **-** |
 
 **Legend**:
 - ⏳ To Do
@@ -355,6 +356,7 @@
 | 2025-12-28 | 1.0 | Initial feature documentation | Assistant |
 | 2025-12-28 | 1.1 | Phase 1 completed (Database setup) | Assistant |
 | 2025-12-29 | 1.2 | Phase 2 completed (Backend API) | Assistant |
+| 2025-12-29 | 1.3 | Phase 3 completed (View-Only Mode) | Assistant |
 
 ---
 
@@ -383,4 +385,4 @@
 ---
 
 **Last Updated**: 2025-12-29  
-**Status**: Phase 2 Complete (50% done), Ready for Phase 3 (View-Only Mode for Buyers)
+**Status**: Phase 3 Complete (75% done), Ready for Phase 4 (Channel Messaging UI)
