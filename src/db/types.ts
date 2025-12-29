@@ -4,6 +4,7 @@ export interface Database {
   users: UsersTable;
   channels: ChannelsTable;
   channel_participants: ChannelParticipantsTable;
+  messages: MessagesTable;
   shops: ShopsTable;
   user_shop_roles: UserShopRolesTable;
   products: ProductsTable;
@@ -42,6 +43,15 @@ export interface ChannelParticipantsTable {
   joined_at: Date;
   left_at: Date | null;
   role: string;
+}
+
+export interface MessagesTable {
+  id: Generated<number>;
+  channel_id: number;
+  user_id: number;
+  content: string;
+  created_at: Date;
+  deleted_at: Date | null;
 }
 
 export interface ShopsTable {
@@ -109,6 +119,7 @@ export type Shop = Selectable<ShopsTable>;
 export type Product = Selectable<ProductsTable>;
 export type Channel = Selectable<ChannelsTable>;
 export type ChannelParticipant = Selectable<ChannelParticipantsTable>;
+export type Message = Selectable<MessagesTable>;
 export type UserShopRole = Selectable<UserShopRolesTable>;
 export type ChannelProduct = Selectable<ChannelProductsTable>;
 export type VendorPromotedProduct = Selectable<VendorPromotedProductsTable>;
