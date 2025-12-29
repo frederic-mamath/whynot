@@ -27,6 +27,7 @@ import Button from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { useUserRole } from '../hooks/useUserRole';
 import { RoleBadge } from '../components/RoleBadge';
+import { ChatPanel } from '../components/ChatPanel';
 
 interface ChannelConfig {
   appId: string;
@@ -39,6 +40,9 @@ export default function ChannelPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
   const { role, canPublish, isLoading: roleLoading } = useUserRole();
+  
+  // Get current user info
+  const { data: currentUser } = trpc.auth.me.useQuery();
 
   // Agora state
   const [client, setClient] = useState<IAgoraRTCClient | null>(null);
@@ -504,7 +508,9 @@ export default function ChannelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-0">
       {/* Header */}
       <div className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-4">
@@ -658,6 +664,17 @@ export default function ChannelPage() {
         isOpen={showParticipants}
         onClose={() => setShowParticipants(false)}
       />
+      </div>
+      
+      {/* Chat Panel - Bottom on Mobile, Sidebar on Desktop */}
+      {currentUser && channelId && (
+        <div className="w-full lg:w-80 xl:w-96 h-64 lg:h-auto border-t lg:border-t-0 lg:border-l">
+          <ChatPanel 
+            channelId={Number(channelId)} 
+            currentUserId={currentUser.id}
+          />
+        </div>
+      )}
     </div>
   );
 }
