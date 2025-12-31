@@ -36,14 +36,17 @@ export function MessageList({ messages, currentUserId, isLoading }: MessageListP
   }
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto pb-2 space-y-2">
-      {messages.map((message) => (
-        <Message
-          key={message.id}
-          message={message}
-          currentUserId={currentUserId}
-        />
-      ))}
+    <div className="relative max-h-64 bg-black/40 rounded-lg backdrop-blur-sm">
+      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10 rounded-t-lg" />
+      <div ref={scrollRef} className="max-h-64 overflow-y-auto pb-2 px-3 pt-2 space-y-2 scroll-smooth">
+        {messages.map((message) => (
+          <Message
+            key={message.id}
+            message={message}
+            currentUserId={currentUserId}
+          />
+        ))}
+      </div>
     </div>
   );
 }
