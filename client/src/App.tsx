@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
@@ -23,6 +23,38 @@ import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
+
+function AppContent() {
+  const location = useLocation();
+  const isChannelPage = location.pathname.startsWith('/channel/');
+
+  return (
+    <>
+      {!isChannelPage && <NavBar />}
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/channels" element={<ChannelsPage />} />
+        <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><CreateChannelPage /></ProtectedRoute>} />
+        <Route path="/channel/:channelId" element={<ChannelPage />} />
+        <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
+        <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />
+        <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
+          <Route index element={<ShopDetailPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="products/create" element={<CreateProductPage />} />
+          <Route
+            path="products/:productId/edit"
+            element={<EditProductPage />}
+          />
+        </Route>
+      </Routes>
+      <Toaster />
+    </>
+  );
+}
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -61,28 +93,7 @@ function App() {
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-              <NavBar />
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/channels" element={<ChannelsPage />} />
-                <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><CreateChannelPage /></ProtectedRoute>} />
-                <Route path="/channel/:channelId" element={<ChannelPage />} />
-                <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
-                <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />
-                <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
-                  <Route index element={<ShopDetailPage />} />
-                  <Route path="products" element={<ProductsPage />} />
-                  <Route path="products/create" element={<CreateProductPage />} />
-                  <Route
-                    path="products/:productId/edit"
-                    element={<EditProductPage />}
-                  />
-                </Route>
-              </Routes>
-              <Toaster />
+              <AppContent />
             </BrowserRouter>
           </QueryClientProvider>
         </trpc.Provider>

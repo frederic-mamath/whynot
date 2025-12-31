@@ -524,9 +524,9 @@ export default function ChannelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-0 lg:p-4">
+    <div className="h-[calc(100vh-4rem)] bg-background flex items-center justify-center p-0 lg:p-4">
       {/* Main Vertical Container */}
-      <div className="relative w-full max-w-[600px] h-screen lg:h-[90vh]">
+      <div className="relative w-full max-w-[600px] h-full lg:h-[90vh]">
         {/* Aspect Ratio Container (9:16) */}
         <div className="absolute inset-0 aspect-[9/16] mx-auto bg-black rounded-none lg:rounded-lg overflow-hidden">
           
