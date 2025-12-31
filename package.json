@@ -29,6 +29,7 @@
     "@trpc/client": "^11.8.0",
     "@trpc/react-query": "^11.8.0",
     "@trpc/server": "^11.8.0",
+    "@types/ws": "^8.18.1",
     "agora-rtc-react": "^2.5.1",
     "agora-rtc-sdk-ng": "^4.24.2",
     "agora-token": "^2.0.5",
@@ -51,6 +52,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
+    "ws": "^8.18.3",
     "zod": "^4.2.1"
   },
   "devDependencies": {

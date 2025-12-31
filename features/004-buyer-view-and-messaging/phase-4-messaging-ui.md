@@ -468,7 +468,10 @@ If issues occur:
 - All chat UI components created
 - Message, MessageList, MessageInput, ChatPanel implemented
 - Integrated into ChannelPage with responsive layout
-- Desktop sidebar (hidden on mobile for now)
+- **Fixed: Chat now visible on all screen sizes** (was hidden on mobile)
+- Mobile: Bottom panel with fixed height
+- Desktop: Right sidebar with full height
 - Uses existing tRPC message endpoints
 - Auto-scroll, timestamps, user initials all working
+- All authenticated users can send/receive messages
 - TypeScript compilation successful

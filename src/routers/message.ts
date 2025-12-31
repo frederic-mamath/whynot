@@ -9,6 +9,9 @@ import { observable } from '@trpc/server/observable';
 // Event emitter for real-time message updates
 const messageEvents = new EventEmitter();
 
+// Increase max listeners to handle many concurrent connections
+messageEvents.setMaxListeners(100);
+
 // Simple in-memory rate limiter
 const rateLimitMap = new Map<number, { count: number; resetAt: number }>();
 
@@ -94,6 +97,7 @@ export const messageRouter = router({
 
       // Emit event for subscribers
       messageEvents.emit(`channel:${input.channelId}`, messageWithUser);
+      console.log(`📤 Emitted message to channel:${input.channelId}`);
 
       return messageWithUser;
     }),
@@ -136,11 +140,14 @@ export const messageRouter = router({
    */
   subscribe: publicProcedure
     .input(z.object({ channelId: z.number().int().positive() }))
-    .subscription(({ input }) => {
+    .subscription(({ input, ctx }) => {
+      console.log(`📡 User ${ctx.userId || 'anonymous'} subscribed to channel:${input.channelId}`);
+      
       return observable<any>((emit) => {
         const eventName = `channel:${input.channelId}`;
         
         const handler = (data: any) => {
+          console.log(`📨 Sending message to subscriber on ${eventName}`);
           emit.next(data);
         };
 
@@ -148,6 +155,7 @@ export const messageRouter = router({
 
         // Cleanup on unsubscribe
         return () => {
+          console.log(`📴 User unsubscribed from ${eventName}`);
           messageEvents.off(eventName, handler);
         };
       });

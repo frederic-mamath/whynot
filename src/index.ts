@@ -5,12 +5,14 @@ import { appRouter } from "./routers";
 import { Context } from "./types/context";
 import { verifyToken } from "./utils/auth";
 import { logger } from "./utils/logger";
+import { createWebSocketServer } from "./websocket/server";
 import * as dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const wsPort = process.env.WS_PORT || 3001;
 
 // @ts-ignore
 if (typeof PhusionPassenger !== "undefined") {
@@ -71,8 +73,34 @@ if (typeof PhusionPassenger !== "undefined") {
     console.log(`tRPC endpoint: https://api.whynot.mamath.fr:${port}/trpc`);
   });
 } else {
-  app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-    console.log(`tRPC endpoint: http://localhost:${port}/trpc`);
+  const server = app.listen(port, () => {
+    console.log(`🚀 HTTP server running on http://localhost:${port}`);
+    console.log(`📡 tRPC endpoint: http://localhost:${port}/trpc`);
+  });
+
+  // Start WebSocket server (only in non-Passenger mode)
+  const { wss } = createWebSocketServer(Number(wsPort));
+
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, shutting down gracefully...');
+    wss.close(() => {
+      console.log('WebSocket server closed');
+      server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+      });
+    });
+  });
+
+  process.on('SIGINT', async () => {
+    console.log('\nSIGINT received, shutting down gracefully...');
+    wss.close(() => {
+      console.log('WebSocket server closed');
+      server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+      });
+    });
   });
 }
