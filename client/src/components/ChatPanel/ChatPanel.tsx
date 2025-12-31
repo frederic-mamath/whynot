@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { trpc } from '@/lib/trpc';
-import { MessageList } from '../MessageList';
-import { MessageInput } from '../MessageInput';
-import { MessageCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { MessageList } from "../MessageList";
+import { MessageInput } from "../MessageInput";
+import { MessageCircle, Wifi, WifiOff } from "lucide-react";
+import { toast } from "sonner";
+import { useWebSocketStatus } from "@/hooks/useWebSocketStatus";
 
 interface ChatPanelProps {
   channelId: number;
@@ -12,21 +13,55 @@ interface ChatPanelProps {
 
 export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
   const [messages, setMessages] = useState<any[]>([]);
+  const { isConnected } = useWebSocketStatus();
 
-  // Fetch message history
+  console.log('🔧 ChatPanel mounted for channel:', channelId, 'isConnected:', isConnected);
+
+  // Fetch message history via HTTP
   const { data: messageHistory, isLoading } = trpc.message.list.useQuery({
     channelId,
     limit: 100,
   });
 
-  // Send message mutation
+  // Real-time subscription via WebSocket
+  trpc.message.subscribe.useSubscription(
+    { channelId },
+    {
+      onData: (newMessage) => {
+        console.log("📨 Received real-time message:", newMessage);
+
+        // Add message if not already in list (avoid duplicates)
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === newMessage.id);
+          if (exists) return prev;
+          return [...prev, newMessage];
+        });
+      },
+      onError: (error) => {
+        console.error("❌ Subscription error:", error);
+        toast.error("Connection lost. Trying to reconnect...");
+      },
+      onStarted: () => {
+        console.log("🎬 Subscription STARTED for channel:", channelId);
+      },
+      onStopped: () => {
+        console.log("🛑 Subscription STOPPED for channel:", channelId);
+      },
+    },
+  );
+
+  // Send message mutation (still uses HTTP)
   const sendMessageMutation = trpc.message.send.useMutation({
     onSuccess: (data) => {
-      // Message will be added via subscription or we can add it immediately
-      setMessages((prev) => [...prev, data]);
+      // Optimistically add message (will also come via subscription)
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === data.id);
+        if (exists) return prev;
+        return [...prev, data];
+      });
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to send message');
+      toast.error(error.message || "Failed to send message");
     },
   });
 
@@ -46,12 +81,23 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
+      {/* Header with Connection Status */}
       <div className="flex items-center gap-2 p-3 border-b bg-card shrink-0">
         <MessageCircle className="w-5 h-5 text-primary" />
         <h3 className="font-semibold text-sm">Chat</h3>
-        <span className="ml-auto text-xs text-muted-foreground">
-          {messages.length} {messages.length === 1 ? 'message' : 'messages'}
+
+        {/* Connection indicator */}
+        {isConnected ? (
+          <Wifi className="w-4 h-4 text-green-500 ml-auto" title="Connected" />
+        ) : (
+          <WifiOff
+            className="w-4 h-4 text-red-500 ml-auto animate-pulse"
+            title="Disconnected"
+          />
+        )}
+
+        <span className="text-xs text-muted-foreground">
+          {messages.length} {messages.length === 1 ? "message" : "messages"}
         </span>
       </div>
 
@@ -68,7 +114,7 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
       <div className="shrink-0">
         <MessageInput
           onSendMessage={handleSendMessage}
-          disabled={sendMessageMutation.isLoading}
+          // disabled={sendMessageMutation.isLoading || !isConnected}
         />
       </div>
     </div>

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
+import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
-import { trpc } from "./lib/trpc";
+import { trpc, wsClient } from "./lib/trpc";
 import { getToken } from "./lib/auth";
 import NavBar from "./components/NavBar";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -29,17 +29,31 @@ function App() {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        httpBatchLink({
-          url: `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/trpc`,
-          headers() {
-            const token = getToken();
-            return token ? { authorization: `Bearer ${token}` } : {};
-          },
+        // Split link: WebSocket for subscriptions, HTTP for everything else
+        splitLink({
+          condition: (op) => op.type === 'subscription',
+          
+          // WebSocket link for subscriptions
+          true: wsLink({
+            client: wsClient,
+          }),
+          
+          // HTTP link for queries and mutations
+          false: httpBatchLink({
+            url: `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/trpc`,
+            headers() {
+              const token = getToken();
+              return token ? { authorization: `Bearer ${token}` } : {};
+            },
+          }),
         }),
       ],
     }),
   );
-  console.log({ apiUrl: import.meta.env.VITE_API_URL });
+  console.log({ 
+    apiUrl: import.meta.env.VITE_API_URL,
+    wsUrl: import.meta.env.VITE_WS_URL,
+  });
 
   return (
     <ErrorBoundary>
