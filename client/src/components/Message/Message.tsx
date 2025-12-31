@@ -31,24 +31,24 @@ export function Message({ message, currentUserId }: MessageProps) {
 
   return (
     <div className={cn('flex gap-2 mb-3', isOwnMessage && 'flex-row-reverse')}>
-      <Avatar className="w-8 h-8 shrink-0">
-        <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+      <Avatar className="w-8 h-8 shrink-0 border-2 border-white/20">
+        <AvatarFallback className="text-xs bg-white/20 text-white">{initials}</AvatarFallback>
       </Avatar>
       
       <div className={cn('flex flex-col max-w-[70%]', isOwnMessage && 'items-end')}>
         <div className={cn('flex items-center gap-2 mb-1', isOwnMessage && 'flex-row-reverse')}>
-          <span className="text-sm font-medium">{displayName}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm font-medium text-white">{displayName}</span>
+          <span className="text-xs text-white/60">
             {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
           </span>
         </div>
         
         <div
           className={cn(
-            'px-3 py-2 rounded-lg break-words',
+            'px-3 py-2 rounded-lg break-words backdrop-blur-sm',
             isOwnMessage
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground'
+              ? 'bg-primary/90 text-primary-foreground'
+              : 'bg-white/20 text-white'
           )}
         >
           {message.content}

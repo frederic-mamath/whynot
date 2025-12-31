@@ -21,14 +21,14 @@ export function MessageList({ messages, currentUserId, isLoading }: MessageListP
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <Loader2 className="w-6 h-6 animate-spin text-white/60" />
       </div>
     );
   }
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+      <div className="flex flex-col items-center justify-center h-full text-white/60 p-4">
         <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
         <p className="text-sm text-center">No messages yet.<br/>Start the conversation!</p>
       </div>
@@ -36,7 +36,7 @@ export function MessageList({ messages, currentUserId, isLoading }: MessageListP
   }
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto p-4 space-y-2">
+    <div ref={scrollRef} className="h-full overflow-y-auto pb-2 space-y-2">
       {messages.map((message) => (
         <Message
           key={message.id}

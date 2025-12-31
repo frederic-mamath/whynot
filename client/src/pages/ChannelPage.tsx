@@ -28,6 +28,7 @@ import { Card, CardContent } from "../components/ui/Card";
 import { useUserRole } from "../hooks/useUserRole";
 import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
+import VerticalControlPanel from "../components/VerticalControlPanel";
 
 interface ChannelConfig {
   appId: string;
@@ -618,69 +619,23 @@ export default function ChannelPage() {
             </div>
           )}
 
-          {/* Control Bar - Only for Broadcasters (Horizontal for now, will be vertical in Phase 2) */}
+          {/* Control Bar - Only for Broadcasters (Vertical stack at bottom-right) */}
           {canPublish && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 px-2 w-full max-w-md">
-              <div className="bg-card/90 backdrop-blur-sm border border-border rounded-full shadow-lg px-3 py-2 flex items-center justify-center gap-1">
-                <Button
-                  variant={audioMuted ? "destructive" : "secondary"}
-                  size="icon"
-                  onClick={toggleAudio}
-                  title={audioMuted ? "Unmute" : "Mute"}
-                  className="shrink-0"
-                >
-                  {audioMuted ? (
-                    <MicOff className="size-4" />
-                  ) : (
-                    <Mic className="size-4" />
-                  )}
-                </Button>
-
-                <Button
-                  variant={videoMuted ? "destructive" : "secondary"}
-                  size="icon"
-                  onClick={toggleVideo}
-                  title={videoMuted ? "Turn on camera" : "Turn off camera"}
-                  className="shrink-0"
-                >
-                  {videoMuted ? (
-                    <VideoOff className="size-4" />
-                  ) : (
-                    <Video className="size-4" />
-                  )}
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  onClick={() => setShowParticipants(true)}
-                  title="Show participants"
-                  className="shrink-0 relative"
-                >
-                  <UsersIcon className="size-4" />
-                  <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
-                    {Array.from(remoteUsers.values()).length + 1}
-                  </span>
-                </Button>
-
-                <div className="w-px h-6 bg-border mx-1"></div>
-
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={handleLeave}
-                  title="Leave channel"
-                  className="shrink-0"
-                >
-                  <PhoneOff className="size-4" />
-                </Button>
-              </div>
+            <div className="absolute bottom-4 right-4 z-30">
+              <VerticalControlPanel
+                audioMuted={audioMuted}
+                videoMuted={videoMuted}
+                viewerCount={Array.from(remoteUsers.values()).length}
+                onToggleAudio={toggleAudio}
+                onToggleVideo={toggleVideo}
+                onShowParticipants={() => setShowParticipants(true)}
+              />
             </div>
           )}
 
-          {/* Chat Panel - Bottom overlay (temporary position, will be adjusted in Phase 3) */}
+          {/* Chat Panel - Bottom overlay, positioned to left of controls */}
           {currentUser && channelId && (
-            <div className="absolute bottom-0 left-0 right-0 h-64 z-20 bg-gradient-to-t from-black/80 to-transparent">
+            <div className={`absolute bottom-0 left-0 z-20 ${canPublish ? 'right-20' : 'right-0'}`}>
               <ChatPanel
                 channelId={Number(channelId)}
                 currentUserId={currentUser.id}

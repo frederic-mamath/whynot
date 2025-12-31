@@ -70,29 +70,9 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Header with Connection Status */}
-      <div className="flex items-center gap-2 p-3 border-b bg-card shrink-0">
-        <MessageCircle className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold text-sm">Chat</h3>
-
-        {/* Connection indicator */}
-        {isConnected ? (
-          <Wifi className="w-4 h-4 text-green-500 ml-auto" title="Connected" />
-        ) : (
-          <WifiOff
-            className="w-4 h-4 text-red-500 ml-auto animate-pulse"
-            title="Disconnected"
-          />
-        )}
-
-        <span className="text-xs text-muted-foreground">
-          {messages.length} {messages.length === 1 ? "message" : "messages"}
-        </span>
-      </div>
-
-      {/* Message List */}
-      <div className="flex-1 overflow-hidden">
+    <div className="flex flex-col h-full max-h-80">
+      {/* Message List - Compact overlay style */}
+      <div className="flex-1 overflow-hidden px-4 pt-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent">
         <MessageList
           messages={messages}
           currentUserId={currentUserId}
@@ -101,7 +81,7 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
       </div>
 
       {/* Message Input */}
-      <div className="shrink-0">
+      <div className="shrink-0 p-4 bg-black/80 backdrop-blur-sm">
         <MessageInput
           onSendMessage={handleSendMessage}
           // disabled={sendMessageMutation.isLoading || !isConnected}

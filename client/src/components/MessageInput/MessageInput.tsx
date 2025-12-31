@@ -27,7 +27,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-3 border-t bg-card">
+    <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -35,7 +35,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
         placeholder="Type a message..."
         maxLength={500}
         disabled={disabled}
-        className="flex-1"
+        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20"
       />
       <Button
         type="submit"
