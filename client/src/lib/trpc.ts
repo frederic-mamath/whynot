@@ -22,14 +22,6 @@ const wsClient = createWSClient({
   retryDelayMs: (attemptIndex) => {
     return Math.min(1000 * 2 ** attemptIndex, 10000); // Max 10s
   },
-  
-  // Connection lifecycle hooks
-  onOpen: () => {
-    console.log('✅ WebSocket connected');
-  },
-  onClose: () => {
-    console.log('❌ WebSocket disconnected');
-  },
 });
 
 // Export WebSocket client for status monitoring

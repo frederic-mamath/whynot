@@ -15,8 +15,6 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const { isConnected } = useWebSocketStatus();
 
-  console.log('🔧 ChatPanel mounted for channel:', channelId, 'isConnected:', isConnected);
-
   // Fetch message history via HTTP
   const { data: messageHistory, isLoading } = trpc.message.list.useQuery({
     channelId,
@@ -28,8 +26,6 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
     { channelId },
     {
       onData: (newMessage) => {
-        console.log("📨 Received real-time message:", newMessage);
-
         // Add message if not already in list (avoid duplicates)
         setMessages((prev) => {
           const exists = prev.some((m) => m.id === newMessage.id);
@@ -38,14 +34,8 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
         });
       },
       onError: (error) => {
-        console.error("❌ Subscription error:", error);
+        console.error("Subscription error:", error);
         toast.error("Connection lost. Trying to reconnect...");
-      },
-      onStarted: () => {
-        console.log("🎬 Subscription STARTED for channel:", channelId);
-      },
-      onStopped: () => {
-        console.log("🛑 Subscription STOPPED for channel:", channelId);
       },
     },
   );
