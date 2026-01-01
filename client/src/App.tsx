@@ -72,7 +72,7 @@ function App() {
           
           // HTTP link for queries and mutations
           false: httpBatchLink({
-            url: `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/trpc`,
+            url: '/trpc', // Use relative URL (same domain as frontend)
             headers() {
               const token = getToken();
               return token ? { authorization: `Bearer ${token}` } : {};

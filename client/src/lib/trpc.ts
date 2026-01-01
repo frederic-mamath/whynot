@@ -8,10 +8,10 @@ export const trpc = createTRPCReact<AppRouter>();
 // Create WebSocket client
 const wsClient = createWSClient({
   url: () => {
-    // Use same domain as HTTP API (auto-detect protocol)
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
-    const wsUrl = apiUrl.replace(/^https?/, wsProtocol);
+    // Use current page's protocol and hostname (works in dev and production)
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host; // includes port
+    const wsUrl = `${protocol}//${host}`;
     
     const token = getToken();
     
