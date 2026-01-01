@@ -13,7 +13,6 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const wsPort = process.env.WS_PORT || 3001;
 
 // @ts-ignore
 if (typeof PhusionPassenger !== "undefined") {
@@ -110,8 +109,8 @@ if (typeof PhusionPassenger !== "undefined") {
     console.log(`📡 tRPC endpoint: http://localhost:${port}/trpc`);
   });
 
-  // Start WebSocket server (only in non-Passenger mode)
-  const { wss } = createWebSocketServer(Number(wsPort));
+  // Attach WebSocket to same HTTP server
+  const { wss } = createWebSocketServer(server);
 
   // Graceful shutdown
   // NOTE: When running via `npm run dev`, Ctrl+C may not work properly.

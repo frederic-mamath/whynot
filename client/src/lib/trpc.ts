@@ -8,14 +8,18 @@ export const trpc = createTRPCReact<AppRouter>();
 // Create WebSocket client
 const wsClient = createWSClient({
   url: () => {
-    const baseUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
+    // Use same domain as HTTP API (auto-detect protocol)
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
+    const wsUrl = apiUrl.replace(/^https?/, wsProtocol);
+    
     const token = getToken();
     
     // Pass token as query parameter for WebSocket authentication
     if (token) {
-      return `${baseUrl}?token=${token}`;
+      return `${wsUrl}?token=${token}`;
     }
-    return baseUrl;
+    return wsUrl;
   },
   
   // Reconnection configuration - exponential backoff

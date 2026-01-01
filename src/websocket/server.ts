@@ -1,15 +1,16 @@
 import { WebSocketServer } from 'ws';
 import { applyWSSHandler } from '@trpc/server/adapters/ws';
 import { appRouter } from '../routers';
-import type { IncomingMessage } from 'http';
+import type { IncomingMessage, Server } from 'http';
 import { Context } from '../types/context';
 import { verifyToken } from '../utils/auth';
 
-export function createWebSocketServer(port: number = 3001) {
-  console.log(`🔌 Creating WebSocket server on port ${port}...`);
+// Accept HTTP server instance instead of port
+export function createWebSocketServer(server: Server) {
+  console.log('🔌 Creating WebSocket server attached to HTTP server...');
   
   const wss = new WebSocketServer({
-    port,
+    server, // Attach to existing HTTP server
     perMessageDeflate: false, // Disable compression for lower latency
   });
 
@@ -56,7 +57,7 @@ export function createWebSocketServer(port: number = 3001) {
     console.error('❌ WebSocket server error:', error);
   });
 
-  console.log(`✅ WebSocket server running on ws://localhost:${port}`);
+  console.log('✅ WebSocket server attached and ready');
 
   return { wss, handler };
 }

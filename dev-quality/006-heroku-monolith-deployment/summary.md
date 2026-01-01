@@ -44,7 +44,7 @@ Database: Heroku Postgres Mini Add-on
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Phase 1 | Monolith build configuration | ✅ DONE |
-| Phase 2 | WebSocket server consolidation | 📝 PLANNING |
+| Phase 2 | WebSocket server consolidation | ✅ DONE |
 | Phase 3 | Database migration preparation | 📝 PLANNING |
 | Phase 4 | Heroku infrastructure setup | 📝 PLANNING |
 | Phase 5 | API security & routing | 📝 PLANNING |
@@ -60,11 +60,11 @@ Database: Heroku Postgres Mini Add-on
 
 ### Server Changes
 - [x] `src/index.ts` - Add static file serving middleware
-- [ ] `src/websocket/server.ts` - Accept HTTP server instance instead of port
+- [x] `src/websocket/server.ts` - Accept HTTP server instance instead of port
 - [ ] `src/db/index.ts` - Support Heroku DATABASE_URL
 
 ### Client Changes
-- [ ] `client/src/lib/trpc.ts` - Update WebSocket URL for production
+- [x] `client/src/lib/trpc.ts` - Update WebSocket URL for production
 - [ ] `client/.env.production` - Create production environment config
 
 ### New Files
