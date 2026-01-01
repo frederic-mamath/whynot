@@ -145,11 +145,27 @@ git push heroku main
 # Run migrations on Heroku
 heroku run npm run migrate:prod
 
+# Expected output:
+# 📊 Database mode: PRODUCTION (SSL enabled)
+# Database connected successfully
+# ✅ Migration "000_create_users" executed successfully
+# ✅ Migration "001_create_channels" executed successfully
+# ✅ Migration "002_create_shops" executed successfully
+# ✅ Migration "003_create_user_shop_roles" executed successfully
+# ✅ Migration "004_create_products" executed successfully
+# ✅ Migration "005_create_channel_products" executed successfully
+# ✅ Migration "006_create_vendor_promoted_products" executed successfully
+# ✅ Migration "007_add_user_names" executed successfully
+# ✅ Migration "008_create_roles" executed successfully
+# ✅ Migration "009_create_user_roles" executed successfully
+# ✅ Migration "010_create_messages" executed successfully
+# ✅ All migrations completed
+
 # Verify tables created
 heroku pg:psql
 # In psql:
 \dt
-# Should show your tables
+# Should show 13 tables (11 app tables + 2 Kysely migration tables)
 \q
 ```
 
