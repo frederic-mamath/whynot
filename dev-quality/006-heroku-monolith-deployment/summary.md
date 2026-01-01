@@ -46,7 +46,7 @@ Database: Heroku Postgres Mini Add-on
 | Phase 1 | Monolith build configuration | ✅ DONE |
 | Phase 2 | WebSocket server consolidation | ✅ DONE |
 | Phase 3 | Database migration preparation | ✅ DONE |
-| Phase 4 | Heroku infrastructure setup | 📝 PLANNING |
+| Phase 4 | Heroku infrastructure setup | ✅ DONE |
 | Phase 5 | API security & routing | 📝 PLANNING |
 | Phase 6 | Database migration | 📝 PLANNING |
 | Phase 7 | Deployment & testing | 📝 PLANNING |
@@ -68,12 +68,12 @@ Database: Heroku Postgres Mini Add-on
 
 ### Configuration
 - [x] `.env.example` - Document database env vars for Heroku
-- [x] `package.json` - Add migrate:prod script
+- [x] `package.json` - Add migrate:prod script and engines
 
 ### New Files
-- [ ] `Procfile` - Heroku process definition
-- [ ] `.slugignore` - Optimize Heroku slug size
-- [ ] `dev-quality/006-heroku-monolith-deployment/deployment-checklist.md` - Pre/post deployment steps
+- [x] `Procfile` - Heroku process definition
+- [x] `.slugignore` - Optimize Heroku slug size
+- [x] `DEPLOYMENT.md` - Complete deployment guide
 
 ### Documentation
 - [ ] `README.md` - Update deployment instructions

@@ -1,0 +1,31 @@
+# Development files (reduce slug size)
+client/src
+client/public
+src
+*.md
+.git
+.github
+docker-compose.yml
+tsconfig.json
+vite.config.ts
+
+# Test files
+test-*.js
+agora-diagnostic.js
+
+# Development dependencies
+.env
+.env.example
+.nvmrc
+.npmrc
+
+# Build artifacts that will be regenerated
+node_modules/.cache
+.vite
+
+# Documentation
+dev-quality
+features
+ARCHITECTURE.md
+STYLING.md
+GEMINI.md

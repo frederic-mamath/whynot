@@ -2,6 +2,10 @@
   "name": "whynot",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
   "scripts": {
     "dev": "npm run build && node --trace-warnings dist/index.js",
     "dev:watch": "tsx watch src/index.ts",
