@@ -1,28 +1,36 @@
-import { trpc } from '../lib/trpc';
-import { useNavigate, Link } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Video, Users, Lock, Plus, Store } from 'lucide-react';
-import { isAuthenticated } from '../lib/auth';
-import Button from '../components/ui/Button';
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/Card';
-import { Skeleton } from '../components/ui/skeleton';
-import { Alert, AlertDescription } from '../components/ui/alert';
+import { trpc } from "../lib/trpc";
+import { useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Video, Users, Lock, Plus, Store } from "lucide-react";
+import { isAuthenticated } from "../lib/auth";
+import Button from "../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "../components/ui/card";
+import { Skeleton } from "../components/ui/skeleton";
+import { Alert, AlertDescription } from "../components/ui/alert";
 
 export default function ChannelsPage() {
   const navigate = useNavigate();
   const { data: channels, isLoading } = trpc.channel.list.useQuery();
-  const { data: userRoles, isLoading: isLoadingRoles } = trpc.role.myRoles.useQuery();
-  const { data: userShops, isLoading: isLoadingShops } = trpc.shop.list.useQuery(undefined, {
-    enabled: userRoles?.roles.includes('SELLER'),
-  });
+  const { data: userRoles, isLoading: isLoadingRoles } =
+    trpc.role.myRoles.useQuery();
+  const { data: userShops, isLoading: isLoadingShops } =
+    trpc.shop.list.useQuery(undefined, {
+      enabled: userRoles?.roles.includes("SELLER"),
+    });
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [navigate]);
 
-  const isSeller = userRoles?.roles.includes('SELLER');
+  const isSeller = userRoles?.roles.includes("SELLER");
   const hasShop = (userShops?.length ?? 0) > 0;
   const canCreateChannel = isSeller && hasShop;
 
@@ -74,8 +82,8 @@ export default function ChannelsPage() {
               <Store className="size-4" />
               <AlertDescription>
                 {!isSeller
-                  ? 'Only sellers can create channels. Request seller access from the menu.'
-                  : 'You need at least one shop to create a channel.'}
+                  ? "Only sellers can create channels. Request seller access from the menu."
+                  : "You need at least one shop to create a channel."}
               </AlertDescription>
             </Alert>
           )}
@@ -100,15 +108,18 @@ export default function ChannelsPage() {
             ) : (
               <p className="text-muted-foreground">
                 {!isSeller
-                  ? 'Only sellers with shops can create channels.'
-                  : 'You need at least one shop to create a channel.'}
+                  ? "Only sellers with shops can create channels."
+                  : "You need at least one shop to create a channel."}
               </p>
             )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {channels?.map((channel) => (
-              <Card key={channel.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={channel.id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="flex items-center gap-2">
@@ -130,15 +141,23 @@ export default function ChannelsPage() {
                 <CardFooter>
                   <Button
                     className="w-full"
-                    asChild={channel.participantCount < (channel.max_participants || 10)}
-                    disabled={channel.participantCount >= (channel.max_participants || 10)}
+                    asChild={
+                      channel.participantCount <
+                      (channel.max_participants || 10)
+                    }
+                    disabled={
+                      channel.participantCount >=
+                      (channel.max_participants || 10)
+                    }
                     variant={
-                      channel.participantCount >= (channel.max_participants || 10)
-                        ? 'secondary'
-                        : 'default'
+                      channel.participantCount >=
+                      (channel.max_participants || 10)
+                        ? "secondary"
+                        : "default"
                     }
                   >
-                    {channel.participantCount >= (channel.max_participants || 10) ? (
+                    {channel.participantCount >=
+                    (channel.max_participants || 10) ? (
                       <span>Full</span>
                     ) : (
                       <Link to={`/channel/${channel.id}`}>Join Channel</Link>

@@ -1,12 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
-  Video,
-  VideoOff,
-  Mic,
-  MicOff,
-  MonitorUp,
-  PhoneOff,
   Users as UsersIcon,
   Wifi,
   WifiOff,
@@ -23,8 +17,8 @@ import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
 import ParticipantList from "../components/ParticipantList";
 import NetworkQuality from "../components/NetworkQuality";
-import Button from "../components/ui/Button";
-import { Card, CardContent } from "../components/ui/Card";
+import Button from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
 import { useUserRole } from "../hooks/useUserRole";
 import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
@@ -529,7 +523,6 @@ export default function ChannelPage() {
       <div className="relative w-full max-w-[600px] h-full lg:h-[90vh]">
         {/* Aspect Ratio Container (9:16) */}
         <div className="absolute inset-0 aspect-[9/16] mx-auto bg-black rounded-none lg:rounded-lg overflow-hidden">
-          
           {/* Minimal Header Overlay */}
           <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/60 to-transparent">
             <div className="flex items-center justify-between">
@@ -541,7 +534,7 @@ export default function ChannelPage() {
               >
                 <ArrowLeft className="size-5" />
               </Button>
-              
+
               <div className="flex items-center gap-2">
                 <RoleBadge role={role} />
                 <NetworkQuality client={client} />
@@ -563,7 +556,7 @@ export default function ChannelPage() {
                           id={`remote-player-${uid}`}
                           className="w-full h-full [&>div]:!h-full [&_video]:!object-cover"
                         />
-                        
+
                         {/* Broadcaster Info Overlay (Top) */}
                         <div className="absolute top-20 left-4 flex items-center gap-2">
                           <div className="size-10 rounded-full bg-primary flex items-center justify-center">
@@ -572,7 +565,9 @@ export default function ChannelPage() {
                             </span>
                           </div>
                           <div className="bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
-                            <span className="text-sm font-medium">User {uid}</span>
+                            <span className="text-sm font-medium">
+                              User {uid}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -588,7 +583,9 @@ export default function ChannelPage() {
                   {canPublish ? (
                     <>
                       <UsersIcon className="size-16 mx-auto text-white/60" />
-                      <h3 className="text-lg font-semibold">Waiting for participants</h3>
+                      <h3 className="text-lg font-semibold">
+                        Waiting for participants
+                      </h3>
                       <p className="text-sm text-white/60">
                         Invite others to join this channel
                       </p>
@@ -596,7 +593,9 @@ export default function ChannelPage() {
                   ) : (
                     <>
                       <Eye className="size-16 mx-auto text-white/60" />
-                      <h3 className="text-lg font-semibold">Waiting for broadcaster</h3>
+                      <h3 className="text-lg font-semibold">
+                        Waiting for broadcaster
+                      </h3>
                       <p className="text-sm text-white/60">
                         The stream will appear when the broadcaster starts
                       </p>
@@ -611,7 +610,10 @@ export default function ChannelPage() {
           {canPublish && localVideoTrack && (
             <div className="absolute top-20 right-4 w-24 h-32 z-20">
               <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg">
-                <div id="local-player" className="w-full h-full [&_video]:!object-cover" />
+                <div
+                  id="local-player"
+                  className="w-full h-full [&_video]:!object-cover"
+                />
                 <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-background/80 backdrop-blur-sm rounded text-xs font-medium">
                   You
                 </div>
@@ -635,7 +637,9 @@ export default function ChannelPage() {
 
           {/* Chat Panel - Bottom overlay, positioned to left of controls */}
           {currentUser && channelId && (
-            <div className={`absolute bottom-0 left-0 z-20 ${canPublish ? 'right-20' : 'right-0'}`}>
+            <div
+              className={`absolute bottom-0 left-0 z-20 ${canPublish ? "right-20" : "right-0"}`}
+            >
               <ChatPanel
                 channelId={Number(channelId)}
                 currentUserId={currentUser.id}

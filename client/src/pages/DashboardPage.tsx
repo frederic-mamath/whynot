@@ -3,8 +3,13 @@ import { LogOut, User, Mail, Calendar, CheckCircle, Clock } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { removeToken, isAuthenticated } from "../lib/auth";
 import { useEffect } from "react";
-import Button from "../components/ui/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card";
+import Button from "../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
 
 export default function Dashboard() {
@@ -109,7 +114,9 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between py-3 border-b border-border">
-                <span className="text-sm font-medium text-muted-foreground">User ID</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  User ID
+                </span>
                 <span className="text-sm font-mono">{user?.id}</span>
               </div>
 
@@ -122,7 +129,9 @@ export default function Dashboard() {
               </div>
 
               <div className="flex items-center justify-between py-3 border-b border-border">
-                <span className="text-sm font-medium text-muted-foreground">Status</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Status
+                </span>
                 <span className="text-sm flex items-center gap-2">
                   {user?.isVerified ? (
                     <>

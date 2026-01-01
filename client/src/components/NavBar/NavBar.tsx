@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 import {
   Sheet,
   SheetClose,
@@ -55,11 +55,12 @@ export default function NavBar() {
     },
   });
 
-  const isSeller = userRoles?.roles.includes('SELLER') ?? false;
+  const isSeller = userRoles?.roles.includes("SELLER") ?? false;
 
-  const hasPendingRequest = userRoles?.details.some(
-    (role) => role.role_name === 'SELLER' && role.activated_at === null
-  ) ?? false;
+  const hasPendingRequest =
+    userRoles?.details.some(
+      (role) => role.role_name === "SELLER" && role.activated_at === null,
+    ) ?? false;
 
   const handleRequestSellerRole = async () => {
     try {
@@ -127,7 +128,7 @@ export default function NavBar() {
                     disabled={hasPendingRequest || requestSellerRole.isPending}
                   >
                     <BadgeCheck className="size-4 mr-2" />
-                    {hasPendingRequest ? 'Pending' : 'Become a Seller'}
+                    {hasPendingRequest ? "Pending" : "Become a Seller"}
                   </Button>
                 )}
 
@@ -229,7 +230,11 @@ export default function NavBar() {
                       </Button>
 
                       {isSeller && (
-                        <Button variant="ghost" className="justify-start" asChild>
+                        <Button
+                          variant="ghost"
+                          className="justify-start"
+                          asChild
+                        >
                           <Link to="/shops" onClick={closeSheet}>
                             <Store className="size-4 mr-2" />
                             Shops
@@ -245,10 +250,12 @@ export default function NavBar() {
                             handleRequestSellerRole();
                             closeSheet();
                           }}
-                          disabled={hasPendingRequest || requestSellerRole.isPending}
+                          disabled={
+                            hasPendingRequest || requestSellerRole.isPending
+                          }
                         >
                           <BadgeCheck className="size-4 mr-2" />
-                          {hasPendingRequest ? 'Pending' : 'Become Seller'}
+                          {hasPendingRequest ? "Pending" : "Become Seller"}
                         </Button>
                       )}
 

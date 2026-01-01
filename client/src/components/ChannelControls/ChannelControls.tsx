@@ -1,14 +1,13 @@
-import Button from '@/components/ui/Button';
-import { 
-  Mic, 
-  MicOff, 
-  Video, 
-  VideoOff, 
-  Share2, 
-  PhoneOff, 
+import Button from "@/components/ui/button";
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  Share2,
+  PhoneOff,
   Users,
-  Settings 
-} from 'lucide-react';
+} from "lucide-react";
 
 interface ChannelControlsProps {
   audioMuted: boolean;
@@ -42,7 +41,11 @@ export default function ChannelControls({
         onClick={onToggleAudio}
         title={audioMuted ? "Unmute microphone" : "Mute microphone"}
       >
-        {audioMuted ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+        {audioMuted ? (
+          <MicOff className="size-4" />
+        ) : (
+          <Mic className="size-4" />
+        )}
       </Button>
 
       {/* Video Control */}
@@ -52,7 +55,11 @@ export default function ChannelControls({
         onClick={onToggleVideo}
         title={videoMuted ? "Turn on camera" : "Turn off camera"}
       >
-        {videoMuted ? <VideoOff className="size-4" /> : <Video className="size-4" />}
+        {videoMuted ? (
+          <VideoOff className="size-4" />
+        ) : (
+          <Video className="size-4" />
+        )}
       </Button>
 
       {/* Screen Share */}

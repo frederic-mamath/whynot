@@ -3,17 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { Plus, Video, Lock, Users, ArrowLeft, Store } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import Label from "../components/ui/Label";
+import Button from "../components/ui/button";
+import Input from "../components/ui/input";
+import Label from "../components/ui/label";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
-} from "../components/ui/Card";
+} from "../components/ui/card";
 
 export default function CreateChannelPage() {
   const navigate = useNavigate();
@@ -22,7 +21,8 @@ export default function CreateChannelPage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [error, setError] = useState("");
 
-  const { data: userShops, isLoading: isLoadingShops } = trpc.shop.list.useQuery();
+  const { data: userShops, isLoading: isLoadingShops } =
+    trpc.shop.list.useQuery();
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -160,7 +160,11 @@ export default function CreateChannelPage() {
 
               <Button
                 type="submit"
-                disabled={createMutation.isPending || !userShops || userShops.length === 0}
+                disabled={
+                  createMutation.isPending ||
+                  !userShops ||
+                  userShops.length === 0
+                }
                 className="w-full"
               >
                 <Plus className="size-4 mr-2" />

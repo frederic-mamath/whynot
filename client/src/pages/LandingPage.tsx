@@ -1,15 +1,15 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Video, Zap, Shield, Users, ArrowRight } from 'lucide-react';
-import { isAuthenticated } from '../lib/auth';
-import Button from '../components/ui/Button';
+import { useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Video, Zap, Shield, Users, ArrowRight } from "lucide-react";
+import { isAuthenticated } from "../lib/auth";
+import Button from "../components/ui/button";
 
 export default function Landing() {
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   }, [navigate]);
 
@@ -21,12 +21,14 @@ export default function Landing() {
           <div className="text-center space-y-6 md:space-y-8">
             <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 md:mb-6">
               <Video className="size-12 sm:size-14 md:size-16 text-primary" />
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">WhyNot</h1>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">
+                WhyNot
+              </h1>
             </div>
-            
+
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-              A modern live streaming platform built with tRPC, React, Agora, and PostgreSQL.
-              Secure, type-safe, and ready for production.
+              A modern live streaming platform built with tRPC, React, Agora,
+              and PostgreSQL. Secure, type-safe, and ready for production.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-4">
@@ -36,7 +38,12 @@ export default function Landing() {
                   <ArrowRight className="size-4 ml-2" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto"
+                asChild
+              >
                 <Link to="/login">Sign In</Link>
               </Button>
             </div>
@@ -48,8 +55,12 @@ export default function Landing() {
       <div className="py-12 sm:py-16 md:py-24 bg-accent/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3 md:mb-4">Why Choose WhyNot?</h2>
-            <p className="text-sm sm:text-base text-muted-foreground">Everything you need for live streaming</p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 md:mb-4">
+              Why Choose WhyNot?
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Everything you need for live streaming
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
@@ -60,9 +71,12 @@ export default function Landing() {
                   <Video className="size-6 text-primary" />
                 </div>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold">Real-Time Streaming</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">
+                Real-Time Streaming
+              </h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Crystal clear video and audio powered by Agora's industry-leading WebRTC technology
+                Crystal clear video and audio powered by Agora's
+                industry-leading WebRTC technology
               </p>
             </div>
 
@@ -73,9 +87,12 @@ export default function Landing() {
                   <Shield className="size-6 text-primary" />
                 </div>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold">Secure & Private</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">
+                Secure & Private
+              </h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                End-to-end type safety with tRPC and secure authentication for all users
+                End-to-end type safety with tRPC and secure authentication for
+                all users
               </p>
             </div>
 
@@ -86,9 +103,12 @@ export default function Landing() {
                   <Zap className="size-6 text-primary" />
                 </div>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold">Lightning Fast</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">
+                Lightning Fast
+              </h3>
               <p className="text-sm sm:text-base text-muted-foreground">
-                Built with modern technologies for blazing fast performance and reliability
+                Built with modern technologies for blazing fast performance and
+                reliability
               </p>
             </div>
           </div>
@@ -99,7 +119,9 @@ export default function Landing() {
       <div className="py-12 sm:py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <Users className="size-12 sm:size-14 md:size-16 text-primary mx-auto mb-4 sm:mb-6" />
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Ready to get started?</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">
+            Ready to get started?
+          </h2>
           <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
             Join thousands of users already streaming live on WhyNot
           </p>

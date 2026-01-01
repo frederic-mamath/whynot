@@ -1,24 +1,31 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus, Mail, Lock } from 'lucide-react';
-import { trpc } from '../lib/trpc';
-import { setToken } from '../lib/auth';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import Label from '../components/ui/Label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
+import { useState, FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { UserPlus, Mail, Lock } from "lucide-react";
+import { trpc } from "../lib/trpc";
+import { setToken } from "../lib/auth";
+import Button from "../components/ui/button";
+import Input from "../components/ui/input";
+import Label from "../components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "../components/ui/card";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
       setToken(data.token);
-      navigate('/dashboard');
+      navigate("/dashboard");
     },
     onError: (err) => {
       setError(err.message);
@@ -27,15 +34,15 @@ export default function Register() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -117,7 +124,9 @@ export default function Register() {
               className="w-full"
             >
               <UserPlus className="size-4 mr-2" />
-              {registerMutation.isLoading ? 'Creating account...' : 'Create Account'}
+              {registerMutation.isLoading
+                ? "Creating account..."
+                : "Create Account"}
             </Button>
           </form>
         </CardContent>
@@ -125,7 +134,10 @@ export default function Register() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link
+              to="/login"
+              className="text-primary hover:underline font-medium"
+            >
               Sign in
             </Link>
           </p>

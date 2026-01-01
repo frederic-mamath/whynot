@@ -1,5 +1,5 @@
 import { Mic, MicOff, Video, VideoOff, Users as UsersIcon } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../ui/button";
 
 interface VerticalControlPanelProps {
   audioMuted: boolean;
@@ -27,7 +27,11 @@ export default function VerticalControlPanel({
         title={audioMuted ? "Unmute" : "Mute"}
         className="shrink-0 shadow-lg"
       >
-        {audioMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+        {audioMuted ? (
+          <MicOff className="size-5" />
+        ) : (
+          <Mic className="size-5" />
+        )}
       </Button>
 
       <Button
