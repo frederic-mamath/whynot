@@ -12,6 +12,7 @@
     "start": "node --trace-warnings dist/index.js",
     "preview": "vite preview",
     "migrate": "tsx migrate.ts",
+    "migrate:prod": "NODE_ENV=production tsx migrate.ts",
     "tunnel:db": "ssh -N -L 5433:localhost:5432 o2",
     "heroku-postbuild": "npm run build"
   },

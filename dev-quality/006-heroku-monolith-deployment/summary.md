@@ -45,7 +45,7 @@ Database: Heroku Postgres Mini Add-on
 |-------|-------------|--------|
 | Phase 1 | Monolith build configuration | ✅ DONE |
 | Phase 2 | WebSocket server consolidation | ✅ DONE |
-| Phase 3 | Database migration preparation | 📝 PLANNING |
+| Phase 3 | Database migration preparation | ✅ DONE |
 | Phase 4 | Heroku infrastructure setup | 📝 PLANNING |
 | Phase 5 | API security & routing | 📝 PLANNING |
 | Phase 6 | Database migration | 📝 PLANNING |
@@ -61,11 +61,14 @@ Database: Heroku Postgres Mini Add-on
 ### Server Changes
 - [x] `src/index.ts` - Add static file serving middleware
 - [x] `src/websocket/server.ts` - Accept HTTP server instance instead of port
-- [ ] `src/db/index.ts` - Support Heroku DATABASE_URL
+- [x] `src/db/index.ts` - Build DATABASE_URL from env vars, support SSL in production
 
 ### Client Changes
 - [x] `client/src/lib/trpc.ts` - Update WebSocket URL for production
-- [ ] `client/.env.production` - Create production environment config
+
+### Configuration
+- [x] `.env.example` - Document database env vars for Heroku
+- [x] `package.json` - Add migrate:prod script
 
 ### New Files
 - [ ] `Procfile` - Heroku process definition
