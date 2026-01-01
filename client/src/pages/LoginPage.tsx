@@ -3,10 +3,17 @@ import { useNavigate, Link } from "react-router-dom";
 import { LogIn, Mail, Lock } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { setToken } from "../lib/auth";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import Label from "../components/ui/Label";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../components/ui/Card";
+import Button from "../components/ui/button";
+import Input from "../components/ui/input";
+import Label from "../components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "../components/ui/card";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -93,7 +100,10 @@ export default function Login() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link to="/register" className="text-primary hover:underline font-medium">
+            <Link
+              to="/register"
+              className="text-primary hover:underline font-medium"
+            >
               Sign up
             </Link>
           </p>
