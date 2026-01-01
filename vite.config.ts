@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => {
   
   return {
     root: "./client",
+    build: {
+      outDir: "../dist/public",
+      emptyOutDir: true,
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

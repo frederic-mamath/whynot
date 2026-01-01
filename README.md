@@ -49,7 +49,7 @@ npm run db:push
 npm run dev
 ```
 
-The server will start on `http://localhost:3000`.
+The server will run on `http://localhost:3000` and serve both the API and the React frontend.
 
 ## API Endpoints
 

@@ -43,7 +43,7 @@ Database: Heroku Postgres Mini Add-on
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Monolith build configuration | 📝 PLANNING |
+| Phase 1 | Monolith build configuration | ✅ DONE |
 | Phase 2 | WebSocket server consolidation | 📝 PLANNING |
 | Phase 3 | Database migration preparation | 📝 PLANNING |
 | Phase 4 | Heroku infrastructure setup | 📝 PLANNING |
@@ -54,12 +54,12 @@ Database: Heroku Postgres Mini Add-on
 ## Files to Update
 
 ### Build Configuration
-- [ ] `package.json` - Add production build scripts
-- [ ] `vite.config.ts` - Configure production output paths
-- [ ] `tsconfig.json` - Verify build targets
+- [x] `package.json` - Add production build scripts
+- [x] `vite.config.ts` - Configure production output paths
+- [x] `tsconfig.json` - Verify build targets
 
 ### Server Changes
-- [ ] `src/index.ts` - Merge WebSocket into HTTP server, add static file serving
+- [x] `src/index.ts` - Add static file serving middleware
 - [ ] `src/websocket/server.ts` - Accept HTTP server instance instead of port
 - [ ] `src/db/index.ts` - Support Heroku DATABASE_URL
 
