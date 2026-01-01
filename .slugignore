@@ -6,7 +6,6 @@ src
 .git
 .github
 docker-compose.yml
-tsconfig.json
 vite.config.ts
 
 # Test files
