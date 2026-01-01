@@ -47,7 +47,7 @@ Database: Heroku Postgres Mini Add-on
 | Phase 2 | WebSocket server consolidation | ✅ DONE |
 | Phase 3 | Database migration preparation | ✅ DONE |
 | Phase 4 | Heroku infrastructure setup | ✅ DONE |
-| Phase 5 | API security & routing | 📝 PLANNING |
+| Phase 5 | API security & routing | ✅ DONE |
 | Phase 6 | Database migration | 📝 PLANNING |
 | Phase 7 | Deployment & testing | 📝 PLANNING |
 
@@ -59,16 +59,17 @@ Database: Heroku Postgres Mini Add-on
 - [x] `tsconfig.json` - Verify build targets
 
 ### Server Changes
-- [x] `src/index.ts` - Add static file serving middleware
+- [x] `src/index.ts` - Add static file serving middleware, security headers, rate limiting
 - [x] `src/websocket/server.ts` - Accept HTTP server instance instead of port
 - [x] `src/db/index.ts` - Build DATABASE_URL from env vars, support SSL in production
+- [x] `src/middleware/security.ts` - Security headers and rate limiting middleware
 
 ### Client Changes
 - [x] `client/src/lib/trpc.ts` - Update WebSocket URL for production
 
 ### Configuration
 - [x] `.env.example` - Document database env vars for Heroku
-- [x] `package.json` - Add migrate:prod script and engines
+- [x] `package.json` - Add migrate:prod script, engines, helmet dependency
 
 ### New Files
 - [x] `Procfile` - Heroku process definition

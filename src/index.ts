@@ -6,6 +6,7 @@ import { Context } from "./types/context";
 import { verifyToken } from "./utils/auth";
 import { logger } from "./utils/logger";
 import { createWebSocketServer } from "./websocket/server";
+import { securityHeaders, rateLimit, requestLogger } from "./middleware/security";
 import * as dotenv from "dotenv";
 import path from "path";
 
@@ -13,6 +14,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
 
 // @ts-ignore
 if (typeof PhusionPassenger !== "undefined") {
@@ -20,12 +22,25 @@ if (typeof PhusionPassenger !== "undefined") {
   PhusionPassenger.configure({ autoInstall: false });
 }
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
-  credentials: true,
-}));
+// Trust proxy (required for Heroku to get correct client IP)
+app.set('trust proxy', 1);
+
+// Security headers (apply first)
+app.use(securityHeaders);
+
+// CORS - only needed in development (different origins)
+if (!isProduction) {
+  app.use(cors({
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
+    credentials: true,
+  }));
+}
+
+// Body parsing
 app.use(express.json());
-app.use(logger);
+
+// Request logging
+app.use(requestLogger);
 
 const createContext = ({
   req,
@@ -42,14 +57,19 @@ const createContext = ({
   return {};
 };
 
-// Health check endpoint
+// Health check endpoint (no auth, no rate limiting)
 app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+  res.json({ 
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  });
 });
 
-// tRPC endpoint
+// tRPC endpoint with rate limiting
 app.use(
   "/trpc",
+  rateLimit(100, 60000), // 100 requests per minute per IP
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,
@@ -107,6 +127,8 @@ if (typeof PhusionPassenger !== "undefined") {
   const server = app.listen(port, () => {
     console.log(`🚀 HTTP server running on http://localhost:${port}`);
     console.log(`📡 tRPC endpoint: http://localhost:${port}/trpc`);
+    console.log(`🔒 Security: ${isProduction ? 'PRODUCTION mode (CORS disabled, SSL enforced)' : 'DEVELOPMENT mode (CORS enabled)'}`);
+    console.log(`⚡ Rate limiting: enabled (100 req/min per IP)`);
   });
 
   // Attach WebSocket to same HTTP server
