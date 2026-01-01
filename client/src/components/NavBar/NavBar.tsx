@@ -24,7 +24,7 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { toast } from "sonner";
-import ThemeToggle from "../ui/ThemeToggle";
+import ThemeToggle from "../ui/theme-toggle";
 
 export default function NavBar() {
   const navigate = useNavigate();
