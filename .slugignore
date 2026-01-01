@@ -1,12 +1,8 @@
-# Development files (reduce slug size)
-client/src
-client/public
-src
+# Development files (keep source for build, Heroku auto-prunes after)
 *.md
 .git
 .github
 docker-compose.yml
-vite.config.ts
 
 # Test files
 test-*.js
