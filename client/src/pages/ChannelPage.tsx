@@ -518,11 +518,11 @@ export default function ChannelPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] bg-background flex items-center justify-center p-0 lg:p-4">
+    <div className="h-screen bg-background flex items-center justify-center p-0 lg:p-4">
       {/* Main Vertical Container */}
-      <div className="relative w-full max-w-[600px] h-full lg:h-[90vh]">
-        {/* Aspect Ratio Container (9:16) */}
-        <div className="absolute inset-0 aspect-[9/16] mx-auto bg-black rounded-none lg:rounded-lg overflow-hidden">
+      <div className="relative w-full h-full lg:w-full lg:max-w-[600px] lg:h-[90vh]">
+        {/* Aspect Ratio Container - Full screen on mobile, 9:16 on desktop */}
+        <div className="absolute inset-0 lg:aspect-[9/16] lg:mx-auto bg-black lg:rounded-lg overflow-hidden">
           {/* Minimal Header Overlay */}
           <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/60 to-transparent">
             <div className="flex items-center justify-between">
@@ -554,7 +554,7 @@ export default function ChannelPage() {
                       <div key={uid} className="w-full h-full relative">
                         <div
                           id={`remote-player-${uid}`}
-                          className="w-full h-full [&>div]:!h-full [&_video]:!object-cover"
+                          className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
                         />
 
                         {/* Broadcaster Info Overlay (Top) */}
@@ -612,7 +612,7 @@ export default function ChannelPage() {
               <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg">
                 <div
                   id="local-player"
-                  className="w-full h-full [&_video]:!object-cover"
+                  className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
                 />
                 <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-background/80 backdrop-blur-sm rounded text-xs font-medium">
                   You
