@@ -59,11 +59,6 @@ export function MessageList({
           />
         ))}
       </div>
-      <div>
-        {Array.from(Array(10).keys()).map(() => (
-          <div style={{ margin: 16 }}>hello</div>
-        ))}
-      </div>
     </div>
   );
 }
