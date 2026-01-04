@@ -1,0 +1,14 @@
+.MessageList-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+
+  background: linear-gradient(
+    to top,
+    #000000ff,
+    #000000ff 75%,
+    transparent 100%
+  );
+}
