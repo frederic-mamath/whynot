@@ -70,15 +70,13 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full max-h-80">
+    <div className="flex flex-col max-h-80 bottom-[0] absolute w-full">
       {/* Message List - Compact overlay style */}
-      <div className="flex-1 overflow-hidden px-4 pt-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent">
-        <MessageList
-          messages={messages}
-          currentUserId={currentUserId}
-          isLoading={isLoading}
-        />
-      </div>
+      <MessageList
+        messages={messages}
+        currentUserId={currentUserId}
+        isLoading={isLoading}
+      />
 
       {/* Message Input */}
       <div className="shrink-0 p-4 bg-black/80 backdrop-blur-sm">

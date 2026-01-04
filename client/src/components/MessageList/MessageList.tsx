@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Message } from "../Message";
 import { Loader2, MessageCircle } from "lucide-react";
-import "./MessageList.css";
 
 interface MessageListProps {
   messages: any[];
@@ -18,6 +17,7 @@ export function MessageList({
 
   // Auto-scroll to bottom on new message
   useEffect(() => {
+    console.log("scrooooooollliing");
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -45,12 +45,11 @@ export function MessageList({
   }
 
   return (
-    <div className="relative max-h-64 bg-white/40 rounded-lg backdrop-blur-sm">
-      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10 rounded-t-lg" />
-      <div className="MessageList-background" />
+    <div className="relative max-h-64 rounded-lg ">
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black via-black/50 to-transparent" />
       <div
         ref={scrollRef}
-        className="max-h-64 overflow-y-auto pb-2 px-3 pt-2 space-y-2 scroll-smooth"
+        className="relative max-h-64 overflow-y-auto pb-2 px-3 pt-2 space-y-2 scroll-smooth"
       >
         {messages.map((message) => (
           <Message
@@ -58,6 +57,11 @@ export function MessageList({
             message={message}
             currentUserId={currentUserId}
           />
+        ))}
+      </div>
+      <div>
+        {Array.from(Array(10).keys()).map(() => (
+          <div style={{ margin: 16 }}>hello</div>
         ))}
       </div>
     </div>
