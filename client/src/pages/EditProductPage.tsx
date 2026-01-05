@@ -91,7 +91,7 @@ export default function EditProductPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -114,13 +114,13 @@ export default function EditProductPage() {
           </Link>
         </Button>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-card rounded-lg border border-border shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-indigo-600" />
+              <Package className="w-8 h-8 text-primary" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
-                <p className="text-sm text-gray-600">{shop.name}</p>
+                <h1 className="text-2xl font-bold text-foreground">Edit Product</h1>
+                <p className="text-sm text-muted-foreground">{shop.name}</p>
               </div>
             </div>
             <Button
@@ -223,12 +223,12 @@ export default function EditProductPage() {
         </div>
 
         {/* Channel Associations Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-card rounded-lg border border-border shadow-sm p-6">
           <div className="flex items-center gap-2 mb-4">
-            <LinkIcon className="w-5 h-5 text-gray-700" />
-            <h2 className="text-xl font-semibold text-gray-900">Channel Associations</h2>
+            <LinkIcon className="w-5 h-5 text-foreground" />
+            <h2 className="text-xl font-semibold text-foreground">Channel Associations</h2>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             Associate this product with channels to make it available for promotion
           </p>
           <Button variant="outline" onClick={() => setShowAssociateModal(true)}>

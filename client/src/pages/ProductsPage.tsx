@@ -25,7 +25,7 @@ export default function ProductsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Package className="w-16 h-16 text-gray-400 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-500">Loading products...</p>
+          <p className="text-muted-foreground">Loading products...</p>
         </div>
       </div>
     );
@@ -57,8 +57,8 @@ export default function ProductsPage() {
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-600 mt-1">{shop.name}</p>
+            <h1 className="text-3xl font-bold text-foreground">Products</h1>
+            <p className="text-muted-foreground mt-1">{shop.name}</p>
           </div>
 
           <Button asChild>
@@ -85,10 +85,10 @@ export default function ProductsPage() {
       ) : (
         <div className="text-center py-16">
           <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             No products yet
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Create your first product to get started
           </p>
           <Button asChild>

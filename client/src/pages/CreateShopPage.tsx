@@ -47,9 +47,9 @@ export default function CreateShopPage() {
         </Link>
       </Button>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <h1 className="text-3xl font-bold mb-2">Create New Shop</h1>
-        <p className="text-gray-600 mb-8">Set up your shop and start managing products</p>
+      <div className="bg-card rounded-lg border border-border p-8 shadow-sm">
+        <h1 className="text-3xl font-bold mb-2 text-foreground">Create New Shop</h1>
+        <p className="text-muted-foreground mb-8">Set up your shop and start managing products</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

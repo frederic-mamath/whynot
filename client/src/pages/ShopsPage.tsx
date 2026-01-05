@@ -20,7 +20,7 @@ export default function ShopsPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">My Shops</h1>
-          <p className="text-gray-600">Manage your shops and vendors</p>
+          <p className="text-muted-foreground">Manage your shops and vendors</p>
         </div>
         <Link to="/shops/create">
           <Button>
@@ -33,10 +33,10 @@ export default function ShopsPage() {
       {!shops || shops.length === 0 ? (
         <div className="text-center py-12">
           <Store className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-foreground mb-2">
             No shops yet
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Create your first shop to get started
           </p>
           <Link to="/shops/create">
@@ -52,11 +52,11 @@ export default function ShopsPage() {
             <Link
               key={shop.id}
               to={`/shops/${shop.id}`}
-              className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-indigo-500 hover:shadow-md transition-all"
+              className="block p-6 bg-card rounded-lg border border-border hover:border-indigo-500 hover:shadow-md transition-all"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
-                  <Store className="h-5 w-5 text-indigo-600 mr-2" />
+                  <Store className="h-5 w-5 text-primary mr-2" />
                   <h3 className="text-xl font-semibold">{shop.name}</h3>
                 </div>
                 {shop.role === "shop-owner" && (
@@ -71,11 +71,11 @@ export default function ShopsPage() {
                 )}
               </div>
               {shop.description && (
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
                   {shop.description}
                 </p>
               )}
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-muted-foreground">
                 <Users className="h-4 w-4 mr-1" />
                 <span>{shop.vendor_count || 0} vendors</span>
               </div>

@@ -69,12 +69,12 @@ export default function CreateProductPage() {
           </Link>
         </Button>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <Package className="w-8 h-8 text-indigo-600" />
+            <Package className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Create Product</h1>
-              <p className="text-sm text-gray-600">{shop.name}</p>
+              <h1 className="text-2xl font-bold text-foreground">Create Product</h1>
+              <p className="text-sm text-muted-foreground">{shop.name}</p>
             </div>
           </div>
 

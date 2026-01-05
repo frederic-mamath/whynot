@@ -114,7 +114,7 @@ export default function ShopDetailPage() {
         </Link>
       </Button>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
+      <div className="bg-card rounded-lg border border-border p-8 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
             {isEditing ? (
@@ -157,7 +157,7 @@ export default function ShopDetailPage() {
                   )}
                 </div>
                 {shop.description && (
-                  <p className="text-gray-600">{shop.description}</p>
+                  <p className="text-muted-foreground">{shop.description}</p>
                 )}
               </>
             )}
@@ -214,7 +214,7 @@ export default function ShopDetailPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
+      <div className="bg-card rounded-lg border border-border p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Vendors</h2>
           {isOwner && (
