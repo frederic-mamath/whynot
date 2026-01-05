@@ -629,21 +629,20 @@ export default function ChannelDetailsPage() {
             </div>
           )}
 
-          {/* Control Bar - Only for Broadcasters (Vertical stack at bottom-right) */}
-          {canPublish && (
-            <div className="absolute bottom-4 right-4 z-30">
-              <VerticalControlPanel
-                audioMuted={audioMuted}
-                videoMuted={videoMuted}
-                viewerCount={Array.from(remoteUsers.values()).length}
-                productCount={promotedProducts.filter((p) => p.isActive).length}
-                onToggleAudio={toggleAudio}
-                onToggleVideo={toggleVideo}
-                onShowParticipants={() => setShowParticipants(true)}
-                onShowProducts={() => setShowProducts(true)}
-              />
-            </div>
-          )}
+          {/* Control Bar - For all users, but only broadcasters get audio/video controls */}
+          <div className="absolute bottom-4 right-4 z-30">
+            <VerticalControlPanel
+              audioMuted={audioMuted}
+              videoMuted={videoMuted}
+              viewerCount={Array.from(remoteUsers.values()).length}
+              productCount={promotedProducts.filter((p) => p.isActive).length}
+              showBroadcastControls={canPublish}
+              onToggleAudio={canPublish ? toggleAudio : undefined}
+              onToggleVideo={canPublish ? toggleVideo : undefined}
+              onShowParticipants={() => setShowParticipants(true)}
+              onShowProducts={() => setShowProducts(true)}
+            />
+          </div>
 
           {/* Chat Panel - Bottom overlay, positioned to left of controls */}
           {currentUser && channelId && (

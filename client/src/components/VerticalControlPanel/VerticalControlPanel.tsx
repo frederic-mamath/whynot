@@ -2,21 +2,23 @@ import { Mic, MicOff, Video, VideoOff, Users as UsersIcon, ShoppingBag } from "l
 import Button from "../ui/button";
 
 interface VerticalControlPanelProps {
-  audioMuted: boolean;
-  videoMuted: boolean;
+  audioMuted?: boolean;
+  videoMuted?: boolean;
   viewerCount: number;
   productCount?: number;
-  onToggleAudio: () => void;
-  onToggleVideo: () => void;
+  showBroadcastControls?: boolean;
+  onToggleAudio?: () => void;
+  onToggleVideo?: () => void;
   onShowParticipants: () => void;
   onShowProducts?: () => void;
 }
 
 export default function VerticalControlPanel({
-  audioMuted,
-  videoMuted,
+  audioMuted = false,
+  videoMuted = false,
   viewerCount,
   productCount = 0,
+  showBroadcastControls = true,
   onToggleAudio,
   onToggleVideo,
   onShowParticipants,
@@ -24,33 +26,37 @@ export default function VerticalControlPanel({
 }: VerticalControlPanelProps) {
   return (
     <div className="flex flex-col gap-3">
-      <Button
-        variant={audioMuted ? "destructive" : "secondary"}
-        size="icon"
-        onClick={onToggleAudio}
-        title={audioMuted ? "Unmute" : "Mute"}
-        className="shrink-0 shadow-lg"
-      >
-        {audioMuted ? (
-          <MicOff className="size-5" />
-        ) : (
-          <Mic className="size-5" />
-        )}
-      </Button>
+      {showBroadcastControls && onToggleAudio && (
+        <Button
+          variant={audioMuted ? "destructive" : "secondary"}
+          size="icon"
+          onClick={onToggleAudio}
+          title={audioMuted ? "Unmute" : "Mute"}
+          className="shrink-0 shadow-lg"
+        >
+          {audioMuted ? (
+            <MicOff className="size-5" />
+          ) : (
+            <Mic className="size-5" />
+          )}
+        </Button>
+      )}
 
-      <Button
-        variant={videoMuted ? "destructive" : "secondary"}
-        size="icon"
-        onClick={onToggleVideo}
-        title={videoMuted ? "Turn on camera" : "Turn off camera"}
-        className="shrink-0 shadow-lg"
-      >
-        {videoMuted ? (
-          <VideoOff className="size-5" />
-        ) : (
-          <Video className="size-5" />
-        )}
-      </Button>
+      {showBroadcastControls && onToggleVideo && (
+        <Button
+          variant={videoMuted ? "destructive" : "secondary"}
+          size="icon"
+          onClick={onToggleVideo}
+          title={videoMuted ? "Turn on camera" : "Turn off camera"}
+          className="shrink-0 shadow-lg"
+        >
+          {videoMuted ? (
+            <VideoOff className="size-5" />
+          ) : (
+            <Video className="size-5" />
+          )}
+        </Button>
+      )}
 
       <Button
         variant="secondary"
