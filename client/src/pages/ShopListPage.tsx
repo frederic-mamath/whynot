@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { Plus, Store, Users } from "lucide-react";
 import Container from "../components/Container";
 
-export default function ShopsPage() {
+export default function ShopListPage() {
   const { data: shops, isLoading } = trpc.shop.list.useQuery();
 
   if (isLoading) {

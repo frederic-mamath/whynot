@@ -9,7 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import Container from '../components/Container';
 
-export default function CreateShopPage() {
+export default function ShopCreatePage() {
   const navigate = useNavigate(); // Keep for form success redirect
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

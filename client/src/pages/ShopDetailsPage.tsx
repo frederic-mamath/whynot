@@ -11,7 +11,7 @@ import VendorList from "../components/VendorList/VendorList";
 import AddVendorModal from "../components/AddVendorModal/AddVendorModal";
 import Container from "../components/Container";
 
-export default function ShopDetailPage() {
+export default function ShopDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate(); // Keep for delete redirect
   const shopId = parseInt(id || "0");
