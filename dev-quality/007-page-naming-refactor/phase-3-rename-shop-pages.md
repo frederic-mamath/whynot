@@ -77,12 +77,12 @@ Rename all Shop-related pages to follow the `<Entity><Action>Page` naming conven
 
 ## Acceptance Criteria
 
-- [ ] All 3 shop pages renamed using `git mv`
-- [ ] Component export names updated in each file
-- [ ] All imports in App.tsx updated
-- [ ] ShopLayout.tsx checked and updated if needed
-- [ ] No other references to old names in codebase
-- [ ] `npm run build` succeeds without errors
+- [x] All 3 shop pages renamed using `git mv`
+- [x] Component export names updated in each file
+- [x] All imports in App.tsx updated
+- [x] ShopLayout.tsx checked and updated if needed
+- [x] No other references to old names in codebase
+- [x] `npm run build` succeeds without errors
 - [ ] Route `/shops` loads correctly
 - [ ] Route `/shop/:id` loads correctly
 - [ ] Route `/shop/create` loads correctly
@@ -90,7 +90,7 @@ Rename all Shop-related pages to follow the `<Entity><Action>Page` naming conven
 
 ## Status
 
-📝 PLANNING
+⏳ IN PROGRESS - Files renamed, build successful, ready for manual testing
 
 ## Notes
 

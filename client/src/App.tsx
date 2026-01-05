@@ -13,9 +13,9 @@ import DashboardPage from "./pages/DashboardPage";
 import ChannelListPage from "./pages/ChannelListPage";
 import ChannelCreatePage from "./pages/ChannelCreatePage";
 import ChannelDetailsPage from "./pages/ChannelDetailsPage";
-import ShopsPage from "./pages/ShopsPage";
-import CreateShopPage from "./pages/CreateShopPage";
-import ShopDetailPage from "./pages/ShopDetailPage";
+import ShopListPage from "./pages/ShopListPage";
+import ShopCreatePage from "./pages/ShopCreatePage";
+import ShopDetailsPage from "./pages/ShopDetailsPage";
 import ProductsPage from "./pages/ProductsPage";
 import CreateProductPage from "./pages/CreateProductPage";
 import EditProductPage from "./pages/EditProductPage";
@@ -39,10 +39,10 @@ function AppContent() {
         <Route path="/channels" element={<ChannelListPage />} />
         <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><ChannelCreatePage /></ProtectedRoute>} />
         <Route path="/channel/:channelId" element={<ChannelDetailsPage />} />
-        <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopsPage /></ProtectedRoute>} />
-        <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><CreateShopPage /></ProtectedRoute>} />
+        <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopListPage /></ProtectedRoute>} />
+        <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><ShopCreatePage /></ProtectedRoute>} />
         <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
-          <Route index element={<ShopDetailPage />} />
+          <Route index element={<ShopDetailsPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/create" element={<CreateProductPage />} />
           <Route
