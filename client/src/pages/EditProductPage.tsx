@@ -99,13 +99,13 @@ export default function EditProductPage() {
   if (!product || !shop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Product not found</p>
+        <p className="text-destructive">Product not found</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <Container size="md">
         <Button variant="ghost" className="mb-6" asChild>
           <Link to={`/shops/${shopIdNum}/products`}>
@@ -183,7 +183,7 @@ export default function EditProductPage() {
                 placeholder="https://example.com/image.jpg"
               />
               {imageUrl && (
-                <div className="mt-3 aspect-square max-w-xs bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                <div className="mt-3 aspect-square max-w-xs bg-muted rounded-lg flex items-center justify-center overflow-hidden">
                   <img
                     src={imageUrl}
                     alt="Preview"
@@ -191,7 +191,7 @@ export default function EditProductPage() {
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       e.currentTarget.parentElement!.innerHTML = `
-                        <p class="text-sm text-red-500">Invalid image URL</p>
+                        <p class="text-sm text-destructive">Invalid image URL</p>
                       `;
                     }}
                   />

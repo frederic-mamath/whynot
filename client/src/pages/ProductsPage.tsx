@@ -35,7 +35,7 @@ export default function ProductsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500">Shop not found</p>
+          <p className="text-destructive">Shop not found</p>
           <Button className="mt-4" asChild>
             <Link to="/shops">Back to Shops</Link>
           </Button>

@@ -135,7 +135,7 @@ export default function Dashboard() {
                 <span className="text-sm flex items-center gap-2">
                   {user?.isVerified ? (
                     <>
-                      <CheckCircle className="size-4 text-green-500" />
+                      <CheckCircle className="size-4 text-emerald-500 dark:text-emerald-400" />
                       Verified
                     </>
                   ) : (
