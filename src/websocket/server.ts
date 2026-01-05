@@ -4,6 +4,7 @@ import { appRouter } from '../routers';
 import type { IncomingMessage, Server } from 'http';
 import { Context } from '../types/context';
 import { verifyToken } from '../utils/auth';
+import { removeUserFromAnyChannel } from './broadcast';
 
 // Accept HTTP server instance instead of port
 export function createWebSocketServer(server: Server) {
@@ -45,6 +46,8 @@ export function createWebSocketServer(server: Server) {
     
     ws.on('close', () => {
       console.log(`❌ WebSocket client disconnected from ${ip}`);
+      // Remove from any channel they were in
+      removeUserFromAnyChannel(ws);
     });
     
     ws.on('error', (error) => {

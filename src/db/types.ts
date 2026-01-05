@@ -34,6 +34,8 @@ export interface ChannelsTable {
   is_private: boolean | null;
   created_at: Date;
   ended_at: Date | null;
+  highlighted_product_id: number | null;
+  highlighted_at: Date | null;
 }
 
 export interface ChannelParticipantsTable {

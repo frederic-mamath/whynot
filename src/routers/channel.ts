@@ -5,6 +5,23 @@ import { TRPCError } from '@trpc/server';
 import { generateAgoraToken, getAgoraAppId } from '../utils/agora';
 import { sql } from 'kysely';
 import { db } from '../db';
+import { broadcastToChannel, addUserToChannel, sendToConnection } from '../websocket/broadcast';
+import { EventEmitter } from 'events';
+import { observable } from '@trpc/server/observable';
+
+// Event emitter for channel events
+const channelEvents = new EventEmitter();
+channelEvents.setMaxListeners(100);
+
+async function isChannelHost(channelId: number, userId: number): Promise<boolean> {
+  const channel = await db
+    .selectFrom('channels')
+    .select('host_id')
+    .where('id', '=', channelId)
+    .executeTakeFirst();
+    
+  return channel?.host_id === userId;
+}
 
 export const channelRouter = router({
   /**
@@ -297,5 +314,333 @@ export const channelRouter = router({
       await channelParticipantRepository.removeParticipant(input.channelId, ctx.userId);
 
       return { success: true };
+    }),
+
+  /**
+   * Highlight a product in the channel (host only)
+   */
+  highlightProduct: publicProcedure
+    .input(
+      z.object({
+        channelId: z.number(),
+        productId: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in',
+        });
+      }
+
+      // Check if user has SELLER role
+      const userRoles = await db
+        .selectFrom('user_roles')
+        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
+        .select('roles.name')
+        .where('user_roles.user_id', '=', ctx.userId)
+        .execute();
+
+      const hasSeller = userRoles.some(r => r.name === 'SELLER');
+      if (!hasSeller) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only sellers can highlight products',
+        });
+      }
+
+      // Verify channel exists
+      const channel = await channelRepository.findById(input.channelId);
+      if (!channel) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Channel not found',
+        });
+      }
+
+      // Verify user is channel host
+      const isHost = await isChannelHost(input.channelId, ctx.userId);
+      if (!isHost) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only the channel host can highlight products',
+        });
+      }
+
+      // Verify product is promoted to this channel
+      const promotion = await db
+        .selectFrom('vendor_promoted_products')
+        .select(['id', 'product_id'])
+        .where('channel_id', '=', input.channelId)
+        .where('product_id', '=', input.productId)
+        .where('unpromoted_at', 'is', null)
+        .executeTakeFirst();
+
+      if (!promotion) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Product is not promoted to this channel',
+        });
+      }
+
+      // Verify product exists
+      const product = await db
+        .selectFrom('products')
+        .select(['id', 'name', 'price', 'description', 'image_url'])
+        .where('id', '=', input.productId)
+        .executeTakeFirst();
+
+      if (!product) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Product not found',
+        });
+      }
+
+      // Update channel with highlighted product
+      const highlightedAt = new Date();
+      await db
+        .updateTable('channels')
+        .set({
+          highlighted_product_id: input.productId,
+          highlighted_at: highlightedAt,
+        })
+        .where('id', '=', input.channelId)
+        .execute();
+
+      // Prepare highlight event message
+      const highlightMessage = {
+        type: 'PRODUCT_HIGHLIGHTED' as const,
+        channelId: input.channelId,
+        product: {
+          id: product.id,
+          name: product.name,
+          price: parseFloat(product.price ?? '0'),
+          description: product.description ?? '',
+          imageUrl: product.image_url,
+        },
+        highlightedAt: highlightedAt.toISOString(),
+      };
+
+      // Broadcast via WebSocket
+      broadcastToChannel(input.channelId, highlightMessage);
+
+      // Emit via EventEmitter for tRPC subscriptions
+      channelEvents.emit(`channel:${input.channelId}:events`, highlightMessage);
+
+      return {
+        success: true,
+        product: {
+          id: product.id,
+          name: product.name,
+          price: parseFloat(product.price ?? '0'),
+          description: product.description ?? '',
+          imageUrl: product.image_url,
+        },
+      };
+    }),
+
+  /**
+   * Unhighlight the current product in the channel (host only)
+   */
+  unhighlightProduct: publicProcedure
+    .input(
+      z.object({
+        channelId: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in',
+        });
+      }
+
+      // Check if user has SELLER role
+      const userRoles = await db
+        .selectFrom('user_roles')
+        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
+        .select('roles.name')
+        .where('user_roles.user_id', '=', ctx.userId)
+        .execute();
+
+      const hasSeller = userRoles.some(r => r.name === 'SELLER');
+      if (!hasSeller) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only sellers can unhighlight products',
+        });
+      }
+
+      // Verify channel exists
+      const channel = await channelRepository.findById(input.channelId);
+      if (!channel) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Channel not found',
+        });
+      }
+
+      // Verify user is channel host
+      const isHost = await isChannelHost(input.channelId, ctx.userId);
+      if (!isHost) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only the channel host can unhighlight products',
+        });
+      }
+
+      // Update channel to remove highlighted product
+      await db
+        .updateTable('channels')
+        .set({
+          highlighted_product_id: null,
+          highlighted_at: null,
+        })
+        .where('id', '=', input.channelId)
+        .execute();
+
+      // Prepare unhighlight event message
+      const unhighlightMessage = {
+        type: 'PRODUCT_UNHIGHLIGHTED' as const,
+        channelId: input.channelId,
+      };
+
+      // Broadcast via WebSocket
+      broadcastToChannel(input.channelId, unhighlightMessage);
+
+      // Emit via EventEmitter for tRPC subscriptions
+      channelEvents.emit(`channel:${input.channelId}:events`, unhighlightMessage);
+
+      return { success: true };
+    }),
+
+  /**
+   * Get the currently highlighted product in the channel
+   */
+  getHighlightedProduct: publicProcedure
+    .input(
+      z.object({
+        channelId: z.number(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in',
+        });
+      }
+
+      // Verify channel exists
+      const channel = await db
+        .selectFrom('channels')
+        .select(['id', 'highlighted_product_id', 'highlighted_at'])
+        .where('id', '=', input.channelId)
+        .executeTakeFirst();
+
+      if (!channel) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Channel not found',
+        });
+      }
+
+      // If no highlighted product, return null
+      if (!channel.highlighted_product_id) {
+        return {
+          product: null,
+          highlightedAt: null,
+        };
+      }
+
+      // Fetch product details
+      const product = await db
+        .selectFrom('products')
+        .select(['id', 'name', 'price', 'description', 'image_url'])
+        .where('id', '=', channel.highlighted_product_id)
+        .executeTakeFirst();
+
+      if (!product) {
+        return {
+          product: null,
+          highlightedAt: null,
+        };
+      }
+
+      return {
+        product: {
+          id: product.id,
+          name: product.name,
+          price: parseFloat(product.price ?? '0'),
+          description: product.description ?? '',
+          imageUrl: product.image_url,
+        },
+        highlightedAt: channel.highlighted_at,
+      };
+    }),
+
+  /**
+   * Subscribe to channel events (product highlights, etc.)
+   */
+  subscribeToEvents: publicProcedure
+    .input(z.object({ channelId: z.number() }))
+    .subscription(async ({ input, ctx }) => {
+      console.log(`📡 User ${ctx.userId || 'anonymous'} subscribed to channel events: ${input.channelId}`);
+
+      return observable<any>((emit) => {
+        const eventName = `channel:${input.channelId}:events`;
+
+        const handler = (data: any) => {
+          console.log(`📨 Sending event to subscriber on ${eventName}:`, data.type);
+          emit.next(data);
+        };
+
+        channelEvents.on(eventName, handler);
+
+        // Send current highlighted product immediately after subscription
+        (async () => {
+          try {
+            const channel = await db
+              .selectFrom('channels')
+              .select(['highlighted_product_id', 'highlighted_at'])
+              .where('id', '=', input.channelId)
+              .executeTakeFirst();
+
+            if (channel?.highlighted_product_id) {
+              const product = await db
+                .selectFrom('products')
+                .selectAll()
+                .where('id', '=', channel.highlighted_product_id)
+                .executeTakeFirst();
+
+              if (product) {
+                emit.next({
+                  type: 'PRODUCT_HIGHLIGHTED',
+                  channelId: input.channelId,
+                  product: {
+                    id: product.id,
+                    name: product.name,
+                    price: parseFloat(product.price ?? '0'),
+                    description: product.description ?? '',
+                    imageUrl: product.image_url,
+                  },
+                  highlightedAt: channel.highlighted_at?.toISOString(),
+                });
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching initial highlighted product:', error);
+          }
+        })();
+
+        // Cleanup on unsubscribe
+        return () => {
+          console.log(`📴 User unsubscribed from ${eventName}`);
+          channelEvents.off(eventName, handler);
+        };
+      });
     }),
 });

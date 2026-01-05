@@ -40,43 +40,45 @@
 ## Implementation Phases
 
 ### Phase 1: Backend - Database & tRPC Endpoints
-**Status**: 🔲 Not Started  
+**Status**: ✅ Complete  
 **Estimated Time**: 2-3 hours
 
 **Key Deliverables**:
-- [ ] Add `highlightedProductId` column to `channels` table (nullable)
-- [ ] Add `highlightedAt` timestamp to track when product was highlighted
-- [ ] Create migration for database changes
-- [ ] Create tRPC endpoints:
+- [x] Add `highlightedProductId` column to `channels` table (nullable)
+- [x] Add `highlightedAt` timestamp to track when product was highlighted
+- [x] Create migration for database changes
+- [x] Create tRPC endpoints:
   - `channel.highlightProduct` (SELLER only)
   - `channel.unhighlightProduct` (SELLER only)
   - `channel.getHighlightedProduct` (all authenticated users)
-- [ ] Add permission checks (SELLER role required)
-- [ ] Validate product is promoted to channel before highlighting
+- [x] Add permission checks (SELLER role required)
+- [x] Validate product is promoted to channel before highlighting
 
-**Files to Create/Modify**:
-- `migrations/XXXX_add_highlighted_product.ts`
-- `src/db/schema.ts` (if using schema file)
+**Files Created/Modified**:
+- `migrations/011_add_highlighted_product.ts`
+- `src/db/types.ts` (updated ChannelsTable interface)
 - `src/server/routers/channel.ts`
 
 ---
 
 ### Phase 2: Backend - WebSocket Real-time Broadcast
-**Status**: 🔲 Not Started  
+**Status**: ✅ Complete  
 **Estimated Time**: 2 hours
 
 **Key Deliverables**:
-- [ ] Define WebSocket message types:
+- [x] Define WebSocket message types:
   - `PRODUCT_HIGHLIGHTED` (with product details)
   - `PRODUCT_UNHIGHLIGHTED`
-- [ ] Broadcast highlight events to all channel participants
-- [ ] Send current highlight state when user joins channel
-- [ ] Update WebSocket message handler types
+- [x] Broadcast highlight events to all channel participants
+- [x] Send current highlight state when user subscribes to channel events
+- [x] Update WebSocket message handler types
 
-**Files to Create/Modify**:
-- `src/websocket/messageTypes.ts` (or equivalent)
-- `src/server/routers/channel.ts` (emit events after highlight/unhighlight)
-- `src/websocket/handlers.ts` (handle join events)
+**Files Created/Modified**:
+- `src/websocket/types.ts` (created - message type definitions)
+- `src/websocket/broadcast.ts` (created - channel broadcasting utilities)
+- `src/websocket/server.ts` (updated - cleanup on disconnect)
+- `src/server/routers/channel.ts` (added subscribeToEvents endpoint, emit events)
+
 
 ---
 
@@ -292,13 +294,13 @@ ChannelDetailsPage
 
 | Phase | Status | Hours Estimated | Hours Actual | Completed |
 |-------|--------|----------------|--------------|-----------|
-| Phase 1: Backend DB & tRPC | 🔲 Not Started | 2-3h | - | - |
-| Phase 2: WebSocket Broadcast | 🔲 Not Started | 2h | - | - |
+| Phase 1: Backend DB & tRPC | ✅ Complete | 2-3h | 1h | 2026-01-05 |
+| Phase 2: WebSocket Broadcast | ✅ Complete | 2h | 1h | 2026-01-05 |
 | Phase 3: Highlighted Product UI | 🔲 Not Started | 3h | - | - |
 | Phase 4: SELLER Controls | 🔲 Not Started | 2h | - | - |
 | Phase 5: BUYER Controls & WS | 🔲 Not Started | 2-3h | - | - |
 | Phase 6: Testing & Polish | 🔲 Not Started | 1-2h | - | - |
-| **TOTAL** | **0% Complete** | **12-15h** | **0h** | - |
+| **TOTAL** | **33% Complete** | **12-15h** | **2h** | - |
 
 ---
 
