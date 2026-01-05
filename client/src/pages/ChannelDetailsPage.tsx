@@ -16,6 +16,7 @@ import AgoraRTC, {
 import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
 import ParticipantList from "../components/ParticipantList";
+import PromotedProducts from "../components/PromotedProducts";
 import NetworkQuality from "../components/NetworkQuality";
 import Button from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -59,6 +60,7 @@ export default function ChannelDetailsPage() {
     null,
   );
   const [showParticipants, setShowParticipants] = useState(false);
+  const [showProducts, setShowProducts] = useState(false);
   const [channelConfig, setChannelConfig] = useState<ChannelConfig | null>(
     null,
   );
@@ -69,6 +71,12 @@ export default function ChannelDetailsPage() {
       navigate("/login");
     }
   }, [navigate]);
+
+  // Fetch promoted products for this channel
+  const { data: promotedProducts = [] } = trpc.product.listByChannel.useQuery(
+    { channelId: Number(channelId) },
+    { enabled: !!channelId }
+  );
 
   // Join channel mutation
   const joinMutation = trpc.channel.join.useMutation({
@@ -628,9 +636,11 @@ export default function ChannelDetailsPage() {
                 audioMuted={audioMuted}
                 videoMuted={videoMuted}
                 viewerCount={Array.from(remoteUsers.values()).length}
+                productCount={promotedProducts.filter((p) => p.isActive).length}
                 onToggleAudio={toggleAudio}
                 onToggleVideo={toggleVideo}
                 onShowParticipants={() => setShowParticipants(true)}
+                onShowProducts={() => setShowProducts(true)}
               />
             </div>
           )}
@@ -654,6 +664,12 @@ export default function ChannelDetailsPage() {
         remoteUsers={Array.from(remoteUsers.values())}
         isOpen={showParticipants}
         onClose={() => setShowParticipants(false)}
+      />
+
+      <PromotedProducts
+        products={promotedProducts}
+        isOpen={showProducts}
+        onClose={() => setShowProducts(false)}
       />
     </div>
   );
