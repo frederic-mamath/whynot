@@ -75,12 +75,12 @@ export default function AssociateProductModal({
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <LinkIcon className="w-6 h-6 text-indigo-600" />
-            <h2 className="text-xl font-bold text-gray-900">
+            <LinkIcon className="w-6 h-6 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">
               Channel Associations
             </h2>
           </div>
@@ -96,7 +96,7 @@ export default function AssociateProductModal({
             <div className="flex gap-2 mt-2">
               <select
                 id="channel"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                 value={selectedChannelId || ""}
                 onChange={(e) =>
                   setSelectedChannelId(Number(e.target.value) || null)
@@ -118,12 +118,12 @@ export default function AssociateProductModal({
               </Button>
             </div>
             {availableChannels.length === 0 && associations.length > 0 && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 All channels are already associated
               </p>
             )}
             {channels.length === 0 && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 No channels available
               </p>
             )}
@@ -131,11 +131,11 @@ export default function AssociateProductModal({
 
           {/* Current Associations */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">
+            <h3 className="font-semibold text-foreground mb-3">
               Current Associations
             </h3>
             {associations.length === 0 ? (
-              <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground bg-muted p-4 rounded-lg text-center">
                 No channel associations yet
               </p>
             ) : (
@@ -147,13 +147,13 @@ export default function AssociateProductModal({
                   return (
                     <div
                       key={assoc.channelId}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
                     >
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-foreground">
                           {channel?.name || "Unknown Channel"}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           Associated on{" "}
                           {new Date(assoc.createdAt).toLocaleDateString()}
                         </p>
@@ -175,7 +175,7 @@ export default function AssociateProductModal({
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6">
+        <div className="sticky bottom-0 bg-muted border-t border-border p-6">
           <Button variant="outline" onClick={onClose} className="w-full">
             Close
           </Button>

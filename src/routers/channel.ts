@@ -52,9 +52,13 @@ export const channelRouter = router({
       );
 
       // Generate Agora token for host
+      // Generate a dynamic UID to avoid conflicts when same user opens multiple tabs
+      // Use userId as base + random component to ensure uniqueness
+      const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
+      
       const token = generateAgoraToken({
         channelName: channel.id.toString(),
-        uid: ctx.userId,
+        uid: dynamicUid,
         role: 'host',
       });
 
@@ -62,7 +66,7 @@ export const channelRouter = router({
         channel,
         token,
         appId: getAgoraAppId(),
-        uid: ctx.userId,
+        uid: dynamicUid,
       };
     }),
 
@@ -128,9 +132,12 @@ export const channelRouter = router({
       }
 
       // Generate token for audience
+      // Generate a dynamic UID to avoid conflicts when same user opens multiple tabs
+      const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
+      
       const token = generateAgoraToken({
         channelName: channel.id.toString(),
-        uid: ctx.userId,
+        uid: dynamicUid,
         role: 'audience',
       });
 
@@ -138,7 +145,7 @@ export const channelRouter = router({
         channel,
         token,
         appId: getAgoraAppId(),
-        uid: ctx.userId,
+        uid: dynamicUid,
       };
     }),
 
