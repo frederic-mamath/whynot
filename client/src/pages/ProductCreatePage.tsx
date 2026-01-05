@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import Container from '../components/Container';
 
-export default function CreateProductPage() {
+export default function ProductCreatePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;

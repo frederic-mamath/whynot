@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import ProductCard from "../components/ProductCard";
 import Container from "../components/Container";
 
-export default function ProductsPage() {
+export default function ProductListPage() {
   const { id } = useParams<{ id: string }>();
   const shopIdNum = id ? parseInt(id, 10) : 0;
 

@@ -17,7 +17,7 @@ export default function ShopCreatePage() {
   const createShopMutation = trpc.shop.create.useMutation({
     onSuccess: (shop) => {
       toast.success('Shop created successfully!');
-      navigate(`/shop/${shop.id}`);
+      navigate(`/shops/${shop.id}`);
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create shop');

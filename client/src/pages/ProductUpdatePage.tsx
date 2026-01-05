@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import Container from '../components/Container';
 import AssociateProductModal from '../components/AssociateProductModal';
 
-export default function EditProductPage() {
+export default function ProductUpdatePage() {
   const { id, productId } = useParams<{ id: string; productId: string }>();
   const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;

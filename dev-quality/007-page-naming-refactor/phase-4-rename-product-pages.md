@@ -80,12 +80,12 @@ Rename all Product-related pages to follow the `<Entity><Action>Page` naming con
 
 ## Acceptance Criteria
 
-- [ ] All 3 product pages renamed using `git mv`
-- [ ] Component export names updated in each file
-- [ ] All imports in App.tsx updated
-- [ ] ShopLayout.tsx imports and routes updated
-- [ ] No other references to old names in codebase
-- [ ] `npm run build` succeeds without errors
+- [x] All 3 product pages renamed using `git mv`
+- [x] Component export names updated in each file
+- [x] All imports in App.tsx updated
+- [x] ShopLayout.tsx imports and routes updated
+- [x] No other references to old names in codebase
+- [x] `npm run build` succeeds without errors
 - [ ] Route `/shops/:id/products` loads correctly
 - [ ] Route `/shops/:id/products/create` loads correctly
 - [ ] Route `/shops/:shopId/products/:id/edit` loads correctly
@@ -94,7 +94,7 @@ Rename all Product-related pages to follow the `<Entity><Action>Page` naming con
 
 ## Status
 
-📝 PLANNING
+⏳ IN PROGRESS - Files renamed, build successful, ready for manual testing
 
 ## Notes
 

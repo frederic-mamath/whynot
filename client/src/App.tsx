@@ -16,9 +16,9 @@ import ChannelDetailsPage from "./pages/ChannelDetailsPage";
 import ShopListPage from "./pages/ShopListPage";
 import ShopCreatePage from "./pages/ShopCreatePage";
 import ShopDetailsPage from "./pages/ShopDetailsPage";
-import ProductsPage from "./pages/ProductsPage";
-import CreateProductPage from "./pages/CreateProductPage";
-import EditProductPage from "./pages/EditProductPage";
+import ProductListPage from "./pages/ProductListPage";
+import ProductCreatePage from "./pages/ProductCreatePage";
+import ProductUpdatePage from "./pages/ProductUpdatePage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -43,11 +43,11 @@ function AppContent() {
         <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><ShopCreatePage /></ProtectedRoute>} />
         <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
           <Route index element={<ShopDetailsPage />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="products/create" element={<CreateProductPage />} />
+          <Route path="products" element={<ProductListPage />} />
+          <Route path="products/create" element={<ProductCreatePage />} />
           <Route
             path="products/:productId/edit"
-            element={<EditProductPage />}
+            element={<ProductUpdatePage />}
           />
         </Route>
       </Routes>
