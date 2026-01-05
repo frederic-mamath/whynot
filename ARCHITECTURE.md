@@ -32,6 +32,94 @@ WhyNot is a full-stack authentication application using a type-safe API architec
 
 ---
 
+## Frontend Page Architecture
+
+### Page Naming Convention
+
+All page components follow the **`<Entity><Action>Page`** pattern for consistency, predictability, and scalability.
+
+#### Pattern: `<Entity><Action>Page.tsx`
+
+- **Entity**: Singular noun representing the resource (Channel, Shop, Product, User)
+- **Action**: One of four CRUD-aligned actions:
+  - **`List`** - Display multiple items (browse/search view)
+  - **`Details`** - Display single item (read-only detail view)
+  - **`Create`** - Form to create a new item
+  - **`Update`** - Form to edit an existing item
+
+#### Page Types by Entity
+
+**Channel Pages**:
+- `ChannelListPage.tsx` - Browse all available channels
+- `ChannelDetailsPage.tsx` - View/join a specific channel (live video stream)
+- `ChannelCreatePage.tsx` - Create a new channel
+
+**Shop Pages**:
+- `ShopListPage.tsx` - Browse all shops
+- `ShopDetailsPage.tsx` - View shop info and products
+- `ShopCreatePage.tsx` - Create a new shop
+
+**Product Pages**:
+- `ProductListPage.tsx` - List products within a shop
+- `ProductDetailsPage.tsx` - View single product details _(future)_
+- `ProductCreatePage.tsx` - Create a new product
+- `ProductUpdatePage.tsx` - Edit an existing product
+
+**User Pages**:
+- `LoginPage.tsx` - User authentication
+- `RegisterPage.tsx` - User registration
+- `DashboardPage.tsx` - User dashboard/home
+
+**Other Pages**:
+- `LandingPage.tsx` - Marketing/landing page
+
+#### File Organization
+
+```
+client/src/pages/
+├── ChannelListPage.tsx       # List all channels
+├── ChannelDetailsPage.tsx    # View/join channel (video stream)
+├── ChannelCreatePage.tsx     # Create channel form
+├── ShopListPage.tsx          # List all shops
+├── ShopDetailsPage.tsx       # Shop overview + products
+├── ShopCreatePage.tsx        # Create shop form
+├── ProductListPage.tsx       # Products in a shop
+├── ProductCreatePage.tsx     # Create product form
+├── ProductUpdatePage.tsx     # Edit product form
+├── DashboardPage.tsx         # User dashboard
+├── LoginPage.tsx             # Login form
+├── RegisterPage.tsx          # Registration form
+├── LandingPage.tsx           # Home/marketing page
+└── ShopLayout.tsx            # Layout wrapper (not a page)
+```
+
+#### Route Mapping
+
+Routes follow RESTful conventions:
+
+| Page | Route | Description |
+|------|-------|-------------|
+| `ChannelListPage` | `/channels` | List all channels |
+| `ChannelDetailsPage` | `/channel/:id` | View specific channel |
+| `ChannelCreatePage` | `/create-channel` | Create new channel |
+| `ShopListPage` | `/shops` | List all shops |
+| `ShopDetailsPage` | `/shop/:id` | View specific shop |
+| `ShopCreatePage` | `/shop/create` | Create new shop |
+| `ProductListPage` | `/shops/:id/products` | Products in shop |
+| `ProductCreatePage` | `/shops/:id/products/create` | Create product |
+| `ProductUpdatePage` | `/shops/:shopId/products/:id/edit` | Edit product |
+
+#### Benefits
+
+1. **Predictable** - Know exactly where to find entity-related pages
+2. **Scalable** - Easy to add new entities (e.g., `OrderListPage`, `OrderDetailsPage`)
+3. **IDE-friendly** - Autocomplete shows all related pages when typing entity name
+4. **Consistent** - Same pattern across entire codebase
+5. **Industry-standard** - Aligns with Next.js App Router and modern React conventions
+6. **Self-documenting** - File name describes purpose without opening the file
+
+---
+
 ## Architecture Patterns
 
 ### 1. **API Layer - tRPC (Type-Safe RPC)**
