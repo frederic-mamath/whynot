@@ -14,7 +14,7 @@ import {
   CardContent,
 } from "../components/ui/card";
 
-export default function CreateChannelPage() {
+export default function ChannelCreatePage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [maxParticipants, setMaxParticipants] = useState(10);

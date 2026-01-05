@@ -14,7 +14,7 @@ import {
 import { Skeleton } from "../components/ui/skeleton";
 import { Alert, AlertDescription } from "../components/ui/alert";
 
-export default function ChannelsPage() {
+export default function ChannelListPage() {
   const navigate = useNavigate();
   const { data: channels, isLoading } = trpc.channel.list.useQuery();
   const { data: userRoles, isLoading: isLoadingRoles } =

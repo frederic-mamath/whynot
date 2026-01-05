@@ -21,7 +21,7 @@ Rename all pages to follow the `<Entity><Action>Page` pattern (where Action is L
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Phase 1 | Update ARCHITECTURE.md with page naming guidelines | ✅ DONE |
-| Phase 2 | Rename Channel pages (3 files) | 📝 PLANNING |
+| Phase 2 | Rename Channel pages (3 files) | ⏳ IN PROGRESS |
 | Phase 3 | Rename Shop pages (3 files) | 📝 PLANNING |
 | Phase 4 | Rename Product pages (3 files) | 📝 PLANNING |
 | Phase 5 | Verification & testing | 📝 PLANNING |

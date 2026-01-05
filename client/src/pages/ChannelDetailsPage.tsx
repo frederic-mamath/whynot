@@ -31,7 +31,7 @@ interface ChannelConfig {
   uid: number;
 }
 
-export default function ChannelPage() {
+export default function ChannelDetailsPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
   const { role, canPublish, isLoading: roleLoading } = useUserRole();

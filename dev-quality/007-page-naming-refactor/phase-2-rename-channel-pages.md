@@ -75,10 +75,10 @@ Rename all Channel-related pages to follow the `<Entity><Action>Page` naming con
 ## Acceptance Criteria
 
 - [x] All 3 channel pages renamed using `git mv`
-- [ ] Component export names updated in each file
-- [ ] All imports in App.tsx updated
-- [ ] No other references to old names in codebase
-- [ ] `npm run build` succeeds without errors
+- [x] Component export names updated in each file
+- [x] All imports in App.tsx updated
+- [x] No other references to old names in codebase
+- [x] `npm run build` succeeds without errors
 - [ ] Route `/channels` loads correctly
 - [ ] Route `/channel/:id` loads correctly
 - [ ] Route `/create-channel` loads correctly
@@ -86,7 +86,7 @@ Rename all Channel-related pages to follow the `<Entity><Action>Page` naming con
 
 ## Status
 
-📝 PLANNING
+⏳ IN PROGRESS - Files renamed, build successful, ready for manual testing
 
 ## Notes
 
