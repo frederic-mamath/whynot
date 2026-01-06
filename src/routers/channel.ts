@@ -370,19 +370,18 @@ export const channelRouter = router({
         });
       }
 
-      // Verify product is promoted to this channel
-      const promotion = await db
-        .selectFrom('vendor_promoted_products')
+      // Verify product is associated with this channel
+      const channelProduct = await db
+        .selectFrom('channel_products')
         .select(['id', 'product_id'])
         .where('channel_id', '=', input.channelId)
         .where('product_id', '=', input.productId)
-        .where('unpromoted_at', 'is', null)
         .executeTakeFirst();
 
-      if (!promotion) {
+      if (!channelProduct) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Product is not promoted to this channel',
+          message: 'Product is not associated with this channel',
         });
       }
 
