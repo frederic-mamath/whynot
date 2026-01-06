@@ -622,25 +622,6 @@ export default function ChannelDetailsPage() {
       <div className="relative w-full h-full lg:w-full lg:max-w-[600px] lg:h-[90vh]">
         {/* Aspect Ratio Container - Full screen on mobile, 9:16 on desktop */}
         <div className="absolute inset-0 lg:aspect-[9/16] lg:mx-auto bg-black lg:rounded-lg overflow-hidden">
-          {/* Minimal Header Overlay */}
-          <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/60 to-transparent">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLeave}
-                className="text-white hover:bg-white/20"
-              >
-                <ArrowLeft className="size-5" />
-              </Button>
-
-              <div className="flex items-center gap-2">
-                <RoleBadge role={role} />
-                <NetworkQuality client={client} />
-              </div>
-            </div>
-          </div>
-
           {/* Main Video Container */}
           <div className="relative w-full h-full bg-black">
             {/* Remote User Video (Primary - The Broadcaster) */}
@@ -751,6 +732,25 @@ export default function ChannelDetailsPage() {
               />
             </div>
           )}
+
+          {/* Minimal Header Overlay */}
+          <div className="absolute top-0 left-0 right-0 z-30 p-4 bg-gradient-to-b from-black/60 to-transparent">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLeave}
+                className="text-white hover:bg-white/20"
+              >
+                <ArrowLeft className="size-5" />
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <RoleBadge role={role} />
+                <NetworkQuality client={client} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
