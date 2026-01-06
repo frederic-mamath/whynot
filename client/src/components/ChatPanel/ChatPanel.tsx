@@ -5,13 +5,29 @@ import { MessageInput } from "../MessageInput";
 import { MessageCircle, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { useWebSocketStatus } from "@/hooks/useWebSocketStatus";
+import { HighlightedProduct } from "../HighlightedProduct";
 
 interface ChatPanelProps {
   channelId: number;
   currentUserId: number;
+  highlightedProduct?: {
+    id: number;
+    name: string;
+    price: number;
+    description: string;
+    imageUrl: string | null;
+  } | null;
+  showHighlightedProduct?: boolean;
+  onToggleHighlightedProduct?: () => void;
 }
 
-export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
+export function ChatPanel({ 
+  channelId, 
+  currentUserId,
+  highlightedProduct,
+  showHighlightedProduct = true,
+  onToggleHighlightedProduct,
+}: ChatPanelProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const { isConnected } = useWebSocketStatus();
 
@@ -85,6 +101,17 @@ export function ChatPanel({ channelId, currentUserId }: ChatPanelProps) {
           // disabled={sendMessageMutation.isLoading || !isConnected}
         />
       </div>
+
+      {/* Highlighted Product (Above input) */}
+      {highlightedProduct && showHighlightedProduct && (
+        <div className="shrink-0 px-4 pb-2 bg-black/80 backdrop-blur-sm">
+          <HighlightedProduct
+            product={highlightedProduct}
+            onClose={onToggleHighlightedProduct}
+            showCloseButton={!!onToggleHighlightedProduct}
+          />
+        </div>
+      )}
     </div>
   );
 }

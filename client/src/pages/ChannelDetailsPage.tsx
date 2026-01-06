@@ -6,6 +6,7 @@ import {
   WifiOff,
   ArrowLeft,
   Eye,
+  Sparkles,
 } from "lucide-react";
 import AgoraRTC, {
   IAgoraRTCClient,
@@ -24,12 +25,14 @@ import { useUserRole } from "../hooks/useUserRole";
 import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
 import VerticalControlPanel from "../components/VerticalControlPanel";
+import { toast } from "sonner";
 
 interface ChannelConfig {
   appId: string;
   token: string;
   channelName: string;
   uid: number;
+  isHost: boolean;
 }
 
 export default function ChannelDetailsPage() {
@@ -61,9 +64,17 @@ export default function ChannelDetailsPage() {
   );
   const [showParticipants, setShowParticipants] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
+  const [showHighlightedProduct, setShowHighlightedProduct] = useState(true);
   const [channelConfig, setChannelConfig] = useState<ChannelConfig | null>(
     null,
   );
+  const [highlightedProduct, setHighlightedProduct] = useState<{
+    id: number;
+    name: string;
+    price: number;
+    description: string;
+    imageUrl: string | null;
+  } | null>(null);
 
   // Check authentication
   useEffect(() => {
@@ -78,6 +89,55 @@ export default function ChannelDetailsPage() {
     { enabled: !!channelId }
   );
 
+  // Fetch highlighted product on mount
+  const { data: highlightedData } = trpc.channel.getHighlightedProduct.useQuery(
+    { channelId: Number(channelId) },
+    { enabled: !!channelId }
+  );
+
+  // Update highlighted product when data changes
+  useEffect(() => {
+    if (highlightedData?.product) {
+      setHighlightedProduct({
+        id: highlightedData.product.id,
+        name: highlightedData.product.name,
+        price: parseFloat(highlightedData.product.price || '0'),
+        description: highlightedData.product.description || '',
+        imageUrl: highlightedData.product.imageUrl,
+      });
+    } else {
+      setHighlightedProduct(null);
+    }
+  }, [highlightedData]);
+
+  // WebSocket subscription for channel events (highlight/unhighlight)
+  trpc.channel.subscribeToEvents.useSubscription(
+    { channelId: Number(channelId) },
+    {
+      enabled: !!channelId,
+      onData: (event) => {
+        if (event.type === 'PRODUCT_HIGHLIGHTED') {
+          setHighlightedProduct({
+            id: event.product.id,
+            name: event.product.name,
+            price: event.product.price,
+            description: event.product.description,
+            imageUrl: event.product.imageUrl,
+          });
+          toast.success(`${event.product.name} is now highlighted!`, {
+            icon: <Sparkles className="size-4 text-primary" />,
+          });
+        } else if (event.type === 'PRODUCT_UNHIGHLIGHTED') {
+          setHighlightedProduct(null);
+          toast.info('Product unhighlighted');
+        }
+      },
+      onError: (error) => {
+        console.error('Channel events subscription error:', error);
+      },
+    }
+  );
+
   // Join channel mutation
   const joinMutation = trpc.channel.join.useMutation({
     onSuccess: async (data) => {
@@ -86,6 +146,7 @@ export default function ChannelDetailsPage() {
         token: data.token,
         channelName: data.channel.id.toString(),
         uid: data.uid,
+        isHost: data.isHost,
       };
       setChannelConfig(config);
       await initializeAgora(config);
@@ -217,31 +278,61 @@ export default function ChannelDetailsPage() {
       }
 
       // Only create and publish tracks for sellers (broadcasters)
-      if (canPublish) {
+      if (config.isHost) {
         console.log(
           "🎥 Creating local video and audio tracks (broadcaster mode)...",
         );
-        const videoTrack = await AgoraRTC.createCameraVideoTrack();
-        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        console.log("✅ Local tracks created");
-
-        await agoraClient.publish([videoTrack, audioTrack]);
-        console.log("✅ Local tracks published");
-
-        setLocalVideoTrack(videoTrack);
-        setLocalAudioTrack(audioTrack);
-
-        // Wait for DOM to update, then play local video
-        setTimeout(() => {
-          const localPlayerElement = document.getElementById("local-player");
-          console.log("🎬 Playing local video to element:", localPlayerElement);
-          if (localPlayerElement) {
-            videoTrack.play("local-player");
-            console.log("✅ Local video playing");
-          } else {
-            console.error("❌ local-player element not found!");
+        
+        try {
+          // Check for device permissions first
+          const devices = await AgoraRTC.getDevices();
+          console.log("📱 Available devices:", devices);
+          
+          const cameras = devices.filter(d => d.kind === 'videoinput');
+          const microphones = devices.filter(d => d.kind === 'audioinput');
+          
+          console.log(`🎥 Found ${cameras.length} camera(s), ${microphones.length} microphone(s)`);
+          
+          if (cameras.length === 0 || microphones.length === 0) {
+            throw new Error(
+              `Missing devices: ${cameras.length === 0 ? 'No camera' : ''} ${microphones.length === 0 ? 'No microphone' : ''}`
+            );
           }
-        }, 100);
+
+          // Request permissions explicitly
+          try {
+            await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            console.log("✅ Browser permissions granted");
+          } catch (permErr: any) {
+            console.error("❌ Browser permission denied:", permErr);
+            throw new Error(`Camera/Microphone permission denied: ${permErr.message}`);
+          }
+
+          const videoTrack = await AgoraRTC.createCameraVideoTrack();
+          const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+          console.log("✅ Local tracks created");
+
+          await agoraClient.publish([videoTrack, audioTrack]);
+          console.log("✅ Local tracks published");
+
+          setLocalVideoTrack(videoTrack);
+          setLocalAudioTrack(audioTrack);
+
+          // Wait for DOM to update, then play local video
+          setTimeout(() => {
+            const localPlayerElement = document.getElementById("local-player");
+            console.log("🎬 Playing local video to element:", localPlayerElement);
+            if (localPlayerElement) {
+              videoTrack.play("local-player");
+              console.log("✅ Local video playing");
+            } else {
+              console.error("❌ local-player element not found!");
+            }
+          }, 100);
+        } catch (trackErr: any) {
+          console.error("❌ Failed to create/publish tracks:", trackErr);
+          throw new Error(`Failed to access camera/microphone: ${trackErr.message}`);
+        }
       } else {
         console.log(
           "👁️ Joined as viewer (audience mode) - not publishing tracks",
@@ -252,7 +343,7 @@ export default function ChannelDetailsPage() {
       setJoined(true);
 
       console.log(
-        `Successfully joined the channel as ${canPublish ? "broadcaster" : "viewer"}!`,
+        `Successfully joined the channel as ${config.isHost ? "broadcaster" : "viewer"}!`,
       );
     } catch (err: any) {
       // Don't show error if it was a UID_CONFLICT that we handled
@@ -588,7 +679,7 @@ export default function ChannelDetailsPage() {
               // Placeholder when no broadcaster
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center space-y-4 text-white">
-                  {canPublish ? (
+                  {channelConfig?.isHost ? (
                     <>
                       <UsersIcon className="size-16 mx-auto text-white/60" />
                       <h3 className="text-lg font-semibold">
@@ -615,7 +706,7 @@ export default function ChannelDetailsPage() {
           </div>
 
           {/* Local Video (Picture-in-Picture) - Only for Broadcasters */}
-          {canPublish && localVideoTrack && (
+          {channelConfig?.isHost && localVideoTrack && (
             <div className="absolute top-20 right-4 w-24 h-32 z-20">
               <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg">
                 <div
@@ -636,22 +727,27 @@ export default function ChannelDetailsPage() {
               videoMuted={videoMuted}
               viewerCount={Array.from(remoteUsers.values()).length}
               productCount={promotedProducts.filter((p) => p.isActive).length}
-              showBroadcastControls={canPublish}
-              onToggleAudio={canPublish ? toggleAudio : undefined}
-              onToggleVideo={canPublish ? toggleVideo : undefined}
+              highlightedProductCount={highlightedProduct ? 1 : 0}
+              showBroadcastControls={channelConfig?.isHost ?? false}
+              onToggleAudio={channelConfig?.isHost ? toggleAudio : undefined}
+              onToggleVideo={channelConfig?.isHost ? toggleVideo : undefined}
               onShowParticipants={() => setShowParticipants(true)}
               onShowProducts={() => setShowProducts(true)}
+              onToggleHighlightedProduct={() => setShowHighlightedProduct(!showHighlightedProduct)}
             />
           </div>
 
           {/* Chat Panel - Bottom overlay, positioned to left of controls */}
           {currentUser && channelId && (
             <div
-              className={`absolute inset-0 z-20 ${canPublish ? "right-20" : "right-0"}`}
+              className={`absolute inset-0 z-20 ${channelConfig?.isHost ? "right-20" : "right-0"}`}
             >
               <ChatPanel
                 channelId={Number(channelId)}
                 currentUserId={currentUser.id}
+                highlightedProduct={highlightedProduct}
+                showHighlightedProduct={showHighlightedProduct}
+                onToggleHighlightedProduct={() => setShowHighlightedProduct(!showHighlightedProduct)}
               />
             </div>
           )}
@@ -669,6 +765,9 @@ export default function ChannelDetailsPage() {
         products={promotedProducts}
         isOpen={showProducts}
         onClose={() => setShowProducts(false)}
+        channelId={Number(channelId)}
+        canHighlight={channelConfig?.isHost ?? false}
+        highlightedProductId={highlightedProduct?.id}
       />
     </div>
   );

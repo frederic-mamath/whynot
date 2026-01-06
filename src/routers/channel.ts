@@ -84,6 +84,7 @@ export const channelRouter = router({
         token,
         appId: getAgoraAppId(),
         uid: dynamicUid,
+        isHost: true,
       };
     }),
 
@@ -163,6 +164,7 @@ export const channelRouter = router({
         token,
         appId: getAgoraAppId(),
         uid: dynamicUid,
+        isHost: channel.host_id === ctx.userId,
       };
     }),
 

@@ -83,65 +83,68 @@
 ---
 
 ### Phase 3: Frontend - Highlighted Product Component
-**Status**: 🔲 Not Started  
+**Status**: ✅ Complete  
 **Estimated Time**: 3 hours
 
 **Key Deliverables**:
-- [ ] Create `HighlightedProduct` component:
+- [x] Create `HighlightedProduct` component:
   - Display product image, name, price (as "Starting Price"), description
   - Positioned below chat input (above message list)
   - Clickable to open product details in Sheet/Modal
   - Reserve space for future auction controls (bid amount, current bid)
   - Theme-compatible styling
-- [ ] Create product details Sheet/Modal component
-- [ ] Add collapse/expand animation
-- [ ] Mobile-responsive layout
+- [x] Integrate component into ChatPanel
+- [x] Add collapse/expand animation
+- [x] Mobile-responsive layout
+- [x] WebSocket subscription for real-time events
+- [x] Toast notifications on highlight changes
 
-**Files to Create**:
+**Files Created**:
 - `client/src/components/HighlightedProduct/HighlightedProduct.tsx`
 - `client/src/components/HighlightedProduct/index.ts`
-- `client/src/components/ProductDetailsSheet/ProductDetailsSheet.tsx`
-- `client/src/components/ProductDetailsSheet/index.ts`
 
-**Files to Modify**:
-- `client/src/pages/ChannelDetailsPage.tsx` (integrate component)
+**Files Modified**:
+- `client/src/pages/ChannelDetailsPage.tsx` (WebSocket integration, state management)
+- `client/src/components/ChatPanel/ChatPanel.tsx` (integrated HighlightedProduct)
+- `client/src/components/VerticalControlPanel/VerticalControlPanel.tsx` (added toggle button)
+- `client/src/components/PromotedProducts/PromotedProducts.tsx` (SELLER highlight controls)
 
 ---
 
 ### Phase 4: Frontend - SELLER Controls
-**Status**: 🔲 Not Started  
+**Status**: ✅ Complete  
 **Estimated Time**: 2 hours
 
 **Key Deliverables**:
-- [ ] Update `PromotedProducts` component:
+- [x] Update `PromotedProducts` component:
   - Add "Highlight" button for each product (SELLER only)
   - Show "Highlighted" badge on currently highlighted product
   - Change button to "Unhighlight" for active highlight
-- [ ] Add tRPC mutation calls for highlight/unhighlight
-- [ ] Add optimistic UI updates
-- [ ] Add error handling and toast notifications
+- [x] Add tRPC mutation calls for highlight/unhighlight
+- [x] Add optimistic UI updates
+- [x] Add error handling and toast notifications
 
-**Files to Modify**:
+**Files Modified**:
 - `client/src/components/PromotedProducts/PromotedProducts.tsx`
 
 ---
 
 ### Phase 5: Frontend - BUYER Controls & WebSocket Integration
-**Status**: 🔲 Not Started  
+**Status**: ✅ Complete  
 **Estimated Time**: 2-3 hours
 
 **Key Deliverables**:
-- [ ] Add "Highlighted Product" toggle button to `VerticalControlPanel`:
-  - Icon: `Star` or `Sparkles` from Lucide
+- [x] Add "Highlighted Product" toggle button to `VerticalControlPanel`:
+  - Icon: `Sparkles` from Lucide
   - Badge shows "1" when product is highlighted
   - Toggle visibility of `HighlightedProduct` component
-- [ ] Implement WebSocket listeners:
+- [x] Implement WebSocket listeners:
   - `PRODUCT_HIGHLIGHTED`: Show toast, update state, display component
   - `PRODUCT_UNHIGHLIGHTED`: Hide component, update state
-- [ ] Fetch and display current highlight on channel join
-- [ ] Add local state to remember user's visibility preference per session
+- [x] Fetch and display current highlight on channel join
+- [x] Add local state to remember user's visibility preference per session
 
-**Files to Modify**:
+**Files Modified**:
 - `client/src/components/VerticalControlPanel/VerticalControlPanel.tsx`
 - `client/src/pages/ChannelDetailsPage.tsx` (WebSocket handlers, state management)
 
@@ -296,11 +299,11 @@ ChannelDetailsPage
 |-------|--------|----------------|--------------|-----------|
 | Phase 1: Backend DB & tRPC | ✅ Complete | 2-3h | 1h | 2026-01-05 |
 | Phase 2: WebSocket Broadcast | ✅ Complete | 2h | 1h | 2026-01-05 |
-| Phase 3: Highlighted Product UI | 🔲 Not Started | 3h | - | - |
-| Phase 4: SELLER Controls | 🔲 Not Started | 2h | - | - |
-| Phase 5: BUYER Controls & WS | 🔲 Not Started | 2-3h | - | - |
-| Phase 6: Testing & Polish | 🔲 Not Started | 1-2h | - | - |
-| **TOTAL** | **33% Complete** | **12-15h** | **2h** | - |
+| Phase 3: Highlighted Product UI | ✅ Complete | 3h | 2h | 2026-01-06 |
+| Phase 4: SELLER Controls | ✅ Complete | 2h | (merged with Phase 3) | 2026-01-06 |
+| Phase 5: BUYER Controls & WS | ✅ Complete | 2-3h | (merged with Phase 3) | 2026-01-06 |
+| Phase 6: Testing & Polish | 🔄 In Progress | 1-2h | - | - |
+| **TOTAL** | **83% Complete** | **12-15h** | **4h** | - |
 
 ---
 

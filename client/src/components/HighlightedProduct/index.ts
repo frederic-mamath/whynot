@@ -1,0 +1,1 @@
+export { HighlightedProduct } from "./HighlightedProduct";

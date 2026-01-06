@@ -1,4 +1,4 @@
-import { Mic, MicOff, Video, VideoOff, Users as UsersIcon, ShoppingBag } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Users as UsersIcon, ShoppingBag, Sparkles } from "lucide-react";
 import Button from "../ui/button";
 
 interface VerticalControlPanelProps {
@@ -6,11 +6,13 @@ interface VerticalControlPanelProps {
   videoMuted?: boolean;
   viewerCount: number;
   productCount?: number;
+  highlightedProductCount?: number;
   showBroadcastControls?: boolean;
   onToggleAudio?: () => void;
   onToggleVideo?: () => void;
   onShowParticipants: () => void;
   onShowProducts?: () => void;
+  onToggleHighlightedProduct?: () => void;
 }
 
 export default function VerticalControlPanel({
@@ -18,11 +20,13 @@ export default function VerticalControlPanel({
   videoMuted = false,
   viewerCount,
   productCount = 0,
+  highlightedProductCount = 0,
   showBroadcastControls = true,
   onToggleAudio,
   onToggleVideo,
   onShowParticipants,
   onShowProducts,
+  onToggleHighlightedProduct,
 }: VerticalControlPanelProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -85,6 +89,23 @@ export default function VerticalControlPanel({
           {productCount > 0 && (
             <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
               {productCount}
+            </span>
+          )}
+        </Button>
+      )}
+
+      {onToggleHighlightedProduct && (
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={onToggleHighlightedProduct}
+          title="Toggle highlighted product"
+          className="shrink-0 relative shadow-lg"
+        >
+          <Sparkles className="size-5" />
+          {highlightedProductCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
+              {highlightedProductCount}
             </span>
           )}
         </Button>

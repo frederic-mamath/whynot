@@ -6,7 +6,10 @@ import {
   SheetDescription,
 } from '../ui/sheet';
 import { Badge } from '../ui/badge';
-import { Package, ShoppingBag } from 'lucide-react';
+import { Package, ShoppingBag, Sparkles, X } from 'lucide-react';
+import Button from '../ui/button';
+import { trpc } from '@/lib/trpc';
+import { toast } from 'sonner';
 
 interface Product {
   id: number;
@@ -21,14 +24,46 @@ interface PromotedProductsProps {
   products: Product[];
   isOpen: boolean;
   onClose: () => void;
+  channelId: number;
+  canHighlight?: boolean;
+  highlightedProductId?: number | null;
 }
 
 export default function PromotedProducts({
   products,
   isOpen,
   onClose,
+  channelId,
+  canHighlight = false,
+  highlightedProductId = null,
 }: PromotedProductsProps) {
   const activeProducts = products.filter((p) => p.isActive);
+
+  const highlightMutation = trpc.channel.highlightProduct.useMutation({
+    onSuccess: () => {
+      toast.success('Product highlighted!');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to highlight product');
+    },
+  });
+
+  const unhighlightMutation = trpc.channel.unhighlightProduct.useMutation({
+    onSuccess: () => {
+      toast.success('Product unhighlighted');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to unhighlight product');
+    },
+  });
+
+  const handleHighlight = (productId: number) => {
+    highlightMutation.mutate({ channelId, productId });
+  };
+
+  const handleUnhighlight = () => {
+    unhighlightMutation.mutate({ channelId });
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -90,9 +125,46 @@ export default function PromotedProducts({
                     </div>
 
                     {product.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                         {product.description}
                       </p>
+                    )}
+
+                    {/* Highlight Controls (SELLER only) */}
+                    {canHighlight && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {highlightedProductId === product.id ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleUnhighlight}
+                            disabled={unhighlightMutation.isPending}
+                            className="w-full h-7 text-xs"
+                          >
+                            <X className="size-3 mr-1" />
+                            Unhighlight
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleHighlight(product.id)}
+                            disabled={highlightMutation.isPending}
+                            className="w-full h-7 text-xs"
+                          >
+                            <Sparkles className="size-3 mr-1" />
+                            Highlight
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Highlighted Badge (visible to all) */}
+                    {highlightedProductId === product.id && !canHighlight && (
+                      <Badge variant="secondary" className="text-xs mt-2">
+                        <Sparkles className="size-3 mr-1" />
+                        Currently Highlighted
+                      </Badge>
                     )}
                   </div>
                 </div>
