@@ -17,7 +17,6 @@ export function MessageList({
 
   // Auto-scroll to bottom on new message
   useEffect(() => {
-    console.log("scrooooooollliing");
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -45,11 +44,11 @@ export function MessageList({
   }
 
   return (
-    <div className="relative max-h-64 rounded-lg ">
+    <div className="relative rounded-lg ">
       <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black via-black/50 to-transparent" />
       <div
         ref={scrollRef}
-        className="relative max-h-64 overflow-y-auto pb-2 px-3 pt-2 space-y-2 scroll-smooth"
+        className="relative max-h-40 overflow-y-auto pb-2 px-3 pt-2 space-y-2 scroll-smooth"
       >
         {messages.map((message) => (
           <Message

@@ -21,8 +21,8 @@ interface ChatPanelProps {
   onToggleHighlightedProduct?: () => void;
 }
 
-export function ChatPanel({ 
-  channelId, 
+export function ChatPanel({
+  channelId,
   currentUserId,
   highlightedProduct,
   showHighlightedProduct = true,
@@ -86,7 +86,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className="flex flex-col max-h-80 bottom-[0] absolute w-full">
+    <div className="flex flex-col bottom-[0] absolute w-full">
       {/* Message List - Compact overlay style */}
       <MessageList
         messages={messages}
