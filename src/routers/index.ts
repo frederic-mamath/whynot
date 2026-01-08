@@ -6,6 +6,8 @@ import { productRouter } from './product';
 import { vendorPromotionRouter } from './vendorPromotion';
 import { roleRouter } from './role';
 import { messageRouter } from './message';
+import { auctionRouter } from './auction';
+import { orderRouter } from './order';
 
 export const appRouter = router({
   auth: authRouter,
@@ -15,6 +17,8 @@ export const appRouter = router({
   vendorPromotion: vendorPromotionRouter,
   role: roleRouter,
   message: messageRouter,
+  auction: auctionRouter,
+  order: orderRouter,
 });
 
 export type AppRouter = typeof appRouter;

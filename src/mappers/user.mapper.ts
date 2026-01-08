@@ -19,5 +19,7 @@ export function mapCreateUserInboundDtoToUser(dto: UserInboundDto, hashedPasswor
     password: hashedPassword,
     firstname: dto.firstName ?? null,
     lastname: dto.lastName ?? null,
+    stripe_account_id: null,
+    stripe_onboarding_complete: false,
   };
 }

@@ -23,3 +23,12 @@ export { vendorPromotedProductRepository } from './VendorPromotedProductReposito
 export { roleRepository } from './RoleRepository';
 export { userRoleRepository } from './UserRoleRepository';
 export { messageRepository } from './MessageRepository';
+
+// Auction-related repositories
+import { AuctionRepository } from './AuctionRepository';
+import { BidRepository } from './BidRepository';
+import { OrderRepository } from './OrderRepository';
+
+export const auctionRepository = new AuctionRepository();
+export const bidRepository = new BidRepository();
+export const orderRepository = new OrderRepository();

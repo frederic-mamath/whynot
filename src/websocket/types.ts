@@ -40,9 +40,69 @@ export interface UserLeftMessage {
   userId: number;
 }
 
+// Auction-related messages
+export interface AuctionStartedMessage {
+  type: 'auction:started';
+  auction: any; // AuctionOutboundDto
+}
+
+export interface AuctionBidPlacedMessage {
+  type: 'auction:bid_placed';
+  auctionId: string;
+  bidderUsername: string;
+  amount: number;
+  nextMinBid: number;
+  newEndsAt?: string;
+}
+
+export interface AuctionExtendedMessage {
+  type: 'auction:extended';
+  auctionId: string;
+  newEndsAt: string;
+}
+
+export interface AuctionEndedMessage {
+  type: 'auction:ended';
+  auctionId: string;
+  winnerId: number;
+  winnerUsername: string;
+  finalPrice: number;
+}
+
+export interface AuctionBoughtOutMessage {
+  type: 'auction:bought_out';
+  auctionId: string;
+  buyerId: number;
+  buyerUsername: string;
+  buyoutPrice: number;
+}
+
+export interface AuctionOutbidMessage {
+  type: 'auction:outbid';
+  auctionId: string;
+  productName: string;
+  yourBid: number;
+  currentBid: number;
+}
+
+export interface AuctionWonMessage {
+  type: 'auction:won';
+  orderId: string;
+  productName: string;
+  finalPrice: number;
+  paymentDeadline: string;
+}
+
 export type WebSocketMessage =
   | ProductHighlightedMessage
   | ProductUnhighlightedMessage
   | ChatMessage
   | UserJoinedMessage
-  | UserLeftMessage;
+  | UserLeftMessage
+  | AuctionStartedMessage
+  | AuctionBidPlacedMessage
+  | AuctionExtendedMessage
+  | AuctionEndedMessage
+  | AuctionBoughtOutMessage
+  | AuctionOutbidMessage
+  | AuctionWonMessage;

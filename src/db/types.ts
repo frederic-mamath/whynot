@@ -12,6 +12,9 @@ export interface Database {
   vendor_promoted_products: VendorPromotedProductsTable;
   roles: RolesTable;
   user_roles: UserRolesTable;
+  auctions: AuctionsTable;
+  bids: BidsTable;
+  orders: OrdersTable;
 }
 
 export interface UsersTable {
@@ -21,6 +24,8 @@ export interface UsersTable {
   firstname: string | null;
   lastname: string | null;
   is_verified: boolean;
+  stripe_account_id: string | null;
+  stripe_onboarding_complete: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -116,6 +121,51 @@ export interface UserRolesTable {
   created_at: Generated<Date>;
 }
 
+export interface AuctionsTable {
+  id: string;
+  product_id: number;
+  seller_id: number;
+  channel_id: number;
+  starting_price: string;
+  buyout_price: string | null;
+  current_bid: string;
+  highest_bidder_id: number | null;
+  duration_seconds: number;
+  started_at: Date;
+  ends_at: Date;
+  extended_count: number;
+  status: 'active' | 'ended' | 'paid' | 'cancelled';
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface BidsTable {
+  id: string;
+  auction_id: string;
+  bidder_id: number;
+  amount: string;
+  placed_at: Generated<Date>;
+  created_at: Generated<Date>;
+}
+
+export interface OrdersTable {
+  id: string;
+  auction_id: string;
+  buyer_id: number;
+  seller_id: number;
+  product_id: number;
+  final_price: string;
+  platform_fee: string;
+  seller_payout: string;
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_deadline: Date;
+  stripe_payment_intent_id: string | null;
+  paid_at: Date | null;
+  shipped_at: Date | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
 export type User = Selectable<UsersTable>;
 export type Shop = Selectable<ShopsTable>;
 export type Product = Selectable<ProductsTable>;
@@ -127,4 +177,7 @@ export type ChannelProduct = Selectable<ChannelProductsTable>;
 export type VendorPromotedProduct = Selectable<VendorPromotedProductsTable>;
 export type Role = Selectable<RolesTable>;
 export type UserRole = Selectable<UserRolesTable>;
+export type Auction = Selectable<AuctionsTable>;
+export type Bid = Selectable<BidsTable>;
+export type Order = Selectable<OrdersTable>;
 

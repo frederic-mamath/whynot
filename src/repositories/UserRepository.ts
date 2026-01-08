@@ -52,6 +52,7 @@ export class UserRepository {
         firstname: firstName || null,
         lastname: lastName || null,
         is_verified: false,
+        stripe_onboarding_complete: false,
         created_at: new Date(),
         updated_at: new Date(),
       })
