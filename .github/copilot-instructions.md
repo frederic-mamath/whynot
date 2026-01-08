@@ -8,10 +8,12 @@ Always include these files in your context when working on this project:
 - `ARCHITECTURE.md` - System architecture and project structure
 - `README.md` - Project overview and setup instructions
 - `dev-quality/ARCHITECTURE.md` - Dev-quality track structure and guidelines
+- `features/ARCHITECTURE.md` - Features track structure and guidelines
 
 ## Project Overview
 
 This is a **live video/audio streaming platform** built with:
+
 - **Backend**: Express + tRPC + PostgreSQL (port 3000)
 - **Frontend**: React 19 + Vite (port 5173)
 - **UI/Styling**: Shadcn UI + Tailwind CSS v4 + Lucide Icons
@@ -29,6 +31,7 @@ This is a **live video/audio streaming platform** built with:
 ## Component Structure
 
 All UI components go in: `client/src/components/ui/ComponentName/`
+
 ```
 ComponentName/
 ├── ComponentName.tsx
@@ -48,6 +51,7 @@ When creating technical improvement plans:
 7. **Document decisions**: Explain "why" not just "what"
 
 ### Dev-Quality Track Structure
+
 ```
 dev-quality/
 ├── ARCHITECTURE.md              # Guidelines (read this first!)
@@ -92,4 +96,3 @@ dev-quality/
 - Don't modify `index.css`, `tailwind.config.js`, or `vite.config.ts` without discussion
 - Always maintain design consistency (reference STYLING.md)
 - Dev-quality tracks should be pausable at any phase boundary
-
