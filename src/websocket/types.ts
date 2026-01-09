@@ -64,9 +64,10 @@ export interface AuctionExtendedMessage {
 export interface AuctionEndedMessage {
   type: 'auction:ended';
   auctionId: string;
-  winnerId: number;
-  winnerUsername: string;
+  winnerId: number | null;
+  winnerUsername: string | null;
   finalPrice: number;
+  hasWinner: boolean;
 }
 
 export interface AuctionBoughtOutMessage {

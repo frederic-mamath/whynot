@@ -27,6 +27,15 @@ export class AuctionRepository {
       .executeTakeFirst();
   }
 
+  async findActiveByChannelId(channelId: number): Promise<Auction | undefined> {
+    return db
+      .selectFrom('auctions')
+      .selectAll()
+      .where('channel_id', '=', channelId)
+      .where('status', '=', 'active')
+      .executeTakeFirst();
+  }
+
   async findBySellerId(sellerId: number): Promise<Auction[]> {
     return db
       .selectFrom('auctions')
@@ -42,7 +51,7 @@ export class AuctionRepository {
       .innerJoin('products', 'products.id', 'auctions.product_id')
       .selectAll('auctions')
       .where('products.shop_id', '=', shopId)
-      .where('auctions.status', 'in', ['ended', 'paid'])
+      .where('auctions.status', 'in', ['ended', 'completed', 'paid'])
       .orderBy('auctions.created_at', 'desc')
       .execute();
   }
@@ -75,7 +84,7 @@ export class AuctionRepository {
     highest_bidder_id: number | null;
     ends_at: Date;
     extended_count: number;
-    status: 'active' | 'ended' | 'paid' | 'cancelled';
+    status: 'active' | 'ended' | 'completed' | 'paid' | 'cancelled';
   }>): Promise<Auction> {
     return db
       .updateTable('auctions')
@@ -85,7 +94,7 @@ export class AuctionRepository {
       .executeTakeFirstOrThrow();
   }
 
-  async updateStatus(id: string, status: 'active' | 'ended' | 'paid' | 'cancelled'): Promise<Auction> {
+  async updateStatus(id: string, status: 'active' | 'ended' | 'completed' | 'paid' | 'cancelled'): Promise<Auction> {
     return db
       .updateTable('auctions')
       .set({ status })

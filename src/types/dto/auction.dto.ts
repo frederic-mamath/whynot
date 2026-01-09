@@ -15,7 +15,7 @@ export interface AuctionOutboundDto {
   startedAt: string;
   endsAt: string;
   extendedCount: number;
-  status: 'active' | 'ended' | 'paid' | 'cancelled';
+  status: 'active' | 'ended' | 'completed' | 'paid' | 'cancelled';
   createdAt: string;
 }
 

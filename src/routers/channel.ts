@@ -399,6 +399,21 @@ export const channelRouter = router({
         });
       }
 
+      // Check if there's an active auction in this channel
+      const activeAuction = await db
+        .selectFrom('auctions')
+        .select(['id', 'product_id'])
+        .where('channel_id', '=', input.channelId)
+        .where('status', '=', 'active')
+        .executeTakeFirst();
+
+      if (activeAuction) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot change highlighted product while an auction is active. Please wait for the current auction to end.',
+        });
+      }
+
       // Update channel with highlighted product
       const highlightedAt = new Date();
       await db
@@ -490,6 +505,21 @@ export const channelRouter = router({
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: 'Only the channel host can unhighlight products',
+        });
+      }
+
+      // Check if there's an active auction in this channel
+      const activeAuction = await db
+        .selectFrom('auctions')
+        .select(['id', 'product_id'])
+        .where('channel_id', '=', input.channelId)
+        .where('status', '=', 'active')
+        .executeTakeFirst();
+
+      if (activeAuction) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot unhighlight product while an auction is active. Please wait for the current auction to end.',
         });
       }
 

@@ -134,7 +134,7 @@ export interface AuctionsTable {
   started_at: Date;
   ends_at: Date;
   extended_count: number;
-  status: 'active' | 'ended' | 'paid' | 'cancelled';
+  status: 'active' | 'ended' | 'completed' | 'paid' | 'cancelled';
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
