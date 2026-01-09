@@ -33,6 +33,7 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [localEndsAt, setLocalEndsAt] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
   const { isConnected } = useWebSocketStatus();
   const utils = trpc.useUtils();
 
@@ -80,6 +81,48 @@ export function ChatPanel({
     },
   });
 
+  // Close auction mutation (for auto-close and manual close)
+  const closeAuctionMutation = trpc.auction.close.useMutation({
+    onMutate: () => {
+      setIsClosing(true);
+    },
+    onSuccess: (data) => {
+      setIsClosing(false);
+      console.log('[auction.close] Auction closed:', data);
+      refetchAuction();
+    },
+    onError: (error) => {
+      setIsClosing(false);
+      // Ignore "already closed" errors
+      if (!error.message.includes('not active')) {
+        console.error('[auction.close] Failed to close auction:', error);
+        toast.error('Failed to close auction automatically');
+      }
+    },
+  });
+
+  // Auto-close when timer expires
+  useEffect(() => {
+    if (!activeAuction || activeAuction.status !== 'active' || isClosing) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const endsAt = new Date(localEndsAt || activeAuction.endsAt).getTime();
+      const timeRemaining = endsAt - now;
+
+      // Close when timer expires
+      if (timeRemaining <= 0) {
+        console.log('[auction.auto-close] Timer expired, closing auction:', activeAuction.id);
+        closeAuctionMutation.mutate({ auctionId: activeAuction.id });
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeAuction, localEndsAt, isClosing, closeAuctionMutation]);
+
   const handlePlaceBid = async (amount: number) => {
     if (!activeAuction) return;
     await placeBidMutation.mutateAsync({
@@ -94,6 +137,16 @@ export function ChatPanel({
       auctionId: activeAuction.id,
     });
   };
+
+  const handleManualClose = () => {
+    if (!activeAuction) return;
+    if (confirm('Are you sure you want to end this auction early?')) {
+      closeAuctionMutation.mutate({ auctionId: activeAuction.id });
+    }
+  };
+
+  // Check if current user is host or seller
+  const isHostOrSeller = isHost || activeAuction?.sellerId === currentUserId;
 
   // Fetch message history via HTTP
   const { data: messageHistory, isLoading } = trpc.message.list.useQuery({
@@ -170,9 +223,13 @@ export function ChatPanel({
             break;
             
           case 'auction:ended':
-            toast.success(
-              `Auction won by ${event.winnerUsername} for $${event.finalPrice.toFixed(2)}`
-            );
+            if (event.hasWinner && event.winnerUsername) {
+              toast.success(
+                `Auction won by ${event.winnerUsername} for $${event.finalPrice.toFixed(2)}`
+              );
+            } else {
+              toast.info('Auction ended with no bids');
+            }
             refetchAuction();
             break;
             
@@ -239,7 +296,10 @@ export function ChatPanel({
               currentUserId={currentUserId}
               onPlaceBid={handlePlaceBid}
               onBuyout={handleBuyout}
+              onManualClose={handleManualClose}
+              isHostOrSeller={isHostOrSeller}
               isLoading={false}
+              isClosing={isClosing}
             />
           ) : highlightedProduct ? (
             <HighlightedProduct

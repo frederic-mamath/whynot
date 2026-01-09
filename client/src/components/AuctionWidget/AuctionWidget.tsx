@@ -38,7 +38,10 @@ interface AuctionWidgetProps {
   currentUserId?: number;
   onPlaceBid: (amount: number) => Promise<void>;
   onBuyout: () => Promise<void>;
+  onManualClose?: () => void;
+  isHostOrSeller?: boolean;
   isLoading?: boolean;
+  isClosing?: boolean;
 }
 
 export function AuctionWidget({
@@ -47,7 +50,10 @@ export function AuctionWidget({
   currentUserId,
   onPlaceBid,
   onBuyout,
+  onManualClose,
+  isHostOrSeller = false,
   isLoading,
+  isClosing = false,
 }: AuctionWidgetProps) {
   const isActive = auction.status === 'active';
   const isSeller = currentUserId === auction.sellerId;
@@ -174,6 +180,21 @@ export function AuctionWidget({
           currentUserId={currentUserId}
           currentBid={auction.currentBid}
         />
+
+        {/* Manual Close Button (Host/Seller only) */}
+        {isActive && isHostOrSeller && onManualClose && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onManualClose}
+              disabled={isClosing}
+              className="w-full text-destructive hover:bg-destructive/10"
+            >
+              {isClosing ? 'Ending Auction...' : 'End Auction Early'}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
