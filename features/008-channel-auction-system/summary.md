@@ -40,10 +40,46 @@ A real-time auction system allowing sellers to auction highlighted products in t
 | Phase 3 | Backend API & WebSocket Events | ✅ DONE |
 | Phase 4 | Auction UI Components | ✅ DONE |
 | Phase 5 | Bidding Flow & Real-time Updates | ✅ DONE |
-| Phase 6 | My Orders Page | ✅ DONE |
-| Phase 7 | Pending Deliveries Page (Seller) | 📝 PLANNING |
-| Phase 8 | Stripe Payment Integration | 📝 PLANNING |
-| Phase 9 | Testing & Edge Cases | 📝 PLANNING |
+| Phase 6 | My Orders Page (Buyer) | ✅ DONE |
+| **Phase 7** | **Auction Cleanup & Validation** | 📝 **PLANNING** |
+| **Phase 8** | **Client-Side Auto-Close** | 📝 **PLANNING** |
+| **Phase 9** | **Background Auction Processor** | 📝 **PLANNING** |
+| Phase 10 | Pending Deliveries Page (Seller) | 📝 PLANNING |
+| Phase 11 | Stripe Payment Integration | 📝 PLANNING |
+| Phase 12 | Testing & Edge Cases | 📝 PLANNING |
+
+---
+
+## ⚠️ Critical Issue Identified (Jan 9, 2026)
+
+**Problem**: When an auction ends, the highlighted product doesn't update in ChatPanel. Sellers can't switch highlights.
+
+**Root Cause**:
+- No automatic auction closing when timer expires
+- No cleanup of `highlighted_product_id` from channel
+- No validation preventing highlight conflicts
+
+**Solution**: **Hybrid Approach (Option 3)** - Phases 7-9
+
+### Phase 7: Auction Cleanup & Validation
+- Add `auction.close` mutation
+- Validate highlight changes against active auctions
+- Prevent multiple active auctions in one channel
+- Properly create orders and clear state
+
+### Phase 8: Client-Side Auto-Close
+- Auto-close auction when countdown reaches zero
+- Manual "End Auction" button for host/seller
+- Instant feedback via WebSocket
+- Handles 99% of cases
+
+### Phase 9: Background Processor (Safety Net)
+- Server-side job runs every 30 seconds
+- Closes auctions that clients missed
+- Handles offline/disconnected scenarios
+- Ensures 100% reliability
+
+**Status**: Phases 7-9 planned and documented, ready to implement
 
 ---
 
