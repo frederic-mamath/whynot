@@ -12,12 +12,41 @@ export class OrderRepository {
       .executeTakeFirst();
   }
 
-  async findByBuyerId(buyerId: number): Promise<Order[]> {
-    return db
+  async findByBuyerId(
+    buyerId: number, 
+    status?: 'pending' | 'paid' | 'failed' | 'refunded'
+  ): Promise<any[]> {
+    let query = db
       .selectFrom('orders')
-      .selectAll()
-      .where('buyer_id', '=', buyerId)
-      .orderBy('created_at', 'desc')
+      .innerJoin('products', 'products.id', 'orders.product_id')
+      .innerJoin('users as seller', 'seller.id', 'orders.seller_id')
+      .select([
+        'orders.id',
+        'orders.auction_id',
+        'orders.buyer_id',
+        'orders.seller_id',
+        'orders.product_id',
+        'orders.final_price',
+        'orders.platform_fee',
+        'orders.seller_payout',
+        'orders.payment_status',
+        'orders.payment_deadline',
+        'orders.stripe_payment_intent_id',
+        'orders.paid_at',
+        'orders.shipped_at',
+        'orders.created_at',
+        'products.name as product_name',
+        'products.image_url as product_image_url',
+        'seller.email as seller_email',
+      ])
+      .where('orders.buyer_id', '=', buyerId);
+    
+    if (status) {
+      query = query.where('orders.payment_status', '=', status);
+    }
+    
+    return query
+      .orderBy('orders.created_at', 'desc')
       .execute();
   }
 

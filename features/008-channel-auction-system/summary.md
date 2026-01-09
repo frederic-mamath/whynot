@@ -39,8 +39,8 @@ A real-time auction system allowing sellers to auction highlighted products in t
 | Phase 2 | Database Schema & Migrations | ✅ DONE |
 | Phase 3 | Backend API & WebSocket Events | ✅ DONE |
 | Phase 4 | Auction UI Components | ✅ DONE |
-| Phase 5 | Bidding Flow & Real-time Updates | 📝 PLANNING |
-| Phase 6 | My Orders Page | 📝 PLANNING |
+| Phase 5 | Bidding Flow & Real-time Updates | ✅ DONE |
+| Phase 6 | My Orders Page | ✅ DONE |
 | Phase 7 | Pending Deliveries Page (Seller) | 📝 PLANNING |
 | Phase 8 | Stripe Payment Integration | 📝 PLANNING |
 | Phase 9 | Testing & Edge Cases | 📝 PLANNING |

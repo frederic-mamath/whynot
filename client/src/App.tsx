@@ -19,6 +19,7 @@ import ShopDetailsPage from "./pages/ShopDetailsPage";
 import ProductListPage from "./pages/ProductListPage";
 import ProductCreatePage from "./pages/ProductCreatePage";
 import ProductUpdatePage from "./pages/ProductUpdatePage";
+import MyOrdersPage from "./pages/MyOrdersPage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -36,6 +37,7 @@ function AppContent() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
         <Route path="/channels" element={<ChannelListPage />} />
         <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><ChannelCreatePage /></ProtectedRoute>} />
         <Route path="/channel/:channelId" element={<ChannelDetailsPage />} />

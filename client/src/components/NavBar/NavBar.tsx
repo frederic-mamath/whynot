@@ -11,6 +11,7 @@ import {
   Store,
   X,
   BadgeCheck,
+  ShoppingBag,
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
@@ -219,6 +220,13 @@ export default function NavBar() {
                         <Link to="/dashboard" onClick={closeSheet}>
                           <Home className="size-4 mr-2" />
                           Dashboard
+                        </Link>
+                      </Button>
+
+                      <Button variant="ghost" className="justify-start" asChild>
+                        <Link to="/my-orders" onClick={closeSheet}>
+                          <ShoppingBag className="size-4 mr-2" />
+                          My Orders
                         </Link>
                       </Button>
 

@@ -729,6 +729,7 @@ export default function ChannelDetailsPage() {
                 highlightedProduct={highlightedProduct}
                 showHighlightedProduct={showHighlightedProduct}
                 onToggleHighlightedProduct={() => setShowHighlightedProduct(!showHighlightedProduct)}
+                isHost={channelConfig?.isHost ?? false}
               />
             </div>
           )}

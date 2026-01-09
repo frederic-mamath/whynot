@@ -79,13 +79,13 @@ export const auctionRouter = router({
         .selectFrom('channels')
         .selectAll()
         .where('highlighted_product_id', '=', input.productId)
-        .where('status', '=', 'live')
+        .where('status', '=', 'active')
         .executeTakeFirst();
 
       if (!channel) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Product must be highlighted in a live channel to start auction',
+          message: 'Product must be highlighted in an active channel to start auction',
         });
       }
 
