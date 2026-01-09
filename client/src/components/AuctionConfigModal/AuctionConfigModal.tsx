@@ -1,8 +1,16 @@
 import { useState } from "react";
-import { X, Clock, Zap } from "lucide-react";
+import { Clock, Zap } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { cn } from "../../lib/utils";
 
 interface AuctionConfigModalProps {
@@ -61,29 +69,21 @@ export function AuctionConfigModal({
     }
   };
 
-  if (!isOpen) return null;
+  const handleOpenChange = (open: boolean) => {
+    if (!open && !isSubmitting) {
+      onClose();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-background rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div>
-            <h2 className="text-lg font-semibold">Start Auction</h2>
-            <p className="text-sm text-muted-foreground">{productName}</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            <X className="size-4" />
-          </Button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Start Auction</DialogTitle>
+          <DialogDescription>{productName}</DialogDescription>
+        </DialogHeader>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Starting Price Display */}
           <div>
             <Label className="text-sm text-muted-foreground">Starting Price</Label>
@@ -149,27 +149,21 @@ export function AuctionConfigModal({
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-2 pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1"
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Starting..." : "Start Auction"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
