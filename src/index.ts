@@ -7,6 +7,7 @@ import { verifyToken } from "./utils/auth";
 import { logger } from "./utils/logger";
 import { createWebSocketServer } from "./websocket/server";
 import { securityHeaders, rateLimit, requestLogger } from "./middleware/security";
+import { startAuctionProcessor, stopAuctionProcessor } from "./jobs/auctionProcessor";
 import * as dotenv from "dotenv";
 import path from "path";
 
@@ -129,6 +130,9 @@ if (typeof PhusionPassenger !== "undefined") {
     console.log(`📡 tRPC endpoint: http://localhost:${port}/trpc`);
     console.log(`🔒 Security: ${isProduction ? 'PRODUCTION mode (CORS disabled, SSL enforced)' : 'DEVELOPMENT mode (CORS enabled)'}`);
     console.log(`⚡ Rate limiting: enabled (100 req/min per IP)`);
+    
+    // Start background jobs
+    startAuctionProcessor();
   });
 
   // Attach WebSocket to same HTTP server
@@ -139,6 +143,9 @@ if (typeof PhusionPassenger !== "undefined") {
   // Use `npm start` directly or kill the process manually if needed.
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} received, shutting down gracefully...`);
+    
+    // Stop background jobs first
+    stopAuctionProcessor();
     
     // Set a timeout to force exit if graceful shutdown takes too long
     const forceExitTimeout = setTimeout(() => {

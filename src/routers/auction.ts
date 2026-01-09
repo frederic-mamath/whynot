@@ -14,6 +14,7 @@ import { db } from '../db';
 import { broadcastToChannel } from '../websocket/broadcast';
 import { mapAuctionToOutboundDto } from '../mappers/auction.mapper';
 import { mapBidToOutboundDto } from '../mappers/bid.mapper';
+import { closeAuction } from '../services/auctionService';
 
 async function isChannelHost(channelId: number, userId: number): Promise<boolean> {
   const channel = await db
@@ -513,113 +514,18 @@ export const auctionRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Auction not found' });
       }
 
-      // If already closed, return early (idempotent)
-      if (auction.status !== 'active') {
-        console.log(`[auction.close] Auction ${input.auctionId} already ${auction.status}`);
-        return {
-          auctionId: input.auctionId,
-          status: auction.status,
-          winnerId: auction.highest_bidder_id,
-          winnerUsername: null,
-          finalPrice: parseFloat(auction.current_bid),
-          orderId: null,
-        };
-      }
-
-      // Verify permissions (only host or seller can close)
-      const isHost = await isChannelHost(auction.channel_id, ctx.user.id);
-      if (!isHost && auction.seller_id !== ctx.user.id) {
-        throw new TRPCError({ 
-          code: 'FORBIDDEN', 
-          message: 'Only the seller or host can close the auction' 
-        });
-      }
-
-      // Close auction in transaction
-      return db.transaction().execute(async (trx) => {
-        // Mark auction as completed
-        await trx
-          .updateTable('auctions')
-          .set({ status: 'completed' })
-          .where('id', '=', input.auctionId)
-          .execute();
-
-        let orderId = null;
-        let winnerUsername = null;
-
-        // Create order if there's a winner
-        if (auction.highest_bidder_id) {
-          const finalPrice = parseFloat(auction.current_bid);
-          const platformFee = calculatePlatformFee(finalPrice);
-          const sellerPayout = calculateSellerPayout(finalPrice);
-          const paymentDeadline = new Date();
-          paymentDeadline.setDate(paymentDeadline.getDate() + 7); // +7 days
-
-          const order = await trx
-            .insertInto('orders')
-            .values({
-              id: sql`gen_random_uuid()`,
-              auction_id: input.auctionId,
-              buyer_id: auction.highest_bidder_id,
-              seller_id: auction.seller_id,
-              product_id: auction.product_id,
-              final_price: finalPrice.toFixed(2),
-              platform_fee: platformFee.toFixed(2),
-              seller_payout: sellerPayout.toFixed(2),
-              payment_status: 'pending',
-              payment_deadline: paymentDeadline,
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow();
-
-          orderId = order.id;
-
-          // Get winner info
-          const winner = await trx
-            .selectFrom('users')
-            .select(['firstname', 'lastname'])
-            .where('id', '=', auction.highest_bidder_id)
-            .executeTakeFirst();
-
-          winnerUsername = winner?.firstname && winner.lastname
-            ? `${winner.firstname} ${winner.lastname}`
-            : 'Anonymous';
+      // Only check permissions if auction is still active
+      if (auction.status === 'active') {
+        const isHost = await isChannelHost(auction.channel_id, ctx.user.id);
+        if (!isHost && auction.seller_id !== ctx.user.id) {
+          throw new TRPCError({ 
+            code: 'FORBIDDEN', 
+            message: 'Only the seller or host can close the auction' 
+          });
         }
+      }
 
-        // Clear highlighted product from channel
-        await trx
-          .updateTable('channels')
-          .set({ highlighted_product_id: null, highlighted_at: null })
-          .where('id', '=', auction.channel_id)
-          .execute();
-
-        // Broadcast events (outside transaction to avoid locks)
-        setTimeout(() => {
-          broadcastToChannel(auction.channel_id, {
-            type: 'auction:ended',
-            auctionId: input.auctionId,
-            winnerId: auction.highest_bidder_id ?? null,
-            winnerUsername: winnerUsername ?? null,
-            finalPrice: parseFloat(auction.current_bid),
-            hasWinner: !!auction.highest_bidder_id,
-          });
-
-          broadcastToChannel(auction.channel_id, {
-            type: 'PRODUCT_UNHIGHLIGHTED',
-            channelId: auction.channel_id,
-          });
-        }, 0);
-
-        console.log(`[auction.close] Closed auction ${input.auctionId}, winner: ${winnerUsername || 'none'}, final price: $${auction.current_bid}`);
-
-        return {
-          auctionId: input.auctionId,
-          status: 'completed' as const,
-          winnerId: auction.highest_bidder_id ?? null,
-          winnerUsername: winnerUsername ?? null,
-          finalPrice: parseFloat(auction.current_bid),
-          orderId: orderId ?? null,
-        };
-      });
+      // Use shared close logic
+      return closeAuction(input.auctionId);
     }),
 });

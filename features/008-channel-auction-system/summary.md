@@ -42,8 +42,8 @@ A real-time auction system allowing sellers to auction highlighted products in t
 | Phase 5 | Bidding Flow & Real-time Updates | ✅ DONE |
 | Phase 6 | My Orders Page (Buyer) | ✅ DONE |
 | Phase 7 | Auction Cleanup & Validation | ✅ DONE |
-| **Phase 8** | **Client-Side Auto-Close** | ✅ **DONE** |
-| **Phase 9** | **Background Auction Processor** | 📝 **PLANNING** |
+| Phase 8 | Client-Side Auto-Close | ✅ DONE |
+| **Phase 9** | **Background Auction Processor** | ✅ **DONE** |
 | Phase 10 | Pending Deliveries Page (Seller) | 📝 PLANNING |
 | Phase 11 | Stripe Payment Integration | 📝 PLANNING |
 | Phase 12 | Testing & Edge Cases | 📝 PLANNING |
