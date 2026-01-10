@@ -57,7 +57,6 @@ export const orderRouter = router({
 
   /**
    * Get seller's pending deliveries
-   * TODO: Implement in Phase 8
    */
   getPendingDeliveries: protectedProcedure
     .query(async ({ ctx }) => {
@@ -68,8 +67,17 @@ export const orderRouter = router({
         });
       }
 
-      // TODO: Implement in Phase 8
-      return [];
+      const orders = await orderRepository.findPendingDeliveriesBySellerId(ctx.user.id);
+
+      return orders.map((order: any) => ({
+        id: order.id,
+        productName: order.product_name,
+        productImageUrl: order.product_image_url,
+        buyerUsername: order.buyer_username,
+        finalPrice: parseFloat(order.final_price),
+        paidAt: order.paid_at.toISOString(),
+        createdAt: order.created_at.toISOString(),
+      }));
     }),
 
   /**
@@ -94,7 +102,6 @@ export const orderRouter = router({
 
   /**
    * Mark order as shipped (seller only)
-   * TODO: Implement in Phase 8
    */
   markAsShipped: protectedProcedure
     .input(z.object({ orderId: z.string().uuid() }))
@@ -106,9 +113,45 @@ export const orderRouter = router({
         });
       }
 
-      throw new TRPCError({
-        code: 'NOT_IMPLEMENTED',
-        message: 'Order fulfillment will be implemented in Phase 8',
-      });
+      const { orderId } = input;
+
+      // Get order and verify seller
+      const order = await orderRepository.findById(orderId);
+
+      if (!order) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Order not found',
+        });
+      }
+
+      if (order.seller_id !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only the seller can mark order as shipped',
+        });
+      }
+
+      if (order.payment_status !== 'paid') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Order must be paid before shipping',
+        });
+      }
+
+      if (order.shipped_at) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Order already shipped',
+        });
+      }
+
+      // Mark as shipped
+      const updated = await orderRepository.markAsShipped(orderId);
+
+      return {
+        id: updated.id,
+        shippedAt: updated.shipped_at?.toISOString(),
+      };
     }),
 });

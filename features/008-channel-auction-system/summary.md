@@ -43,10 +43,11 @@ A real-time auction system allowing sellers to auction highlighted products in t
 | Phase 6 | My Orders Page (Buyer) | ✅ DONE |
 | Phase 7 | Auction Cleanup & Validation | ✅ DONE |
 | Phase 8 | Client-Side Auto-Close | ✅ DONE |
-| **Phase 9** | **Background Auction Processor** | ✅ **DONE** |
-| Phase 10 | Pending Deliveries Page (Seller) | 📝 PLANNING |
-| Phase 11 | Stripe Payment Integration | 📝 PLANNING |
-| Phase 12 | Testing & Edge Cases | 📝 PLANNING |
+| Phase 9 | Background Auction Processor | ✅ DONE |
+| **Phase 10** | **Auction End Modal & Notifications** | ✅ **DONE** |
+| Phase 11 | Pending Deliveries Page (Seller) | ✅ DONE |
+| Phase 12 | Stripe Payment Integration | 📝 PLANNING |
+| Phase 13 | Testing & Edge Cases | 📝 PLANNING |
 
 ---
 

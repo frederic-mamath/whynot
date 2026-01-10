@@ -5,7 +5,10 @@ import { Skeleton } from "../ui/skeleton";
 import { AuctionCountdown } from "../AuctionCountdown";
 import { BidInput } from "../BidInput";
 import { BidHistory } from "../BidHistory";
+import { AuctionEndModal } from "../AuctionEndModal";
 import { cn } from "../../lib/utils";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuctionWidgetProps {
   auction: {
@@ -55,9 +58,35 @@ export function AuctionWidget({
   isLoading,
   isClosing = false,
 }: AuctionWidgetProps) {
+  const { toast } = useToast();
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [hasShownModal, setHasShownModal] = useState(false);
+  
   const isActive = auction.status === 'active';
   const isSeller = currentUserId === auction.sellerId;
   const isEnded = auction.status === 'ended' || auction.status === 'paid';
+  
+  // Check if current user participated in auction
+  const userBids = currentUserId ? bids.filter(bid => bid.bidderId === currentUserId) : [];
+  const isParticipant = userBids.length > 0;
+  const isWinner = currentUserId === auction.highestBidderId;
+
+  // Show modal when auction ends
+  useEffect(() => {
+    if (isEnded && !hasShownModal) {
+      setShowEndModal(true);
+      setHasShownModal(true);
+      
+      // Show toast for non-winning participants
+      if (isParticipant && !isWinner && currentUserId) {
+        toast({
+          title: "Auction Ended",
+          description: `You were outbid on ${auction.productName}`,
+          variant: "default"
+        });
+      }
+    }
+  }, [isEnded, hasShownModal, isParticipant, isWinner, currentUserId, auction.productName, toast]);
 
   if (isLoading) {
     return (
@@ -77,12 +106,24 @@ export function AuctionWidget({
   }
 
   return (
-    <Card className={cn(
-      "border-2 shadow-lg transition-colors",
-      isActive ? "border-primary" : "border-muted"
-    )}>
-      <CardContent className="p-4">
-        {/* Header with product info */}
+    <>
+      <AuctionEndModal
+        open={showEndModal}
+        onOpenChange={setShowEndModal}
+        productName={auction.productName}
+        productImage={auction.productImageUrl}
+        finalBid={auction.currentBid}
+        winnerUsername={auction.highestBidderUsername || 'Unknown'}
+        totalBids={bids.length}
+        isWinner={isWinner}
+        isParticipant={isParticipant}
+      />
+      
+      <Card className={cn(
+        "border-2 shadow-lg transition-colors",
+        isActive ? "border-primary" : "border-muted"
+      )}>
+        <CardContent className="p-4">{/* Header with product info */}
         <div className="flex gap-4">
           {/* Product Image */}
           <div className="shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted">
@@ -197,5 +238,6 @@ export function AuctionWidget({
         )}
       </CardContent>
     </Card>
+    </>
   );
 }

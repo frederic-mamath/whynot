@@ -12,6 +12,7 @@ import {
   X,
   BadgeCheck,
   ShoppingBag,
+  Package,
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
@@ -246,6 +247,19 @@ export default function NavBar() {
                           <Link to="/shops" onClick={closeSheet}>
                             <Store className="size-4 mr-2" />
                             Shops
+                          </Link>
+                        </Button>
+                      )}
+
+                      {isSeller && (
+                        <Button
+                          variant="ghost"
+                          className="justify-start"
+                          asChild
+                        >
+                          <Link to="/pending-deliveries" onClick={closeSheet}>
+                            <Package className="size-4 mr-2" />
+                            Pending Deliveries
                           </Link>
                         </Button>
                       )}
