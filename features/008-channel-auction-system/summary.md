@@ -46,7 +46,7 @@ A real-time auction system allowing sellers to auction highlighted products in t
 | Phase 9 | Background Auction Processor | ✅ DONE |
 | **Phase 10** | **Auction End Modal & Notifications** | ✅ **DONE** |
 | Phase 11 | Pending Deliveries Page (Seller) | ✅ DONE |
-| Phase 12 | Stripe Payment Integration | 📝 PLANNING |
+| **Phase 12** | **Stripe Payment Integration** | ✅ **DONE** |
 | Phase 13 | Testing & Edge Cases | 📝 PLANNING |
 
 ---
