@@ -37,6 +37,88 @@ if (!isProduction) {
   }));
 }
 
+// Stripe webhook endpoint (MUST be before express.json())
+app.post(
+  '/api/webhooks/stripe',
+  express.raw({ type: 'application/json' }),
+  async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    
+    if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+      return res.status(400).send('Missing signature or webhook secret');
+    }
+
+    try {
+      const { stripeService } = await import('./services/StripeService');
+      const { db } = await import('./db');
+      
+      const event = stripeService.verifyWebhookSignature(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+
+      switch (event.type) {
+        case 'payment_intent.succeeded': {
+          const paymentIntent = event.data.object as any;
+          const orderId = paymentIntent.metadata?.orderId;
+
+          if (orderId) {
+            await db
+              .updateTable('orders')
+              .set({
+                payment_status: 'paid',
+                paid_at: new Date(),
+              })
+              .where('id', '=', orderId)
+              .execute();
+            
+            console.log(`✅ Order ${orderId} marked as paid`);
+          }
+          break;
+        }
+
+        case 'payment_intent.payment_failed': {
+          const paymentIntent = event.data.object as any;
+          const orderId = paymentIntent.metadata?.orderId;
+
+          if (orderId) {
+            await db
+              .updateTable('orders')
+              .set({ payment_status: 'failed' })
+              .where('id', '=', orderId)
+              .execute();
+            
+            console.log(`❌ Order ${orderId} payment failed`);
+          }
+          break;
+        }
+
+        case 'charge.refunded': {
+          const charge = event.data.object as any;
+          const paymentIntentId = charge.payment_intent;
+
+          if (paymentIntentId) {
+            await db
+              .updateTable('orders')
+              .set({ payment_status: 'refunded' })
+              .where('stripe_payment_intent_id', '=', paymentIntentId)
+              .execute();
+            
+            console.log(`💰 Order refunded for payment intent ${paymentIntentId}`);
+          }
+          break;
+        }
+      }
+
+      res.json({ received: true });
+    } catch (err: any) {
+      console.error('Webhook error:', err);
+      res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+  }
+);
+
 // Body parsing
 app.use(express.json());
 

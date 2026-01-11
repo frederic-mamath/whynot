@@ -7,15 +7,58 @@ import { Skeleton } from "../components/ui/skeleton";
 import { OrderCard } from "../components/OrderCard";
 import { toast } from "sonner";
 import { cn } from "../lib/utils";
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { stripePromise } from "../lib/stripe";
 
 type FilterType = "all" | "pending" | "paid" | "shipped" | "failed" | "refunded";
 
+function CheckoutForm({ orderId, onSuccess }: { orderId: string; onSuccess: () => void }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setLoading(true);
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/orders?payment_success=true`,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message || 'Payment failed');
+    } else {
+      onSuccess();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement />
+      <div className="flex gap-2">
+        <Button type="submit" disabled={!stripe || loading} className="flex-1">
+          {loading ? 'Processing...' : 'Pay Now'}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 export default function MyOrdersPage() {
   const [filter, setFilter] = useState<FilterType>("all");
+  const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  const { data: allOrders, isLoading } = trpc.order.getMyOrders.useQuery({
+  const { data: allOrders, isLoading, refetch } = trpc.order.getMyOrders.useQuery({
     status: filter === "all" || filter === "shipped" ? undefined : filter,
   });
+
+  const createPayment = trpc.order.createPaymentIntent.useMutation();
 
   // Filter shipped orders client-side (shipped_at is not null and payment_status is 'paid')
   const orders = allOrders?.filter(order => {
@@ -25,9 +68,21 @@ export default function MyOrdersPage() {
     return true;
   });
 
-  const handlePayNow = (orderId: string) => {
-    toast.info("Payment integration coming in Phase 8");
-    // Future: Open Stripe checkout
+  const handlePayNow = async (orderId: string) => {
+    try {
+      const result = await createPayment.mutateAsync({ orderId });
+      setClientSecret(result.clientSecret || null);
+      setPayingOrderId(orderId);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to initialize payment');
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    setClientSecret(null);
+    setPayingOrderId(null);
+    refetch();
+    toast.success('Payment successful!');
   };
 
   return (
@@ -85,7 +140,29 @@ export default function MyOrdersPage() {
             <EmptyState filter={filter} />
           ) : (
             orders?.map((order) => (
-              <OrderCard key={order.id} order={order} onPayNow={handlePayNow} />
+              <div key={order.id}>
+                <OrderCard order={order} onPayNow={handlePayNow} />
+                
+                {/* Stripe Payment Form */}
+                {payingOrderId === order.id && clientSecret && stripePromise && (
+                  <div className="mt-4 p-6 border rounded-lg bg-card">
+                    <h3 className="text-lg font-semibold mb-4">Complete Payment</h3>
+                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <CheckoutForm orderId={order.id} onSuccess={handlePaymentSuccess} />
+                    </Elements>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => {
+                        setPayingOrderId(null);
+                        setClientSecret(null);
+                      }}
+                      className="mt-4 w-full"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
             ))
           )}
         </div>

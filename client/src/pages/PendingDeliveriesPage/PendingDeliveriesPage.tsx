@@ -1,10 +1,126 @@
+import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
 import Button from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Package, User, DollarSign, Calendar } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Package, User, DollarSign, Calendar, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+
+function PayoutRequestDialog({ order }: { order: any }) {
+  const [open, setOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentDetails, setPaymentDetails] = useState('');
+  const utils = trpc.useUtils();
+
+  const createPayout = trpc.payout.createRequest.useMutation({
+    onSuccess: () => {
+      toast.success('Payout Request Submitted', {
+        description: 'Your request will be processed shortly.',
+      });
+      setOpen(false);
+      setPaymentMethod('');
+      setPaymentDetails('');
+      utils.order.getPendingDeliveries.invalidate();
+    },
+    onError: (error) => {
+      toast.error('Failed to Request Payout', {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentMethod.trim() || !paymentDetails.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    createPayout.mutate({
+      orderId: order.id,
+      paymentMethod: paymentMethod.trim(),
+      paymentDetails: paymentDetails.trim(),
+    });
+  };
+
+  // Calculate seller payout (93% of final price)
+  const sellerPayout = order.finalPrice * 0.93;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="w-full md:w-auto">
+          <Wallet className="h-4 w-4 mr-2" />
+          Request Payout
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Request Payout</DialogTitle>
+          <DialogDescription>
+            Request payment for this order. Platform fee (7%) will be deducted.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium">Product</Label>
+            <p className="text-sm text-muted-foreground">{order.productName}</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium">Order Total</Label>
+              <p className="text-lg font-bold">${order.finalPrice.toFixed(2)}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Your Payout (93%)</Label>
+              <p className="text-lg font-bold text-green-600">${sellerPayout.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="paymentMethod">Payment Method *</Label>
+            <Input
+              id="paymentMethod"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              placeholder="e.g., PayPal, Bank Transfer, Venmo"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="paymentDetails">Payment Details *</Label>
+            <Textarea
+              id="paymentDetails"
+              value={paymentDetails}
+              onChange={(e) => setPaymentDetails(e.target.value)}
+              placeholder="e.g., your email, IBAN, account number, etc."
+              rows={3}
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              Provide information needed to send you the payment
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button type="submit" disabled={createPayout.isPending} className="flex-1">
+              {createPayout.isPending ? 'Submitting...' : 'Submit Request'}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export function PendingDeliveriesPage() {
   const utils = trpc.useUtils();
@@ -106,14 +222,17 @@ export function PendingDeliveriesPage() {
                       <Badge variant="secondary">Payment Received</Badge>
                     </div>
 
-                    {/* Ship Button */}
-                    <Button
-                      onClick={() => markAsShipped.mutate({ orderId: order.id })}
-                      disabled={markAsShipped.isPending}
-                      className="w-full md:w-auto"
-                    >
-                      Mark as Shipped
-                    </Button>
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 w-full md:w-auto">
+                      <Button
+                        onClick={() => markAsShipped.mutate({ orderId: order.id })}
+                        disabled={markAsShipped.isPending}
+                        className="w-full md:w-auto"
+                      >
+                        Mark as Shipped
+                      </Button>
+                      <PayoutRequestDialog order={order} />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

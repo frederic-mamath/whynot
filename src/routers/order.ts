@@ -2,6 +2,8 @@ import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { OrderRepository } from '../repositories/OrderRepository';
+import { stripeService } from '../services/StripeService';
+import { db } from '../db';
 
 const orderRepository = new OrderRepository();
 
@@ -82,7 +84,6 @@ export const orderRouter = router({
 
   /**
    * Create Stripe payment intent for order
-   * TODO: Implement in Phase 8 with Stripe integration
    */
   createPaymentIntent: protectedProcedure
     .input(z.object({ orderId: z.string().uuid() }))
@@ -94,10 +95,66 @@ export const orderRouter = router({
         });
       }
 
-      throw new TRPCError({
-        code: 'NOT_IMPLEMENTED',
-        message: 'Payment integration will be implemented in Phase 8',
+      const { orderId } = input;
+
+      // Get order
+      const order = await db
+        .selectFrom('orders')
+        .select([
+          'id',
+          'buyer_id',
+          'final_price',
+          'payment_status',
+          'stripe_payment_intent_id',
+        ])
+        .where('id', '=', orderId)
+        .executeTakeFirst();
+
+      if (!order) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Order not found',
+        });
+      }
+
+      if (order.buyer_id !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not your order',
+        });
+      }
+
+      if (order.payment_status !== 'pending') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Order already paid or failed',
+        });
+      }
+
+      // Return existing payment intent if available
+      if (order.stripe_payment_intent_id) {
+        const existing = await stripeService.getPaymentIntent(
+          order.stripe_payment_intent_id
+        );
+        return { clientSecret: existing.client_secret };
+      }
+
+      // Create new payment intent
+      const amountInCents = Math.round(parseFloat(order.final_price) * 100);
+      const paymentIntent = await stripeService.createPaymentIntent({
+        amount: amountInCents,
+        orderId: order.id,
+        buyerEmail: ctx.user.email,
       });
+
+      // Save payment intent ID
+      await db
+        .updateTable('orders')
+        .set({ stripe_payment_intent_id: paymentIntent.id })
+        .where('id', '=', order.id)
+        .execute();
+
+      return { clientSecret: paymentIntent.client_secret };
     }),
 
   /**

@@ -15,6 +15,7 @@ export interface Database {
   auctions: AuctionsTable;
   bids: BidsTable;
   orders: OrdersTable;
+  payout_requests: PayoutRequestsTable;
 }
 
 export interface UsersTable {
@@ -180,4 +181,20 @@ export type UserRole = Selectable<UserRolesTable>;
 export type Auction = Selectable<AuctionsTable>;
 export type Bid = Selectable<BidsTable>;
 export type Order = Selectable<OrdersTable>;
+export type PayoutRequest = Selectable<PayoutRequestsTable>;
+
+export interface PayoutRequestsTable {
+  id: Generated<string>;
+  seller_id: number;
+  order_id: string;
+  amount: string;
+  status: 'pending' | 'approved' | 'paid' | 'rejected';
+  payment_method: string | null;
+  payment_details: string | null;
+  processed_at: Date | null;
+  processed_by: number | null;
+  rejection_reason: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
 
