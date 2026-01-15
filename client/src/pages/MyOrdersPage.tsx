@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ShoppingBag, Package } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { cn } from "../lib/utils";
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { stripePromise } from "../lib/stripe";
+import { debugLog } from "../lib/debug";
 
 type FilterType = "all" | "pending" | "paid" | "shipped" | "failed" | "refunded";
 
@@ -25,7 +26,7 @@ function CheckoutForm({ orderId, onSuccess }: { orderId: string; onSuccess: () =
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/orders?payment_success=true`,
+        return_url: `${window.location.origin}/my-orders?payment_success=true`,
       },
     });
 
@@ -53,12 +54,23 @@ export default function MyOrdersPage() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: allOrders, isLoading, refetch } = trpc.order.getMyOrders.useQuery({
     status: filter === "all" || filter === "shipped" ? undefined : filter,
   });
 
   const createPayment = trpc.order.createPaymentIntent.useMutation();
+
+  // Handle payment success redirect
+  useEffect(() => {
+    if (searchParams.get('payment_success') === 'true') {
+      toast.success('Payment successful!');
+      refetch();
+      // Remove query parameter
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, refetch]);
 
   // Filter shipped orders client-side (shipped_at is not null and payment_status is 'paid')
   const orders = allOrders?.filter(order => {
@@ -69,11 +81,17 @@ export default function MyOrdersPage() {
   });
 
   const handlePayNow = async (orderId: string) => {
+    debugLog('🔵 Pay Now clicked for order:', orderId);
+    debugLog('🔵 Stripe Promise:', stripePromise);
     try {
+      debugLog('🔵 Calling createPayment...');
       const result = await createPayment.mutateAsync({ orderId });
+      debugLog('✅ Result:', result);
+      debugLog('✅ Client Secret:', result.clientSecret ? 'SET' : 'NULL');
       setClientSecret(result.clientSecret || null);
       setPayingOrderId(orderId);
     } catch (error: any) {
+      console.error('❌ Payment initialization error:', error);
       toast.error(error.message || 'Failed to initialize payment');
     }
   };

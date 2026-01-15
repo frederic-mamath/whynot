@@ -44,7 +44,7 @@ app.post(
   async (req, res) => {
     const sig = req.headers['stripe-signature'];
     
-    if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+    if (!sig || Array.isArray(sig) || !process.env.STRIPE_WEBHOOK_SECRET) {
       return res.status(400).send('Missing signature or webhook secret');
     }
 

@@ -8,14 +8,14 @@ export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Required for React/Vite
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://js.stripe.com'], // Allow Stripe.js
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-      connectSrc: ["'self'", 'wss:', 'ws:', 'https:'], // Allow WebSocket and API connections
+      connectSrc: ["'self'", 'wss:', 'ws:', 'https:', 'https://api.stripe.com'], // Allow Stripe API
       fontSrc: ["'self'", 'data:'],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'", 'blob:'],
-      frameSrc: ["'none'"],
+      frameSrc: ["'self'", 'https://js.stripe.com'], // Allow Stripe iframes for 3D Secure
     },
   },
   crossOriginEmbedderPolicy: false, // Required for video/streaming features
