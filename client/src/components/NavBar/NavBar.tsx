@@ -335,19 +335,19 @@ export default function NavBar() {
                           </Link>
                         </Button>
                       )}
-
-                      {/* Logout at bottom */}
-                      <div className="border-t border-border pt-4 mt-auto">
-                        <Button
-                          variant="ghost"
-                          className="justify-start w-full text-destructive hover:text-destructive"
-                          onClick={handleLogout}
-                        >
-                          <LogOut className="size-4 mr-2" />
-                          Logout
-                        </Button>
-                      </div>
                     </nav>
+
+                    {/* Logout at bottom */}
+                    <div className="border-t border-border pt-4">
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full text-destructive hover:text-destructive"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="size-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
                   </>
                 ) : (
                   <nav className="flex flex-col gap-1">
