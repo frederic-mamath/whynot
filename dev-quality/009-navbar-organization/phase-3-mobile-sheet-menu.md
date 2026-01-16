@@ -2,13 +2,13 @@
 
 ## Objective
 
-Reorganize the mobile sheet menu with visual section headers, consistent ordering with desktop, and improved hierarchy.
+Reorganize the mobile sheet menu with visual section headers, consistent ordering with desktop, and improved hierarchy. Mobile menu appears below xl breakpoint (1280px).
 
 ---
 
 ## Files to Update
 
-- `client/src/components/NavBar/NavBar.tsx` (lines 199-332)
+- `client/src/components/NavBar/NavBar.tsx` (desktop/mobile breakpoints and mobile menu structure)
 
 ---
 
@@ -310,25 +310,27 @@ Reorganize the mobile sheet menu with visual section headers, consistent orderin
 
 ## Acceptance Criteria
 
-- [ ] Section headers visible for Browse, My Activity, Sell
-- [ ] Mobile menu matches desktop navigation order
-- [ ] Theme toggle accessible at top
-- [ ] User info card displayed prominently
-- [ ] Horizontal separators between major sections
-- [ ] Logout button at bottom with border
-- [ ] All links close sheet on click
-- [ ] Sheet scrollable on small screens
-- [ ] Guest view shows simplified menu
-- [ ] Buyer view shows Browse + My Activity sections
-- [ ] Seller view shows Browse + My Activity + Sell sections
-- [ ] "Become a Seller" shown to buyers with separator
-- [ ] "Create Channel" shown to sellers as primary action
+- [x] Section headers visible for Browse, My Activity, Sell
+- [x] Mobile menu matches desktop navigation order
+- [x] Theme toggle accessible at top
+- [x] User info card displayed prominently
+- [x] Horizontal separators between major sections
+- [x] Logout button at bottom with border
+- [x] All links close sheet on click
+- [x] Sheet scrollable on small screens
+- [x] Guest view shows simplified menu (no Channels)
+- [x] Buyer view shows Browse + My Activity sections
+- [x] Seller view shows Browse + My Activity + Sell sections
+- [x] "Become a Seller" shown to buyers with separator
+- [x] "Create Channel" shown to sellers as primary action
+- [x] Mobile menu appears below xl breakpoint (1280px)
+- [x] Desktop nav appears at xl breakpoint and above
 
 ---
 
 ## Status
 
-📝 **PLANNING** - Ready to implement
+✅ **DONE** - Mobile sheet menu reorganized with sections, xl breakpoint implemented
 
 ---
 

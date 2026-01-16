@@ -44,20 +44,15 @@ Implement the redesigned desktop navigation with all links visible, logical grou
 
 ```tsx
 <div className="hidden md:flex items-center gap-2">
-  <Button variant="ghost" size="sm" asChild>
-    <Link to="/channels">
-      <Video className="size-4 mr-2" />
-      Channels
-    </Link>
-  </Button>
-  <div className="h-6 w-px bg-border mx-2" /> {/* Separator */}
   <ThemeToggle />
+
   <Button variant="ghost" size="sm" asChild>
     <Link to="/login">
       <LogIn className="size-4 mr-2" />
       Login
     </Link>
   </Button>
+
   <Button variant="default" size="sm" asChild>
     <Link to="/register">
       <UserPlus className="size-4 mr-2" />
@@ -235,7 +230,8 @@ Implement the redesigned desktop navigation with all links visible, logical grou
 
 - Hide email text on smaller desktops with `hidden lg:inline`
 - Toggle "Logout" vs "Exit" text with lg breakpoint
-- All navigation remains visible at md breakpoint (768px+)
+- Desktop navigation appears at xl breakpoint (1280px+)
+- Mobile sheet menu appears below xl breakpoint
 
 ### Button Hierarchy
 
@@ -254,22 +250,22 @@ Implement the redesigned desktop navigation with all links visible, logical grou
 
 ## Acceptance Criteria
 
-- [ ] Desktop nav shows "My Orders" for all authenticated users
-- [ ] Desktop nav shows "Pending Deliveries" for sellers
-- [ ] Visual separators clearly divide logical groups
-- [ ] Guest view shows: Channels | Theme, Login, Sign Up
-- [ ] Buyer view shows: Dashboard, My Orders, Channels | Become Seller | Theme, Avatar, Logout
-- [ ] Seller view shows: Dashboard, My Orders, Channels, Shops, Deliveries | Create | Theme, Avatar, Logout
-- [ ] ThemeToggle visible in all states
-- [ ] All links navigate correctly
-- [ ] Responsive behavior works (lg breakpoint for email)
-- [ ] No visual regressions on desktop
+- [x] Desktop nav shows "My Orders" for all authenticated users
+- [x] Desktop nav shows "Pending Deliveries" for sellers
+- [x] Visual separators clearly divide logical groups
+- [x] Guest view shows: Theme, Login, Sign Up (no Channels)
+- [x] Buyer view shows: Dashboard, My Orders, Channels | Become Seller | Theme, Avatar, Logout
+- [x] Seller view shows: Dashboard, My Orders, Channels, Shops, Deliveries | Create | Theme, Avatar, Logout
+- [x] ThemeToggle visible in all states
+- [x] All links navigate correctly
+- [x] Responsive behavior works (lg breakpoint for email)
+- [x] No visual regressions on desktop
 
 ---
 
 ## Status
 
-📝 **PLANNING** - Ready to implement
+✅ **DONE** - Desktop navigation implemented with all improvements
 
 ---
 

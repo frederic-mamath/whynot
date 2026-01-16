@@ -95,14 +95,21 @@ export default function NavBar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2">
-            <ThemeToggle />
+          <div className="hidden xl:flex items-center gap-2">
             {authenticated ? (
               <>
+                {/* Browse + My Activity */}
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/dashboard">
                     <Home className="size-4 mr-2" />
                     Dashboard
+                  </Link>
+                </Button>
+
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/my-orders">
+                    <ShoppingBag className="size-4 mr-2" />
+                    My Orders
                   </Link>
                 </Button>
 
@@ -113,16 +120,30 @@ export default function NavBar() {
                   </Link>
                 </Button>
 
+                {/* Sell Section - Sellers only */}
                 {isSeller && (
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/shops">
-                      <Store className="size-4 mr-2" />
-                      Shops
-                    </Link>
-                  </Button>
+                  <>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/shops">
+                        <Store className="size-4 mr-2" />
+                        Shops
+                      </Link>
+                    </Button>
+
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/pending-deliveries">
+                        <Package className="size-4 mr-2" />
+                        Deliveries
+                      </Link>
+                    </Button>
+                  </>
                 )}
 
-                {!isSeller && (
+                {/* Separator */}
+                <div className="h-6 w-px bg-border mx-2" />
+
+                {/* Actions */}
+                {!isSeller ? (
                   <Button
                     variant="outline"
                     size="sm"
@@ -132,17 +153,22 @@ export default function NavBar() {
                     <BadgeCheck className="size-4 mr-2" />
                     {hasPendingRequest ? "Pending" : "Become a Seller"}
                   </Button>
+                ) : (
+                  <Button variant="default" size="sm" asChild>
+                    <Link to="/create-channel">
+                      <Plus className="size-4 mr-2" />
+                      Create
+                    </Link>
+                  </Button>
                 )}
 
-                <Button variant="default" size="sm" asChild>
-                  <Link to="/create-channel">
-                    <Plus className="size-4 mr-2" />
-                    Create
-                  </Link>
-                </Button>
+                {/* Separator */}
+                <div className="h-6 w-px bg-border mx-2" />
 
+                {/* Account */}
+                <ThemeToggle />
                 {user && (
-                  <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border">
+                  <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-accent">
                       <div className="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
                         {user.email[0].toUpperCase()}
@@ -162,6 +188,8 @@ export default function NavBar() {
               </>
             ) : (
               <>
+                <ThemeToggle />
+
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/login">
                     <LogIn className="size-4 mr-2" />
@@ -185,7 +213,7 @@ export default function NavBar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="xl:hidden"
                 aria-label="Toggle menu"
               >
                 <Menu className="size-5" />
@@ -206,7 +234,7 @@ export default function NavBar() {
                 {authenticated ? (
                   <>
                     {user && (
-                      <div className="flex items-center gap-3 px-2 py-3 mb-4 rounded-lg bg-accent">
+                      <div className="flex items-center gap-3 px-2 py-3 mb-6 rounded-lg bg-accent">
                         <div className="size-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-base font-semibold">
                           {user.email[0].toUpperCase()}
                         </div>
@@ -216,7 +244,22 @@ export default function NavBar() {
                       </div>
                     )}
 
-                    <nav className="flex flex-col gap-2 flex-1">
+                    <nav className="flex flex-col gap-1 flex-1">
+                      {/* Browse Section */}
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Browse
+                      </div>
+                      <Button variant="ghost" className="justify-start" asChild>
+                        <Link to="/channels" onClick={closeSheet}>
+                          <Video className="size-4 mr-2" />
+                          Channels
+                        </Link>
+                      </Button>
+
+                      {/* My Activity Section */}
+                      <div className="px-2 py-1 mt-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        My Activity
+                      </div>
                       <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/dashboard" onClick={closeSheet}>
                           <Home className="size-4 mr-2" />
@@ -231,40 +274,39 @@ export default function NavBar() {
                         </Link>
                       </Button>
 
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/channels" onClick={closeSheet}>
-                          <Video className="size-4 mr-2" />
-                          Channels
-                        </Link>
-                      </Button>
-
+                      {/* Sell Section - Sellers only */}
                       {isSeller && (
-                        <Button
-                          variant="ghost"
-                          className="justify-start"
-                          asChild
-                        >
-                          <Link to="/shops" onClick={closeSheet}>
-                            <Store className="size-4 mr-2" />
-                            Shops
-                          </Link>
-                        </Button>
+                        <>
+                          <div className="px-2 py-1 mt-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Sell
+                          </div>
+                          <Button
+                            variant="ghost"
+                            className="justify-start"
+                            asChild
+                          >
+                            <Link to="/shops" onClick={closeSheet}>
+                              <Store className="size-4 mr-2" />
+                              Shops
+                            </Link>
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            className="justify-start"
+                            asChild
+                          >
+                            <Link to="/pending-deliveries" onClick={closeSheet}>
+                              <Package className="size-4 mr-2" />
+                              Pending Deliveries
+                            </Link>
+                          </Button>
+                        </>
                       )}
 
-                      {isSeller && (
-                        <Button
-                          variant="ghost"
-                          className="justify-start"
-                          asChild
-                        >
-                          <Link to="/pending-deliveries" onClick={closeSheet}>
-                            <Package className="size-4 mr-2" />
-                            Pending Deliveries
-                          </Link>
-                        </Button>
-                      )}
-
-                      {!isSeller && (
+                      {/* Actions Section */}
+                      <div className="h-px bg-border my-4" />
+                      {!isSeller ? (
                         <Button
                           variant="outline"
                           className="justify-start"
@@ -277,35 +319,38 @@ export default function NavBar() {
                           }
                         >
                           <BadgeCheck className="size-4 mr-2" />
-                          {hasPendingRequest ? "Pending" : "Become Seller"}
+                          {hasPendingRequest
+                            ? "Request Pending"
+                            : "Become a Seller"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="default"
+                          className="justify-start"
+                          asChild
+                        >
+                          <Link to="/create-channel" onClick={closeSheet}>
+                            <Plus className="size-4 mr-2" />
+                            Create Channel
+                          </Link>
                         </Button>
                       )}
 
-                      <Button
-                        variant="default"
-                        className="justify-start"
-                        asChild
-                      >
-                        <Link to="/create-channel" onClick={closeSheet}>
-                          <Plus className="size-4 mr-2" />
-                          Create Channel
-                        </Link>
-                      </Button>
+                      {/* Logout at bottom */}
+                      <div className="border-t border-border pt-4 mt-auto">
+                        <Button
+                          variant="ghost"
+                          className="justify-start w-full text-destructive hover:text-destructive"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="size-4 mr-2" />
+                          Logout
+                        </Button>
+                      </div>
                     </nav>
-
-                    <div className="border-t border-border pt-4 mt-auto">
-                      <Button
-                        variant="ghost"
-                        className="justify-start w-full text-destructive hover:text-destructive"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="size-4 mr-2" />
-                        Logout
-                      </Button>
-                    </div>
                   </>
                 ) : (
-                  <nav className="flex flex-col gap-2">
+                  <nav className="flex flex-col gap-1">
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link to="/login" onClick={closeSheet}>
                         <LogIn className="size-4 mr-2" />

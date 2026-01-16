@@ -88,9 +88,9 @@ Document the current navigation state, identify inconsistencies, and design a un
 
 ### Navigation Groups
 
-#### GROUP 1: Browse (All Users)
+#### GROUP 1: Browse (Authenticated Users)
 
-**Purpose**: Public exploration
+**Purpose**: Exploration of platform content
 
 - Home (logo, always visible)
 - Channels (browse all live channels)
@@ -132,7 +132,7 @@ Document the current navigation state, identify inconsistencies, and design a un
 ### For Guests
 
 ```
-[Logo: WhyNot] [Theme] [Channels] [Login] [Sign Up (primary)]
+[Logo: WhyNot] [Theme] [Login] [Sign Up (primary)]
 ```
 
 ### For Buyers
