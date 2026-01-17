@@ -58,7 +58,6 @@ export default function ChannelDetailsPage() {
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
   const [error, setError] = useState("");
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [screenTrack, setScreenTrack] = useState<ICameraVideoTrack | null>(
     null,
   );
@@ -471,36 +470,6 @@ export default function ChannelDetailsPage() {
     }
   };
 
-  const stopScreenShare = async () => {
-    if (!client || !screenTrack) return;
-
-    try {
-      // Unpublish and close screen track
-      await client.unpublish([screenTrack as any]);
-      screenTrack.stop();
-      screenTrack.close();
-      setScreenTrack(null);
-      setIsScreenSharing(false);
-
-      // Re-publish camera
-      const videoTrack = await AgoraRTC.createCameraVideoTrack();
-      await client.publish([videoTrack]);
-      setLocalVideoTrack(videoTrack);
-
-      setTimeout(() => {
-        const localPlayerElement = document.getElementById("local-player");
-        if (localPlayerElement) {
-          videoTrack.play("local-player");
-        }
-      }, 100);
-
-      console.log("Screen sharing stopped");
-    } catch (err: any) {
-      console.error("Error stopping screen share:", err);
-      alert("Failed to stop screen share");
-    }
-  };
-
   // Leave channel
   const handleLeave = async () => {
     try {
@@ -592,7 +561,7 @@ export default function ChannelDetailsPage() {
             {/* Remote User Video (Primary - The Broadcaster) */}
             {Array.from(remoteUsers.entries()).length > 0 ? (
               <div className="w-full h-full">
-                {Array.from(remoteUsers.entries()).map(([uid, user], index) => {
+                {Array.from(remoteUsers.entries()).map(([uid], index) => {
                   // Only show first remote user (broadcaster) in main view
                   if (index === 0) {
                     return (
