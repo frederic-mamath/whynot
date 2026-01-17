@@ -38,7 +38,7 @@ interface ChannelConfig {
 export default function ChannelDetailsPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
-  const { role, canPublish, isLoading: roleLoading } = useUserRole();
+  const { role } = useUserRole();
 
   // Get current user info
   const { data: currentUser } = trpc.auth.me.useQuery();
@@ -86,13 +86,13 @@ export default function ChannelDetailsPage() {
   // Fetch promoted products for this channel
   const { data: promotedProducts = [] } = trpc.product.listByChannel.useQuery(
     { channelId: Number(channelId) },
-    { enabled: !!channelId }
+    { enabled: !!channelId },
   );
 
   // Fetch highlighted product on mount
   const { data: highlightedData } = trpc.channel.getHighlightedProduct.useQuery(
     { channelId: Number(channelId) },
-    { enabled: !!channelId }
+    { enabled: !!channelId },
   );
 
   // Update highlighted product when data changes
@@ -101,8 +101,8 @@ export default function ChannelDetailsPage() {
       setHighlightedProduct({
         id: highlightedData.product.id,
         name: highlightedData.product.name,
-        price: parseFloat(highlightedData.product.price || '0'),
-        description: highlightedData.product.description || '',
+        price: highlightedData.product.price,
+        description: highlightedData.product.description || "",
         imageUrl: highlightedData.product.imageUrl,
       });
     } else {
@@ -116,7 +116,7 @@ export default function ChannelDetailsPage() {
     {
       enabled: !!channelId,
       onData: (event) => {
-        if (event.type === 'PRODUCT_HIGHLIGHTED') {
+        if (event.type === "PRODUCT_HIGHLIGHTED") {
           setHighlightedProduct({
             id: event.product.id,
             name: event.product.name,
@@ -127,15 +127,15 @@ export default function ChannelDetailsPage() {
           toast.success(`${event.product.name} is now highlighted!`, {
             icon: <Sparkles className="size-4 text-primary" />,
           });
-        } else if (event.type === 'PRODUCT_UNHIGHLIGHTED') {
+        } else if (event.type === "PRODUCT_UNHIGHLIGHTED") {
           setHighlightedProduct(null);
-          toast.info('Product unhighlighted');
+          toast.info("Product unhighlighted");
         }
       },
       onError: (error) => {
-        console.error('Channel events subscription error:', error);
+        console.error("Channel events subscription error:", error);
       },
-    }
+    },
   );
 
   // Join channel mutation
@@ -282,30 +282,37 @@ export default function ChannelDetailsPage() {
         console.log(
           "🎥 Creating local video and audio tracks (broadcaster mode)...",
         );
-        
+
         try {
           // Check for device permissions first
           const devices = await AgoraRTC.getDevices();
           console.log("📱 Available devices:", devices);
-          
-          const cameras = devices.filter(d => d.kind === 'videoinput');
-          const microphones = devices.filter(d => d.kind === 'audioinput');
-          
-          console.log(`🎥 Found ${cameras.length} camera(s), ${microphones.length} microphone(s)`);
-          
+
+          const cameras = devices.filter((d) => d.kind === "videoinput");
+          const microphones = devices.filter((d) => d.kind === "audioinput");
+
+          console.log(
+            `🎥 Found ${cameras.length} camera(s), ${microphones.length} microphone(s)`,
+          );
+
           if (cameras.length === 0 || microphones.length === 0) {
             throw new Error(
-              `Missing devices: ${cameras.length === 0 ? 'No camera' : ''} ${microphones.length === 0 ? 'No microphone' : ''}`
+              `Missing devices: ${cameras.length === 0 ? "No camera" : ""} ${microphones.length === 0 ? "No microphone" : ""}`,
             );
           }
 
           // Request permissions explicitly
           try {
-            await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: true,
+            });
             console.log("✅ Browser permissions granted");
           } catch (permErr: any) {
             console.error("❌ Browser permission denied:", permErr);
-            throw new Error(`Camera/Microphone permission denied: ${permErr.message}`);
+            throw new Error(
+              `Camera/Microphone permission denied: ${permErr.message}`,
+            );
           }
 
           const videoTrack = await AgoraRTC.createCameraVideoTrack();
@@ -321,7 +328,10 @@ export default function ChannelDetailsPage() {
           // Wait for DOM to update, then play local video
           setTimeout(() => {
             const localPlayerElement = document.getElementById("local-player");
-            console.log("🎬 Playing local video to element:", localPlayerElement);
+            console.log(
+              "🎬 Playing local video to element:",
+              localPlayerElement,
+            );
             if (localPlayerElement) {
               videoTrack.play("local-player");
               console.log("✅ Local video playing");
@@ -331,7 +341,9 @@ export default function ChannelDetailsPage() {
           }, 100);
         } catch (trackErr: any) {
           console.error("❌ Failed to create/publish tracks:", trackErr);
-          throw new Error(`Failed to access camera/microphone: ${trackErr.message}`);
+          throw new Error(
+            `Failed to access camera/microphone: ${trackErr.message}`,
+          );
         }
       } else {
         console.log(
@@ -456,53 +468,6 @@ export default function ChannelDetailsPage() {
       await localVideoTrack.setEnabled(!videoMuted);
       setVideoMuted(!videoMuted);
       console.log(videoMuted ? "Camera turned on" : "Camera turned off");
-    }
-  };
-
-  // Toggle screen share
-  const toggleScreenShare = async () => {
-    if (!client) return;
-
-    try {
-      if (!isScreenSharing) {
-        // Start screen sharing
-        console.log("Starting screen share...");
-        const screenVideoTrack = await AgoraRTC.createScreenVideoTrack({
-          encoderConfig: "1080p_1",
-        });
-
-        // Unpublish camera
-        if (localVideoTrack) {
-          await client.unpublish([localVideoTrack]);
-          localVideoTrack.stop();
-          localVideoTrack.close();
-        }
-
-        // Publish screen
-        await client.publish([screenVideoTrack as any]);
-        setScreenTrack(screenVideoTrack as any);
-        setIsScreenSharing(true);
-        console.log("Screen sharing started!");
-
-        // Play screen share locally
-        setTimeout(() => {
-          const localPlayerElement = document.getElementById("local-player");
-          if (localPlayerElement) {
-            (screenVideoTrack as any).play("local-player");
-          }
-        }, 100);
-
-        // Listen for screen share stop (user clicks browser's stop button)
-        (screenVideoTrack as any).on("track-ended", () => {
-          stopScreenShare();
-        });
-      } else {
-        // Stop screen sharing
-        await stopScreenShare();
-      }
-    } catch (err: any) {
-      console.error("Screen share error:", err);
-      alert("Failed to share screen: " + err.message);
     }
   };
 
@@ -714,7 +679,9 @@ export default function ChannelDetailsPage() {
               onToggleVideo={channelConfig?.isHost ? toggleVideo : undefined}
               onShowParticipants={() => setShowParticipants(true)}
               onShowProducts={() => setShowProducts(true)}
-              onToggleHighlightedProduct={() => setShowHighlightedProduct(!showHighlightedProduct)}
+              onToggleHighlightedProduct={() =>
+                setShowHighlightedProduct(!showHighlightedProduct)
+              }
             />
           </div>
 
@@ -728,7 +695,9 @@ export default function ChannelDetailsPage() {
                 currentUserId={currentUser.id}
                 highlightedProduct={highlightedProduct}
                 showHighlightedProduct={showHighlightedProduct}
-                onToggleHighlightedProduct={() => setShowHighlightedProduct(!showHighlightedProduct)}
+                onToggleHighlightedProduct={() =>
+                  setShowHighlightedProduct(!showHighlightedProduct)
+                }
                 isHost={channelConfig?.isHost ?? false}
               />
             </div>

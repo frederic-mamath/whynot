@@ -4,18 +4,18 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '../ui/sheet';
-import { Badge } from '../ui/badge';
-import { Package, ShoppingBag, Sparkles, X } from 'lucide-react';
-import Button from '../ui/button';
-import { trpc } from '@/lib/trpc';
-import { toast } from 'sonner';
+} from "../ui/sheet";
+import { Badge } from "../ui/badge";
+import { Package, ShoppingBag, Sparkles, X } from "lucide-react";
+import Button from "../ui/button";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 interface Product {
   id: number;
   name: string;
   description: string | null;
-  price: string | null;
+  price: number;
   imageUrl: string | null;
   isActive: boolean;
 }
@@ -41,19 +41,19 @@ export default function PromotedProducts({
 
   const highlightMutation = trpc.channel.highlightProduct.useMutation({
     onSuccess: () => {
-      toast.success('Product highlighted!');
+      toast.success("Product highlighted!");
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to highlight product');
+      toast.error(error.message || "Failed to highlight product");
     },
   });
 
   const unhighlightMutation = trpc.channel.unhighlightProduct.useMutation({
     onSuccess: () => {
-      toast.success('Product unhighlighted');
+      toast.success("Product unhighlighted");
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to unhighlight product');
+      toast.error(error.message || "Failed to unhighlight product");
     },
   });
 
@@ -75,8 +75,8 @@ export default function PromotedProducts({
           </SheetTitle>
           <SheetDescription>
             {activeProducts.length === 0
-              ? 'No products are being promoted'
-              : `${activeProducts.length} product${activeProducts.length === 1 ? '' : 's'} available`}
+              ? "No products are being promoted"
+              : `${activeProducts.length} product${activeProducts.length === 1 ? "" : "s"} available`}
           </SheetDescription>
         </SheetHeader>
 
@@ -92,8 +92,8 @@ export default function PromotedProducts({
           ) : (
             activeProducts.map((product) => {
               const formattedPrice = product.price
-                ? `$${parseFloat(product.price).toFixed(2)}`
-                : 'Price not set';
+                ? `$${product.price.toFixed(2)}`
+                : "Price not set";
 
               return (
                 <div
