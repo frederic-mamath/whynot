@@ -687,9 +687,7 @@ export default function ChannelDetailsPage() {
 
           {/* Chat Panel - Bottom overlay, positioned to left of controls */}
           {currentUser && channelId && (
-            <div
-              className={`absolute inset-0 z-20 ${channelConfig?.isHost ? "right-20" : "right-0"}`}
-            >
+            <div className="absolute inset-0 right-20 z-20">
               <ChatPanel
                 channelId={Number(channelId)}
                 currentUserId={currentUser.id}
