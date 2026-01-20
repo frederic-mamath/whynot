@@ -113,17 +113,21 @@ export default function NavBar() {
                     <NavigationMenuItem>
                       <NavigationMenuTrigger>Browse</NavigationMenuTrigger>
                       <NavigationMenuContent>
-                        <div className="w-[200px] p-2">
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to="/channels"
-                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
-                            >
-                              <Video className="size-4" />
-                              <span>Channels</span>
-                            </Link>
-                          </NavigationMenuLink>
-                        </div>
+                        <ul className="w-[200px] p-2">
+                          <li>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to="/channels"
+                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
+                              >
+                                <Video className="size-4" />
+                                <span className="text-sm font-medium">
+                                  Channels
+                                </span>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                        </ul>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
 
@@ -131,35 +135,47 @@ export default function NavBar() {
                     <NavigationMenuItem>
                       <NavigationMenuTrigger>My Activity</NavigationMenuTrigger>
                       <NavigationMenuContent>
-                        <div className="w-[200px] p-2 space-y-1">
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to="/dashboard"
-                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
-                            >
-                              <Home className="size-4" />
-                              <span>Dashboard</span>
-                            </Link>
-                          </NavigationMenuLink>
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to="/profile"
-                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
-                            >
-                              <UserCircle className="size-4" />
-                              <span>Profile</span>
-                            </Link>
-                          </NavigationMenuLink>
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to="/my-orders"
-                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
-                            >
-                              <ShoppingBag className="size-4" />
-                              <span>My Orders</span>
-                            </Link>
-                          </NavigationMenuLink>
-                        </div>
+                        <ul className="w-[200px] p-2">
+                          <li>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to="/dashboard"
+                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
+                              >
+                                <Home className="size-4" />
+                                <span className="text-sm font-medium">
+                                  Dashboard
+                                </span>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                          <li>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to="/profile"
+                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
+                              >
+                                <UserCircle className="size-4" />
+                                <span className="text-sm font-medium">
+                                  Profile
+                                </span>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                          <li>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to="/my-orders"
+                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
+                              >
+                                <ShoppingBag className="size-4" />
+                                <span className="text-sm font-medium">
+                                  My Orders
+                                </span>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                        </ul>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
 
@@ -168,26 +184,34 @@ export default function NavBar() {
                       <NavigationMenuItem>
                         <NavigationMenuTrigger>Sell</NavigationMenuTrigger>
                         <NavigationMenuContent>
-                          <div className="w-[200px] p-2 space-y-1">
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to="/shops"
-                                className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
-                              >
-                                <Store className="size-4" />
-                                <span>Shops</span>
-                              </Link>
-                            </NavigationMenuLink>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to="/pending-deliveries"
-                                className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
-                              >
-                                <Package className="size-4" />
-                                <span>Deliveries</span>
-                              </Link>
-                            </NavigationMenuLink>
-                          </div>
+                          <ul className="w-[200px] p-2">
+                            <li>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to="/shops"
+                                  className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
+                                >
+                                  <Store className="size-4" />
+                                  <span className="text-sm font-medium">
+                                    Shops
+                                  </span>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                            <li>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to="/pending-deliveries"
+                                  className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
+                                >
+                                  <Package className="size-4" />
+                                  <span className="text-sm font-medium">
+                                    Deliveries
+                                  </span>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          </ul>
                         </NavigationMenuContent>
                       </NavigationMenuItem>
                     )}
