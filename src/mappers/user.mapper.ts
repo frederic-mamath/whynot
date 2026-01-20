@@ -1,24 +1,29 @@
-import { User, UsersTable } from '../db/types';
-import { UserOutboundDto, UserInboundDto } from '../types/dto/user.dto';
+import { User, UsersTable } from "../db/types";
+import { UserOutboundDto, UserInboundDto } from "../types/dto/user.dto";
 
 export function mapUserToUserOutboundDto(user: User): UserOutboundDto {
   return {
     id: user.id,
     email: user.email,
-    firstName: user.firstname,
-    lastName: user.lastname,
+    firstName: user.first_name || user.firstname,
+    lastName: user.last_name || user.lastname,
     isVerified: user.is_verified,
     createdAt: user.created_at,
     updatedAt: user.updated_at,
   };
 }
 
-export function mapCreateUserInboundDtoToUser(dto: UserInboundDto, hashedPassword: string): Omit<UsersTable, 'id' | 'is_verified' | 'created_at' | 'updated_at'> {
+export function mapCreateUserInboundDtoToUser(
+  dto: UserInboundDto,
+  hashedPassword: string,
+): Omit<UsersTable, "id" | "is_verified" | "created_at" | "updated_at"> {
   return {
     email: dto.email,
     password: hashedPassword,
     firstname: dto.firstName ?? null,
     lastname: dto.lastName ?? null,
+    first_name: dto.firstName ?? null,
+    last_name: dto.lastName ?? null,
     stripe_account_id: null,
     stripe_onboarding_complete: false,
   };

@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
@@ -21,6 +27,7 @@ import ProductCreatePage from "./pages/ProductCreatePage";
 import ProductUpdatePage from "./pages/ProductUpdatePage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import { PendingDeliveriesPage } from "./pages/PendingDeliveriesPage";
+import ProfilePage from "./pages/ProfilePage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -28,7 +35,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 
 function AppContent() {
   const location = useLocation();
-  const isChannelPage = location.pathname.startsWith('/channel/');
+  const isChannelPage = location.pathname.startsWith("/channel/");
 
   return (
     <>
@@ -38,14 +45,64 @@ function AppContent() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
-        <Route path="/pending-deliveries" element={<ProtectedRoute requireRole="SELLER"><PendingDeliveriesPage /></ProtectedRoute>} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <ProtectedRoute>
+              <MyOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pending-deliveries"
+          element={
+            <ProtectedRoute requireRole="SELLER">
+              <PendingDeliveriesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/channels" element={<ChannelListPage />} />
-        <Route path="/create-channel" element={<ProtectedRoute requireRole="SELLER"><ChannelCreatePage /></ProtectedRoute>} />
+        <Route
+          path="/create-channel"
+          element={
+            <ProtectedRoute requireRole="SELLER">
+              <ChannelCreatePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/channel/:channelId" element={<ChannelDetailsPage />} />
-        <Route path="/shops" element={<ProtectedRoute requireRole="SELLER"><ShopListPage /></ProtectedRoute>} />
-        <Route path="/shops/create" element={<ProtectedRoute requireRole="SELLER"><ShopCreatePage /></ProtectedRoute>} />
-        <Route path="/shops/:id" element={<ProtectedRoute requireRole="SELLER"><ShopLayout /></ProtectedRoute>}>
+        <Route
+          path="/shops"
+          element={
+            <ProtectedRoute requireRole="SELLER">
+              <ShopListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shops/create"
+          element={
+            <ProtectedRoute requireRole="SELLER">
+              <ShopCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shops/:id"
+          element={
+            <ProtectedRoute requireRole="SELLER">
+              <ShopLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<ShopDetailsPage />} />
           <Route path="products" element={<ProductListPage />} />
           <Route path="products/create" element={<ProductCreatePage />} />
@@ -67,16 +124,16 @@ function App() {
       links: [
         // Split link: WebSocket for subscriptions, HTTP for everything else
         splitLink({
-          condition: (op) => op.type === 'subscription',
-          
+          condition: (op) => op.type === "subscription",
+
           // WebSocket link for subscriptions
           true: wsLink({
             client: wsClient,
           }),
-          
+
           // HTTP link for queries and mutations
           false: httpBatchLink({
-            url: '/trpc', // Use relative URL (same domain as frontend)
+            url: "/trpc", // Use relative URL (same domain as frontend)
             headers() {
               const token = getToken();
               return token ? { authorization: `Bearer ${token}` } : {};
@@ -86,7 +143,7 @@ function App() {
       ],
     }),
   );
-  console.log({ 
+  console.log({
     apiUrl: import.meta.env.VITE_API_URL,
     wsUrl: import.meta.env.VITE_WS_URL,
   });

@@ -1,4 +1,4 @@
-import { Kysely, Generated, Selectable } from 'kysely';
+import { Kysely, Generated, Selectable } from "kysely";
 
 export interface Database {
   users: UsersTable;
@@ -16,6 +16,7 @@ export interface Database {
   bids: BidsTable;
   orders: OrdersTable;
   payout_requests: PayoutRequestsTable;
+  user_addresses: UserAddressesTable;
 }
 
 export interface UsersTable {
@@ -24,6 +25,8 @@ export interface UsersTable {
   password: string;
   firstname: string | null;
   lastname: string | null;
+  first_name: string | null;
+  last_name: string | null;
   is_verified: boolean;
   stripe_account_id: string | null;
   stripe_onboarding_complete: boolean;
@@ -75,7 +78,7 @@ export interface UserShopRolesTable {
   id: Generated<number>;
   user_id: number;
   shop_id: number;
-  role: 'shop-owner' | 'vendor';
+  role: "shop-owner" | "vendor";
   created_at: Date;
 }
 
@@ -135,7 +138,7 @@ export interface AuctionsTable {
   started_at: Date;
   ends_at: Date;
   extended_count: number;
-  status: 'active' | 'ended' | 'completed' | 'paid' | 'cancelled';
+  status: "active" | "ended" | "completed" | "paid" | "cancelled";
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
@@ -158,7 +161,7 @@ export interface OrdersTable {
   final_price: string;
   platform_fee: string;
   seller_payout: string;
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  payment_status: "pending" | "paid" | "failed" | "refunded";
   payment_deadline: Date;
   stripe_payment_intent_id: string | null;
   paid_at: Date | null;
@@ -182,13 +185,14 @@ export type Auction = Selectable<AuctionsTable>;
 export type Bid = Selectable<BidsTable>;
 export type Order = Selectable<OrdersTable>;
 export type PayoutRequest = Selectable<PayoutRequestsTable>;
+export type UserAddress = Selectable<UserAddressesTable>;
 
 export interface PayoutRequestsTable {
   id: Generated<string>;
   seller_id: number;
   order_id: string;
   amount: string;
-  status: 'pending' | 'approved' | 'paid' | 'rejected';
+  status: "pending" | "approved" | "paid" | "rejected";
   payment_method: string | null;
   payment_details: string | null;
   processed_at: Date | null;
@@ -198,3 +202,17 @@ export interface PayoutRequestsTable {
   updated_at: Generated<Date>;
 }
 
+export interface UserAddressesTable {
+  id: Generated<number>;
+  user_id: number;
+  label: string;
+  street: string;
+  street2: string | null;
+  city: string;
+  state: string;
+  zip_code: string;
+  country: string;
+  is_default: boolean;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}

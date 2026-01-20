@@ -1,6 +1,6 @@
-import { db } from '../db';
-import { Selectable } from 'kysely';
-import { UsersTable } from '../db/types';
+import { db } from "../db";
+import { Selectable } from "kysely";
+import { UsersTable } from "../db/types";
 
 type User = Selectable<UsersTable>;
 
@@ -9,16 +9,15 @@ type User = Selectable<UsersTable>;
  * Each method is a named query with explicit SQL using Kysely
  */
 export class UserRepository {
-  
   /**
    * Find user by ID
    * Similar to: SELECT * FROM users WHERE id = ?
    */
   async findById(id: number): Promise<User | undefined> {
     return db
-      .selectFrom('users')
+      .selectFrom("users")
       .selectAll()
-      .where('id', '=', id)
+      .where("id", "=", id)
       .executeTakeFirst();
   }
 
@@ -28,9 +27,9 @@ export class UserRepository {
    */
   async findByEmail(email: string): Promise<User | undefined> {
     return db
-      .selectFrom('users')
+      .selectFrom("users")
       .selectAll()
-      .where('email', '=', email)
+      .where("email", "=", email)
       .executeTakeFirst();
   }
 
@@ -42,10 +41,10 @@ export class UserRepository {
     email: string,
     hashedPassword: string,
     firstName?: string,
-    lastName?: string
+    lastName?: string,
   ): Promise<User> {
     return db
-      .insertInto('users')
+      .insertInto("users")
       .values({
         email,
         password: hashedPassword,
@@ -66,11 +65,11 @@ export class UserRepository {
    */
   async existsByEmail(email: string): Promise<boolean> {
     const result = await db
-      .selectFrom('users')
-      .select(['id'])
-      .where('email', '=', email)
+      .selectFrom("users")
+      .select(["id"])
+      .where("email", "=", email)
       .executeTakeFirst();
-    
+
     return result !== undefined;
   }
 
@@ -80,15 +79,15 @@ export class UserRepository {
    */
   async updateVerificationStatus(
     userId: number,
-    isVerified: boolean
+    isVerified: boolean,
   ): Promise<User | undefined> {
     return db
-      .updateTable('users')
+      .updateTable("users")
       .set({
         is_verified: isVerified,
         updated_at: new Date(),
       })
-      .where('id', '=', userId)
+      .where("id", "=", userId)
       .returningAll()
       .executeTakeFirst();
   }
@@ -102,15 +101,24 @@ export class UserRepository {
     data: {
       firstname?: string | null;
       lastname?: string | null;
-    }
+      first_name?: string | null;
+      last_name?: string | null;
+    },
   ): Promise<User | undefined> {
+    const updateData: any = {
+      updated_at: new Date(),
+    };
+
+    // Support both old and new field names
+    if (data.firstname !== undefined) updateData.firstname = data.firstname;
+    if (data.lastname !== undefined) updateData.lastname = data.lastname;
+    if (data.first_name !== undefined) updateData.first_name = data.first_name;
+    if (data.last_name !== undefined) updateData.last_name = data.last_name;
+
     return db
-      .updateTable('users')
-      .set({
-        ...data,
-        updated_at: new Date(),
-      })
-      .where('id', '=', userId)
+      .updateTable("users")
+      .set(updateData)
+      .where("id", "=", userId)
       .returningAll()
       .executeTakeFirst();
   }
@@ -121,10 +129,10 @@ export class UserRepository {
    */
   async deleteById(id: number): Promise<boolean> {
     const result = await db
-      .deleteFrom('users')
-      .where('id', '=', id)
+      .deleteFrom("users")
+      .where("id", "=", id)
       .executeTakeFirst();
-    
+
     return Number(result.numDeletedRows) > 0;
   }
 
@@ -134,14 +142,14 @@ export class UserRepository {
    */
   async findAll(limit?: number): Promise<User[]> {
     let query = db
-      .selectFrom('users')
+      .selectFrom("users")
       .selectAll()
-      .orderBy('created_at', 'desc');
-    
+      .orderBy("created_at", "desc");
+
     if (limit) {
       query = query.limit(limit);
     }
-    
+
     return query.execute();
   }
 
@@ -151,10 +159,10 @@ export class UserRepository {
    */
   async count(): Promise<number> {
     const result = await db
-      .selectFrom('users')
-      .select(db.fn.countAll<number>().as('count'))
+      .selectFrom("users")
+      .select(db.fn.countAll<number>().as("count"))
       .executeTakeFirstOrThrow();
-    
+
     return Number(result.count);
   }
 }

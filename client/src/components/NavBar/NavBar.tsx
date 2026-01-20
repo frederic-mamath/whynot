@@ -13,6 +13,7 @@ import {
   BadgeCheck,
   ShoppingBag,
   Package,
+  UserCircle,
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { isAuthenticated, removeToken } from "../../lib/auth";
@@ -264,6 +265,13 @@ export default function NavBar() {
                         <Link to="/dashboard" onClick={closeSheet}>
                           <Home className="size-4 mr-2" />
                           Dashboard
+                        </Link>
+                      </Button>
+
+                      <Button variant="ghost" className="justify-start" asChild>
+                        <Link to="/profile" onClick={closeSheet}>
+                          <UserCircle className="size-4 mr-2" />
+                          Profile
                         </Link>
                       </Button>
 
