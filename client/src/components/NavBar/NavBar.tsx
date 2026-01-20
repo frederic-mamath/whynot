@@ -26,6 +26,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+  NavigationMenuLink,
+} from "../ui/navigation-menu";
 import { toast } from "sonner";
 import ThemeToggle from "../ui/theme-toggle";
 
@@ -99,46 +107,92 @@ export default function NavBar() {
           <div className="hidden xl:flex items-center gap-2">
             {authenticated ? (
               <>
-                {/* Browse + My Activity */}
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/dashboard">
-                    <Home className="size-4 mr-2" />
-                    Dashboard
-                  </Link>
-                </Button>
+                <NavigationMenu>
+                  <NavigationMenuList>
+                    {/* Browse */}
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger>Browse</NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[200px] p-2">
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/channels"
+                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
+                            >
+                              <Video className="size-4" />
+                              <span>Channels</span>
+                            </Link>
+                          </NavigationMenuLink>
+                        </div>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
 
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/my-orders">
-                    <ShoppingBag className="size-4 mr-2" />
-                    My Orders
-                  </Link>
-                </Button>
+                    {/* My Activity */}
+                    <NavigationMenuItem>
+                      <NavigationMenuTrigger>My Activity</NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <div className="w-[200px] p-2 space-y-1">
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/dashboard"
+                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
+                            >
+                              <Home className="size-4" />
+                              <span>Dashboard</span>
+                            </Link>
+                          </NavigationMenuLink>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/profile"
+                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
+                            >
+                              <UserCircle className="size-4" />
+                              <span>Profile</span>
+                            </Link>
+                          </NavigationMenuLink>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/my-orders"
+                              className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
+                            >
+                              <ShoppingBag className="size-4" />
+                              <span>My Orders</span>
+                            </Link>
+                          </NavigationMenuLink>
+                        </div>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
 
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/channels">
-                    <Video className="size-4 mr-2" />
-                    Channels
-                  </Link>
-                </Button>
-
-                {/* Sell Section - Sellers only */}
-                {isSeller && (
-                  <>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/shops">
-                        <Store className="size-4 mr-2" />
-                        Shops
-                      </Link>
-                    </Button>
-
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/pending-deliveries">
-                        <Package className="size-4 mr-2" />
-                        Deliveries
-                      </Link>
-                    </Button>
-                  </>
-                )}
+                    {/* Sell - Sellers only */}
+                    {isSeller && (
+                      <NavigationMenuItem>
+                        <NavigationMenuTrigger>Sell</NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                          <div className="w-[200px] p-2 space-y-1">
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to="/shops"
+                                className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
+                              >
+                                <Store className="size-4" />
+                                <span>Shops</span>
+                              </Link>
+                            </NavigationMenuLink>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                to="/pending-deliveries"
+                                className="flex items-center gap-2 rounded-md p-3 hover:bg-accent transition-colors"
+                              >
+                                <Package className="size-4" />
+                                <span>Deliveries</span>
+                              </Link>
+                            </NavigationMenuLink>
+                          </div>
+                        </NavigationMenuContent>
+                      </NavigationMenuItem>
+                    )}
+                  </NavigationMenuList>
+                </NavigationMenu>
 
                 {/* Separator */}
                 <div className="h-6 w-px bg-border mx-2" />
