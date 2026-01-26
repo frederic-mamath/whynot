@@ -2,7 +2,11 @@
 
 ## Overview
 
-Implement a hybrid streaming architecture that keeps Agora for sellers (high quality, low latency) while using RTMP → HLS/CDN for buyers to drastically reduce per-viewer costs and enable unlimited scalability.
+Implement a hybrid streaming architecture using **Agora Cloud Recording** that keeps Agora for sellers (high quality, low latency) while using RTMP → HLS/CDN for buyers to drastically reduce per-viewer costs and enable unlimited scalability.
+
+**Solution**: Agora Cloud Recording forwards the stream to Cloudflare Stream via RTMP, which then distributes to buyers via HLS/CDN. This works perfectly with Heroku's basic Eco dyno without FFmpeg installation.
+
+**Future Optimization**: Option B (FFmpeg local relay) can be implemented later to reduce Agora Cloud Recording costs once we outgrow the Eco dyno.
 
 ## User Story
 
@@ -14,13 +18,26 @@ Implement a hybrid streaming architecture that keeps Agora for sellers (high qua
 
 ## Business Goal
 
-- 💰 **Cost Reduction**: Reduce variable costs from ~$X per viewer to fixed cost of ~$50-200/month
-- 📈 **Scalability**: Support 1,000+ concurrent viewers per channel without cost explosion
-- 🎯 **Predictability**: Move from unpredictable per-minute billing to fixed infrastructure costs
+- 💰 **Cost Reduction**: Reduce monthly costs from **$360** to **$37** (90% savings) for 30h streaming with 200 buyers
+- 📈 **Scalability**: Support 1,000+ concurrent viewers at **~$1.20/hour** (vs $60/hour with Agora)
+- 🎯 **Predictability**: Fixed costs regardless of viewer count (no more viewer-based billing)
 - 🚀 **Growth Enablement**: Remove financial barrier to large-scale live events
-- ⚡ **Seller Quality**: Maintain premium streaming experience for content creators
+- ⚡ **Seller Quality**: Maintain premium streaming experience for content creators (no changes)
+- 🔧 **Heroku Compatible**: Works with existing Eco dyno, no infrastructure changes needed
 
 ## Technical Architecture
+
+### ✅ Chosen Solution: Agora Cloud Recording
+
+**Deployment**: Heroku Eco dyno (512 MB RAM, $5/month) - No upgrades needed!
+
+**Why this works perfectly for Heroku**:
+
+- ✅ No FFmpeg installation required
+- ✅ No CPU/RAM overhead on dyno
+- ✅ Managed by Agora (reliable, scalable)
+- ✅ Simple API integration
+- ✅ Handles multiple concurrent streams without dyno upgrade
 
 ```
 ┌─────────────┐
@@ -32,35 +49,26 @@ Implement a hybrid streaming architecture that keeps Agora for sellers (high qua
        ▼
 ┌─────────────────────────────────────────────┐
 │         Agora Cloud Platform                │
-│  (Seller publishes audio/video stream)      │
+│  - Seller publishes audio/video stream      │
+│  - Cloud Recording Service (managed)        │
+│  - RTMP Forward feature enabled             │
 └──────────────────┬──────────────────────────┘
                    │
-                   │ Single Agora Viewer Connection
+                   │ RTMP Push (Agora → Cloudflare)
                    ▼
 ┌─────────────────────────────────────────────┐
-│      Backend Relay Service (Node.js)        │
-│  - Connects to Agora as single viewer       │
-│  - Captures A/V stream                      │
-│  - Encodes to RTMP                          │
-│  - Pushes to streaming platform             │
-└──────────────────┬──────────────────────────┘
-                   │
-                   │ RTMP Push
-                   ▼
-┌─────────────────────────────────────────────┐
-│   Streaming Platform (Choose one):          │
-│   - Cloudflare Stream ($5/1000 mins)        │
-│   - AWS IVS ($0.40/hour + bandwidth)        │
-│   - Mux Video                               │
+│   Streaming Platform (Cloudflare Stream)    │
+│  - Receives RTMP from Agora                 │
+│  - Transcodes to HLS                        │
+│  - Distributes via CDN                      │
 └──────────────────┬──────────────────────────┘
                    │
                    │ HLS Distribution
                    ▼
 ┌─────────────────────────────────────────────┐
-│              CDN (Global)                   │
-│  - Low cost per GB (~$0.02-0.08/GB)        │
-│  - Scales automatically                     │
+│         Cloudflare CDN (Global)             │
 │  - Edge caching                             │
+│  - Low cost per GB                          │
 └──────────────────┬──────────────────────────┘
                    │
                    │ HLS Playback
@@ -70,21 +78,85 @@ Implement a hybrid streaming architecture that keeps Agora for sellers (high qua
 │  (Web App)  │  │  (Web App)  │  │  (Web App)  │
 │  HLS Player │  │  HLS Player │  │  HLS Player │
 └─────────────┘  └─────────────┘  └─────────────┘
+
+┌────────────────────────────────────┐
+│  Heroku Dyno (Node.js Backend)     │
+│  - Manages Agora Cloud Recording   │
+│  - Starts/stops RTMP forwarding    │
+│  - Tracks stream metadata          │
+│  - No FFmpeg required ✅           │
+│  - Works with Eco dyno ($5/mo) ✅  │
+└────────────────────────────────────┘
 ```
+
+---
+
+<details>
+<summary><strong>Alternative: Option B - FFmpeg Local Relay (Future Optimization)</strong></summary>
+
+This option can be implemented later to eliminate Agora Cloud Recording costs (~$1.49/1000 mins) once we scale beyond the Eco dyno.
+
+### Architecture Option B: FFmpeg Local Relay
+
+```
+┌─────────────┐
+│   SELLER    │ (Agora WebRTC)
+└──────┬──────┘
+       │ Agora RTC
+       ▼
+┌─────────────────────────────────────────────┐
+│         Agora Cloud Platform                │
+└──────────────────┬──────────────────────────┘
+                   │ Single Agora Viewer
+                   ▼
+┌─────────────────────────────────────────────┐
+│  Heroku Dyno (Node.js + FFmpeg Buildpack)  │
+│  - Connects to Agora as viewer              │
+│  - Captures A/V with FFmpeg                 │
+│  - Encodes to RTMP                          │
+│  ⚠️ Requires: FFmpeg buildpack              │
+│  ⚠️ Limit: 1-2 concurrent streams max       │
+└──────────────────┬──────────────────────────┘
+                   │ RTMP Push
+                   ▼
+┌─────────────────────────────────────────────┐
+│         Cloudflare Stream / AWS IVS         │
+└──────────────────┬──────────────────────────┘
+                   │ HLS Distribution
+                   ▼
+                 Buyers
+```
+
+**Advantages**:
+
+- ✅ No additional Agora Cloud Recording cost
+- ✅ Full control over encoding
+
+**Disadvantages**:
+
+- ❌ Requires FFmpeg buildpack setup
+- ❌ High CPU/RAM usage (~300-500 MB per stream)
+- ❌ Limited to 1-2 concurrent streams on Eco dyno
+- ❌ May need Performance dyno upgrade ($25+/month)
+- ❌ More complex maintenance
+
+**When to consider**: When monthly Agora Cloud Recording costs exceed Performance dyno upgrade costs (~$25/month), or when you need >3 concurrent streams.
+
+</details>
 
 ## Progress Tracking
 
-| Phase   | Description                          | Est. Time | Status      |
-| ------- | ------------------------------------ | --------- | ----------- |
-| Phase 1 | Research & Architecture Design       | 3-4 hours | 📝 PLANNING |
-| Phase 2 | Backend Relay Service (Agora → RTMP) | 6-8 hours | 📝 PLANNING |
-| Phase 3 | Streaming Platform Integration       | 4-5 hours | 📝 PLANNING |
-| Phase 4 | Frontend HLS Player for Buyers       | 3-4 hours | 📝 PLANNING |
-| Phase 5 | Dual-Mode Channel System             | 4-5 hours | 📝 PLANNING |
-| Phase 6 | Monitoring & Cost Tracking           | 3-4 hours | 📝 PLANNING |
-| Phase 7 | Testing & Optimization               | 4-5 hours | 📝 PLANNING |
+| Phase   | Description                       | Est. Time | Status      |
+| ------- | --------------------------------- | --------- | ----------- |
+| Phase 1 | Research & Architecture Design    | 3-4 hours | 📝 PLANNING |
+| Phase 2 | Agora Cloud Recording Integration | 4-6 hours | 📝 PLANNING |
+| Phase 3 | Cloudflare Stream Integration     | 3-4 hours | 📝 PLANNING |
+| Phase 4 | Frontend HLS Player for Buyers    | 3-4 hours | 📝 PLANNING |
+| Phase 5 | Dual-Mode Channel System          | 3-4 hours | 📝 PLANNING |
+| Phase 6 | Monitoring & Cost Tracking        | 3-4 hours | 📝 PLANNING |
+| Phase 7 | Testing & Optimization            | 4-5 hours | 📝 PLANNING |
 
-**Total Estimated Time**: 27-35 hours
+**Total Estimated Time**: 23-31 hours (reduced from 27-35h thanks to no FFmpeg!)
 
 ---
 
@@ -345,29 +417,91 @@ CREATE TABLE stream_metrics (
 
 ## Cost Analysis
 
-### Current Architecture (Agora Only)
+### 📊 Target Scenario: 200 Concurrent Buyers
 
-- **Seller**: ~$0.99/1,000 minutes (~$1/hour)
-- **Each Buyer**: ~$0.99/1,000 minutes (~$1/hour)
-- **100 buyers watching 1 hour**: $101
-- **1,000 buyers watching 1 hour**: $1,001
-- **Scalability**: ❌ Linear cost per viewer
+**Assumptions**:
 
-### New Architecture (Hybrid)
+- 30 hours of live streaming per month
+- Average 200 concurrent buyers per stream
+- 720p video quality
 
-- **Seller**: ~$0.99/hour (unchanged)
-- **Relay Server**: ~$0.99/hour (1 Agora viewer)
-- **Streaming Platform**: ~$0.40-5/hour (fixed)
-- **CDN**: ~$0.02-0.08/GB (~5-20GB/hour for HD)
-- **100 buyers watching 1 hour**: ~$3-10
-- **1,000 buyers watching 1 hour**: ~$5-15
-- **Scalability**: ✅ Mostly fixed cost
+#### Current Architecture (Agora Only) ❌
 
-### Projected Savings
+**Per Stream Hour (200 buyers)**:
 
-- **Break-even point**: ~5-10 concurrent buyers
-- **At 100 buyers**: ~90% cost reduction
-- **At 1,000 buyers**: ~98% cost reduction
+- Seller: $0.06
+- 200 Buyers: 200 × $0.06 = **$12.00**
+- **Total per hour**: **$12.06**
+
+**Monthly Cost (30 hours)**:
+
+- 30 hours × $12.06 = **$361.80**
+- **Scalability**: ❌ Cost grows linearly with viewers
+
+---
+
+#### New Architecture: Agora Cloud Recording ✅
+
+**Per Stream Hour (200 buyers)**:
+
+- Seller (Agora WebRTC): $0.06
+- Agora Cloud Recording: $0.09
+- Cloudflare Stream (RTMP → HLS): $0.30
+- CDN bandwidth (200 viewers @ 720p): $0.60
+- Heroku Eco dyno: $0.007 (amortized)
+- **Total per hour**: **~$1.05**
+
+**Monthly Cost (30 hours)**:
+
+- Streaming costs: 30 × $1.05 = **$31.50**
+- Heroku Eco dyno: **$5.00**
+- **Monthly Total**: **~$36.50**
+
+**💰 Savings**: $361.80 - $36.50 = **$325.30/month (90% reduction)**
+
+---
+
+### Detailed Cost Breakdown
+
+| Component                 | Cost            | Billing Model          | Notes                            |
+| ------------------------- | --------------- | ---------------------- | -------------------------------- |
+| **Agora (Seller)**        | $0.99/1000 mins | Per participant-minute | Unchanged                        |
+| **Agora Cloud Recording** | $1.49/1000 mins | Per recording minute   | New cost, but saves buyer costs  |
+| **Cloudflare Stream**     | $5/1000 mins    | Per stream minute      | Fixed per stream, not per viewer |
+| **Cloudflare CDN**        | Included        | Bandwidth included     | Up to reasonable limits          |
+| **Heroku Eco Dyno**       | $5/month        | Fixed monthly          | No upgrade needed                |
+
+---
+
+### Scalability Comparison
+
+| Viewers          | Agora Only  | Hybrid (Cloud Recording) | Savings          |
+| ---------------- | ----------- | ------------------------ | ---------------- |
+| **10 buyers**    | $0.66/hour  | $1.05/hour               | Break-even point |
+| **50 buyers**    | $3.06/hour  | $1.05/hour               | 66%              |
+| **100 buyers**   | $6.06/hour  | $1.05/hour               | 83%              |
+| **200 buyers**   | $12.06/hour | $1.05/hour               | **91%** ⭐       |
+| **500 buyers**   | $30.06/hour | $1.05/hour               | 96%              |
+| **1,000 buyers** | $60.06/hour | $1.20/hour               | 98%              |
+
+**Key Insight**: Costs become nearly **fixed** regardless of viewer count!
+
+---
+
+### Future Optimization (Option B)
+
+Once monthly costs exceed ~$25, consider implementing Option B (FFmpeg local relay) to eliminate Agora Cloud Recording costs:
+
+**Option B Monthly (30h, 200 buyers)**:
+
+- Seller (Agora): $1.80
+- Cloudflare Stream: $9.00
+- CDN: $18.00
+- Performance-M dyno: $25.00
+- **Total**: **~$53.80**
+- **Additional savings vs Option A**: ~$17/month
+
+**Recommendation**: Start with Option A, implement Option B when streaming >50 hours/month.
 
 ---
 
@@ -387,10 +521,31 @@ CREATE TABLE stream_metrics (
 - **Likelihood**: Medium
 - **Impact**: High
 - **Mitigation**:
-  - Implement auto-restart on crash
-  - Health checks and alerting
-  - Consider redundant relay servers for critical streams
+  - **Option A**: Agora Cloud Recording handles this (managed service)
+  - **Option B**: Implement auto-restart on crash, health checks
   - Fallback to Agora-only mode if relay fails
+  - Monitor Heroku dyno health
+
+### Risk 6: Heroku Resource Limitations (NEW)
+
+- **Likelihood**: High (if using Option B with multiple streams)
+- **Impact**: Medium-High
+- **Mitigation**:
+  - **Use Option A** (Agora Cloud Recording) to avoid this entirely
+  - If using Option B: Limit concurrent streams to 1-2 on Eco dyno
+  - Monitor dyno memory/CPU usage with Heroku metrics
+  - Implement queue system for multiple concurrent streams
+  - Upgrade to Performance dyno if needed ($25/month)
+
+### Risk 7: Heroku Dyno Restarts
+
+- **Likelihood**: Medium (Heroku restarts dynos ~daily)
+- **Impact**: Low-Medium
+- **Mitigation**:
+  - Gracefully handle dyno restarts
+  - Persist relay state in database
+  - Auto-reconnect to Agora on restart
+  - Notify sellers of temporary interruption
 
 ### Risk 3: FFmpeg/RTMP Encoding Quality Issues
 
@@ -426,26 +581,43 @@ CREATE TABLE stream_metrics (
 
 ## Dependencies
 
-### Technical Dependencies
+### Technical Dependencies (Option A)
 
-- **Node.js 18+**: For relay service runtime
-- **FFmpeg**: For A/V processing and RTMP encoding
+- **Node.js 18+**: For backend API (already have)
 - **Agora SDK**: Existing dependency (no changes)
+- **Agora Cloud Recording API**: RESTful API, no new SDK needed
 - **hls.js**: Frontend HLS player library
-- **Streaming Platform Account**: Cloudflare Stream or AWS IVS
-- **Docker** (optional): For containerized relay service
+- **Streaming Platform Account**: Cloudflare Stream
+- **Heroku Eco Dyno**: $5/month (current setup works!)
 
 ### External Services
 
-- Agora (existing)
-- Cloudflare Stream **OR** AWS IVS (new)
-- CDN (included with streaming platform)
+- **Agora** (existing)
+  - For Option A: + Cloud Recording service
+- **Cloudflare Stream** (recommended) **OR** AWS IVS (alternative)
+- **CDN** (included with streaming platform)
 
 ### Internal Dependencies
 
 - Existing channel infrastructure (Feature 001)
 - User authentication system
 - WebSocket infrastructure (for real-time updates)
+
+### Heroku Setup (Simple!)
+
+```bash
+# No buildpacks needed - works with your current setup!
+
+# Add environment variables
+heroku config:set AGORA_APP_ID=your_app_id
+heroku config:set AGORA_APP_CERTIFICATE=your_certificate
+heroku config:set AGORA_CUSTOMER_ID=your_customer_id
+heroku config:set AGORA_CUSTOMER_SECRET=your_customer_secret
+heroku config:set CLOUDFLARE_STREAM_ACCOUNT_ID=your_account_id
+heroku config:set CLOUDFLARE_STREAM_API_TOKEN=your_token
+```
+
+That's it! No dyno upgrades, no buildpacks, just environment variables.
 
 ---
 
@@ -480,12 +652,18 @@ CREATE TABLE stream_metrics (
 
 ## Future Enhancements (Out of Scope)
 
-- 🎯 **Low-Latency HLS**: Reduce latency to 3-5 seconds (Phase 8)
-- 🎯 **WebRTC for Premium Buyers**: Hybrid mode with Agora for VIP tier (Phase 9)
-- 🎯 **Multi-Bitrate Adaptive Streaming**: Better quality adaptation (Phase 10)
-- 🎯 **DVR/Rewind Functionality**: Allow buyers to rewind live stream (Phase 11)
-- 🎯 **Stream Recording**: Auto-save VODs for replay (Phase 12)
-- 🎯 **P2P Distribution**: Further reduce CDN costs with WebTorrent (Phase 13)
+### Cost Optimization
+
+- 🎯 **Option B: FFmpeg Local Relay**: Eliminate Agora Cloud Recording costs (~$1.49/1000 mins) by handling relay locally. Consider when streaming >50 hours/month or when Agora costs exceed Performance dyno upgrade.
+
+### Feature Enhancements
+
+- 🎯 **Low-Latency HLS**: Reduce latency to 3-5 seconds using AWS IVS or Cloudflare LL-HLS
+- 🎯 **WebRTC for Premium Buyers**: Hybrid mode with Agora for VIP tier (low latency for paying customers)
+- 🎯 **Multi-Bitrate Adaptive Streaming**: Better quality adaptation based on viewer connection
+- 🎯 **DVR/Rewind Functionality**: Allow buyers to rewind live stream
+- 🎯 **Stream Recording**: Auto-save VODs for replay
+- 🎯 **P2P Distribution**: Further reduce CDN costs with WebTorrent for large events
 
 ---
 

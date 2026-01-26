@@ -1,8 +1,8 @@
-# Phase 2: Backend Relay Service (Agora → RTMP)
+# Phase 2: Agora Cloud Recording Integration
 
 ## Objective
 
-Build the core relay service that connects to Agora as a viewer, captures the seller's audio/video stream, encodes it using FFmpeg, and pushes it to the RTMP endpoint.
+Integrate Agora Cloud Recording API to automatically forward live streams to Cloudflare Stream via RTMP. This eliminates the need for FFmpeg and works perfectly with Heroku's Eco dyno.
 
 ## User-Facing Changes
 
@@ -10,8 +10,10 @@ None directly visible to users. This is backend infrastructure.
 
 **Internal Impact**:
 
-- New relay service process running alongside main backend
-- Channels can now generate HLS streams automatically when sellers go live
+- New Cloud Recording management service
+- Channels automatically start Cloud Recording when sellers go live
+- No FFmpeg or additional processes needed (Heroku-friendly!)
+- Streams forwarded to Cloudflare Stream via RTMP
 
 ---
 
@@ -19,34 +21,34 @@ None directly visible to users. This is backend infrastructure.
 
 ### New Files
 
-#### Backend Services
+#### Backend SeragoraCloudRecordingService.ts` - Agora Cloud Recording API integration
 
-- `src/services/relayService.ts` - Core relay management
-- `src/services/ffmpegManager.ts` - FFmpeg process lifecycle
-- `src/services/agoraRelayClient.ts` - Agora viewer connection
-- `src/utils/rtmpHelpers.ts` - RTMP URL generation, validation
+- `src/services/cloudRecordingManager.ts` - Recording lifecycle management
+- `src/utils/agoraAuth.ts` - RESTful API authentication helpers
 
 #### Configuration
 
-- `src/config/relay.ts` - Relay service configuration
-- `.env` - Add relay-related environment variables
+- `src/config/agoraCloudRecording.ts` - Cloud Recording configuration
+- `.env` - Add Agora Cloud Recording credentials
 
 #### Types
 
-- `src/types/relay.ts` - Relay status, metrics, configuration types
+- `src/types/cloudRecording.ts` - Recording status, resource types
 
 ### Modified Files
 
 #### tRPC Routes
 
-- `src/routers/channelRouter.ts` - Add relay start/stop calls
-- `src/routers/relayRouter.ts` (new) - Dedicated relay endpoints
+- `src/routers/channelRouter.ts` - Add recording start/stop calls
+- `src/routers/recordingRouter.ts` (new) - Dedicated recording endpoints
 
 #### Existing Services
 
-- `src/services/channelService.ts` - Integrate relay lifecycle with channels
+- `src/services/channelService.ts` - Integrate Cloud Recording lifecycle with channels
 
 #### Database
+
+- `migrations/020_add_cloud_recording_fields.ts` - Add recording
 
 - `migrations/020_add_relay_fields.ts` - Add relay metadata to channels table
 
