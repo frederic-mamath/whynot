@@ -36,10 +36,7 @@ export class AgoraCloudRecordingService {
    * Step 1: Acquire a resource ID for cloud recording
    * Must be called before starting recording
    */
-  async acquire(params: {
-    channelName: string;
-    uid: number;
-  }): Promise<string> {
+  async acquire(params: { channelName: string; uid: number }): Promise<string> {
     const requestBody: AgoraAcquireRequest = {
       cname: params.channelName,
       uid: params.uid.toString(),
@@ -155,10 +152,7 @@ export class AgoraCloudRecordingService {
   /**
    * Query the status of an ongoing recording
    */
-  async query(
-    resourceId: string,
-    sid: string,
-  ): Promise<AgoraQueryResponse> {
+  async query(resourceId: string, sid: string): Promise<AgoraQueryResponse> {
     try {
       const response = await this.client.get<AgoraQueryResponse>(
         `/${this.appId}/cloud_recording/resourceid/${resourceId}/sid/${sid}/mode/mix/query`,
