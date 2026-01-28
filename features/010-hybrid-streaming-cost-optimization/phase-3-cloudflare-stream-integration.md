@@ -712,18 +712,18 @@ open "https://customer-{id}.cloudflarestream.com/{video_id}/manifest/video.m3u8"
 
 ## Acceptance Criteria
 
-- [ ] CloudflareStreamService can create live inputs
-- [ ] Live input returns valid RTMP URL for Agora Cloud Recording
-- [ ] Live input returns valid HLS URL for buyers
-- [ ] RecordingManager integrates Cloudflare Stream with Agora Cloud Recording
-- [ ] Database stores stream_key_id and hls_playback_url
-- [ ] Migration 021 runs successfully
-- [ ] Health check validates API credentials
-- [ ] Error handling covers API failures, auth errors, rate limits
-- [ ] Environment variables documented
-- [ ] tRPC endpoints return playback URLs
-- [ ] Stream status correctly reports live/offline state
-- [ ] VOD recording URL retrieved after stream ends
+- [x] CloudflareStreamService can create live inputs
+- [x] Live input returns valid RTMP URL for Agora Cloud Recording
+- [x] Live input returns valid HLS URL for buyers
+- [x] RecordingManager integrates Cloudflare Stream with Agora Cloud Recording
+- [x] Database stores stream_key_id and hls_playback_url
+- [x] Migration 021 runs successfully
+- [x] Health check validates API credentials
+- [x] Error handling covers API failures, auth errors, rate limits
+- [x] Environment variables documented
+- [x] tRPC endpoints return playback URLs
+- [x] Stream status correctly reports live/offline state
+- [x] VOD recording URL retrieved after stream ends
 
 ---
 
@@ -773,7 +773,21 @@ Before starting Phase 4 (HLS Player for Buyers):
 
 ## Status
 
-📝 PLANNING
+✅ **COMPLETED** (28 Jan 2026)
+
+**Implementation Summary:**
+
+- ✅ CloudflareStreamService with all required methods (createLiveInput, getPlaybackUrl, getStreamStatus, deleteLiveInput, isHealthy, getRecordingUrl)
+- ✅ Types defined in streaming.ts (CloudflareStreamCredentials, CloudflareStreamStatus, CreateStreamOptions)
+- ✅ RecordingManager fully integrated with Cloudflare Stream
+- ✅ Migration 021 executed successfully (stream_key_id, hls_playback_url, stream_recording_url)
+- ✅ tRPC endpoints exposed (start, stop, getStatus, queryAgora)
+- ✅ Database types updated in types.ts
+- ✅ Environment variables documented in .env.example
+- ✅ Lazy initialization implemented to avoid client bundling issues
+- ✅ Build passing (client + server)
+
+**Ready for Phase 4**: HLS Player for Buyers
 
 ## Notes
 
