@@ -45,6 +45,16 @@ export interface ChannelsTable {
   ended_at: Date | null;
   highlighted_product_id: number | null;
   highlighted_at: Date | null;
+  // Agora Cloud Recording fields (migration 020)
+  agora_resource_id: string | null;
+  agora_sid: string | null;
+  agora_recording_uid: number | null;
+  relay_status: string | null;
+  relay_started_at: Date | null;
+  // Cloudflare Stream fields (migration 021)
+  stream_key_id: string | null;
+  hls_playback_url: string | null;
+  stream_recording_url: string | null;
 }
 
 export interface ChannelParticipantsTable {

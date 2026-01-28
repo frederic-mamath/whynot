@@ -131,7 +131,7 @@ export class RecordingManager {
       await this.cloudRecording.stop(
         channel.agora_resource_id,
         channel.agora_sid,
-        channel.channel_name!,
+        channel.name,
         channel.agora_recording_uid!,
       );
 

@@ -2,7 +2,14 @@ import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { RecordingManager } from "../services/recordingManager";
 
-const recordingManager = new RecordingManager();
+// Lazy initialization - only create instance when actually used
+let recordingManager: RecordingManager | null = null;
+function getRecordingManager(): RecordingManager {
+  if (!recordingManager) {
+    recordingManager = new RecordingManager();
+  }
+  return recordingManager;
+}
 
 /**
  * Recording Router
@@ -22,7 +29,7 @@ export const recordingRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      const result = await recordingManager.startRecording(
+      const result = await getRecordingManager().startRecording(
         input.channelId,
         input.channelName,
         input.sellerUid,
@@ -41,7 +48,7 @@ export const recordingRouter = router({
   stop: protectedProcedure
     .input(z.object({ channelId: z.number() }))
     .mutation(async ({ input }) => {
-      await recordingManager.stopRecording(input.channelId);
+      await getRecordingManager().stopRecording(input.channelId);
 
       return { success: true };
     }),
@@ -53,7 +60,7 @@ export const recordingRouter = router({
   getStatus: publicProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ input }) => {
-      return recordingManager.getRecordingStatus(input.channelId);
+      return getRecordingManager().getRecordingStatus(input.channelId);
     }),
 
   /**
@@ -62,6 +69,6 @@ export const recordingRouter = router({
   queryAgora: protectedProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ input }) => {
-      return recordingManager.queryAgoraRecording(input.channelId);
+      return getRecordingManager().queryAgoraRecording(input.channelId);
     }),
 });
