@@ -28,6 +28,7 @@ import ProductUpdatePage from "./pages/ProductUpdatePage";
 import MyOrdersPage from "./pages/MyOrdersPage";
 import { PendingDeliveriesPage } from "./pages/PendingDeliveriesPage";
 import ProfilePage from "./pages/ProfilePage";
+import { AnalyticsDashboardPage } from "./pages/AnalyticsDashboardPage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -66,6 +67,14 @@ function AppContent() {
           element={
             <ProtectedRoute requireRole="SELLER">
               <PendingDeliveriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute requireRole="SELLER">
+              <AnalyticsDashboardPage />
             </ProtectedRoute>
           }
         />

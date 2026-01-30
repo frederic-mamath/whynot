@@ -1,6 +1,6 @@
-import { db } from '../db';
-import { Selectable } from 'kysely';
-import { ChannelsTable } from '../db/types';
+import { db } from "../db";
+import { Selectable } from "kysely";
+import { ChannelsTable } from "../db/types";
 
 type Channel = Selectable<ChannelsTable>;
 
@@ -9,16 +9,15 @@ type Channel = Selectable<ChannelsTable>;
  * Handles all channel-related database operations
  */
 export class ChannelRepository {
-  
   /**
    * Find channel by ID
    * Similar to: SELECT * FROM channels WHERE id = ?
    */
   async findById(id: number): Promise<Channel | undefined> {
     return db
-      .selectFrom('channels')
+      .selectFrom("channels")
       .selectAll()
-      .where('id', '=', id)
+      .where("id", "=", id)
       .executeTakeFirst();
   }
 
@@ -28,10 +27,10 @@ export class ChannelRepository {
    */
   async findActive(): Promise<Channel[]> {
     return db
-      .selectFrom('channels')
+      .selectFrom("channels")
       .selectAll()
-      .where('status', '=', 'active')
-      .orderBy('created_at', 'desc')
+      .where("status", "=", "active")
+      .orderBy("created_at", "desc")
       .execute();
   }
 
@@ -41,16 +40,16 @@ export class ChannelRepository {
    */
   async findByHost(hostId: number): Promise<Channel[]> {
     return db
-      .selectFrom('channels')
+      .selectFrom("channels")
       .selectAll()
-      .where('host_id', '=', hostId)
-      .orderBy('created_at', 'desc')
+      .where("host_id", "=", hostId)
+      .orderBy("created_at", "desc")
       .execute();
   }
 
   /**
    * Create new channel
-   * Similar to: INSERT INTO channels (name, host_id, max_participants, is_private, status, created_at) 
+   * Similar to: INSERT INTO channels (name, host_id, max_participants, is_private, status, created_at)
    *             VALUES (?, ?, ?, ?, 'active', NOW())
    */
   async save(data: {
@@ -60,10 +59,11 @@ export class ChannelRepository {
     is_private: boolean | null;
   }): Promise<Channel> {
     return db
-      .insertInto('channels')
+      .insertInto("channels")
       .values({
         ...data,
-        status: 'active',
+        status: "active",
+        is_active: true,
         created_at: new Date(),
       })
       .returningAll()
@@ -76,12 +76,12 @@ export class ChannelRepository {
    */
   async endChannel(channelId: number): Promise<Channel | undefined> {
     return db
-      .updateTable('channels')
+      .updateTable("channels")
       .set({
-        status: 'ended',
+        status: "ended",
         ended_at: new Date(),
       })
-      .where('id', '=', channelId)
+      .where("id", "=", channelId)
       .returningAll()
       .executeTakeFirst();
   }
@@ -92,12 +92,12 @@ export class ChannelRepository {
    */
   async isActive(channelId: number): Promise<boolean> {
     const channel = await db
-      .selectFrom('channels')
-      .select(['status'])
-      .where('id', '=', channelId)
-      .where('status', '=', 'active')
+      .selectFrom("channels")
+      .select(["status"])
+      .where("id", "=", channelId)
+      .where("status", "=", "active")
       .executeTakeFirst();
-    
+
     return channel !== undefined;
   }
 
@@ -107,11 +107,11 @@ export class ChannelRepository {
    */
   async getStatus(channelId: number): Promise<string | undefined> {
     const result = await db
-      .selectFrom('channels')
-      .select(['status'])
-      .where('id', '=', channelId)
+      .selectFrom("channels")
+      .select(["status"])
+      .where("id", "=", channelId)
       .executeTakeFirst();
-    
+
     return result?.status;
   }
 
@@ -121,28 +121,28 @@ export class ChannelRepository {
    */
   async isHost(channelId: number, userId: number): Promise<boolean> {
     const channel = await db
-      .selectFrom('channels')
-      .select(['id'])
-      .where('id', '=', channelId)
-      .where('host_id', '=', userId)
+      .selectFrom("channels")
+      .select(["id"])
+      .where("id", "=", channelId)
+      .where("host_id", "=", userId)
       .executeTakeFirst();
-    
+
     return channel !== undefined;
   }
 
   /**
    * Count active participants in channel
-   * Similar to: SELECT COUNT(*) FROM channel_participants 
+   * Similar to: SELECT COUNT(*) FROM channel_participants
    *             WHERE channel_id = ? AND left_at IS NULL
    */
   async countActiveParticipants(channelId: number): Promise<number> {
     const result = await db
-      .selectFrom('channel_participants')
-      .select(db.fn.countAll<number>().as('count'))
-      .where('channel_id', '=', channelId)
-      .where('left_at', 'is', null)
+      .selectFrom("channel_participants")
+      .select(db.fn.countAll<number>().as("count"))
+      .where("channel_id", "=", channelId)
+      .where("left_at", "is", null)
       .executeTakeFirstOrThrow();
-    
+
     return Number(result.count);
   }
 
@@ -154,7 +154,7 @@ export class ChannelRepository {
     if (!channel || !channel.max_participants) {
       return false;
     }
-    
+
     const activeCount = await this.countActiveParticipants(channelId);
     return activeCount >= channel.max_participants;
   }

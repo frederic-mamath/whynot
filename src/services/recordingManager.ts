@@ -1,6 +1,8 @@
 import { db } from "../db";
 import { AgoraCloudRecordingService } from "./agoraCloudRecordingService";
 import { CloudflareStreamService } from "./cloudflareStreamService";
+import { AnalyticsService } from "./analyticsService";
+import { CostTrackingService } from "./costTrackingService";
 import { generateRecordingUid } from "../utils/agoraAuth";
 
 /**
@@ -10,10 +12,14 @@ import { generateRecordingUid } from "../utils/agoraAuth";
 export class RecordingManager {
   private cloudRecording: AgoraCloudRecordingService;
   private cloudflareStream: CloudflareStreamService;
+  private analyticsService: AnalyticsService;
+  private costTrackingService: CostTrackingService;
 
   constructor() {
     this.cloudRecording = new AgoraCloudRecordingService();
     this.cloudflareStream = new CloudflareStreamService();
+    this.analyticsService = new AnalyticsService(db);
+    this.costTrackingService = new CostTrackingService(db);
   }
 
   /**
@@ -155,6 +161,26 @@ export class RecordingManager {
         })
         .where("id", "=", channelId)
         .execute();
+
+      // 6. Record final metrics
+      await this.analyticsService.recordMetrics(channelId, {
+        relayStatus: "stopped",
+        isLive: false,
+        durationSeconds: 0,
+        cloudflareStreamId: channel.stream_key_id || undefined,
+      });
+
+      // 7. Calculate and record costs
+      try {
+        await this.costTrackingService.recordStreamCosts(channelId);
+        console.log(`Metrics and costs recorded for channel ${channelId}`);
+      } catch (error) {
+        console.error(
+          `Failed to record costs for channel ${channelId}:`,
+          error,
+        );
+        // Don't throw - cost recording failure shouldn't prevent stop
+      }
 
       console.log(`Recording stopped successfully for channel ${channelId}`);
     } catch (error) {

@@ -11,6 +11,7 @@ import { orderRouter } from "./order";
 import { payoutRouter } from "./payout";
 import { profileRouter } from "./profile";
 import { recordingRouter } from "./recording";
+import { analyticsRouter } from "./analyticsRouter";
 
 export const appRouter = router({
   auth: authRouter,
@@ -25,6 +26,7 @@ export const appRouter = router({
   payout: payoutRouter,
   profile: profileRouter,
   recording: recordingRouter,
+  analytics: analyticsRouter,
 });
 
 export type AppRouter = typeof appRouter;

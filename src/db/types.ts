@@ -17,6 +17,8 @@ export interface Database {
   orders: OrdersTable;
   payout_requests: PayoutRequestsTable;
   user_addresses: UserAddressesTable;
+  stream_metrics: StreamMetricsTable;
+  cost_records: CostRecordsTable;
 }
 
 export interface UsersTable {
@@ -41,7 +43,9 @@ export interface ChannelsTable {
   status: string;
   max_participants: number | null;
   is_private: boolean | null;
+  is_active: boolean;
   created_at: Date;
+  started_at: Date | null;
   ended_at: Date | null;
   highlighted_product_id: number | null;
   highlighted_at: Date | null;
@@ -196,6 +200,8 @@ export type Bid = Selectable<BidsTable>;
 export type Order = Selectable<OrdersTable>;
 export type PayoutRequest = Selectable<PayoutRequestsTable>;
 export type UserAddress = Selectable<UserAddressesTable>;
+export type StreamMetric = Selectable<StreamMetricsTable>;
+export type CostRecord = Selectable<CostRecordsTable>;
 
 export interface PayoutRequestsTable {
   id: Generated<string>;
@@ -225,4 +231,28 @@ export interface UserAddressesTable {
   is_default: boolean;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
+}
+
+export interface StreamMetricsTable {
+  id: Generated<number>;
+  channel_id: number;
+  timestamp: Generated<Date>;
+  relay_status: string | null;
+  is_live: boolean;
+  hls_viewers: number;
+  duration_seconds: number;
+  cloudflare_stream_id: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface CostRecordsTable {
+  id: Generated<number>;
+  channel_id: number;
+  service: string;
+  cost_type: string;
+  duration_minutes: number;
+  bandwidth_gb: string;
+  cost_cents: number;
+  month: string;
+  created_at: Generated<Date>;
 }
