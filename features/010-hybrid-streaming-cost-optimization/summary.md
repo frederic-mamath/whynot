@@ -146,20 +146,20 @@ This option can be implemented later to eliminate Agora Cloud Recording costs (~
 
 ## Progress Tracking
 
-| Phase   | Description                       | Est. Time | Status         |
-| ------- | --------------------------------- | --------- | -------------- |
-| Phase 1 | Research & Architecture Design    | 3-4 hours | ✅ COMPLETED   |
-| Phase 2 | Agora Cloud Recording Integration | 4-6 hours | ✅ COMPLETED   |
-| Phase 3 | Cloudflare Stream Integration     | 3-4 hours | ✅ COMPLETED   |
-| Phase 4 | Frontend HLS Player for Buyers    | 3-4 hours | ✅ COMPLETED   |
-| Phase 5 | Dual-Mode Channel System          | 3-4 hours | 📝 PLANNING    |
-| Phase 6 | Monitoring & Cost Tracking        | 3-4 hours | 📝 PLANNING    |
-| Phase 7 | Testing & Optimization            | 4-5 hours | 📝 PLANNING    |
+| Phase   | Description                       | Est. Time | Status       |
+| ------- | --------------------------------- | --------- | ------------ |
+| Phase 1 | Research & Architecture Design    | 3-4 hours | ✅ COMPLETED |
+| Phase 2 | Agora Cloud Recording Integration | 4-6 hours | ✅ COMPLETED |
+| Phase 3 | Cloudflare Stream Integration     | 3-4 hours | ✅ COMPLETED |
+| Phase 4 | Frontend HLS Player for Buyers    | 3-4 hours | ✅ COMPLETED |
+| Phase 5 | Dual-Mode Channel System          | 3-4 hours | ✅ COMPLETED |
+| Phase 6 | Monitoring & Cost Tracking        | 3-4 hours | 📝 PLANNING  |
+| Phase 7 | Testing & Optimization            | 4-5 hours | 📝 PLANNING  |
 
 **Total Estimated Time**: 23-31 hours (reduced from 27-35h thanks to no FFmpeg!)
 
-**Completed**: 13-18 hours (Phases 1-4)  
-**Remaining**: 10-13 hours (Phases 5-7)
+**Completed**: 16-22 hours (Phases 1-5)  
+**Remaining**: 7-9 hours (Phases 6-7)
 
 ---
 
@@ -168,6 +168,7 @@ This option can be implemented later to eliminate Agora Cloud Recording costs (~
 ### ✅ Completed
 
 #### Buyer View (HLS Player)
+
 - **HLSVideoPlayer** component with hls.js integration
 - Video player with play/pause, volume, mute, fullscreen controls
 - Quality selector (Auto, 1080p, 720p, 480p)

@@ -16,10 +16,20 @@ import {
 } from "../websocket/broadcast";
 import { EventEmitter } from "events";
 import { observable } from "@trpc/server/observable";
+import { HybridStreamingService } from "../services/hybridStreamingService";
 
 // Event emitter for channel events
 const channelEvents = new EventEmitter();
 channelEvents.setMaxListeners(100);
+
+// Lazy initialization of HybridStreamingService
+let hybridStreamingService: HybridStreamingService | null = null;
+function getHybridStreamingService(): HybridStreamingService {
+  if (!hybridStreamingService) {
+    hybridStreamingService = new HybridStreamingService();
+  }
+  return hybridStreamingService;
+}
 
 async function isChannelHost(
   channelId: number,
@@ -90,10 +100,29 @@ export const channelRouter = router({
         role: "host",
       });
 
+      // Start hybrid streaming (Agora Cloud Recording → Cloudflare Stream)
+      let hlsPlaybackUrl: string | null = null;
+      try {
+        const hybridStreaming = getHybridStreamingService();
+        const result = await hybridStreaming.startHybridStreaming(
+          channel.id,
+          channel.id.toString(),
+          dynamicUid,
+        );
+        hlsPlaybackUrl = result.hlsPlaybackUrl;
+      } catch (error) {
+        console.error(
+          `Failed to start hybrid streaming for channel ${channel.id}:`,
+          error,
+        );
+        // Continue anyway - seller can still stream via Agora
+        // Buyers won't have HLS but could fallback to Agora if needed
+      }
+
       return {
         channel: {
           ...channel,
-          hlsPlaybackUrl: channel.hls_playback_url,
+          hlsPlaybackUrl: hlsPlaybackUrl || channel.hls_playback_url,
           relayStatus: channel.relay_status,
         },
         token,
@@ -337,6 +366,26 @@ export const channelRouter = router({
           code: "NOT_FOUND",
           message: "You are not in this channel",
         });
+      }
+
+      // Check if user is the host
+      const isHost = await isChannelHost(input.channelId, ctx.userId);
+
+      // If host is leaving, stop hybrid streaming
+      if (isHost) {
+        try {
+          const hybridStreaming = getHybridStreamingService();
+          await hybridStreaming.stopHybridStreaming(input.channelId);
+          console.log(
+            `Hybrid streaming stopped for channel ${input.channelId} (host left)`,
+          );
+        } catch (error) {
+          console.error(
+            `Failed to stop hybrid streaming for channel ${input.channelId}:`,
+            error,
+          );
+          // Continue anyway - user can still leave
+        }
       }
 
       // Mark as left
@@ -714,4 +763,23 @@ export const channelRouter = router({
         };
       });
     }),
+
+  /**
+   * Get streaming status for a channel
+   * Used by clients to poll HLS availability and relay status
+   */
+  getStatus: publicProcedure
+    .input(z.object({ channelId: z.number() }))
+    .query(async ({ input }) => {
+      const hybridStreaming = getHybridStreamingService();
+      return hybridStreaming.getStreamingStatus(input.channelId);
+    }),
+
+  /**
+   * Health check for streaming services
+   */
+  healthCheck: publicProcedure.query(async () => {
+    const hybridStreaming = getHybridStreamingService();
+    return hybridStreaming.healthCheck();
+  }),
 });

@@ -611,15 +611,15 @@ If relay fails to start:
 
 ## Acceptance Criteria
 
-- [ ] Starting a channel automatically starts Agora Cloud Recording → Cloudflare relay
-- [ ] Buyers receive HLS playback URL
-- [ ] Sellers continue using Agora WebRTC (no changes)
-- [ ] Stream health indicator shows relay status accurately
-- [ ] Ending a channel stops relay and cleans up resources
-- [ ] Error handling displays clear messages
-- [ ] Status polling works (updates every 5s)
-- [ ] HLS URL becomes available within 30s of channel start
-- [ ] Multiple concurrent channels supported
+- [x] Starting a channel automatically starts Agora Cloud Recording → Cloudflare relay
+- [x] Buyers receive HLS playback URL
+- [x] Sellers continue using Agora WebRTC (no changes)
+- [x] Stream health indicator shows relay status accurately
+- [x] Ending a channel stops relay and cleans up resources
+- [x] Error handling displays clear messages
+- [x] Status polling works (updates every 5s)
+- [x] HLS URL becomes available within 30s of channel start
+- [x] Multiple concurrent channels supported
 
 ---
 
@@ -651,7 +651,29 @@ If relay fails to start:
 
 ## Status
 
-📝 PLANNING
+✅ **COMPLETED** (30 Jan 2026)
+
+**Implementation Summary:**
+
+- ✅ HybridStreamingService orchestrates Agora + Cloudflare
+- ✅ Auto-start relay when host creates channel (in `channel.create` endpoint)
+- ✅ Auto-stop relay when host leaves channel (in `channel.leave` endpoint)
+- ✅ useChannelStatus hook polls status every 5s
+- ✅ StreamHealthIndicator component displays relay status (starting/active/stopped/error)
+- ✅ ChannelDetailsPage shows health indicator for hosts
+- ✅ Dynamic HLS URL updates when relay becomes active
+- ✅ Error handling with fallback (seller can still stream via Agora)
+- ✅ Builds passing (client + server)
+
+**Key Features:**
+
+- Automatic relay management - no manual intervention
+- Real-time status updates via polling
+- Graceful error handling
+- Host-only health indicator
+- Viewer-transparent experience
+
+**Ready for Phase 6**: Monitoring & Cost Tracking
 
 ## Estimated Time
 

@@ -26,6 +26,8 @@ import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
 import VerticalControlPanel from "../components/VerticalControlPanel";
 import { HLSVideoPlayer } from "../components/ui/HLSVideoPlayer";
+import { StreamHealthIndicator } from "../components/ui/StreamHealthIndicator";
+import { useChannelStatus } from "../hooks/useChannelStatus";
 import { toast } from "sonner";
 
 interface ChannelConfig {
@@ -43,6 +45,11 @@ export default function ChannelDetailsPage() {
 
   // Get current user info
   const { data: currentUser } = trpc.auth.me.useQuery();
+
+  // Poll channel status for HLS URL and relay status
+  const channelStatus = useChannelStatus(
+    channelId ? parseInt(channelId) : undefined,
+  );
 
   // Agora state
   const [client, setClient] = useState<IAgoraRTCClient | null>(null);
@@ -76,6 +83,13 @@ export default function ChannelDetailsPage() {
     description: string;
     imageUrl: string | null;
   } | null>(null);
+
+  // Update HLS URL when channel status changes
+  useEffect(() => {
+    if (channelStatus?.hlsPlaybackUrl) {
+      setHlsPlaybackUrl(channelStatus.hlsPlaybackUrl);
+    }
+  }, [channelStatus]);
 
   // Check authentication
   useEffect(() => {
@@ -715,6 +729,15 @@ export default function ChannelDetailsPage() {
               </Button>
 
               <div className="flex items-center gap-2">
+                {/* Stream Health Indicator - Only for Hosts */}
+                {channelConfig?.isHost && channelStatus && (
+                  <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <StreamHealthIndicator
+                      relayStatus={channelStatus.relayStatus}
+                      isLive={channelStatus.isLive}
+                    />
+                  </div>
+                )}
                 <RoleBadge role={role} />
                 <NetworkQuality client={client} />
               </div>
