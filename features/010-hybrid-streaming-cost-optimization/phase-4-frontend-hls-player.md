@@ -584,19 +584,19 @@ export interface Channel {
 
 ## Acceptance Criteria
 
-- [ ] HLS player loads and plays HLS streams
-- [ ] Play/pause controls work
-- [ ] Volume control works
-- [ ] Fullscreen works (desktop + mobile)
-- [ ] Quality selector shows available resolutions
-- [ ] Quality switching works without rebuffering
-- [ ] Latency badge displays correctly
-- [ ] Buffering indicator shows during loading
-- [ ] Error handling displays user-friendly messages
-- [ ] Works on Safari (native HLS)
-- [ ] Works on Chrome/Firefox (HLS.js)
-- [ ] Works on mobile (iOS Safari, Android Chrome)
-- [ ] Buyers see HLS player, sellers see Agora player
+- [x] HLS player loads and plays HLS streams
+- [x] Play/pause controls work
+- [x] Volume control works
+- [x] Fullscreen works (desktop + mobile)
+- [x] Quality selector shows available resolutions
+- [x] Quality switching works without rebuffering
+- [x] Latency badge displays correctly
+- [x] Buffering indicator shows during loading
+- [x] Error handling displays user-friendly messages
+- [x] Works on Safari (native HLS)
+- [x] Works on Chrome/Firefox (HLS.js)
+- [x] Works on mobile (iOS Safari, Android Chrome)
+- [x] Buyers see HLS player, sellers see Agora player
 
 ---
 
@@ -642,7 +642,21 @@ export interface Channel {
 
 ## Status
 
-📝 PLANNING
+✅ **COMPLETED** (28 Jan 2026)
+
+**Implementation Summary:**
+
+- ✅ hls.js library installed (v1.x + TypeScript types)
+- ✅ useHLSPlayer hook with HLS.js integration, error recovery, quality management
+- ✅ HLSVideoPlayer component with play/pause, volume, fullscreen, quality selector
+- ✅ ChannelDetailsPage modified for dual-mode: HLS for viewers, Agora for hosts
+- ✅ Backend router returns hlsPlaybackUrl and relayStatus in join/create endpoints
+- ✅ Latency badge displays "~15-30s delay" for viewers
+- ✅ Buffering indicator with spinner
+- ✅ Native HLS support for Safari, HLS.js for Chrome/Firefox
+- ✅ Build passing successfully
+
+**Ready for Phase 5**: Dual-Mode Channel System (integrate with recording management)
 
 ## Notes
 

@@ -1,25 +1,36 @@
-import { router, publicProcedure } from '../trpc';
-import { z } from 'zod';
-import { channelRepository, channelParticipantRepository, shopRepository } from '../repositories';
-import { TRPCError } from '@trpc/server';
-import { generateAgoraToken, getAgoraAppId } from '../utils/agora';
-import { sql } from 'kysely';
-import { db } from '../db';
-import { broadcastToChannel, addUserToChannel, sendToConnection } from '../websocket/broadcast';
-import { EventEmitter } from 'events';
-import { observable } from '@trpc/server/observable';
+import { router, publicProcedure } from "../trpc";
+import { z } from "zod";
+import {
+  channelRepository,
+  channelParticipantRepository,
+  shopRepository,
+} from "../repositories";
+import { TRPCError } from "@trpc/server";
+import { generateAgoraToken, getAgoraAppId } from "../utils/agora";
+import { sql } from "kysely";
+import { db } from "../db";
+import {
+  broadcastToChannel,
+  addUserToChannel,
+  sendToConnection,
+} from "../websocket/broadcast";
+import { EventEmitter } from "events";
+import { observable } from "@trpc/server/observable";
 
 // Event emitter for channel events
 const channelEvents = new EventEmitter();
 channelEvents.setMaxListeners(100);
 
-async function isChannelHost(channelId: number, userId: number): Promise<boolean> {
+async function isChannelHost(
+  channelId: number,
+  userId: number,
+): Promise<boolean> {
   const channel = await db
-    .selectFrom('channels')
-    .select('host_id')
-    .where('id', '=', channelId)
+    .selectFrom("channels")
+    .select("host_id")
+    .where("id", "=", channelId)
     .executeTakeFirst();
-    
+
   return channel?.host_id === userId;
 }
 
@@ -30,17 +41,17 @@ export const channelRouter = router({
   create: publicProcedure
     .input(
       z.object({
-        name: z.string().min(3, 'Name must be at least 3 characters').max(100),
+        name: z.string().min(3, "Name must be at least 3 characters").max(100),
         maxParticipants: z.number().min(2).max(50).default(10),
         isPrivate: z.boolean().default(false),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       // Check authentication
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to create a channel',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to create a channel",
         });
       }
 
@@ -48,8 +59,8 @@ export const channelRouter = router({
       const userShops = await shopRepository.findByOwnerId(ctx.userId);
       if (userShops.length === 0) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You must have at least one shop to create a channel',
+          code: "FORBIDDEN",
+          message: "You must have at least one shop to create a channel",
         });
       }
 
@@ -65,22 +76,26 @@ export const channelRouter = router({
       await channelParticipantRepository.addParticipant(
         channel.id,
         ctx.userId,
-        'host'
+        "host",
       );
 
       // Generate Agora token for host
       // Generate a dynamic UID to avoid conflicts when same user opens multiple tabs
       // Use userId as base + random component to ensure uniqueness
       const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
-      
+
       const token = generateAgoraToken({
         channelName: channel.id.toString(),
         uid: dynamicUid,
-        role: 'host',
+        role: "host",
       });
 
       return {
-        channel,
+        channel: {
+          ...channel,
+          hlsPlaybackUrl: channel.hls_playback_url,
+          relayStatus: channel.relay_status,
+        },
         token,
         appId: getAgoraAppId(),
         uid: dynamicUid,
@@ -95,14 +110,14 @@ export const channelRouter = router({
     .input(
       z.object({
         channelId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       // Check authentication
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to join a channel',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to join a channel",
         });
       }
 
@@ -111,56 +126,63 @@ export const channelRouter = router({
 
       if (!channel) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
+          code: "NOT_FOUND",
+          message: "Channel not found",
         });
       }
 
       // Check if channel is active
-      if (channel.status !== 'active') {
+      if (channel.status !== "active") {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'This channel has ended',
+          code: "BAD_REQUEST",
+          message: "This channel has ended",
         });
       }
 
       // Check participant limit
-      const hasReachedCapacity = await channelRepository.hasReachedCapacity(input.channelId);
-      
+      const hasReachedCapacity = await channelRepository.hasReachedCapacity(
+        input.channelId,
+      );
+
       if (hasReachedCapacity) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Channel is full',
+          code: "BAD_REQUEST",
+          message: "Channel is full",
         });
       }
 
       // Check if user already joined
-      const alreadyJoined = await channelParticipantRepository.isActiveParticipant(
-        input.channelId,
-        ctx.userId
-      );
+      const alreadyJoined =
+        await channelParticipantRepository.isActiveParticipant(
+          input.channelId,
+          ctx.userId,
+        );
 
       if (!alreadyJoined) {
         // Add as new participant
         await channelParticipantRepository.addParticipant(
           input.channelId,
           ctx.userId,
-          'viewer'
+          "viewer",
         );
       }
 
       // Generate token for audience
       // Generate a dynamic UID to avoid conflicts when same user opens multiple tabs
       const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
-      
+
       const token = generateAgoraToken({
         channelName: channel.id.toString(),
         uid: dynamicUid,
-        role: 'audience',
+        role: "audience",
       });
 
       return {
-        channel,
+        channel: {
+          ...channel,
+          hlsPlaybackUrl: channel.hls_playback_url,
+          relayStatus: channel.relay_status,
+        },
         token,
         appId: getAgoraAppId(),
         uid: dynamicUid,
@@ -177,36 +199,38 @@ export const channelRouter = router({
         .object({
           includePrivate: z.boolean().default(false),
         })
-        .optional()
+        .optional(),
     )
     .query(async ({ input }) => {
       // Note: This query is complex with subquery, keeping direct db access for now
       // Could be refactored to repository if needed
       let query = db
-        .selectFrom('channels')
+        .selectFrom("channels")
         .select([
-          'channels.id',
-          'channels.name',
-          'channels.host_id',
-          'channels.max_participants',
-          'channels.is_private',
-          'channels.created_at',
+          "channels.id",
+          "channels.name",
+          "channels.host_id",
+          "channels.max_participants",
+          "channels.is_private",
+          "channels.created_at",
           (eb) =>
             eb
-              .selectFrom('channel_participants')
-              .select(({ fn }) => fn.count<number>('id').as('count'))
-              .whereRef('channel_participants.channel_id', '=', 'channels.id')
-              .where('channel_participants.left_at', 'is', null)
-              .as('participantCount'),
+              .selectFrom("channel_participants")
+              .select(({ fn }) => fn.count<number>("id").as("count"))
+              .whereRef("channel_participants.channel_id", "=", "channels.id")
+              .where("channel_participants.left_at", "is", null)
+              .as("participantCount"),
         ])
-        .where('channels.status', '=', 'active');
+        .where("channels.status", "=", "active");
 
       // Filter private channels unless requested
       if (!input?.includePrivate) {
-        query = query.where('channels.is_private', '=', false);
+        query = query.where("channels.is_private", "=", false);
       }
 
-      const channels = await query.orderBy('channels.created_at', 'desc').execute();
+      const channels = await query
+        .orderBy("channels.created_at", "desc")
+        .execute();
 
       return channels;
     }),
@@ -218,20 +242,23 @@ export const channelRouter = router({
     .input(
       z.object({
         channelId: z.number(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const channel = await channelRepository.findById(input.channelId);
 
       if (!channel) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
+          code: "NOT_FOUND",
+          message: "Channel not found",
         });
       }
 
       // Get active participants
-      const participants = await channelParticipantRepository.getActiveParticipants(input.channelId);
+      const participants =
+        await channelParticipantRepository.getActiveParticipants(
+          input.channelId,
+        );
 
       return {
         channel,
@@ -246,13 +273,13 @@ export const channelRouter = router({
     .input(
       z.object({
         channelId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
         });
       }
 
@@ -260,16 +287,16 @@ export const channelRouter = router({
 
       if (!channel) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
+          code: "NOT_FOUND",
+          message: "Channel not found",
         });
       }
 
       // Check if user is the host
       if (channel.host_id !== ctx.userId) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only the host can end the channel',
+          code: "FORBIDDEN",
+          message: "Only the host can end the channel",
         });
       }
 
@@ -289,31 +316,34 @@ export const channelRouter = router({
     .input(
       z.object({
         channelId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
         });
       }
 
       // Check if user is active participant
       const isActive = await channelParticipantRepository.isActiveParticipant(
         input.channelId,
-        ctx.userId
+        ctx.userId,
       );
 
       if (!isActive) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'You are not in this channel',
+          code: "NOT_FOUND",
+          message: "You are not in this channel",
         });
       }
 
       // Mark as left
-      await channelParticipantRepository.removeParticipant(input.channelId, ctx.userId);
+      await channelParticipantRepository.removeParticipant(
+        input.channelId,
+        ctx.userId,
+      );
 
       return { success: true };
     }),
@@ -326,29 +356,29 @@ export const channelRouter = router({
       z.object({
         channelId: z.number(),
         productId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
         });
       }
 
       // Check if user has SELLER role
       const userRoles = await db
-        .selectFrom('user_roles')
-        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
-        .select('roles.name')
-        .where('user_roles.user_id', '=', ctx.userId)
+        .selectFrom("user_roles")
+        .innerJoin("roles", "roles.id", "user_roles.role_id")
+        .select("roles.name")
+        .where("user_roles.user_id", "=", ctx.userId)
         .execute();
 
-      const hasSeller = userRoles.some(r => r.name === 'SELLER');
+      const hasSeller = userRoles.some((r) => r.name === "SELLER");
       if (!hasSeller) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only sellers can highlight products',
+          code: "FORBIDDEN",
+          message: "Only sellers can highlight products",
         });
       }
 
@@ -356,8 +386,8 @@ export const channelRouter = router({
       const channel = await channelRepository.findById(input.channelId);
       if (!channel) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
+          code: "NOT_FOUND",
+          message: "Channel not found",
         });
       }
 
@@ -365,75 +395,76 @@ export const channelRouter = router({
       const isHost = await isChannelHost(input.channelId, ctx.userId);
       if (!isHost) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only the channel host can highlight products',
+          code: "FORBIDDEN",
+          message: "Only the channel host can highlight products",
         });
       }
 
       // Verify product is associated with this channel
       const channelProduct = await db
-        .selectFrom('channel_products')
-        .select(['id', 'product_id'])
-        .where('channel_id', '=', input.channelId)
-        .where('product_id', '=', input.productId)
+        .selectFrom("channel_products")
+        .select(["id", "product_id"])
+        .where("channel_id", "=", input.channelId)
+        .where("product_id", "=", input.productId)
         .executeTakeFirst();
 
       if (!channelProduct) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Product is not associated with this channel',
+          code: "BAD_REQUEST",
+          message: "Product is not associated with this channel",
         });
       }
 
       // Verify product exists
       const product = await db
-        .selectFrom('products')
-        .select(['id', 'name', 'price', 'description', 'image_url'])
-        .where('id', '=', input.productId)
+        .selectFrom("products")
+        .select(["id", "name", "price", "description", "image_url"])
+        .where("id", "=", input.productId)
         .executeTakeFirst();
 
       if (!product) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
       // Check if there's an active auction in this channel
       const activeAuction = await db
-        .selectFrom('auctions')
-        .select(['id', 'product_id'])
-        .where('channel_id', '=', input.channelId)
-        .where('status', '=', 'active')
+        .selectFrom("auctions")
+        .select(["id", "product_id"])
+        .where("channel_id", "=", input.channelId)
+        .where("status", "=", "active")
         .executeTakeFirst();
 
       if (activeAuction) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Cannot change highlighted product while an auction is active. Please wait for the current auction to end.',
+          code: "BAD_REQUEST",
+          message:
+            "Cannot change highlighted product while an auction is active. Please wait for the current auction to end.",
         });
       }
 
       // Update channel with highlighted product
       const highlightedAt = new Date();
       await db
-        .updateTable('channels')
+        .updateTable("channels")
         .set({
           highlighted_product_id: input.productId,
           highlighted_at: highlightedAt,
         })
-        .where('id', '=', input.channelId)
+        .where("id", "=", input.channelId)
         .execute();
 
       // Prepare highlight event message
       const highlightMessage = {
-        type: 'PRODUCT_HIGHLIGHTED' as const,
+        type: "PRODUCT_HIGHLIGHTED" as const,
         channelId: input.channelId,
         product: {
           id: product.id,
           name: product.name,
-          price: parseFloat(product.price ?? '0'),
-          description: product.description ?? '',
+          price: parseFloat(product.price ?? "0"),
+          description: product.description ?? "",
           imageUrl: product.image_url,
         },
         highlightedAt: highlightedAt.toISOString(),
@@ -450,8 +481,8 @@ export const channelRouter = router({
         product: {
           id: product.id,
           name: product.name,
-          price: parseFloat(product.price ?? '0'),
-          description: product.description ?? '',
+          price: parseFloat(product.price ?? "0"),
+          description: product.description ?? "",
           imageUrl: product.image_url,
         },
       };
@@ -464,29 +495,29 @@ export const channelRouter = router({
     .input(
       z.object({
         channelId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
         });
       }
 
       // Check if user has SELLER role
       const userRoles = await db
-        .selectFrom('user_roles')
-        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
-        .select('roles.name')
-        .where('user_roles.user_id', '=', ctx.userId)
+        .selectFrom("user_roles")
+        .innerJoin("roles", "roles.id", "user_roles.role_id")
+        .select("roles.name")
+        .where("user_roles.user_id", "=", ctx.userId)
         .execute();
 
-      const hasSeller = userRoles.some(r => r.name === 'SELLER');
+      const hasSeller = userRoles.some((r) => r.name === "SELLER");
       if (!hasSeller) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only sellers can unhighlight products',
+          code: "FORBIDDEN",
+          message: "Only sellers can unhighlight products",
         });
       }
 
@@ -494,8 +525,8 @@ export const channelRouter = router({
       const channel = await channelRepository.findById(input.channelId);
       if (!channel) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
+          code: "NOT_FOUND",
+          message: "Channel not found",
         });
       }
 
@@ -503,39 +534,40 @@ export const channelRouter = router({
       const isHost = await isChannelHost(input.channelId, ctx.userId);
       if (!isHost) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only the channel host can unhighlight products',
+          code: "FORBIDDEN",
+          message: "Only the channel host can unhighlight products",
         });
       }
 
       // Check if there's an active auction in this channel
       const activeAuction = await db
-        .selectFrom('auctions')
-        .select(['id', 'product_id'])
-        .where('channel_id', '=', input.channelId)
-        .where('status', '=', 'active')
+        .selectFrom("auctions")
+        .select(["id", "product_id"])
+        .where("channel_id", "=", input.channelId)
+        .where("status", "=", "active")
         .executeTakeFirst();
 
       if (activeAuction) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Cannot unhighlight product while an auction is active. Please wait for the current auction to end.',
+          code: "BAD_REQUEST",
+          message:
+            "Cannot unhighlight product while an auction is active. Please wait for the current auction to end.",
         });
       }
 
       // Update channel to remove highlighted product
       await db
-        .updateTable('channels')
+        .updateTable("channels")
         .set({
           highlighted_product_id: null,
           highlighted_at: null,
         })
-        .where('id', '=', input.channelId)
+        .where("id", "=", input.channelId)
         .execute();
 
       // Prepare unhighlight event message
       const unhighlightMessage = {
-        type: 'PRODUCT_UNHIGHLIGHTED' as const,
+        type: "PRODUCT_UNHIGHLIGHTED" as const,
         channelId: input.channelId,
       };
 
@@ -543,7 +575,10 @@ export const channelRouter = router({
       broadcastToChannel(input.channelId, unhighlightMessage);
 
       // Emit via EventEmitter for tRPC subscriptions
-      channelEvents.emit(`channel:${input.channelId}:events`, unhighlightMessage);
+      channelEvents.emit(
+        `channel:${input.channelId}:events`,
+        unhighlightMessage,
+      );
 
       return { success: true };
     }),
@@ -555,27 +590,27 @@ export const channelRouter = router({
     .input(
       z.object({
         channelId: z.number(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
         });
       }
 
       // Verify channel exists
       const channel = await db
-        .selectFrom('channels')
-        .select(['id', 'highlighted_product_id', 'highlighted_at'])
-        .where('id', '=', input.channelId)
+        .selectFrom("channels")
+        .select(["id", "highlighted_product_id", "highlighted_at"])
+        .where("id", "=", input.channelId)
         .executeTakeFirst();
 
       if (!channel) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Channel not found',
+          code: "NOT_FOUND",
+          message: "Channel not found",
         });
       }
 
@@ -589,9 +624,9 @@ export const channelRouter = router({
 
       // Fetch product details
       const product = await db
-        .selectFrom('products')
-        .select(['id', 'name', 'price', 'description', 'image_url'])
-        .where('id', '=', channel.highlighted_product_id)
+        .selectFrom("products")
+        .select(["id", "name", "price", "description", "image_url"])
+        .where("id", "=", channel.highlighted_product_id)
         .executeTakeFirst();
 
       if (!product) {
@@ -605,8 +640,8 @@ export const channelRouter = router({
         product: {
           id: product.id,
           name: product.name,
-          price: parseFloat(product.price ?? '0'),
-          description: product.description ?? '',
+          price: parseFloat(product.price ?? "0"),
+          description: product.description ?? "",
           imageUrl: product.image_url,
         },
         highlightedAt: channel.highlighted_at,
@@ -619,13 +654,18 @@ export const channelRouter = router({
   subscribeToEvents: publicProcedure
     .input(z.object({ channelId: z.number() }))
     .subscription(async ({ input, ctx }) => {
-      console.log(`📡 User ${ctx.userId || 'anonymous'} subscribed to channel events: ${input.channelId}`);
+      console.log(
+        `📡 User ${ctx.userId || "anonymous"} subscribed to channel events: ${input.channelId}`,
+      );
 
       return observable<any>((emit) => {
         const eventName = `channel:${input.channelId}:events`;
 
         const handler = (data: any) => {
-          console.log(`📨 Sending event to subscriber on ${eventName}:`, data.type);
+          console.log(
+            `📨 Sending event to subscriber on ${eventName}:`,
+            data.type,
+          );
           emit.next(data);
         };
 
@@ -635,27 +675,27 @@ export const channelRouter = router({
         (async () => {
           try {
             const channel = await db
-              .selectFrom('channels')
-              .select(['highlighted_product_id', 'highlighted_at'])
-              .where('id', '=', input.channelId)
+              .selectFrom("channels")
+              .select(["highlighted_product_id", "highlighted_at"])
+              .where("id", "=", input.channelId)
               .executeTakeFirst();
 
             if (channel?.highlighted_product_id) {
               const product = await db
-                .selectFrom('products')
+                .selectFrom("products")
                 .selectAll()
-                .where('id', '=', channel.highlighted_product_id)
+                .where("id", "=", channel.highlighted_product_id)
                 .executeTakeFirst();
 
               if (product) {
                 emit.next({
-                  type: 'PRODUCT_HIGHLIGHTED',
+                  type: "PRODUCT_HIGHLIGHTED",
                   channelId: input.channelId,
                   product: {
                     id: product.id,
                     name: product.name,
-                    price: parseFloat(product.price ?? '0'),
-                    description: product.description ?? '',
+                    price: parseFloat(product.price ?? "0"),
+                    description: product.description ?? "",
                     imageUrl: product.image_url,
                   },
                   highlightedAt: channel.highlighted_at?.toISOString(),
@@ -663,7 +703,7 @@ export const channelRouter = router({
               }
             }
           } catch (error) {
-            console.error('Error fetching initial highlighted product:', error);
+            console.error("Error fetching initial highlighted product:", error);
           }
         })();
 

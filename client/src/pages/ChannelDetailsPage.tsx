@@ -25,6 +25,7 @@ import { useUserRole } from "../hooks/useUserRole";
 import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
 import VerticalControlPanel from "../components/VerticalControlPanel";
+import { HLSVideoPlayer } from "../components/ui/HLSVideoPlayer";
 import { toast } from "sonner";
 
 interface ChannelConfig {
@@ -67,6 +68,7 @@ export default function ChannelDetailsPage() {
   const [channelConfig, setChannelConfig] = useState<ChannelConfig | null>(
     null,
   );
+  const [hlsPlaybackUrl, setHlsPlaybackUrl] = useState<string | null>(null);
   const [highlightedProduct, setHighlightedProduct] = useState<{
     id: number;
     name: string;
@@ -148,7 +150,20 @@ export default function ChannelDetailsPage() {
         isHost: data.isHost,
       };
       setChannelConfig(config);
-      await initializeAgora(config);
+
+      // Store HLS playback URL if available
+      if (data.channel.hlsPlaybackUrl) {
+        setHlsPlaybackUrl(data.channel.hlsPlaybackUrl);
+      }
+
+      // Only initialize Agora for hosts (sellers)
+      // Viewers (buyers) will use HLS player instead
+      if (data.isHost) {
+        await initializeAgora(config);
+      } else {
+        // For viewers, just mark as joined
+        setJoined(true);
+      }
     },
     onError: (err) => {
       setError(err.message);
@@ -558,44 +573,46 @@ export default function ChannelDetailsPage() {
         <div className="absolute inset-0 lg:aspect-[9/16] lg:mx-auto bg-black lg:rounded-lg overflow-hidden">
           {/* Main Video Container */}
           <div className="relative w-full h-full bg-black">
-            {/* Remote User Video (Primary - The Broadcaster) */}
-            {Array.from(remoteUsers.entries()).length > 0 ? (
-              <div className="w-full h-full">
-                {Array.from(remoteUsers.entries()).map(([uid], index) => {
-                  // Only show first remote user (broadcaster) in main view
-                  if (index === 0) {
-                    return (
-                      <div key={uid} className="w-full h-full relative">
-                        <div
-                          id={`remote-player-${uid}`}
-                          className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
-                        />
+            {/* Conditional Rendering: HLS for Viewers, Agora for Hosts */}
+            {channelConfig?.isHost ? (
+              // Host View: Agora RTC (existing code)
+              <>
+                {/* Remote User Video (Primary - The Broadcaster) */}
+                {Array.from(remoteUsers.entries()).length > 0 ? (
+                  <div className="w-full h-full">
+                    {Array.from(remoteUsers.entries()).map(([uid], index) => {
+                      // Only show first remote user (broadcaster) in main view
+                      if (index === 0) {
+                        return (
+                          <div key={uid} className="w-full h-full relative">
+                            <div
+                              id={`remote-player-${uid}`}
+                              className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
+                            />
 
-                        {/* Broadcaster Info Overlay (Top) */}
-                        <div className="absolute top-20 left-4 flex items-center gap-2">
-                          <div className="size-10 rounded-full bg-primary flex items-center justify-center">
-                            <span className="text-sm font-bold text-primary-foreground">
-                              {uid.toString().slice(0, 2)}
-                            </span>
+                            {/* Broadcaster Info Overlay (Top) */}
+                            <div className="absolute top-20 left-4 flex items-center gap-2">
+                              <div className="size-10 rounded-full bg-primary flex items-center justify-center">
+                                <span className="text-sm font-bold text-primary-foreground">
+                                  {uid.toString().slice(0, 2)}
+                                </span>
+                              </div>
+                              <div className="bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
+                                <span className="text-sm font-medium">
+                                  User {uid}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
-                            <span className="text-sm font-medium">
-                              User {uid}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            ) : (
-              // Placeholder when no broadcaster
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center space-y-4 text-white">
-                  {channelConfig?.isHost ? (
-                    <>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                ) : (
+                  // Placeholder when no broadcaster
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center space-y-4 text-white">
                       <UsersIcon className="size-16 mx-auto text-white/60" />
                       <h3 className="text-lg font-semibold">
                         Waiting for participants
@@ -603,20 +620,35 @@ export default function ChannelDetailsPage() {
                       <p className="text-sm text-white/60">
                         Invite others to join this channel
                       </p>
-                    </>
-                  ) : (
-                    <>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              // Viewer View: HLS Player (cost-effective)
+              <>
+                {hlsPlaybackUrl ? (
+                  <HLSVideoPlayer
+                    src={hlsPlaybackUrl}
+                    className="w-full h-full"
+                    autoplay={true}
+                    showLatencyBadge={true}
+                  />
+                ) : (
+                  // Placeholder while HLS stream is starting
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center space-y-4 text-white">
                       <Eye className="size-16 mx-auto text-white/60" />
                       <h3 className="text-lg font-semibold">
-                        Waiting for broadcaster
+                        Stream starting soon...
                       </h3>
                       <p className="text-sm text-white/60">
-                        The stream will appear when the broadcaster starts
+                        The broadcaster is setting up the stream
                       </p>
-                    </>
-                  )}
-                </div>
-              </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
