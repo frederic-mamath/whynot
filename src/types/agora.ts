@@ -34,8 +34,8 @@ export interface AgoraStartRequest {
     recordingFileConfig?: {
       avFileType: string[]; // ["hls", "mp4"]
     };
-    storageConfig: {
-      vendor: number; // 1 = AWS S3, 2 = Aliyun, etc. (not used in RTMP mode)
+    storageConfig?: {
+      vendor: number; // 1 = Qiniu, 2 = AWS S3, 3 = Aliyun, etc.
       region: number;
       bucket?: string;
       accessKey?: string;

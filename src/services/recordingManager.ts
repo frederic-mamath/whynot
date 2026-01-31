@@ -51,11 +51,7 @@ export class RecordingManager {
       });
 
       // 4. Start Agora Cloud Recording with RTMP push to Cloudflare
-      const storageConfig = {
-        vendor: 1, // Not used (RTMP mode)
-        region: 0,
-      };
-
+      // No storageConfig needed for RTMP-only mode
       const recordingConfig = {
         channelType: 0, // Live broadcast
         streamTypes: 2, // Audio + Video
@@ -67,7 +63,7 @@ export class RecordingManager {
         channelName,
         recordingUid,
         streamCredentials.rtmpsUrl, // RTMP URL for Cloudflare
-        storageConfig,
+        undefined, // No storage config for RTMP mode
         recordingConfig,
       );
 

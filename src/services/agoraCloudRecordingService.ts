@@ -101,10 +101,8 @@ export class AgoraCloudRecordingService {
           streamTypes: recordingConfig?.streamTypes ?? 2, // 2 = audio + video
           maxIdleTime: recordingConfig?.maxIdleTime ?? 30, // Stop after 30s of no publisher
         },
-        storageConfig: storageConfig ?? {
-          vendor: 1, // Not used in RTMP mode, but required by API
-          region: 0,
-        },
+        // Only include storageConfig if provided
+        ...(storageConfig ? { storageConfig } : {}),
         extensionServiceConfig: {
           errorHandlePolicy: "error_abort", // Abort on error
           extensionServices: [
