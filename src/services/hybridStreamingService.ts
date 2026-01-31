@@ -25,11 +25,14 @@ export class HybridStreamingService {
     sellerUid: number,
   ): Promise<{ hlsPlaybackUrl: string; streamKeyId: string }> {
     console.log(
-      `Starting hybrid streaming for channel ${channelId} (${channelName})`,
+      `[HybridStreaming] 🚀 Starting for channel ${channelId}, seller UID: ${sellerUid}`,
     );
 
     try {
       // Update channel status to "starting"
+      console.log(
+        `[HybridStreaming] Step 1/5: Setting relay_status to 'starting'`,
+      );
       await db
         .updateTable("channels")
         .set({
@@ -40,13 +43,20 @@ export class HybridStreamingService {
         .execute();
 
       // Start Agora Cloud Recording → Cloudflare Stream relay
+      console.log(`[HybridStreaming] Step 2/5: Starting recording manager...`);
       const { hlsPlaybackUrl } = await this.recordingManager.startRecording(
         channelId,
         channelName,
         sellerUid,
       );
+      console.log(
+        `[HybridStreaming] Step 2/5: ✅ Recording started, HLS: ${hlsPlaybackUrl}`,
+      );
 
       // Get stream key ID from database (set by RecordingManager)
+      console.log(
+        `[HybridStreaming] Step 3/5: Retrieving stream_key_id from DB...`,
+      );
       const channel = await db
         .selectFrom("channels")
         .select("stream_key_id")
@@ -54,10 +64,19 @@ export class HybridStreamingService {
         .executeTakeFirst();
 
       if (!channel?.stream_key_id) {
+        console.error(
+          `[HybridStreaming] ❌ Stream key ID not found in database!`,
+        );
         throw new Error("Stream key ID not found after starting recording");
       }
+      console.log(
+        `[HybridStreaming] Step 3/5: ✅ Stream key: ${channel.stream_key_id}`,
+      );
 
       // Update status to "active"
+      console.log(
+        `[HybridStreaming] Step 4/5: Setting relay_status to 'active'`,
+      );
       await db
         .updateTable("channels")
         .set({ relay_status: "active" })
@@ -65,7 +84,7 @@ export class HybridStreamingService {
         .execute();
 
       console.log(
-        `Hybrid streaming started successfully for channel ${channelId}`,
+        `[HybridStreaming] Step 5/5: ✅ SUCCESS - Hybrid streaming active for channel ${channelId}`,
       );
 
       return {
@@ -73,12 +92,18 @@ export class HybridStreamingService {
         streamKeyId: channel.stream_key_id,
       };
     } catch (error) {
+      console.error(`[HybridStreaming] ❌ FAILED for channel ${channelId}:`);
       console.error(
-        `Failed to start hybrid streaming for channel ${channelId}:`,
-        error,
+        `[HybridStreaming] Error message:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      console.error(
+        `[HybridStreaming] Error stack:`,
+        error instanceof Error ? error.stack : "No stack trace",
       );
 
       // Update status to "error"
+      console.log(`[HybridStreaming] Setting relay_status to 'error'`);
       await db
         .updateTable("channels")
         .set({ relay_status: "error" })

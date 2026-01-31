@@ -39,6 +39,10 @@ export class CloudflareStreamService {
     options: CreateStreamOptions,
   ): Promise<CloudflareStreamCredentials> {
     try {
+      console.log(
+        `[CloudflareStream] Creating Live Input for channel ${options.channelId}...`,
+      );
+
       const response = await this.client.post("/live_inputs", {
         meta: {
           name: `Channel ${options.channelId}`,
@@ -55,20 +59,68 @@ export class CloudflareStreamService {
       const data = response.data.result;
 
       console.log(
-        `Cloudflare Live Input created: ${data.uid} for channel ${options.channelId}`,
+        `[CloudflareStream] Live Input created: ${data.uid} for channel ${options.channelId}`,
       );
+      console.log(
+        `[CloudflareStream] Full response data:`,
+        JSON.stringify(data, null, 2),
+      );
+
+      // Cloudflare Stream Live Inputs don't have a 'playback' field
+      // We need to construct HLS/DASH URLs from the webRTCPlayback URL
+      // Format: https://customer-{subdomain}.cloudflarestream.com/{uid}/webRTC/play
+      // HLS: https://customer-{subdomain}.cloudflarestream.com/{uid}/manifest/video.m3u8
+
+      if (!data.webRTCPlayback?.url) {
+        console.error(
+          `[CloudflareStream] ❌ No 'webRTCPlayback.url' in response!`,
+        );
+        throw new Error("Missing webRTCPlayback.url in Cloudflare response");
+      }
+
+      // Extract base URL from webRTCPlayback
+      // From: https://customer-xxx.cloudflarestream.com/{uid}/webRTC/play
+      // To: https://customer-xxx.cloudflarestream.com/{uid}
+      const webRTCUrl = data.webRTCPlayback.url;
+      const baseUrl = webRTCUrl.replace(/\/webRTC\/play$/, "");
+
+      const hlsPlaybackUrl = `${baseUrl}/manifest/video.m3u8`;
+      const dashPlaybackUrl = `${baseUrl}/manifest/video.mpd`;
+
+      console.log(
+        `[CloudflareStream] ✅ Constructed HLS URL: ${hlsPlaybackUrl}`,
+      );
+      console.log(
+        `[CloudflareStream] ✅ Constructed DASH URL: ${dashPlaybackUrl}`,
+      );
+
+      // Construct full RTMPS URL with streamKey
+      const rtmpsUrl = `${data.rtmps.url}${data.rtmps.streamKey}`;
+      const rtmpUrl = rtmpsUrl.replace("rtmps://", "rtmp://"); // For testing
+
+      console.log(`[CloudflareStream] ✅ RTMPS URL: ${rtmpsUrl}`);
 
       return {
         streamKeyId: data.uid,
-        rtmpUrl: data.rtmps.url.replace("rtmps://", "rtmp://"), // For testing
-        rtmpsUrl: data.rtmps.url, // Secure URL (recommended for production)
-        hlsPlaybackUrl: data.playback.hls,
-        dashPlaybackUrl: data.playback.dash,
+        rtmpUrl, // For testing (non-secure)
+        rtmpsUrl, // Full RTMPS URL with streamKey
+        hlsPlaybackUrl,
+        dashPlaybackUrl,
       };
     } catch (error) {
-      console.error("Failed to create Cloudflare Live Input:", error);
+      console.error(
+        "[CloudflareStream] ❌ Failed to create Live Input:",
+        error,
+      );
       if (axios.isAxiosError(error) && error.response) {
-        console.error("Response data:", error.response.data);
+        console.error(
+          "[CloudflareStream] Response status:",
+          error.response.status,
+        );
+        console.error(
+          "[CloudflareStream] Response data:",
+          JSON.stringify(error.response.data, null, 2),
+        );
       }
       throw new Error("Failed to create Cloudflare Live Input");
     }

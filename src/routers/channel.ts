@@ -102,6 +102,9 @@ export const channelRouter = router({
 
       // Start hybrid streaming (Agora Cloud Recording → Cloudflare Stream)
       let hlsPlaybackUrl: string | null = null;
+      console.log(
+        `[ChannelRouter] Initiating hybrid streaming for channel ${channel.id}...`,
+      );
       try {
         const hybridStreaming = getHybridStreamingService();
         const result = await hybridStreaming.startHybridStreaming(
@@ -110,10 +113,16 @@ export const channelRouter = router({
           dynamicUid,
         );
         hlsPlaybackUrl = result.hlsPlaybackUrl;
+        console.log(
+          `[ChannelRouter] ✅ Hybrid streaming started. HLS URL: ${hlsPlaybackUrl}`,
+        );
       } catch (error) {
         console.error(
-          `Failed to start hybrid streaming for channel ${channel.id}:`,
-          error,
+          `[ChannelRouter] ❌ Failed to start hybrid streaming for channel ${channel.id}`,
+        );
+        console.error(
+          `[ChannelRouter] Error:`,
+          error instanceof Error ? error.message : String(error),
         );
         // Continue anyway - seller can still stream via Agora
         // Buyers won't have HLS but could fallback to Agora if needed
