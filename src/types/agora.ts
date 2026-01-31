@@ -35,23 +35,11 @@ export interface AgoraStartRequest {
       avFileType: string[]; // ["hls", "mp4"]
     };
     storageConfig?: {
-      vendor: number; // 1 = Qiniu, 2 = AWS S3, 3 = Aliyun, etc.
+      vendor: number; // 2 = AWS S3, 3 = Aliyun, etc.
       region: number;
-      bucket?: string;
-      accessKey?: string;
-      secretKey?: string;
-    };
-    extensionServiceConfig?: {
-      errorHandlePolicy?: string;
-      extensionServices: Array<{
-        serviceName: "rtmp_publish";
-        errorHandlePolicy?: string;
-        serviceParam: {
-          outputs: Array<{
-            rtmpUrl: string;
-          }>;
-        };
-      }>;
+      bucket: string;
+      accessKey: string;
+      secretKey: string;
     };
   };
 }

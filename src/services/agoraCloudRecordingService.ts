@@ -72,19 +72,19 @@ export class AgoraCloudRecordingService {
   }
 
   /**
-   * Step 2: Start cloud recording with RTMP push to Cloudflare Stream
+   * Step 2: Start cloud recording with S3 storage
    */
   async start(
     resourceId: string,
     channelName: string,
     uid: number,
-    rtmpPushUrl: string,
+    rtmpPushUrl: string, // Kept for future use, not used with S3 storage
     storageConfig?: {
       vendor: number;
       region: number;
-      bucket?: string;
-      accessKey?: string;
-      secretKey?: string;
+      bucket: string;
+      accessKey: string;
+      secretKey: string;
     },
     recordingConfig?: {
       channelType?: number;
@@ -101,24 +101,8 @@ export class AgoraCloudRecordingService {
           streamTypes: recordingConfig?.streamTypes ?? 2, // 2 = audio + video
           maxIdleTime: recordingConfig?.maxIdleTime ?? 30, // Stop after 30s of no publisher
         },
-        // Only include storageConfig if provided
+        // Include storageConfig if provided (required for S3 recording)
         ...(storageConfig ? { storageConfig } : {}),
-        extensionServiceConfig: {
-          errorHandlePolicy: "error_abort", // Abort on error
-          extensionServices: [
-            {
-              serviceName: "rtmp_publish",
-              errorHandlePolicy: "error_abort",
-              serviceParam: {
-                outputs: [
-                  {
-                    rtmpUrl: rtmpPushUrl,
-                  },
-                ],
-              },
-            },
-          ],
-        },
       },
     };
 
@@ -133,9 +117,7 @@ export class AgoraCloudRecordingService {
         },
       );
 
-      console.log(
-        `Agora Cloud Recording started: SID ${response.data.sid}, pushing to ${rtmpPushUrl}`,
-      );
+      console.log(`Agora Cloud Recording started: SID ${response.data.sid}`);
 
       return response.data.sid;
     } catch (error) {
