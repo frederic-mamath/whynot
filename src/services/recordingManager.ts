@@ -1,36 +1,37 @@
 import { db } from "../db";
-import { AgoraCloudRecordingService } from "./agoraCloudRecordingService";
+import { AgoraMediaPushService } from "./agoraMediaPushService";
 import { CloudflareStreamService } from "./cloudflareStreamService";
 import { AnalyticsService } from "./analyticsService";
 import { CostTrackingService } from "./costTrackingService";
-import { generateRecordingUid } from "../utils/agoraAuth";
 
 /**
  * Recording Manager
- * Orchestrates Agora Cloud Recording → Cloudflare Stream relay
+ * Orchestrates Agora Media Push → Cloudflare Stream relay
  */
 export class RecordingManager {
-  private cloudRecording: AgoraCloudRecordingService;
+  private mediaPush: AgoraMediaPushService;
   private cloudflareStream: CloudflareStreamService;
   private analyticsService: AnalyticsService;
   private costTrackingService: CostTrackingService;
 
   constructor() {
-    this.cloudRecording = new AgoraCloudRecordingService();
+    this.mediaPush = new AgoraMediaPushService();
     this.cloudflareStream = new CloudflareStreamService();
     this.analyticsService = new AnalyticsService(db);
     this.costTrackingService = new CostTrackingService(db);
   }
 
   /**
-   * Start hybrid streaming: Agora Cloud Recording → Cloudflare Stream
+   * Start hybrid streaming: Agora Media Push → Cloudflare Stream
    */
   async startRecording(
     channelId: number,
     channelName: string,
     sellerUid: number,
   ): Promise<{ hlsPlaybackUrl: string }> {
-    console.log(`Starting recording for channel ${channelId} (${channelName})`);
+    console.log(
+      `Starting media push for channel ${channelId} (${channelName})`,
+    );
 
     try {
       // 1. Create Cloudflare Stream Live Input
@@ -41,46 +42,19 @@ export class RecordingManager {
         deleteRecordingAfterDays: 30,
       });
 
-      // 2. Generate recording UID (high range to avoid conflicts)
-      const recordingUid = generateRecordingUid();
-
-      // 3. Acquire Agora Cloud Recording resource
-      const resourceId = await this.cloudRecording.acquire({
+      // 2. Start Agora Media Push to Cloudflare RTMPS endpoint
+      const { taskId } = await this.mediaPush.start({
         channelName,
-        uid: recordingUid,
+        hostUid: sellerUid,
+        rtmpUrl: streamCredentials.rtmpsUrl,
+        region: "na", // North America
       });
 
-      // 4. Configure S3 storage for Agora Cloud Recording
-      const storageConfig = {
-        vendor: 2, // AWS S3
-        region: parseInt(process.env.AWS_S3_REGION || "0"),
-        bucket: process.env.AWS_S3_BUCKET!,
-        accessKey: process.env.AWS_S3_ACCESS_KEY!,
-        secretKey: process.env.AWS_S3_SECRET_KEY!,
-      };
-
-      const recordingConfig = {
-        channelType: 0, // Live broadcast
-        streamTypes: 2, // Audio + Video
-        maxIdleTime: 30, // Stop if seller leaves for 30s
-      };
-
-      const sid = await this.cloudRecording.start(
-        resourceId,
-        channelName,
-        recordingUid,
-        streamCredentials.rtmpsUrl, // RTMP URL for Cloudflare
-        storageConfig, // S3 storage configuration
-        recordingConfig,
-      );
-
-      // 5. Update database with recording metadata
+      // 3. Update database with media push metadata
       await db
         .updateTable("channels")
         .set({
-          agora_resource_id: resourceId,
-          agora_sid: sid,
-          agora_recording_uid: recordingUid,
+          agora_resource_id: taskId, // Store Media Push taskId
           stream_key_id: streamCredentials.streamKeyId,
           hls_playback_url: streamCredentials.hlsPlaybackUrl,
           relay_status: "active",
@@ -90,7 +64,7 @@ export class RecordingManager {
         .execute();
 
       console.log(
-        `Recording started successfully for channel ${channelId}: Agora SID ${sid}, Cloudflare Stream ${streamCredentials.streamKeyId}`,
+        `Media push started successfully for channel ${channelId}: Task ${taskId}, Cloudflare Stream ${streamCredentials.streamKeyId}`,
       );
 
       return {
@@ -98,7 +72,7 @@ export class RecordingManager {
       };
     } catch (error) {
       console.error(
-        `Failed to start recording for channel ${channelId}:`,
+        `Failed to start media push for channel ${channelId}:`,
         error,
       );
 
@@ -114,13 +88,13 @@ export class RecordingManager {
   }
 
   /**
-   * Stop recording and cleanup resources
+   * Stop media push and cleanup resources
    */
   async stopRecording(channelId: number): Promise<void> {
-    console.log(`Stopping recording for channel ${channelId}`);
+    console.log(`Stopping media push for channel ${channelId}`);
 
     try {
-      // 1. Get recording info from database
+      // 1. Get media push info from database
       const channel = await db
         .selectFrom("channels")
         .selectAll()
@@ -131,64 +105,27 @@ export class RecordingManager {
         throw new Error(`Channel ${channelId} not found`);
       }
 
-      if (!channel.agora_resource_id || !channel.agora_sid) {
-        console.warn(`No active recording for channel ${channelId}`);
+      if (!channel.agora_resource_id) {
+        console.warn(`No active media push for channel ${channelId}`);
         return;
       }
 
-      // 2. Stop Agora Cloud Recording
-      await this.cloudRecording.stop(
-        channel.agora_resource_id,
-        channel.agora_sid,
-        channel.name,
-        channel.agora_recording_uid!,
-      );
+      // 2. Stop Agora Media Push
+      await this.mediaPush.stop(channel.agora_resource_id);
 
-      // 3. Wait for Cloudflare to process final segments
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // 4. Get recording URL (VOD) from Cloudflare
-      let recordingUrl: string | null = null;
-      if (channel.stream_key_id) {
-        recordingUrl = await this.cloudflareStream.getRecordingUrl(
-          channel.stream_key_id,
-        );
-      }
-
-      // 5. Update database
+      // 3. Update database
       await db
         .updateTable("channels")
         .set({
-          relay_status: "stopped",
-          stream_recording_url: recordingUrl,
+          relay_status: "inactive",
         })
         .where("id", "=", channelId)
         .execute();
 
-      // 6. Record final metrics
-      await this.analyticsService.recordMetrics(channelId, {
-        relayStatus: "stopped",
-        isLive: false,
-        durationSeconds: 0,
-        cloudflareStreamId: channel.stream_key_id || undefined,
-      });
-
-      // 7. Calculate and record costs
-      try {
-        await this.costTrackingService.recordStreamCosts(channelId);
-        console.log(`Metrics and costs recorded for channel ${channelId}`);
-      } catch (error) {
-        console.error(
-          `Failed to record costs for channel ${channelId}:`,
-          error,
-        );
-        // Don't throw - cost recording failure shouldn't prevent stop
-      }
-
-      console.log(`Recording stopped successfully for channel ${channelId}`);
+      console.log(`Media push stopped for channel ${channelId}`);
     } catch (error) {
       console.error(
-        `Failed to stop recording for channel ${channelId}:`,
+        `Failed to stop media push for channel ${channelId}:`,
         error,
       );
       throw error;
@@ -240,22 +177,19 @@ export class RecordingManager {
   }
 
   /**
-   * Query active recording from Agora (for debugging)
+   * Query active media push from Agora (for debugging)
    */
   async queryAgoraRecording(channelId: number): Promise<any> {
     const channel = await db
       .selectFrom("channels")
-      .select(["agora_resource_id", "agora_sid"])
+      .select(["agora_resource_id"])
       .where("id", "=", channelId)
       .executeTakeFirst();
 
-    if (!channel?.agora_resource_id || !channel?.agora_sid) {
-      throw new Error(`No active recording for channel ${channelId}`);
+    if (!channel?.agora_resource_id) {
+      throw new Error(`No active media push for channel ${channelId}`);
     }
 
-    return this.cloudRecording.query(
-      channel.agora_resource_id,
-      channel.agora_sid,
-    );
+    return this.mediaPush.query(channel.agora_resource_id);
   }
 }

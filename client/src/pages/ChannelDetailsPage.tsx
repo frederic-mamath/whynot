@@ -87,7 +87,12 @@ export default function ChannelDetailsPage() {
   // Update HLS URL when channel status changes
   useEffect(() => {
     if (channelStatus?.hlsPlaybackUrl) {
+      console.log("🎥 [HLS] Received HLS URL:", channelStatus.hlsPlaybackUrl);
+      console.log("🎥 [HLS] Relay Status:", channelStatus.relayStatus);
+      console.log("🎥 [HLS] Channel Active:", channelStatus.isActive);
       setHlsPlaybackUrl(channelStatus.hlsPlaybackUrl);
+    } else {
+      console.log("⏳ [HLS] No HLS URL yet, channel status:", channelStatus);
     }
   }, [channelStatus]);
 

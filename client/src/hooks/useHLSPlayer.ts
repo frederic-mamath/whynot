@@ -35,6 +35,8 @@ export function useHLSPlayer({
     const video = videoRef.current;
     if (!video) return;
 
+    console.log("🎬 [HLS Player] Initializing with URL:", src);
+
     // Check if HLS is supported
     if (Hls.isSupported()) {
       const hls = new Hls({
@@ -50,11 +52,16 @@ export function useHLSPlayer({
 
       // Load source
       hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+        console.log("🎬 [HLS Player] Media attached, loading source:", src);
         hls.loadSource(src);
       });
 
       // Manifest parsed (qualities available)
       hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+        console.log("✅ [HLS Player] Manifest parsed successfully:", {
+          levels: data.levels.length,
+          qualities: data.levels.map((l) => `${l.height}p @ ${l.bitrate}bps`),
+        });
         const qualities = data.levels.map((level, index) => ({
           level: index,
           height: level.height,
@@ -64,7 +71,7 @@ export function useHLSPlayer({
 
         if (autoplay) {
           video.play().catch((err) => {
-            console.error("Autoplay failed:", err);
+            console.error("❌ [HLS Player] Autoplay failed:", err);
             setError(err);
           });
         }
@@ -72,10 +79,19 @@ export function useHLSPlayer({
 
       // Error handling
       hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("❌ [HLS Player] Error:", {
+          type: data.type,
+          details: data.details,
+          fatal: data.fatal,
+          url: data.url,
+          response: data.response,
+        });
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              console.error("Network error, attempting recovery...");
+              console.error(
+                "❌ [HLS Player] Network error, attempting recovery...",
+              );
               hls.startLoad();
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
