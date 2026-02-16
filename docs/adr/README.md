@@ -68,14 +68,22 @@ Un **Architecture Decision Record** documente :
 
 ## 💡 Exemples ADRs potentiels (futur)
 
-Voici des décisions qui mériteraient un ADR :
+Voici des décisions techniques qui mériteraient un ADR pour WhyNot :
 
-1. **ADR-001** : App Router vs Pages Router (Next.js)
-2. **ADR-002** : Client Components vs Server Components strategy
-3. **ADR-003** : Zod vs Yup pour validation
-4. **ADR-004** : Framer Motion vs GSAP pour animations
-5. **ADR-005** : Tailwind CSS vs CSS Modules
-6. **ADR-006** : shadcn/ui copy-paste vs npm package UI library
+1. **ADR-001**: Agora RTC vs Twilio vs WebRTC natif pour streaming
+2. **ADR-002**: RTMP Converter vs All-RTC architecture pour scalabilité
+3. **ADR-003**: PostgreSQL vs MongoDB pour données structurées
+4. **ADR-004**: tRPC vs REST vs GraphQL pour API backend
+5. **ADR-005**: Cloudflare Stream vs AWS MediaLive pour CDN
+6. **ADR-006**: WebSocket vs Server-Sent Events pour chat temps réel
+7. **ADR-007**: Redis vs Memcached pour cache de sessions
+8. **ADR-008**: Kysely vs Prisma vs Drizzle pour query builder
+9. **ADR-009**: Docker vs serverless pour déploiement
+10. **ADR-010**: Auth0 vs Clerk vs custom auth pour authentification
+
+---
+
+**Note** : Les ADRs documentent les décisions **techniques/architecturales**. Pour les décisions fonctionnelles/produit (features, UX, business), utilise les PDRs dans `docs/pdr/`.
 
 ## 📚 Ressources
 
@@ -83,7 +91,3 @@ Voici des décisions qui mériteraient un ADR :
 - [MADR Template](https://github.com/adr/madr)
 - [ADR Tools](https://github.com/npryce/adr-tools)
 - [When to write ADRs](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
-
----
-
-**Note** : Pour l'instant, les décisions techniques majeures sont documentées dans les PDRs (PDR-001 pour tech stack). Les ADRs seront créés quand le projet grandira et nécessitera des décisions architecturales plus granulaires.
