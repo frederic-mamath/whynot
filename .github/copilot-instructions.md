@@ -9,6 +9,8 @@ Always include these files in your context when working on this project:
 - `README.md` - Project overview and setup instructions
 - `dev-quality/ARCHITECTURE.md` - Dev-quality track structure and guidelines
 - `features/ARCHITECTURE.md` - Features track structure and guidelines
+- `docs/adr/README.md` - Architecture Decision Records guidelines
+- `docs/pdr/README.md` - Product Decision Records guidelines
 
 ## Project Overview
 
@@ -61,6 +63,69 @@ dev-quality/
     ├── phase-2-{name}.md        # Phase 2 details
     └── phase-N-{name}.md        # Phase N details
 ```
+
+## Decision Records (ADR & PDR)
+
+When discussing important architecture or product decisions, document them in the appropriate decision record.
+
+### Architecture Decision Records (ADR)
+
+**Location**: `docs/adr/`
+
+**When to create**:
+
+- ✅ Technical/architectural decisions (database choice, framework selection, API design)
+- ✅ Performance, scalability, or security trade-offs
+- ✅ Significant library or tool choices
+- ✅ Infrastructure or deployment decisions
+
+**Process**:
+
+1. **Check `docs/adr/README.md`** for structure and template
+2. **Create**: `docs/adr/XXX-decision-title.md` (sequential numbering)
+3. **Follow template**: Context, Decision, Alternatives, Consequences, Implementation
+4. **Update index**: Add entry to `docs/adr/README.md`
+
+**Example ADRs**:
+
+- "ADR-001: Agora RTC vs Twilio for live streaming"
+- "ADR-002: RTMP Converter vs All-RTC architecture"
+- "ADR-003: PostgreSQL schema design for channels"
+
+### Product Decision Records (PDR)
+
+**Location**: `docs/pdr/`
+
+**When to create**:
+
+- ✅ Product/functional decisions (feature selection, UX choices)
+- ✅ Scope changes or feature rejections
+- ✅ Business logic or workflow decisions
+- ✅ User-facing behavior changes
+
+**Process**:
+
+1. **Check `docs/pdr/README.md`** for structure and existing PDRs
+2. **Create**: `docs/pdr/XXX-decision-title.md` (sequential numbering)
+3. **Follow template**: Context, Decision, Alternatives, Consequences, Success Metrics
+4. **Update index**: Add entry to `docs/pdr/README.md`
+
+**Example PDRs**:
+
+- "PDR-001: Tech stack selection"
+- "PDR-005: No blog in MVP"
+- "PDR-006: Buyer HLS vs RTC viewing experience"
+
+### ADR vs PDR Quick Guide
+
+| Aspect       | ADR (Architecture)       | PDR (Product)           |
+| ------------ | ------------------------ | ----------------------- |
+| **Focus**    | Technical decisions      | Functional decisions    |
+| **Audience** | Developers, architects   | Product, stakeholders   |
+| **Examples** | PostgreSQL vs MongoDB    | Blog vs no blog         |
+| **Criteria** | Performance, scalability | UX, business value, ROI |
+
+**Note**: When in doubt, create a PDR. ADRs should be reserved for significant technical/architectural choices.
 
 ## Key Conventions
 
