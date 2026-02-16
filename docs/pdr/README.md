@@ -4,7 +4,9 @@ Ce dossier contient tous les **Product Decision Records** du projet WhyNot - les
 
 ## 📋 Index des PDRs
 
-> Aucun PDR pour le moment. Les PDRs seront créés lors de décisions produit importantes.
+| ID | Titre | Status | Date |
+|----|-------|--------|------|
+| [001](001-buyer-viewing-experience-hls-vs-rtc.md) | Buyer Viewing Experience - HLS vs RTC | ✅ Accepted | 2026-02-16 |
 
 ## 🎯 Qu'est-ce qu'un PDR ?
 
