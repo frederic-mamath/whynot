@@ -6,8 +6,8 @@ services:
     name: whynot-backend
     env: docker
     dockerfilePath: ./Dockerfile
-    region: oregon  # oregon, frankfurt, singapore, etc.
-    plan: starter  # free (hobby with sleep), starter ($7), standard ($25), pro ($85)
+    region: oregon # oregon, frankfurt, singapore, etc.
+    plan: starter # free (hobby with sleep), starter ($7), standard ($25), pro ($85)
     healthCheckPath: /health
     envVars:
       # Database Connection (individual vars)
@@ -15,22 +15,22 @@ services:
         fromDatabase:
           name: whynot-db
           property: host
-      
+
       - key: DB_PORT
         fromDatabase:
           name: whynot-db
           property: port
-      
+
       - key: DB_NAME
         fromDatabase:
           name: whynot-db
           property: database
-      
+
       - key: DB_USER
         fromDatabase:
           name: whynot-db
           property: user
-      
+
       - key: DB_PASSWORD
         fromDatabase:
           name: whynot-db
@@ -49,9 +49,9 @@ services:
 
       - key: PORT
         value: 3000
-      
+
       - key: JWT_SECRET
-        generateValue: true  # Auto-generate secure secret
+        generateValue: true # Auto-generate secure secret
 
       # Agora RTC (Manual entry in Render dashboard)
       - key: AGORA_APP_ID
@@ -84,7 +84,7 @@ services:
         sync: false
 
       - key: AWS_S3_REGION
-        value: 0  # 0=us-east-1
+        value: 0 # 0=us-east-1
 
       # Stripe
       - key: STRIPE_SECRET_KEY
@@ -92,7 +92,7 @@ services:
 
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-      
+
       - key: STRIPE_PUBLISHABLE_KEY
         sync: false
 
@@ -103,15 +103,15 @@ databases:
   - name: whynot-db
     databaseName: whynot
     user: postgres
-    plan: free  # free (1GB), starter ($7/month), standard ($20+/month)
+    plan: free # free (1GB), starter ($7/month), standard ($20+/month)
     region: oregon
-    ipAllowList: []  # Empty = allow all (recommended for serverless)
+    ipAllowList: [] # Empty = allow all (recommended for serverless)
 
-# ============================================
-# Redis
-# ============================================
+  # ============================================
+  # Redis
+  # ============================================
   - name: whynot-redis
-    plan: free  # free (25MB), starter ($10/month), standard ($50+/month)
-    maxmemoryPolicy: allkeys-lru  # Evict least recently used when full
+    plan: free # free (25MB), starter ($10/month), standard ($50+/month)
+    maxmemoryPolicy: allkeys-lru # Evict least recently used when full
     region: oregon
     ipAllowList: []

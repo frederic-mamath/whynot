@@ -15,6 +15,7 @@ Use this checklist when configuring environment variables in Render Dashboard.
 These are set automatically - **DO NOT manually configure**:
 
 ### Database Connection
+
 - ✅ `DB_HOST` - from whynot-db (host)
 - ✅ `DB_PORT` - from whynot-db (port)
 - ✅ `DB_NAME` - from whynot-db (database)
@@ -22,9 +23,11 @@ These are set automatically - **DO NOT manually configure**:
 - ✅ `DB_PASSWORD` - from whynot-db (password)
 
 ### Redis Connection
+
 - ✅ `REDIS_URL` - from whynot-redis (connectionString)
 
 ### Application Defaults
+
 - ✅ `NODE_ENV=production`
 - ✅ `PORT=3000`
 - ✅ `JWT_SECRET` - auto-generated (secure random string)
@@ -45,6 +48,7 @@ AGORA_CUSTOMER_SECRET=
 ```
 
 **Where to find**:
+
 - Agora Console: https://console.agora.io
 - Project → Config → Primary Certificate
 
@@ -58,6 +62,7 @@ CLOUDFLARE_STREAM_API_TOKEN=
 ```
 
 **Where to find**:
+
 - Cloudflare Dashboard: https://dash.cloudflare.com
 - Stream → API Tokens
 
@@ -72,11 +77,13 @@ STRIPE_PUBLISHABLE_KEY=pk_live_... (or pk_test_...)
 ```
 
 **Where to find**:
+
 - Stripe Dashboard: https://dashboard.stripe.com
 - Developers → API keys
 - Developers → Webhooks (for webhook secret)
 
 **⚠️ Important**: Update webhook URL in Stripe:
+
 - Endpoint: `https://whynot-backend-XXXX.onrender.com/api/stripe/webhook`
 - Events to send: `checkout.session.completed`, `payment_intent.succeeded`
 
@@ -93,10 +100,12 @@ AWS_S3_BUCKET=whynot-agora-recordings
 ```
 
 **Where to find**:
+
 - AWS IAM Console: https://console.aws.amazon.com/iam
 - Users → Your User → Security Credentials → Create Access Key
 
 **Setup**:
+
 1. Create S3 bucket: `whynot-agora-recordings`
 2. Create IAM user with S3 write permissions
 3. Generate access key
@@ -137,6 +146,7 @@ AWS_S3_BUCKET=whynot-agora-recordings
 ### 2. Add to Render Dashboard
 
 For each variable:
+
 1. Click "Add Environment Variable"
 2. Enter **Key** (exact name, e.g., `AGORA_APP_ID`)
 3. Enter **Value** (the actual secret)
@@ -147,6 +157,7 @@ For each variable:
 After adding all variables, you should see:
 
 **Auto-populated** (9 variables):
+
 - DB_HOST
 - DB_PORT
 - DB_NAME
@@ -158,6 +169,7 @@ After adding all variables, you should see:
 - JWT_SECRET
 
 **Manually added** (minimum 10 variables):
+
 - AGORA_APP_ID
 - AGORA_APP_CERTIFICATE
 - AGORA_CUSTOMER_ID
@@ -169,6 +181,7 @@ After adding all variables, you should see:
 - STRIPE_PUBLISHABLE_KEY
 
 **Optional** (3 variables):
+
 - AWS_S3_ACCESS_KEY
 - AWS_S3_SECRET_KEY
 - AWS_S3_BUCKET
@@ -212,6 +225,7 @@ After setting all variables:
    - Dashboard → Manual Deploy → Deploy latest commit
 
 2. **Check Logs**
+
    ```
    ✅ Database connected successfully
    ✅ Redis connected successfully
@@ -219,10 +233,11 @@ After setting all variables:
    ```
 
 3. **Test Endpoints**
+
    ```bash
    # Health check
    curl https://whynot-backend-XXXX.onrender.com/health
-   
+
    # Should return 200 OK
    ```
 
@@ -236,18 +251,22 @@ After setting all variables:
 ## ❌ Common Mistakes
 
 ### Missing Variables
+
 **Error**: `STRIPE_SECRET_KEY is required`
 **Fix**: Add all required variables
 
 ### Wrong Format
+
 **Error**: `Invalid Stripe key`
 **Fix**: Ensure no extra spaces, quotes, or newlines
 
 ### Production vs Test Keys
+
 **Error**: Stripe payments failing
 **Fix**: Use `sk_live_...` for production, `sk_test_...` for testing
 
 ### Database Connection Issues
+
 **Error**: `Connection refused`
 **Fix**: Don't override auto-populated DB variables
 

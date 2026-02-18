@@ -62,6 +62,7 @@ Once the blueprint is applied, you'll need to set the SECRET environment variabl
 Go to: **Dashboard → whynot-backend → Environment**
 
 **Agora RTC**:
+
 ```
 AGORA_APP_ID=<your-app-id>
 AGORA_APP_CERTIFICATE=<your-certificate>
@@ -70,12 +71,14 @@ AGORA_CUSTOMER_SECRET=<your-customer-secret>
 ```
 
 **Cloudflare Stream**:
+
 ```
 CLOUDFLARE_STREAM_ACCOUNT_ID=<your-account-id>
 CLOUDFLARE_STREAM_API_TOKEN=<your-api-token>
 ```
 
 **Stripe**:
+
 ```
 STRIPE_SECRET_KEY=sk_live_... (or sk_test_...)
 STRIPE_WEBHOOK_SECRET=whsec_...
@@ -85,6 +88,7 @@ STRIPE_PUBLISHABLE_KEY=pk_live_... (or pk_test_...)
 #### Optional Variables (AWS S3)
 
 Only if using S3 for recordings:
+
 ```
 AWS_S3_ACCESS_KEY=<your-access-key>
 AWS_S3_SECRET_KEY=<your-secret-key>
@@ -94,6 +98,7 @@ AWS_S3_BUCKET=whynot-agora-recordings
 #### Auto-populated Variables
 
 These are set automatically from render.yaml:
+
 - ✅ `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (from whynot-db)
 - ✅ `REDIS_URL` (from whynot-redis)
 - ✅ `NODE_ENV=production`
@@ -111,13 +116,14 @@ These are set automatically from render.yaml:
 2. **Monitor Build**
    - Watch the build logs in real-time
    - You'll see:
+
      ```
      Building Docker image...
      [1/3] Building deps...
      [2/3] Building application...
      [3/3] Creating production image...
      Successfully built image
-     
+
      Deploying to Render...
      Health check passed ✓
      Deployment successful!
@@ -150,6 +156,7 @@ These are set automatically from render.yaml:
 #### Option B: Create Migration Job (Automated)
 
 Add to `render.yaml` (for future migrations):
+
 ```yaml
 jobs:
   - type: job
@@ -173,10 +180,13 @@ Then run manually: **Dashboard → Jobs → whynot-migrations → Run Job**
 ### Step 6: Verify Deployment (10 min)
 
 1. **Test Health Endpoint**
+
    ```bash
    curl https://whynot-backend-XXXX.onrender.com/health
    ```
+
    Expected:
+
    ```json
    {
      "status": "healthy",
@@ -192,6 +202,7 @@ Then run manually: **Dashboard → Jobs → whynot-migrations → Run Job**
    - Check browser console for errors
 
 3. **Test API**
+
    ```bash
    curl https://whynot-backend-XXXX.onrender.com/trpc/auth.me
    ```
@@ -216,11 +227,13 @@ Then run manually: **Dashboard → Jobs → whynot-migrations → Run Job**
 ### Issue: "Build failed"
 
 **Check**:
+
 - Dockerfile syntax
 - All dependencies in package.json
 - Build logs for specific error
 
 **Solution**:
+
 ```bash
 # Test build locally first
 docker build -t whynot-backend:latest .
@@ -231,11 +244,13 @@ docker build -t whynot-backend:latest .
 ### Issue: "Health check failed"
 
 **Check**:
+
 - /health endpoint exists
 - Backend starts without errors
 - Port 3000 exposed correctly
 
 **Solution**:
+
 - Increase health check timeout in render.yaml:
   ```yaml
   healthCheckPath: /health
@@ -247,10 +262,12 @@ docker build -t whynot-backend:latest .
 ### Issue: "Database connection failed"
 
 **Check**:
+
 - Database service is running (Dashboard → whynot-db)
 - Environment variables populated correctly
 
 **Solution**:
+
 - Verify DB_HOST, DB_PORT, etc. in Environment tab
 - Check database logs
 
@@ -261,6 +278,7 @@ docker build -t whynot-backend:latest .
 **Note**: Free Hobby plan sleeps after 15 minutes of inactivity
 
 **Solutions**:
+
 1. **Upgrade to Starter** ($7/month, never sleeps)
 2. **Use uptime monitor** (e.g., UptimeRobot pings every 5 min)
 3. **Accept cold starts** (~30s wake time)
@@ -270,25 +288,28 @@ docker build -t whynot-backend:latest .
 ## 💰 Cost Estimation
 
 ### Development/Testing
+
 - Backend: **Hobby (Free)** - sleeps after 15 min
 - Database: **Free** (1GB)
 - Redis: **Free** (25MB)
 - **Total**: **$0/month** ⚠️ with sleep
 
 ### Production (Recommended)
+
 - Backend: **Starter** ($7/month)
 - Database: **Free** (1GB) or Starter ($7/month) for 10GB
 - Redis: **Free** (25MB) or Starter ($10/month) for 256MB
 - **Total**: **$7-24/month** ✅ no sleep
 
 ### Comparison
-| Platform | Monthly Cost | Notes |
-|----------|-------------|-------|
-| Render (Dev) | $0 | Free with sleep |
-| Render (Starter) | $7 | No sleep, good for MVP |
-| Render (Production) | $24 | More resources |
-| Heroku (Equivalent) | $815 | Previous setup |
-| **Savings** | **97% cheaper** | 🎉 |
+
+| Platform            | Monthly Cost    | Notes                  |
+| ------------------- | --------------- | ---------------------- |
+| Render (Dev)        | $0              | Free with sleep        |
+| Render (Starter)    | $7              | No sleep, good for MVP |
+| Render (Production) | $24             | More resources         |
+| Heroku (Equivalent) | $815            | Previous setup         |
+| **Savings**         | **97% cheaper** | 🎉                     |
 
 ---
 
@@ -341,6 +362,7 @@ git push origin main
 Your WhyNot application is now live on Render! 🚀
 
 **Next Steps**:
+
 - Monitor logs for first 24 hours
 - Test all features in production
 - Set up custom domain (optional)

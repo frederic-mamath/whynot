@@ -40,11 +40,11 @@ Following ADR-001, we need to build a custom FFmpeg-based RTMP relay service usi
 
 ## 🗺️ Phase Overview
 
-| Phase | Title                                                        | Duration | Status        |
-| ----- | ------------------------------------------------------------ | -------- | ------------- |
-| 1     | [Assessment & Redis Setup](phase-1-assessment-redis.md)      | 2h       | ✅ Completed  |
-| 2     | [Backend Dockerization](phase-2-backend-docker.md)           | 3-4h     | ✅ Completed  |
-| 3     | [Docker Compose Integration](phase-3-compose-integration.md) | 2h       | ✅ Completed  |
+| Phase | Title                                                        | Duration | Status         |
+| ----- | ------------------------------------------------------------ | -------- | -------------- |
+| 1     | [Assessment & Redis Setup](phase-1-assessment-redis.md)      | 2h       | ✅ Completed   |
+| 2     | [Backend Dockerization](phase-2-backend-docker.md)           | 3-4h     | ✅ Completed   |
+| 3     | [Docker Compose Integration](phase-3-compose-integration.md) | 2h       | ✅ Completed   |
 | 4     | [Render Deployment Setup](phase-4-render-deployment.md)      | 2-3h     | 🔵 In Progress |
 | 5     | [Documentation & Cleanup](phase-5-documentation.md)          | 1-2h     | ⬜ Not Started |
 
@@ -183,16 +183,16 @@ After completing this track:
 
 ## 📅 Milestones
 
-| Date       | Milestone                  | Status         |
-| ---------- | -------------------------- | -------------- |
-| 2026-02-18 | Track created              | ✅ Done        |
-| 2026-02-18 | Phase 1 completed          | ✅ Done        |
-| 2026-02-18 | Phase 2 completed          | ✅ Done        |
-| 2026-02-18 | Phase 3 completed          | ✅ Done        |
-| 2026-02-18 | Phase 4 started            | 🔵 In Progress |
-| TBD        | Phase 4 completed          | ⬜             |
-| TBD        | Phase 5 completed          | ⬜             |
-| TBD        | **Track completed**        | ⬜             |
+| Date       | Milestone           | Status         |
+| ---------- | ------------------- | -------------- |
+| 2026-02-18 | Track created       | ✅ Done        |
+| 2026-02-18 | Phase 1 completed   | ✅ Done        |
+| 2026-02-18 | Phase 2 completed   | ✅ Done        |
+| 2026-02-18 | Phase 3 completed   | ✅ Done        |
+| 2026-02-18 | Phase 4 started     | 🔵 In Progress |
+| TBD        | Phase 4 completed   | ⬜             |
+| TBD        | Phase 5 completed   | ⬜             |
+| TBD        | **Track completed** | ⬜             |
 
 ---
 
