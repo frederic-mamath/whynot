@@ -7,7 +7,7 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     region: oregon # oregon, frankfurt, singapore, etc.
-    plan: starter # free (hobby with sleep), starter ($7), standard ($25), pro ($85)
+    plan: free # free (hobby with sleep after 15min), starter ($7), standard ($25), pro ($85)
     healthCheckPath: /health
     envVars:
       # Database Connection (individual vars)
