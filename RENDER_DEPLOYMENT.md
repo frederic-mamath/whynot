@@ -163,20 +163,24 @@ These are set automatically from render.yaml:
 
 ---
 
-### Step 5: Run Migrations (5 min)
+### Step 5: Verify Migrations (2 min)
 
-**⚠️ Important**: Run migrations before using the app!
+**✅ Migrations run automatically!** The Docker container now executes migrations on startup.
 
-#### Option A: Via Render Shell (Recommended)
+1. **Check logs** to verify migrations ran:
+   - Dashboard → whynot-backend → Logs
+   - Look for:
+     ```
+     🔄 Running database migrations...
+     ✅ All migrations completed
+     🚀 Starting application...
+     ```
 
-1. Go to **Dashboard → whynot-backend → Shell**
-2. Run:
-   ```bash
-   npm run migrate
-   ```
-3. Wait for "✅ All migrations completed"
+2. **If migrations failed**, check:
+   - Database connection variables (DB_HOST, DB_PORT, etc.)
+   - Logs for specific error messages
 
-#### Option B: Create Migration Job (Automated)
+#### Optional: Migration Job (for manual runs)
 
 Add to `render.yaml` (for future migrations):
 
@@ -197,6 +201,8 @@ jobs:
 ```
 
 Then run manually: **Dashboard → Jobs → whynot-migrations → Run Job**
+
+**Note**: This is optional since migrations now run automatically on every deploy.
 
 ---
 
