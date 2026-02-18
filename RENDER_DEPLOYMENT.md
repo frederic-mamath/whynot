@@ -57,9 +57,31 @@ Deploy WhyNot to Render.com for production use. This guide walks you through cre
 
 Once the blueprint is applied, you'll need to set the SECRET environment variables manually.
 
+#### 🔴 **IMPORTANT: Setup Redis First!**
+
+Render doesn't support Redis natively. You need to use **Upstash** (free tier available):
+
+1. **Create Upstash account**: https://upstash.com
+2. **Create database**:
+   - Name: `whynot-redis`
+   - Type: Regional
+   - Region: US-East-1 (or closest to oregon)
+3. **Copy connection string**: Format `redis://default:XXX@us1-xxx.upstash.io:6379`
+4. **Add to Render**: Environment → Add `REDIS_URL` with your Upstash URL
+
+**See [RENDER_ENV_CHECKLIST.md](RENDER_ENV_CHECKLIST.md) for detailed Redis setup.**
+
+---
+
 #### Required Variables (must set before first deploy)
 
 Go to: **Dashboard → whynot-backend → Environment**
+
+**Redis** (from Upstash):
+
+```
+REDIS_URL=redis://default:XXXXXXX@us1-xxxxx.upstash.io:6379
+```
 
 **Agora RTC**:
 
@@ -100,10 +122,11 @@ AWS_S3_BUCKET=whynot-agora-recordings
 These are set automatically from render.yaml:
 
 - ✅ `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (from whynot-db)
-- ✅ `REDIS_URL` (from whynot-redis)
 - ✅ `NODE_ENV=production`
 - ✅ `PORT=3000`
 - ✅ `JWT_SECRET` (auto-generated securely)
+
+**Note**: `REDIS_URL` must be set manually from Upstash (see above)
 
 ---
 
@@ -130,8 +153,8 @@ These are set automatically from render.yaml:
      ```
 
 3. **Wait for Services**
-   - **whynot-db** (PostgreSQL): ~30 seconds
-   - **whynot-redis** (Redis): ~30 seconds
+   - **whynot-backend** (Web): ~2-3 minutes (first build)
+   - **Redis** (Upstash): Already running (external service
    - **whynot-backend** (Web): ~2-3 minutes (first build)
 
 4. **Check Status**
@@ -291,14 +314,14 @@ docker build -t whynot-backend:latest .
 
 - Backend: **Hobby (Free)** - sleeps after 15 min
 - Database: **Free** (1GB)
-- Redis: **Free** (25MB)
+- Redis: **Upstash Free** (10K commands/day, 256MB)
 - **Total**: **$0/month** ⚠️ with sleep
 
 ### Production (Recommended)
 
 - Backend: **Starter** ($7/month)
 - Database: **Free** (1GB) or Starter ($7/month) for 10GB
-- Redis: **Free** (25MB) or Starter ($10/month) for 256MB
+- Redis: **Upstash Free** (10K commands/day) or Pro ($10/month) for unlimited
 - **Total**: **$7-24/month** ✅ no sleep
 
 ### Comparison

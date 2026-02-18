@@ -24,13 +24,55 @@ These are set automatically - **DO NOT manually configure**:
 
 ### Redis Connection
 
-- ✅ `REDIS_URL` - from whynot-redis (connectionString)
+- ⚠️ `REDIS_URL` - **Manual setup required** (see Redis Setup section below)
 
 ### Application Defaults
 
 - ✅ `NODE_ENV=production`
 - ✅ `PORT=3000`
 - ✅ `JWT_SECRET` - auto-generated (secure random string)
+
+---
+
+## 🔴 Redis Setup (Required First!)
+
+**Render doesn't support Redis natively in blueprints.** You need to use Upstash (free tier available):
+
+### Step 1: Create Upstash Account
+
+1. Go to https://upstash.com
+2. Sign up (free account)
+3. Verify email
+
+### Step 2: Create Redis Database
+
+1. Dashboard → Create Database
+2. Name: `whynot-redis`
+3. Type: **Regional** (faster, free tier available)
+4. Region: **US-East-1** or closest to your Render region (oregon = us-west)
+5. Click "Create"
+
+### Step 3: Get Connection String
+
+1. Click on your database
+2. Copy **UPSTASH_REDIS_REST_URL** or **Redis URL**
+3. Format: `redis://default:XXXXXXX@us1-xxxxx.upstash.io:6379`
+
+### Step 4: Add to Render
+
+1. Render Dashboard → whynot-backend → Environment
+2. Add variable:
+   ```
+   REDIS_URL=redis://default:XXXXXXX@us1-xxxxx.upstash.io:6379
+   ```
+
+**Free Tier Limits**:
+
+- 10,000 commands per day
+- 256 MB storage
+- Perfect for development/MVP
+
+**Alternative**: Use Redis Labs or any Redis provider with connection string
 
 ---
 

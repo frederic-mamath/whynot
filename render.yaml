@@ -36,12 +36,9 @@ services:
           name: whynot-db
           property: password
 
-      # Redis Connection
+      # Redis Connection (use Upstash - see RENDER_DEPLOYMENT.md)
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: whynot-redis
-          property: connectionString
+        sync: false # Add manually from Upstash dashboard
 
       # Application
       - key: NODE_ENV
@@ -107,11 +104,13 @@ databases:
     region: oregon
     ipAllowList: [] # Empty = allow all (recommended for serverless)
 
-  # ============================================
-  # Redis
-  # ============================================
-  - name: whynot-redis
-    plan: free # free (25MB), starter ($10/month), standard ($50+/month)
-    maxmemoryPolicy: allkeys-lru # Evict least recently used when full
-    region: oregon
-    ipAllowList: []
+
+# ============================================
+# Redis - Use Upstash (free tier available)
+# ============================================
+# Render doesn't support Redis natively in blueprints.
+# Setup instructions:
+# 1. Create free account at https://upstash.com
+# 2. Create Redis database (free tier: 10K commands/day)
+# 3. Copy REDIS_URL from Upstash dashboard
+# 4. Add to Render environment variables manually
