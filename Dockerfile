@@ -35,6 +35,9 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
 # Install only production dependencies
 COPY package*.json ./
 RUN npm ci --production && npm cache clean --force
@@ -42,6 +45,9 @@ RUN npm ci --production && npm cache clean --force
 # Copy built files from builder
 # Both backend (dist/) and frontend (dist/public/) are built in builder stage
 COPY --from=builder /app/dist ./dist
+
+# Copy source files for migrations (migrate.ts uses tsx to run)
+COPY --from=builder /app/src ./src
 
 # Copy migrations
 COPY migrations ./migrations
