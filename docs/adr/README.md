@@ -4,7 +4,9 @@ Ce dossier contiendra les **Architecture Decision Records** - les décisions tec
 
 ## 📋 Index des ADRs
 
-> Aucun ADR pour le moment. Les ADRs seront créés lors de décisions architecturales importantes.
+| ID                                     | Titre                                 | Status      | Date       |
+| -------------------------------------- | ------------------------------------- | ----------- | ---------- |
+| [001](001-custom-ffmpeg-rtmp-relay.md) | Custom FFmpeg RTMP Relay Architecture | ✅ Accepted | 2026-02-18 |
 
 ## 🎯 Qu'est-ce qu'un ADR ?
 
