@@ -99,7 +99,6 @@ services:
 databases:
   - name: whynot-db
     databaseName: whynot
-    user: postgres
     plan: free # free (1GB), starter ($7/month), standard ($20+/month)
     region: oregon
     ipAllowList: [] # Empty = allow all (recommended for serverless)
