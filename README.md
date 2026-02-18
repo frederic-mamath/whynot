@@ -225,3 +225,37 @@ npm run dev:client
 ```
 
 Then visit `http://localhost:5173` to see the application.
+
+---
+
+## 🐳 Docker & Deployment
+
+WhyNot now supports Docker Compose for local development and Render.com for production deployment.
+
+### Quick Start with Docker
+
+```bash
+# Start all services (backend, postgres, redis)
+./scripts/docker-dev.sh
+
+# Run migrations
+./scripts/docker-migrate.sh
+
+# View logs
+./scripts/docker-logs.sh
+
+# Stop all services
+./scripts/docker-stop.sh
+```
+
+### Deployment Guides
+
+- **[Render Deployment Guide](RENDER_DEPLOYMENT.md)** - Complete guide for deploying to Render.com
+- **[Environment Variables Checklist](RENDER_ENV_CHECKLIST.md)** - All required environment variables
+
+### Key Files
+
+- `docker-compose.yml` - Local development orchestration
+- `Dockerfile` - Multi-stage backend container build
+- `render.yaml` - Render.com infrastructure as code
+- `scripts/` - Docker helper scripts
