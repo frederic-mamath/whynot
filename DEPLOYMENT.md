@@ -1,6 +1,63 @@
-# Heroku Deployment Guide
+# WhyNot Deployment Guide
 
-## Prerequisites
+## 🚀 Recommended: Render.com (Current)
+
+**Cost**: $0-7/month (vs $815/month on Heroku)  
+**Setup time**: ~30 minutes  
+**Maintenance**: Automated deployments from GitHub
+
+### Quick Start
+
+For complete Render deployment instructions, see **[RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)**.
+
+```bash
+# 1. Ensure render.yaml is in repository root ✅
+# 2. Push to GitHub
+git push origin main
+
+# 3. Go to Render Dashboard
+open https://dashboard.render.com
+
+# 4. New → Blueprint
+# - Connect GitHub repository
+# - Apply blueprint (uses render.yaml)
+
+# 5. Configure secrets in Render Dashboard
+# - AGORA_APP_ID, AGORA_APP_CERTIFICATE
+# - CLOUDFLARE_STREAM_ACCOUNT_ID, CLOUDFLARE_STREAM_API_TOKEN
+# - STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+# - REDIS_URL (from Upstash - see RENDER_ENV_CHECKLIST.md)
+
+# 6. Deploy automatically happens!
+# 7. Migrations run automatically on container startup ✅
+```
+
+**Key Features**:
+
+- ✅ Docker-based deployment
+- ✅ Auto-migrations on startup (no manual step)
+- ✅ Free PostgreSQL (1GB)
+- ✅ Free Upstash Redis (10K commands/day)
+- ✅ Continuous deployment from GitHub
+- ✅ $0/month for development (with 15min sleep)
+- ✅ $7/month for production (no sleep)
+
+**Documentation**:
+
+- **[RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)** - Complete deployment guide
+- **[RENDER_ENV_CHECKLIST.md](RENDER_ENV_CHECKLIST.md)** - Environment variables
+- **[DOCKER.md](DOCKER.md)** - Docker development guide
+
+---
+
+## 📦 Legacy: Heroku Deployment (Archived)
+
+⚠️ **Note**: This is the previous deployment method. Heroku costs ~$815/month for equivalent setup.
+We've migrated to Render.com (see above) which costs $0-7/month.
+
+**Kept here for reference in case of migration needs.**
+
+---
 
 - Heroku CLI installed: `brew install heroku/brew/heroku`
 - Heroku account created: https://signup.heroku.com/
@@ -39,6 +96,7 @@ heroku apps:info
 ```
 
 **Expected output**:
+
 ```
 Creating app... done, ⬢ whynot-your-name
 https://whynot-your-name.herokuapp.com/ | https://git.heroku.com/whynot-your-name.git
@@ -106,6 +164,7 @@ heroku config
 ```
 
 **Expected config vars**:
+
 ```
 DB_HOST:                ec2-xx-xx-xx-xx.compute.amazonaws.com
 DB_PORT:                5432
@@ -133,6 +192,7 @@ git push heroku main
 ```
 
 **Deployment process**:
+
 1. Heroku receives your code
 2. Detects Node.js app (via package.json)
 3. Installs dependencies (`npm install`)
