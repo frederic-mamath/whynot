@@ -15,6 +15,12 @@
       muted
       style="width: 640px; height: 360px; background: #000"
     ></video>
+    <canvas
+      id="frame-canvas"
+      width="640"
+      height="360"
+      style="display: none"
+    ></canvas>
     <div id="status">Initializing...</div>
 
     <script>
@@ -140,6 +146,48 @@
         console.error("Init error:", error);
         window.agoraState.error = error.message;
       });
+
+      // Frame extraction function exposed to Puppeteer
+      window.getVideoFrame = function () {
+        const video = document.getElementById("remote-video");
+        const canvas = document.getElementById("frame-canvas");
+
+        if (!video || !canvas) {
+          return null;
+        }
+
+        // Check if video is playing and has dimensions
+        if (
+          video.videoWidth === 0 ||
+          video.videoHeight === 0 ||
+          video.paused ||
+          video.readyState < 2
+        ) {
+          return null;
+        }
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return null;
+
+        try {
+          // Draw current video frame to canvas
+          ctx.drawImage(video, 0, 0, 640, 360);
+
+          // Get pixel data (RGBA format)
+          const imageData = ctx.getImageData(0, 0, 640, 360);
+
+          // Return pixel data as array (will be serialized by Puppeteer)
+          return {
+            width: 640,
+            height: 360,
+            data: Array.from(imageData.data), // Convert Uint8ClampedArray to Array
+            timestamp: Date.now(),
+          };
+        } catch (error) {
+          console.error("Frame capture error:", error);
+          return null;
+        }
+      };
 
       // Cleanup function exposed to Puppeteer
       window.cleanup = async function () {

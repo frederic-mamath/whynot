@@ -1,5 +1,6 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import { Writable } from "stream";
+import { convertRGBAtoYUV420 } from "../utils/frameConverter";
 
 export interface RTCBridgeConfig {
   appId: string;
@@ -27,6 +28,8 @@ export class AgoraRTCBridge {
   private page: Page | null = null;
   private frameStream: Writable | null = null;
   private captureInterval: NodeJS.Timeout | null = null;
+  private frameCount: number = 0;
+  private lastFrameTime: number = 0;
 
   async connect(config: RTCBridgeConfig): Promise<void> {
     console.log(
@@ -52,8 +55,8 @@ export class AgoraRTCBridge {
 
       // Set viewport for consistent video resolution
       await this.page.setViewport({
-        width: 1280,
-        height: 720,
+        width: 640,
+        height: 360,
       });
 
       // Enable console logs from browser
@@ -182,21 +185,90 @@ export class AgoraRTCBridge {
 
   /**
    * Start capturing frames and pipe to writable stream (FFmpeg stdin)
-   * This is a placeholder - actual implementation will use Canvas API
    */
   async startFrameCapture(outputStream: Writable): Promise<void> {
     if (!this.page) throw new Error("Page not initialized");
 
     this.frameStream = outputStream;
+    this.lastFrameTime = Date.now();
 
-    console.log(
-      "🎬 Frame capture started (placeholder - no actual frames yet)",
-    );
-    console.log("⚠️  TODO: Implement Canvas API frame extraction");
+    console.log("🎬 Starting frame capture at 30 FPS...");
 
-    // TODO: Implement actual frame capture using Canvas API
-    // This will be done in frameConverter utility
-    // For now, just log that we're ready
+    const TARGET_FPS = 30;
+    const FRAME_INTERVAL_MS = Math.floor(1000 / TARGET_FPS);
+
+    // Capture frames at target FPS
+    this.captureInterval = setInterval(async () => {
+      try {
+        await this.captureAndWriteFrame();
+      } catch (error) {
+        console.error("Frame capture error:", error);
+        // Don't stop on single frame error, continue trying
+      }
+    }, FRAME_INTERVAL_MS);
+
+    console.log(`✅ Frame capture loop started (${TARGET_FPS} FPS)`);
+  }
+
+  /**
+   * Capture a single frame and write to stream
+   */
+  private async captureAndWriteFrame(): Promise<void> {
+    if (!this.page || !this.frameStream) return;
+
+    try {
+      // Get frame data from browser
+      const frameData = await this.page.evaluate(() => {
+        // @ts-ignore - window is available in browser context
+        return window.getVideoFrame ? window.getVideoFrame() : null;
+      });
+
+      if (!frameData || !frameData.data) {
+        // No frame available yet (video not ready)
+        return;
+      }
+
+      // Convert Array to Uint8ClampedArray
+      const rgbaData = new Uint8ClampedArray(frameData.data);
+
+      // Convert RGBA to YUV420p
+      const yuvData = convertRGBAtoYUV420(
+        rgbaData,
+        frameData.width,
+        frameData.height,
+      );
+
+      // Write YUV frame to FFmpeg stdin
+      const written = this.frameStream.write(Buffer.from(yuvData));
+
+      this.frameCount++;
+
+      // Log progress every 30 frames (1 second)
+      if (this.frameCount % 30 === 0) {
+        const elapsed = (Date.now() - this.lastFrameTime) / 1000;
+        const actualFps = (30 / elapsed).toFixed(1);
+        console.log(
+          `📹 Captured ${this.frameCount} frames (current FPS: ${actualFps})`,
+        );
+        this.lastFrameTime = Date.now();
+      }
+
+      // Handle backpressure
+      if (!written) {
+        // Stream buffer is full, wait for drain
+        await new Promise((resolve) =>
+          this.frameStream?.once("drain", resolve),
+        );
+      }
+    } catch (error) {
+      // Only log significant errors
+      if (
+        error instanceof Error &&
+        !error.message.includes("execution context")
+      ) {
+        console.error("Error capturing frame:", error);
+      }
+    }
   }
 
   /**
@@ -221,22 +293,39 @@ export class AgoraRTCBridge {
     // Leave Agora channel
     if (this.page) {
       try {
-        await this.page.evaluate(() => {
-          // @ts-ignore - window is available in browser context
-          if (window.cleanup) {
-            // @ts-ignore
-            window.cleanup();
-          }
-        });
+        await Promise.race([
+          this.page.evaluate(() => {
+            // @ts-ignore - window is available in browser context
+            if (window.cleanup) {
+              // @ts-ignore
+              window.cleanup();
+            }
+          }),
+          new Promise((resolve) => setTimeout(resolve, 2000)), // 2s timeout
+        ]);
       } catch (error) {
         console.error("Error during Agora cleanup:", error);
       }
     }
 
-    // Close browser
+    // Close browser (with timeout to prevent hanging)
     if (this.browser) {
       try {
-        await this.browser.close();
+        await Promise.race([
+          this.browser.close(),
+          new Promise((resolve) => setTimeout(resolve, 3000)), // 3s timeout
+        ]);
+
+        // If still alive after timeout, force kill the process
+        const pid = this.browser.process()?.pid;
+        if (pid) {
+          try {
+            process.kill(pid, "SIGKILL");
+            console.log(`🔪 Force killed browser process ${pid}`);
+          } catch (err) {
+            // Process might already be dead
+          }
+        }
       } catch (error) {
         console.error("Error closing browser:", error);
       }

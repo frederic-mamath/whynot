@@ -107,7 +107,13 @@ export class FFmpegManager {
     streamConfig: StreamConfig,
     rtmpUrl: string,
   ): string[] {
-    const resolution = this.getResolution(streamConfig.videoResolution);
+    // FIXME: Hardcoded to match Canvas resolution (640x360)
+    // Should be configurable or match streamConfig.videoResolution
+    const resolution = "640x360";
+
+    // FIXME: Hardcoded to 10 FPS to match actual capture rate
+    // page.evaluate() is too slow for 30 FPS with current implementation
+    const actualFramerate = 10;
 
     return [
       // Input from stdin (RTC frames will be piped)
@@ -118,7 +124,7 @@ export class FFmpegManager {
       "-video_size",
       resolution,
       "-framerate",
-      streamConfig.framerate.toString(),
+      actualFramerate.toString(),
       "-i",
       "pipe:0",
 
@@ -138,7 +144,7 @@ export class FFmpegManager {
       "-pix_fmt",
       "yuv420p",
       "-g",
-      (streamConfig.framerate * 2).toString(), // GOP size = 2 seconds
+      (actualFramerate * 2).toString(), // GOP size = 2 seconds
 
       // Audio encoding
       "-c:a",
@@ -330,15 +336,25 @@ export class FFmpegManager {
     const channelIds = Array.from(this.processes.keys());
 
     console.log(`Stopping ${channelIds.length} active streams...`);
-    channelIds.forEach((id) => this.stopStream(id));
 
-    // Wait up to 15 seconds for graceful shutdown
-    await new Promise((resolve) => setTimeout(resolve, 15000));
+    // Stop all streams in parallel and wait for completion
+    await Promise.all(channelIds.map((id) => this.stopStream(id)));
+
+    // Wait a bit for FFmpeg processes to terminate
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Force kill any remaining
     this.processes.forEach((entry, id) => {
       console.warn(`Force killing stream ${id}`);
-      entry.process.kill("SIGKILL");
+      try {
+        entry.process.kill("SIGKILL");
+      } catch (err) {
+        // Process might already be dead
+      }
+      // Force close browser if still alive
+      if (entry.rtcBridge) {
+        entry.rtcBridge.disconnect().catch(() => {});
+      }
     });
 
     this.processes.clear();
