@@ -1,10 +1,11 @@
 # Feature 011: FFmpeg Worker Implementation - Summary
 
-**Status**: � In Progress (Phase 1 ✅ Complete)  
+**Status**: ✅ Phase 2 Complete - Ready for End-to-End Testing  
 **Related ADR**: [ADR-001: Custom FFmpeg RTMP Relay](../../docs/adr/001-custom-ffmpeg-rtmp-relay.md)  
 **Prerequisites**: [Dev-Quality Track 010: Docker Compose Architecture](../../dev-quality/010-docker-compose-architecture/summary.md) ✅  
 **Created**: 2026-02-19  
 **Phase 1 Completed**: 2026-02-19  
+**Phase 2 Completed**: 2026-02-19 (including channelRouter integration)  
 **Estimated Duration**: 2-3 weeks
 
 ---
@@ -135,7 +136,7 @@ databases:
 | Phase   | Description                          | Est. Time | Status         |
 | ------- | ------------------------------------ | --------- | -------------- |
 | Phase 1 | FFmpeg Worker Service Setup          | 6-8h      | ✅ Complete    |
-| Phase 2 | Backend RTC → Redis Integration      | 4-6h      | ⬜ Not Started |
+| Phase 2 | Backend RTC → Redis Integration      | 4-6h      | ✅ Complete    |
 | Phase 3 | Local Docker Testing                 | 4-6h      | ⬜ Not Started |
 | Phase 4 | Render Deployment & Scaling          | 6-8h      | ⬜ Not Started |
 | Phase 5 | Monitoring, Alerts & Optimization    | 4-6h      | ⬜ Not Started |
@@ -143,7 +144,8 @@ databases:
 
 **Total Estimated Time**: 30-42 hours (2-3 weeks part-time)  
 **Started**: 2026-02-19  
-**Phase 1 Completed**: 2026-02-19
+**Phase 1 Completed**: 2026-02-19  
+**Phase 2 Completed**: 2026-02-19
 
 ---
 
@@ -218,44 +220,90 @@ curl http://localhost:3001/
 
 ---
 
-### Phase 2: Backend RTC → Redis Integration (4-6h)
+### Phase 2: Backend RTC → Redis Integration (4-6h) ✅
 
 **Goal**: Connect backend to Agora RTC, pipe frames to FFmpeg via Redis
 
+**Status**: ✅ **COMPLETED** (2026-02-19)
+
 **Deliverables**:
 
-- `RTCToRTMPBridge` service in backend
-- Agora RTC server-side SDK integration
-- Redis job enqueue logic
-- Stream lifecycle management (start/stop)
+- ✅ `FFmpegQueueService` - BullMQ integration for job management
+- ✅ `FFmpegRelayService` - Orchestrates Cloudflare + Redis + Agora
+- ✅ `relayRouter` - tRPC endpoints for FFmpeg relay
+- ✅ Redis job enqueue logic with retry handling
+- ✅ Stream lifecycle management (start/stop/status)
 
-**Key Files**:
+**Implemented Files**:
 
 ```
 src/services/
-├── RTCToRTMPBridge.ts    # NEW - Agora RTC to Redis bridge
-└── RelayService.ts       # UPDATE - Use Redis instead of Cloud Recording
+├── ffmpegQueueService.ts     # NEW - BullMQ queue management
+└── ffmpegRelayService.ts     # NEW - Orchestrates relay flow
 
 src/routers/
-└── relayRouter.ts        # UPDATE - New endpoints for FFmpeg relay
+├── relay.ts                  # NEW - FFmpeg relay endpoints
+└── index.ts                  # UPDATED - Added relay router
+
+package.json                  # UPDATED - Added bullmq, ioredis
 ```
 
-**API Changes**:
+**API Endpoints** (tRPC):
 
 ```typescript
-// New tRPC endpoints
-relay.startFFmpeg({ channelId, agoraToken });
-relay.stopFFmpeg({ channelId });
-relay.getFFmpegStatus({ channelId });
+// Start FFmpeg relay for a channel
+relay.startFFmpeg({
+  channelId: number,
+  channelName: string,
+  sellerUid: number,
+});
+// → { success: true, hlsPlaybackUrl: string, jobId: string }
+
+// Stop FFmpeg relay
+relay.stopFFmpeg({ channelId: number });
+// → { success: true }
+
+// Get relay status
+relay.getFFmpegStatus({ channelId: number });
+// → { channelId, relayStatus, hlsPlaybackUrl, hasActiveJob, activeJobs }
 ```
+
+**Implementation Flow**:
+
+1. **Frontend calls** `relay.startFFmpeg()`
+2. **Backend**:
+   - Creates Cloudflare Stream Live Input (RTMPS endpoint)
+   - Generates Agora token for worker (audience role, UID 999999)
+   - Enqueues job to Redis with: `{ channelId, rtmpUrl, agoraToken, agoraChannel, streamConfig }`
+   - Updates DB: `relay_status = 'active'`
+3. **FFmpeg Worker** (Phase 1):
+   - Consumes job from Redis queue
+   - Subscribes to Agora RTC stream as audience
+   - Converts RTC frames → RTMP
+   - Pushes to Cloudflare Stream
+4. **Buyers** watch via HLS URL from Cloudflare
 
 **Acceptance Criteria**:
 
-- [ ] Backend subscribes to Agora RTC stream
-- [ ] Audio/video frames queued to Redis
-- [ ] FFmpeg worker consumes frames and converts to RTMP
-- [ ] RTMP pushed to test Cloudflare Stream URL
-- [ ] Stream stop cleanup works correctly
+- [x] Backend TypeScript compiles with no errors
+- [x] BullMQ dependencies installed and configured
+- [x] FFmpegQueueService can enqueue/remove jobs
+- [x] FFmpegRelayService orchestrates full flow
+- [x] tRPC endpoints exposed and type-safe
+- [x] **ChannelRouter integrated** - `channel.create` now uses FFmpeg relay instead of Agora Media Push
+- [x] **Backward compatibility** - `getStatus()` and `healthCheck()` methods implemented
+- [ ] End-to-end test (Phase 3)
+
+**Integration Notes**:
+
+The `channelRouter` has been updated to use `FFmpegRelayService` instead of `HybridStreamingService`:
+
+- ✅ `channel.create` → calls `ffmpegRelay.startRelay()`
+- ✅ `channel.leave` (host) → calls `ffmpegRelay.stopRelay()`
+- ✅ `channel.getStatus` → calls `ffmpegRelay.getStreamingStatus()`
+- ✅ `channel.healthCheck` → calls `ffmpegRelay.healthCheck()`
+
+**Next Steps**: Test by creating a channel in the UI and watching FFmpeg worker logs.
 
 ---
 
