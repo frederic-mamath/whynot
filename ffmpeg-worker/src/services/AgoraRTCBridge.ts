@@ -30,6 +30,7 @@ export class AgoraRTCBridge {
   private captureInterval: NodeJS.Timeout | null = null;
   private frameCount: number = 0;
   private lastFrameTime: number = 0;
+  private isCapturing: boolean = false;
 
   async connect(config: RTCBridgeConfig): Promise<void> {
     console.log(
@@ -191,21 +192,45 @@ export class AgoraRTCBridge {
 
     this.frameStream = outputStream;
     this.lastFrameTime = Date.now();
+    this.isCapturing = true;
 
-    console.log("🎬 Starting frame capture at 30 FPS...");
+    // Increase max listeners to prevent warning
+    outputStream.setMaxListeners(20);
 
-    const TARGET_FPS = 30;
+    console.log("🎬 Starting frame capture at 10 FPS...");
+
+    const TARGET_FPS = 10;
     const FRAME_INTERVAL_MS = Math.floor(1000 / TARGET_FPS);
 
-    // Capture frames at target FPS
-    this.captureInterval = setInterval(async () => {
+    // Use recursive timeout instead of setInterval to prevent overlapping
+    const captureLoop = async () => {
+      if (!this.isCapturing) return;
+
+      const startTime = Date.now();
+
       try {
         await this.captureAndWriteFrame();
       } catch (error) {
-        console.error("Frame capture error:", error);
-        // Don't stop on single frame error, continue trying
+        if (
+          error instanceof Error &&
+          !error.message.includes("execution context") &&
+          !error.message.includes("Target closed")
+        ) {
+          console.error("Frame capture error:", error);
+        }
       }
-    }, FRAME_INTERVAL_MS);
+
+      // Schedule next capture to maintain target FPS
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(0, FRAME_INTERVAL_MS - elapsed);
+
+      if (this.isCapturing) {
+        this.captureInterval = setTimeout(captureLoop, delay) as any;
+      }
+    };
+
+    // Start the loop
+    captureLoop();
 
     console.log(`✅ Frame capture loop started (${TARGET_FPS} FPS)`);
   }
@@ -285,8 +310,9 @@ export class AgoraRTCBridge {
    */
   private async cleanup(): Promise<void> {
     // Stop frame capture
+    this.isCapturing = false;
     if (this.captureInterval) {
-      clearInterval(this.captureInterval);
+      clearTimeout(this.captureInterval);
       this.captureInterval = null;
     }
 

@@ -209,10 +209,15 @@ export class FFmpegManager {
         `🔚 FFmpeg exited for channel ${channelId} (code: ${code}, signal: ${signal})`,
       );
 
-      if (code !== 0 && code !== null) {
+      // Exit code 224 or 255 often means normal termination (broken pipe when seller stops)
+      // Don't retry in these cases
+      const normalExitCodes = [0, 224, 255];
+
+      if (code !== null && !normalExitCodes.includes(code)) {
         entry.info.status = "error";
         this.handleProcessFailure(channelId, new Error(`Exit code: ${code}`));
       } else {
+        console.log(`✅ Stream ${channelId} stopped normally`);
         this.processes.delete(channelId);
       }
     });
@@ -220,7 +225,12 @@ export class FFmpegManager {
     // Capture stderr for debugging
     ffmpeg.stderr?.on("data", (data) => {
       const log = data.toString();
-      if (log.includes("error") || log.includes("Error")) {
+      // Ignore "Broken pipe" and "End of file" - these are normal when seller stops
+      if (
+        (log.includes("error") || log.includes("Error")) &&
+        !log.includes("Broken pipe") &&
+        !log.includes("End of file")
+      ) {
         console.error(`FFmpeg stderr (${channelId}):`, log);
       }
     });
