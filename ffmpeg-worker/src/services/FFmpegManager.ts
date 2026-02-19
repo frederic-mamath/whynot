@@ -2,11 +2,13 @@
 import { spawn, ChildProcess } from "child_process";
 import { StreamJob, FFmpegProcessInfo, StreamConfig } from "../types";
 import { config } from "../config";
+import { AgoraRTCBridge } from "./AgoraRTCBridge";
 
 interface ProcessEntry {
   process: ChildProcess;
   info: FFmpegProcessInfo;
   retryCount: number;
+  rtcBridge?: AgoraRTCBridge; // RTC bridge instance
 }
 
 /**
@@ -29,7 +31,7 @@ export class FFmpegManager {
    * Start FFmpeg process for a stream
    */
   async startStream(job: StreamJob): Promise<void> {
-    const { channelId, rtmpUrl, streamConfig } = job;
+    const { channelId, rtmpUrl, streamConfig, agoraToken, agoraChannel } = job;
 
     // Check if already running
     if (this.processes.has(channelId)) {
@@ -44,30 +46,58 @@ export class FFmpegManager {
       );
     }
 
-    console.log(`🎬 Starting FFmpeg for channel ${channelId}`);
+    console.log(`🎬 Starting stream for channel ${channelId}`);
 
-    const ffmpegArgs = this.buildFFmpegArgs(streamConfig, rtmpUrl);
+    try {
+      // 1. Create and connect RTC bridge
+      const rtcBridge = new AgoraRTCBridge();
+      console.log(`🌐 Connecting to Agora channel ${agoraChannel}...`);
 
-    const ffmpegProcess = spawn("ffmpeg", ffmpegArgs, {
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+      await rtcBridge.connect({
+        appId: config.agora.appId,
+        channelName: agoraChannel,
+        token: agoraToken,
+        workerUid: config.agora.workerUid,
+      });
 
-    const processInfo: FFmpegProcessInfo = {
-      pid: ffmpegProcess.pid!,
-      channelId,
-      startedAt: new Date(),
-      status: "starting",
-      errorCount: 0,
-    };
+      // 2. Wait for seller to publish video/audio
+      console.log(`⏳ Waiting for seller to publish tracks...`);
+      await rtcBridge.waitForTracks(60000); // 60s timeout
 
-    this.processes.set(channelId, {
-      process: ffmpegProcess,
-      info: processInfo,
-      retryCount: 0,
-    });
+      // 3. Spawn FFmpeg process
+      console.log(`🎥 Starting FFmpeg encoder for channel ${channelId}...`);
+      const ffmpegArgs = this.buildFFmpegArgs(streamConfig, rtmpUrl);
+      const ffmpegProcess = spawn("ffmpeg", ffmpegArgs, {
+        stdio: ["pipe", "pipe", "pipe"],
+      });
 
-    // Setup event handlers
-    this.setupProcessHandlers(channelId, ffmpegProcess);
+      const processInfo: FFmpegProcessInfo = {
+        pid: ffmpegProcess.pid!,
+        channelId,
+        startedAt: new Date(),
+        status: "starting",
+        errorCount: 0,
+      };
+
+      this.processes.set(channelId, {
+        process: ffmpegProcess,
+        info: processInfo,
+        retryCount: 0,
+        rtcBridge,
+      });
+
+      // 4. Connect RTC bridge to FFmpeg stdin
+      console.log(`🔗 Connecting RTC bridge to FFmpeg stdin...`);
+      await rtcBridge.startFrameCapture(ffmpegProcess.stdin!);
+
+      // 5. Setup event handlers
+      this.setupProcessHandlers(channelId, ffmpegProcess);
+
+      console.log(`✅ Stream started successfully for channel ${channelId}`);
+    } catch (error) {
+      console.error(`❌ Failed to start stream ${channelId}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -230,7 +260,7 @@ export class FFmpegManager {
   /**
    * Stop stream for a channel
    */
-  stopStream(channelId: number): void {
+  async stopStream(channelId: number): Promise<void> {
     const entry = this.processes.get(channelId);
     if (!entry) {
       console.warn(`⚠️  No active stream for channel ${channelId}`);
@@ -240,10 +270,20 @@ export class FFmpegManager {
     console.log(`🛑 Stopping stream for channel ${channelId}`);
     entry.info.status = "stopping";
 
-    // Send SIGTERM for graceful shutdown
+    // 1. Disconnect RTC bridge first
+    if (entry.rtcBridge) {
+      try {
+        console.log(`🌐 Disconnecting RTC bridge...`);
+        await entry.rtcBridge.disconnect();
+      } catch (error) {
+        console.error(`Error disconnecting RTC bridge:`, error);
+      }
+    }
+
+    // 2. Send SIGTERM to FFmpeg for graceful shutdown
     entry.process.kill("SIGTERM");
 
-    // Force kill after 10 seconds if not stopped
+    // 3. Force kill after 10 seconds if not stopped
     setTimeout(() => {
       if (this.processes.has(channelId)) {
         console.warn(`⚠️  Force killing stream ${channelId}`);

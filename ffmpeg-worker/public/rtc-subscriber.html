@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agora RTC Subscriber</title>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+  </head>
+  <body>
+    <h1>RTC Subscriber (Worker)</h1>
+    <video
+      id="remote-video"
+      autoplay
+      playsinline
+      muted
+      style="width: 640px; height: 360px; background: #000"
+    ></video>
+    <div id="status">Initializing...</div>
+
+    <script>
+      // Get params from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const appId = urlParams.get("appId");
+      const channel = urlParams.get("channel");
+      const token = urlParams.get("token");
+      const uid = 999999; // Fixed UID for worker
+
+      console.log("Initializing Agora RTC subscriber...");
+      console.log("AppId:", appId);
+      console.log("Channel:", channel);
+      console.log("Token:", token ? "provided" : "missing");
+
+      // Create Agora client
+      const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+
+      // Global state exposed to Puppeteer
+      window.agoraState = {
+        client: null,
+        videoTrack: null,
+        audioTrack: null,
+        videoReady: false,
+        audioReady: false,
+        joined: false,
+        error: null,
+      };
+
+      // Handle user published event
+      client.on("user-published", async (user, mediaType) => {
+        console.log(`User ${user.uid} published ${mediaType}`);
+        document.getElementById("status").innerText =
+          `Subscribing to ${mediaType}...`;
+
+        try {
+          await client.subscribe(user, mediaType);
+          console.log(`Subscribed to user ${user.uid} ${mediaType}`);
+
+          if (mediaType === "video") {
+            const videoTrack = user.videoTrack;
+            videoTrack.play("remote-video");
+            window.agoraState.videoTrack = videoTrack;
+            window.agoraState.videoReady = true;
+            console.log("✅ Video track ready");
+            document.getElementById("status").innerText = "Video streaming";
+          }
+
+          if (mediaType === "audio") {
+            const audioTrack = user.audioTrack;
+            audioTrack.play();
+            window.agoraState.audioTrack = audioTrack;
+            window.agoraState.audioReady = true;
+            console.log("✅ Audio track ready");
+          }
+        } catch (error) {
+          console.error("Subscribe error:", error);
+          window.agoraState.error = error.message;
+          document.getElementById("status").innerText =
+            `Error: ${error.message}`;
+        }
+      });
+
+      // Handle user unpublished event
+      client.on("user-unpublished", (user, mediaType) => {
+        console.log(`User ${user.uid} unpublished ${mediaType}`);
+        if (mediaType === "video") {
+          window.agoraState.videoReady = false;
+          window.agoraState.videoTrack = null;
+        }
+        if (mediaType === "audio") {
+          window.agoraState.audioReady = false;
+          window.agoraState.audioTrack = null;
+        }
+        document.getElementById("status").innerText = "User left channel";
+      });
+
+      // Handle user left event
+      client.on("user-left", (user, reason) => {
+        console.log(`User ${user.uid} left: ${reason}`);
+        window.agoraState.videoReady = false;
+        window.agoraState.audioReady = false;
+        document.getElementById("status").innerText = `User left: ${reason}`;
+      });
+
+      // Handle connection state change
+      client.on("connection-state-change", (curState, prevState, reason) => {
+        console.log(
+          `Connection state: ${prevState} -> ${curState} (${reason})`,
+        );
+        if (curState === "DISCONNECTED") {
+          window.agoraState.joined = false;
+          document.getElementById("status").innerText = "Disconnected";
+        }
+      });
+
+      // Initialize connection
+      async function init() {
+        try {
+          console.log("Setting client role to audience...");
+          await client.setClientRole("audience");
+
+          console.log(`Joining channel: ${channel}`);
+          document.getElementById("status").innerText = "Joining channel...";
+
+          await client.join(appId, channel, token, uid);
+
+          console.log("✅ Successfully joined channel");
+          window.agoraState.client = client;
+          window.agoraState.joined = true;
+          document.getElementById("status").innerText =
+            "Connected - waiting for publisher...";
+        } catch (error) {
+          console.error("Failed to join channel:", error);
+          window.agoraState.error = error.message;
+          document.getElementById("status").innerText =
+            `Error: ${error.message}`;
+        }
+      }
+
+      // Start initialization
+      init().catch((error) => {
+        console.error("Init error:", error);
+        window.agoraState.error = error.message;
+      });
+
+      // Cleanup function exposed to Puppeteer
+      window.cleanup = async function () {
+        console.log("Cleaning up...");
+        if (window.agoraState.client) {
+          await window.agoraState.client.leave();
+          console.log("Left channel");
+        }
+      };
+    </script>
+  </body>
+</html>

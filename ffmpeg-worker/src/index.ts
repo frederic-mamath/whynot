@@ -25,6 +25,9 @@ async function main() {
   const app = express();
   const healthController = new HealthController(streamService);
 
+  // Serve static files (for RTC subscriber page)
+  app.use(express.static("public"));
+
   // Mount routes
   app.use("/", healthController.router);
 

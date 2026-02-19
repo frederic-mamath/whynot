@@ -27,6 +27,11 @@ export const config = {
     healthCheckInterval: 30000, // 30 seconds
   },
 
+  agora: {
+    appId: process.env.AGORA_APP_ID || "",
+    workerUid: 999999, // Fixed UID for worker instances
+  },
+
   logging: {
     level: process.env.LOG_LEVEL || "info",
   },
@@ -35,6 +40,10 @@ export const config = {
 // Validate required env vars
 if (!config.redis.url) {
   throw new Error("REDIS_URL environment variable is required");
+}
+
+if (!config.agora.appId) {
+  console.warn("⚠️  AGORA_APP_ID not set - RTC bridge will not work");
 }
 
 console.log("✅ Configuration loaded:", {
