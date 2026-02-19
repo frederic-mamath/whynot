@@ -133,19 +133,21 @@ databases:
 
 ## Progress Tracking
 
-| Phase   | Description                          | Est. Time | Status         |
-| ------- | ------------------------------------ | --------- | -------------- |
-| Phase 1 | FFmpeg Worker Service Setup          | 6-8h      | ✅ Complete    |
-| Phase 2 | Backend RTC → Redis Integration      | 4-6h      | ✅ Complete    |
-| Phase 3 | Local Docker Testing                 | 4-6h      | ⬜ Not Started |
-| Phase 4 | Render Deployment & Scaling          | 6-8h      | ⬜ Not Started |
-| Phase 5 | Monitoring, Alerts & Optimization    | 4-6h      | ⬜ Not Started |
-| Phase 6 | Load Testing & Production Validation | 6-8h      | ⬜ Not Started |
+| Phase     | Description                          | Est. Time | Status         |
+| --------- | ------------------------------------ | --------- | -------------- |
+| Phase 1   | FFmpeg Worker Service Setup          | 6-8h      | ✅ Complete    |
+| Phase 2   | Backend RTC → Redis Integration      | 4-6h      | ✅ Complete    |
+| Phase 2.5 | Agora RTC Bridge (Puppeteer)         | 8-10h     | 🔄 In Progress |
+| Phase 3   | Local Docker Testing                 | 4-6h      | ⬜ Not Started |
+| Phase 4   | Render Deployment & Scaling          | 6-8h      | ⬜ Not Started |
+| Phase 5   | Monitoring, Alerts & Optimization    | 4-6h      | ⬜ Not Started |
+| Phase 6   | Load Testing & Production Validation | 6-8h      | ⬜ Not Started |
 
-**Total Estimated Time**: 30-42 hours (2-3 weeks part-time)  
+**Total Estimated Time**: 38-52 hours (2.5-3.5 weeks part-time)  
 **Started**: 2026-02-19  
 **Phase 1 Completed**: 2026-02-19  
-**Phase 2 Completed**: 2026-02-19
+**Phase 2 Completed**: 2026-02-19  
+**Phase 2.5 Started**: 2026-02-19
 
 ---
 
@@ -303,7 +305,119 @@ The `channelRouter` has been updated to use `FFmpegRelayService` instead of `Hyb
 - ✅ `channel.getStatus` → calls `ffmpegRelay.getStreamingStatus()`
 - ✅ `channel.healthCheck` → calls `ffmpegRelay.healthCheck()`
 
-**Next Steps**: Test by creating a channel in the UI and watching FFmpeg worker logs.
+**Next Steps**: Phase 2.5 - Implement Agora RTC Bridge in worker.
+
+---
+
+### Phase 2.5: Agora RTC Bridge in Worker - Puppeteer Approach (8-10h) 🔄
+
+**Goal**: Connect FFmpeg worker to Agora RTC using Puppeteer + Web SDK to receive live frames
+
+**Status**: 🔄 **IN PROGRESS** (2026-02-19)
+
+**Problem Identified**:
+
+After Phase 2, the worker can:
+
+- ✅ Receive jobs from Redis queue
+- ✅ Spawn FFmpeg process with RTMP output URL
+- ❌ **But FFmpeg stdin receives no data** → stream never starts
+
+**Root Cause**:
+
+FFmpeg is configured with `-i pipe:0` (read from stdin), but there's no source piping RTC frames to it.
+
+**Solution - Puppeteer + Web SDK** (uses Agora RTC free tier):
+
+1. Worker launches headless Chrome via Puppeteer
+2. Loads HTML page with Agora Web SDK
+3. Web SDK subscribes to RTC channel (as audience, like a buyer)
+4. Extract frames via Canvas API (video) and Web Audio API (audio)
+5. Convert frames to raw format (YUV420p + PCM)
+6. Pipe to FFmpeg stdin
+
+**Why Puppeteer**:
+
+- ✅ Uses Agora RTC free tier (<10K min/mois = **$0 Agora cost**)
+- ✅ No paid Media Pull/Push API needed
+- ✅ Worker = virtual buyer participant in RTC channel
+- ⚠️ Higher CPU/RAM (needs 4GB RAM instead of 2GB)
+
+**Deliverables**:
+
+- HTML subscriber page with Agora Web SDK
+- `AgoraRTCBridge` service (Puppeteer integration)
+- Frame extraction and conversion utilities
+- FFmpeg stdin piping integration
+
+**New Files**:
+
+```
+ffmpeg-worker/
+├── public/
+│   └── rtc-subscriber.html        # NEW - Agora Web SDK page
+├── src/
+│   ├── services/
+│   │   ├── AgoraRTCBridge.ts       # NEW - Puppeteer + frame capture
+│   │   └── FFmpegManager.ts        # UPDATE - Connect to bridge
+│   └── utils/
+│       └── frameConverter.ts       # NEW - RGBA→YUV, audio→PCM
+```
+
+**Technical Workflow**:
+
+```typescript
+// 1. Launch Puppeteer
+browser = await puppeteer.launch({ headless: true });
+page = await browser.newPage();
+
+// 2. Navigate to subscriber page
+await page.goto("http://localhost:3001/rtc-subscriber.html?channel=...");
+
+// 3. Web SDK joins and subscribes (in browser context)
+client.on("user-published", async (user) => {
+  await client.subscribe(user, "video");
+  await client.subscribe(user, "audio");
+});
+
+// 4. Extract frames via Canvas API
+setInterval(() => {
+  const frame = canvas.toDataURL(); // or getImageData
+  // Pipe to FFmpeg stdin
+}, 1000 / 30); // 30 FPS
+```
+
+**Dependencies**:
+
+```json
+{
+  "puppeteer": "^21.x", // Headless browser
+  "@types/puppeteer": "^5.x" // TypeScript types
+}
+```
+
+**Infrastructure Impact**:
+
+- Worker RAM: 2GB → **4GB** (Puppeteer + Chrome)
+- Worker vCPU: 1 → **2** (rendering + encoding)
+- Render.com plan: Standard ($25) → **Pro ($85)**
+
+**Revised Cost** (50 channels × 3h/day × 30d = 4,500 min/mois):
+
+- Agora RTC: **$0** (free tier)
+- FFmpeg Worker: **$85/mois** (Pro plan)
+- Redis: **$10/mois**
+- **Total: $95/mois** (vs $540 current = **82% savings** ✅)
+
+**Acceptance Criteria**:
+
+- [ ] Agora RTC connection established from worker
+- [ ] Audio/video frames received from seller stream
+- [ ] Frames successfully piped to FFmpeg stdin
+- [ ] FFmpeg encodes and pushes to Cloudflare RTMP
+- [ ] Buyer can watch HLS stream
+- [ ] Graceful error handling (connection loss, seller leaves)
+- [ ] Process cleanup on stream end
 
 ---
 
@@ -452,19 +566,19 @@ services:
 
 ### Infrastructure Costs (Render.com)
 
-| Service          | Plan     | vCPU | RAM   | Cost/month | Notes                       |
-| ---------------- | -------- | ---- | ----- | ---------- | --------------------------- |
-| Backend          | Free     | 0.5  | 512MB | $0         | No changes                  |
-| FFmpeg Worker    | Standard | 1    | 2GB   | $25        | NEW (handles 10-30 streams) |
-| PostgreSQL       | Free     | -    | 1GB   | $0         | No changes                  |
-| Redis            | Starter  | -    | 256MB | $10        | Upgrade from free           |
-| **Total (Base)** |          |      |       | **$35**    |                             |
+| Service          | Plan    | vCPU | RAM   | Cost/month | Notes                    |
+| ---------------- | ------- | ---- | ----- | ---------- | ------------------------ |
+| Backend          | Free    | 0.5  | 512MB | $0         | No changes               |
+| FFmpeg Worker    | Pro     | 2    | 4GB   | $85        | NEW (Puppeteer + FFmpeg) |
+| PostgreSQL       | Free    | -    | 1GB   | $0         | No changes               |
+| Redis            | Starter | -    | 256MB | $10        | Upgrade from free        |
+| **Total (Base)** |         |      |       | **$95**    |                          |
 
 **Auto-Scaling** (if needed):
 
-- 2 workers: $50/month (20-60 streams)
-- 3 workers: $75/month (30-90 streams)
-- 5 workers: $125/month (50-150 streams)
+- 2 workers: $170/month (20-40 streams)
+- 3 workers: $255/month (30-60 streams)
+- 5 workers: $425/month (50-100 streams)
 
 ### Comparison vs Feature 010 (Agora Cloud Recording)
 
@@ -473,11 +587,30 @@ services:
 | Solution                                   | Cost/month | Break-even |
 | ------------------------------------------ | ---------- | ---------- |
 | **Feature 010**: Agora Cloud Recording     | $540       | N/A        |
-| **Feature 011**: FFmpeg Worker (1 worker)  | $35        | Immediate  |
-| **Feature 011**: FFmpeg Worker (3 workers) | $75        | Immediate  |
-| **Feature 011**: FFmpeg Worker (5 workers) | $125       | Immediate  |
+| **Feature 011**: FFmpeg Worker (1 worker)  | $95        | Immediate  |
+| **Feature 011**: FFmpeg Worker (3 workers) | $255       | Immediate  |
+| **Feature 011**: FFmpeg Worker (5 workers) | $425       | Immediate  |
 
-**Savings**: **$415-505/month** (77-93% cost reduction)
+**Savings**: **$115-445/month** (21-82% cost reduction)
+
+**ROI**: Pays for ~1-2 weeks of development time in first month
+
+**Note**:
+
+- Uses Agora RTC free tier (<10,000 min/mois) for worker subscription
+- If exceeding 10K free tier, add ~$0.99/1000 min for overage
+- Worker = 1 additional RTC participant per channel (seller + worker = 2 total)
+
+| ---                                        | Solution | Cost/month | Break-even |
+| ------------------------------------------ | -------- | ---------- | ---------- |
+| **Feature 010**: Agora Cloud Recording     | $540     | N/A        |
+| **Feature 011**: FFmpeg Worker (1 worker)  | $95      | Immediate  |
+| **Feature 011**: FFmpeg Worker (3 workers) | $255     | Immediate  |
+| **Feature 011**: FFmpeg Worker (5 workers) | $425     | Immediate  |
+
+**Savings**: **$115-445/month** (21-82% cost reduction)
+
+**Note**: Uses Agora RTC free tier (<10K min/mois). If exceeding free tier, add ~$0.99/1000 min for overage.
 
 **ROI**: Pays for ~1.5 weeks of development time in first month
 
