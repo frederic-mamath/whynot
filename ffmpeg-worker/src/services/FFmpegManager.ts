@@ -1,14 +1,19 @@
 // src/services/FFmpegManager.ts
-import { spawn, ChildProcess } from "child_process";
+import { spawn, ChildProcess, execSync } from "child_process";
 import { StreamJob, FFmpegProcessInfo, StreamConfig } from "../types";
 import { config } from "../config";
 import { AgoraRTCBridge } from "./AgoraRTCBridge";
+import { createWriteStream } from "fs";
+import { unlink } from "fs/promises";
+import path from "path";
 
 interface ProcessEntry {
   process: ChildProcess;
   info: FFmpegProcessInfo;
   retryCount: number;
   rtcBridge?: AgoraRTCBridge; // RTC bridge instance
+  videoFifo?: string; // Path to video FIFO
+  audioFifo?: string; // Path to audio FIFO
 }
 
 /**
@@ -48,8 +53,26 @@ export class FFmpegManager {
 
     console.log(`🎬 Starting stream for channel ${channelId}`);
 
+    // Paths for named pipes (FIFOs)
+    const tmpDir = "/tmp";
+    const videoFifo = path.join(tmpDir, `whynot-video-${channelId}.fifo`);
+    const audioFifo = path.join(tmpDir, `whynot-audio-${channelId}.fifo`);
+
     try {
-      // 1. Create and connect RTC bridge
+      // 1. Create named pipes (FIFOs)
+      console.log(`📝 Creating FIFOs for channel ${channelId}...`);
+      try {
+        execSync(`mkfifo ${videoFifo}`, { encoding: "utf-8" });
+        execSync(`mkfifo ${audioFifo}`, { encoding: "utf-8" });
+        console.log(`✅ FIFOs created: ${videoFifo}, ${audioFifo}`);
+      } catch (error) {
+        // Ignore error if FIFO already exists
+        console.log(
+          `⚠️  FIFOs may already exist (continuing): ${error instanceof Error ? error.message : ""}`,
+        );
+      }
+
+      // 2. Create and connect RTC bridge
       const rtcBridge = new AgoraRTCBridge();
       console.log(`🌐 Connecting to Agora channel ${agoraChannel}...`);
 
@@ -60,15 +83,20 @@ export class FFmpegManager {
         workerUid: config.agora.workerUid,
       });
 
-      // 2. Wait for seller to publish video/audio
+      // 3. Wait for seller to publish video/audio
       console.log(`⏳ Waiting for seller to publish tracks...`);
       await rtcBridge.waitForTracks(60000); // 60s timeout
 
-      // 3. Spawn FFmpeg process
+      // 4. Spawn FFmpeg process with FIFO inputs
       console.log(`🎥 Starting FFmpeg encoder for channel ${channelId}...`);
-      const ffmpegArgs = this.buildFFmpegArgs(streamConfig, rtmpUrl);
+      const ffmpegArgs = this.buildFFmpegArgs(
+        streamConfig,
+        rtmpUrl,
+        videoFifo,
+        audioFifo,
+      );
       const ffmpegProcess = spawn("ffmpeg", ffmpegArgs, {
-        stdio: ["pipe", "pipe", "pipe"],
+        stdio: ["ignore", "pipe", "pipe"], // stdin not used, FFmpeg reads from FIFOs
       });
 
       const processInfo: FFmpegProcessInfo = {
@@ -84,18 +112,36 @@ export class FFmpegManager {
         info: processInfo,
         retryCount: 0,
         rtcBridge,
+        videoFifo,
+        audioFifo,
       });
 
-      // 4. Connect RTC bridge to FFmpeg stdin
-      console.log(`🔗 Connecting RTC bridge to FFmpeg stdin...`);
-      await rtcBridge.startFrameCapture(ffmpegProcess.stdin!);
+      // 5. Open write streams to FIFOs
+      // Note: FIFOs will block until FFmpeg opens them for reading
+      console.log(`🔗 Creating FIFO write streams...`);
+      const videoStream = createWriteStream(videoFifo);
+      const audioStream = createWriteStream(audioFifo);
 
-      // 5. Setup event handlers
+      console.log(`✅ FIFO streams created, starting captures...`);
+
+      // 6. Start video and audio capture immediately
+      // The streams will unblock as FFmpeg starts reading from the FIFOs
+      console.log(`📹 Starting video capture...`);
+      await rtcBridge.startVideoCapture(videoStream);
+
+      console.log(`🎤 Starting audio capture...`);
+      await rtcBridge.startAudioCapture(audioStream);
+
+      // 7. Setup event handlers
       this.setupProcessHandlers(channelId, ffmpegProcess);
 
       console.log(`✅ Stream started successfully for channel ${channelId}`);
     } catch (error) {
       console.error(`❌ Failed to start stream ${channelId}:`, error);
+
+      // Cleanup FIFOs on error
+      await this.cleanupFifos(videoFifo, audioFifo);
+
       throw error;
     }
   }
@@ -106,6 +152,8 @@ export class FFmpegManager {
   private buildFFmpegArgs(
     streamConfig: StreamConfig,
     rtmpUrl: string,
+    videoFifo: string,
+    audioFifo: string,
   ): string[] {
     // FIXME: Hardcoded to match Canvas resolution (640x360)
     // Should be configurable or match streamConfig.videoResolution
@@ -116,7 +164,7 @@ export class FFmpegManager {
     const actualFramerate = 10;
 
     return [
-      // Input from stdin (RTC frames will be piped)
+      // Video input (raw YUV from Puppeteer canvas)
       "-f",
       "rawvideo",
       "-pixel_format",
@@ -125,8 +173,22 @@ export class FFmpegManager {
       resolution,
       "-framerate",
       actualFramerate.toString(),
+      "-thread_queue_size",
+      "512", // Increase buffer for async input
       "-i",
-      "pipe:0",
+      videoFifo,
+
+      // Audio input (PCM16 mono from Web Audio API)
+      "-f",
+      "s16le", // signed 16-bit little endian
+      "-ar",
+      "48000", // sample rate
+      "-ac",
+      "1", // mono channel (will convert to stereo later)
+      "-thread_queue_size",
+      "512", // Increase buffer for async input
+      "-i",
+      audioFifo,
 
       // Video encoding
       "-c:v",
@@ -146,7 +208,7 @@ export class FFmpegManager {
       "-g",
       (actualFramerate * 2).toString(), // GOP size = 2 seconds
 
-      // Audio encoding
+      // Audio encoding (convert mono to stereo)
       "-c:a",
       streamConfig.audioCodec,
       "-b:a",
@@ -154,7 +216,7 @@ export class FFmpegManager {
       "-ar",
       "48000",
       "-ac",
-      "2",
+      "2", // output stereo (duplicates mono input)
 
       // Output format
       "-f",
@@ -218,6 +280,12 @@ export class FFmpegManager {
         this.handleProcessFailure(channelId, new Error(`Exit code: ${code}`));
       } else {
         console.log(`✅ Stream ${channelId} stopped normally`);
+
+        // Cleanup FIFOs on normal exit
+        if (entry.videoFifo && entry.audioFifo) {
+          this.cleanupFifos(entry.videoFifo, entry.audioFifo).catch(() => {});
+        }
+
         this.processes.delete(channelId);
       }
     });
@@ -258,6 +326,16 @@ export class FFmpegManager {
         `🔄 Retrying stream ${channelId} (attempt ${entry.retryCount}/${this.MAX_RETRIES})`,
       );
 
+      // Clean up FIFO files before retry
+      if (entry.videoFifo && entry.audioFifo) {
+        await this.cleanupFifos(entry.videoFifo, entry.audioFifo);
+      }
+
+      // Disconnect RTC bridge
+      if (entry.rtcBridge) {
+        await entry.rtcBridge.disconnect().catch(() => {});
+      }
+
       // Clean up failed process
       this.processes.delete(channelId);
 
@@ -269,6 +347,16 @@ export class FFmpegManager {
       console.error(
         `💀 Stream ${channelId} failed after ${this.MAX_RETRIES} retries`,
       );
+
+      // Final cleanup
+      if (entry.videoFifo && entry.audioFifo) {
+        await this.cleanupFifos(entry.videoFifo, entry.audioFifo);
+      }
+
+      if (entry.rtcBridge) {
+        await entry.rtcBridge.disconnect().catch(() => {});
+      }
+
       this.processes.delete(channelId);
     }
   }
@@ -276,6 +364,26 @@ export class FFmpegManager {
   /**
    * Stop stream for a channel
    */
+  /**
+   * Cleanup FIFO files
+   */
+  private async cleanupFifos(
+    videoFifo: string,
+    audioFifo: string,
+  ): Promise<void> {
+    try {
+      await unlink(videoFifo).catch(() => {
+        /* ignore if doesn't exist */
+      });
+      await unlink(audioFifo).catch(() => {
+        /* ignore if doesn't exist */
+      });
+      console.log(`🧹 Cleaned up FIFOs: ${videoFifo}, ${audioFifo}`);
+    } catch (error) {
+      console.error(`⚠️  Error cleaning up FIFOs:`, error);
+    }
+  }
+
   async stopStream(channelId: number): Promise<void> {
     const entry = this.processes.get(channelId);
     if (!entry) {
@@ -299,11 +407,22 @@ export class FFmpegManager {
     // 2. Send SIGTERM to FFmpeg for graceful shutdown
     entry.process.kill("SIGTERM");
 
-    // 3. Force kill after 10 seconds if not stopped
+    // 3. Cleanup FIFOs
+    if (entry.videoFifo && entry.audioFifo) {
+      await this.cleanupFifos(entry.videoFifo, entry.audioFifo);
+    }
+
+    // 4. Force kill after 10 seconds if not stopped
     setTimeout(() => {
       if (this.processes.has(channelId)) {
         console.warn(`⚠️  Force killing stream ${channelId}`);
         entry.process.kill("SIGKILL");
+
+        // Ensure FIFOs are cleaned up even on force kill
+        if (entry.videoFifo && entry.audioFifo) {
+          this.cleanupFifos(entry.videoFifo, entry.audioFifo);
+        }
+
         this.processes.delete(channelId);
       }
     }, 10000);
@@ -364,6 +483,10 @@ export class FFmpegManager {
       // Force close browser if still alive
       if (entry.rtcBridge) {
         entry.rtcBridge.disconnect().catch(() => {});
+      }
+      // Cleanup FIFOs
+      if (entry.videoFifo && entry.audioFifo) {
+        this.cleanupFifos(entry.videoFifo, entry.audioFifo).catch(() => {});
       }
     });
 

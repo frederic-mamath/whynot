@@ -50,6 +50,108 @@
         error: null,
       };
 
+      // Audio processing state
+      window.audioState = {
+        audioContext: null,
+        sourceNode: null,
+        processorNode: null,
+        sampleBuffer: [], // Buffer to accumulate samples between reads
+        sampleRate: 48000,
+        isCapturing: false,
+      };
+
+      // Setup audio capture pipeline
+      function setupAudioCapture(audioTrack) {
+        try {
+          console.log("Setting up audio capture...");
+
+          // Create AudioContext (sample rate will be determined by browser)
+          const audioContext = new (
+            window.AudioContext || window.webkitAudioContext
+          )();
+          window.audioState.audioContext = audioContext;
+          window.audioState.sampleRate = audioContext.sampleRate;
+
+          console.log(
+            `AudioContext created with sample rate: ${audioContext.sampleRate}`,
+          );
+
+          // Get MediaStreamTrack from Agora audio track and create MediaStream
+          // In Agora Web SDK 4.x, use getMediaStreamTrack() not getMediaStream()
+          const mediaStreamTrack = audioTrack.getMediaStreamTrack();
+          const mediaStream = new MediaStream([mediaStreamTrack]);
+
+          // Create source node from MediaStream
+          const sourceNode = audioContext.createMediaStreamSource(mediaStream);
+          window.audioState.sourceNode = sourceNode;
+
+          // Create ScriptProcessorNode (4096 samples buffer size, 1 input channel, 1 output channel)
+          // Note: ScriptProcessorNode is deprecated but still widely supported
+          // For production, consider migrating to AudioWorkletNode
+          const processorNode = audioContext.createScriptProcessor(4096, 1, 1);
+          window.audioState.processorNode = processorNode;
+
+          // Process audio samples
+          let processCallCount = 0;
+          processorNode.onaudioprocess = (event) => {
+            if (!window.audioState.isCapturing) return;
+
+            processCallCount++;
+
+            // Log first few calls for debugging
+            if (processCallCount <= 3) {
+              console.log(
+                `🎵 onaudioprocess called (${processCallCount}), capturing: ${window.audioState.isCapturing}`,
+              );
+            }
+
+            const inputBuffer = event.inputBuffer;
+            const samples = inputBuffer.getChannelData(0); // Float32Array [-1.0, 1.0]
+
+            // Log sample info on first call
+            if (processCallCount === 1) {
+              console.log(
+                `First audio buffer: ${samples.length} samples, first value: ${samples[0]}`,
+              );
+            }
+
+            // Add samples to buffer (convert to regular array for serialization)
+            window.audioState.sampleBuffer.push(...samples);
+
+            // Limit buffer size to prevent memory issues (max ~2 seconds of audio)
+            const maxBufferSize = window.audioState.sampleRate * 2;
+            if (window.audioState.sampleBuffer.length > maxBufferSize) {
+              const excess =
+                window.audioState.sampleBuffer.length - maxBufferSize;
+              window.audioState.sampleBuffer.splice(0, excess);
+              console.warn(`Audio buffer overflow, dropped ${excess} samples`);
+            }
+          };
+
+          // Connect nodes: source -> processor -> destination
+          // Note: We need to connect to destination even though we don't play audio,
+          // otherwise the processor won't fire events
+          sourceNode.connect(processorNode);
+          processorNode.connect(audioContext.destination);
+
+          // Resume AudioContext if suspended (required for headless browsers)
+          if (audioContext.state === "suspended") {
+            console.log("AudioContext suspended, resuming...");
+            audioContext.resume().then(() => {
+              console.log(`AudioContext resumed, state: ${audioContext.state}`);
+            });
+          } else {
+            console.log(`AudioContext state: ${audioContext.state}`);
+          }
+
+          window.audioState.isCapturing = true;
+          console.log("✅ Audio capture pipeline established");
+        } catch (error) {
+          console.error("Failed to setup audio capture:", error);
+          window.agoraState.error = `Audio capture error: ${error.message}`;
+        }
+      }
+
       // Handle user published event
       client.on("user-published", async (user, mediaType) => {
         console.log(`User ${user.uid} published ${mediaType}`);
@@ -62,11 +164,30 @@
 
           if (mediaType === "video") {
             const videoTrack = user.videoTrack;
-            videoTrack.play("remote-video");
             window.agoraState.videoTrack = videoTrack;
-            window.agoraState.videoReady = true;
-            console.log("✅ Video track ready");
-            document.getElementById("status").innerText = "Video streaming";
+
+            // Play video and wait for it to actually start playing
+            videoTrack.play("remote-video");
+
+            // Wait for video element to start playing before marking ready
+            const videoElement = document.getElementById("remote-video");
+            videoElement.addEventListener(
+              "playing",
+              () => {
+                window.agoraState.videoReady = true;
+                console.log("✅ Video track ready and playing");
+                document.getElementById("status").innerText = "Video streaming";
+              },
+              { once: true },
+            );
+
+            // Fallback: mark ready after 2 seconds if 'playing' event doesn't fire
+            setTimeout(() => {
+              if (!window.agoraState.videoReady) {
+                window.agoraState.videoReady = true;
+                console.log("✅ Video track ready (fallback timeout)");
+              }
+            }, 2000);
           }
 
           if (mediaType === "audio") {
@@ -75,6 +196,9 @@
             window.agoraState.audioTrack = audioTrack;
             window.agoraState.audioReady = true;
             console.log("✅ Audio track ready");
+
+            // Setup audio capture pipeline
+            setupAudioCapture(audioTrack);
           }
         } catch (error) {
           console.error("Subscribe error:", error);
@@ -189,9 +313,57 @@
         }
       };
 
+      // Audio samples extraction function exposed to Puppeteer
+      window.getAudioSamples = function () {
+        if (
+          !window.audioState ||
+          !window.audioState.isCapturing ||
+          window.audioState.sampleBuffer.length === 0
+        ) {
+          return null;
+        }
+
+        try {
+          // Get all accumulated samples
+          const samples = window.audioState.sampleBuffer.slice(); // Copy array
+
+          // Clear buffer for next batch
+          window.audioState.sampleBuffer = [];
+
+          return {
+            samples: samples, // Float32Array values as regular array
+            sampleRate: window.audioState.sampleRate,
+            timestamp: Date.now(),
+            sampleCount: samples.length,
+          };
+        } catch (error) {
+          console.error("Audio sample extraction error:", error);
+          return null;
+        }
+      };
+
       // Cleanup function exposed to Puppeteer
       window.cleanup = async function () {
         console.log("Cleaning up...");
+
+        // Stop audio capture
+        if (window.audioState) {
+          window.audioState.isCapturing = false;
+
+          if (window.audioState.processorNode) {
+            window.audioState.processorNode.disconnect();
+          }
+          if (window.audioState.sourceNode) {
+            window.audioState.sourceNode.disconnect();
+          }
+          if (window.audioState.audioContext) {
+            await window.audioState.audioContext.close();
+          }
+
+          console.log("Audio capture stopped");
+        }
+
+        // Leave Agora channel
         if (window.agoraState.client) {
           await window.agoraState.client.leave();
           console.log("Left channel");

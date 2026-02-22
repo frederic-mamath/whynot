@@ -1,6 +1,9 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import { Writable } from "stream";
-import { convertRGBAtoYUV420 } from "../utils/frameConverter";
+import {
+  convertRGBAtoYUV420,
+  convertFloat32ToPCM16,
+} from "../utils/frameConverter";
 
 export interface RTCBridgeConfig {
   appId: string;
@@ -19,6 +22,13 @@ interface AgoraState {
   error: string | null;
 }
 
+interface AudioSamples {
+  samples: number[];
+  sampleRate: number;
+  timestamp: number;
+  sampleCount: number;
+}
+
 /**
  * AgoraRTCBridge - Subscribes to Agora RTC using Puppeteer + Web SDK
  * Acts as a virtual buyer that receives seller's stream
@@ -26,11 +36,16 @@ interface AgoraState {
 export class AgoraRTCBridge {
   private browser: Browser | null = null;
   private page: Page | null = null;
-  private frameStream: Writable | null = null;
-  private captureInterval: NodeJS.Timeout | null = null;
+  private videoStream: Writable | null = null;
+  private audioStream: Writable | null = null;
+  private videoCaptureInterval: NodeJS.Timeout | null = null;
+  private audioCaptureInterval: NodeJS.Timeout | null = null;
   private frameCount: number = 0;
+  private audioSampleCount: number = 0;
   private lastFrameTime: number = 0;
-  private isCapturing: boolean = false;
+  private lastAudioTime: number = 0;
+  private isCapturingVideo: boolean = false;
+  private isCapturingAudio: boolean = false;
 
   async connect(config: RTCBridgeConfig): Promise<void> {
     console.log(
@@ -49,6 +64,8 @@ export class AgoraRTCBridge {
           "--disable-gpu",
           "--disable-software-rasterizer",
           "--disable-web-security", // Allow loading Agora SDK from CDN
+          "--autoplay-policy=no-user-gesture-required", // Allow autoplay without user interaction
+          "--disable-features=AudioServiceOutOfProcess", // Run audio in main process for better compatibility
         ],
       });
 
@@ -185,38 +202,38 @@ export class AgoraRTCBridge {
   }
 
   /**
-   * Start capturing frames and pipe to writable stream (FFmpeg stdin)
+   * Start capturing video frames and pipe to writable stream (FFmpeg stdin or FIFO)
    */
-  async startFrameCapture(outputStream: Writable): Promise<void> {
+  async startVideoCapture(outputStream: Writable): Promise<void> {
     if (!this.page) throw new Error("Page not initialized");
 
-    this.frameStream = outputStream;
+    this.videoStream = outputStream;
     this.lastFrameTime = Date.now();
-    this.isCapturing = true;
+    this.isCapturingVideo = true;
 
     // Increase max listeners to prevent warning
     outputStream.setMaxListeners(20);
 
-    console.log("🎬 Starting frame capture at 10 FPS...");
+    console.log("🎬 Starting video capture at 10 FPS...");
 
     const TARGET_FPS = 10;
     const FRAME_INTERVAL_MS = Math.floor(1000 / TARGET_FPS);
 
     // Use recursive timeout instead of setInterval to prevent overlapping
     const captureLoop = async () => {
-      if (!this.isCapturing) return;
+      if (!this.isCapturingVideo) return;
 
       const startTime = Date.now();
 
       try {
-        await this.captureAndWriteFrame();
+        await this.captureAndWriteVideoFrame();
       } catch (error) {
         if (
           error instanceof Error &&
           !error.message.includes("execution context") &&
           !error.message.includes("Target closed")
         ) {
-          console.error("Frame capture error:", error);
+          console.error("Video frame capture error:", error);
         }
       }
 
@@ -224,22 +241,73 @@ export class AgoraRTCBridge {
       const elapsed = Date.now() - startTime;
       const delay = Math.max(0, FRAME_INTERVAL_MS - elapsed);
 
-      if (this.isCapturing) {
-        this.captureInterval = setTimeout(captureLoop, delay) as any;
+      if (this.isCapturingVideo) {
+        this.videoCaptureInterval = setTimeout(captureLoop, delay) as any;
       }
     };
 
     // Start the loop
     captureLoop();
 
-    console.log(`✅ Frame capture loop started (${TARGET_FPS} FPS)`);
+    console.log(`✅ Video capture loop started (${TARGET_FPS} FPS)`);
   }
 
   /**
-   * Capture a single frame and write to stream
+   * Start capturing audio samples and pipe to writable stream (FIFO)
    */
-  private async captureAndWriteFrame(): Promise<void> {
-    if (!this.page || !this.frameStream) return;
+  async startAudioCapture(outputStream: Writable): Promise<void> {
+    if (!this.page) throw new Error("Page not initialized");
+
+    this.audioStream = outputStream;
+    this.lastAudioTime = Date.now();
+    this.isCapturingAudio = true;
+
+    // Increase max listeners to prevent warning
+    outputStream.setMaxListeners(20);
+
+    console.log("🎤 Starting audio capture...");
+
+    // Capture audio more frequently than video (every 50ms)
+    // ScriptProcessorNode accumulates samples in 4096-sample buffers (~85ms at 48kHz)
+    const AUDIO_CAPTURE_INTERVAL_MS = 50;
+
+    const captureLoop = async () => {
+      if (!this.isCapturingAudio) return;
+
+      const startTime = Date.now();
+
+      try {
+        await this.captureAndWriteAudioSamples();
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          !error.message.includes("execution context") &&
+          !error.message.includes("Target closed")
+        ) {
+          console.error("Audio capture error:", error);
+        }
+      }
+
+      // Schedule next capture
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(0, AUDIO_CAPTURE_INTERVAL_MS - elapsed);
+
+      if (this.isCapturingAudio) {
+        this.audioCaptureInterval = setTimeout(captureLoop, delay) as any;
+      }
+    };
+
+    // Start the loop
+    captureLoop();
+
+    console.log("✅ Audio capture loop started");
+  }
+
+  /**
+   * Capture a single video frame and write to stream
+   */
+  private async captureAndWriteVideoFrame(): Promise<void> {
+    if (!this.page || !this.videoStream) return;
 
     try {
       // Get frame data from browser
@@ -250,6 +318,12 @@ export class AgoraRTCBridge {
 
       if (!frameData || !frameData.data) {
         // No frame available yet (video not ready)
+        // Log first few times to debug
+        if (this.frameCount < 5) {
+          console.log(
+            `⚠️  No video frame available yet (frameCount: ${this.frameCount})`,
+          );
+        }
         return;
       }
 
@@ -263,17 +337,17 @@ export class AgoraRTCBridge {
         frameData.height,
       );
 
-      // Write YUV frame to FFmpeg stdin
-      const written = this.frameStream.write(Buffer.from(yuvData));
+      // Write YUV frame to stream
+      const written = this.videoStream.write(Buffer.from(yuvData));
 
       this.frameCount++;
 
-      // Log progress every 30 frames (1 second)
+      // Log progress every 30 frames (~3 seconds at 10 FPS)
       if (this.frameCount % 30 === 0) {
         const elapsed = (Date.now() - this.lastFrameTime) / 1000;
         const actualFps = (30 / elapsed).toFixed(1);
         console.log(
-          `📹 Captured ${this.frameCount} frames (current FPS: ${actualFps})`,
+          `📹 Captured ${this.frameCount} video frames (current FPS: ${actualFps})`,
         );
         this.lastFrameTime = Date.now();
       }
@@ -282,7 +356,7 @@ export class AgoraRTCBridge {
       if (!written) {
         // Stream buffer is full, wait for drain
         await new Promise((resolve) =>
-          this.frameStream?.once("drain", resolve),
+          this.videoStream?.once("drain", resolve),
         );
       }
     } catch (error) {
@@ -291,7 +365,64 @@ export class AgoraRTCBridge {
         error instanceof Error &&
         !error.message.includes("execution context")
       ) {
-        console.error("Error capturing frame:", error);
+        console.error("Error capturing video frame:", error);
+      }
+    }
+  }
+
+  /**
+   * Capture audio samples and write to stream
+   */
+  private async captureAndWriteAudioSamples(): Promise<void> {
+    if (!this.page || !this.audioStream) return;
+
+    try {
+      // Get audio samples from browser
+      const audioData: AudioSamples | null = await this.page.evaluate(() => {
+        // @ts-ignore - window is available in browser context
+        return window.getAudioSamples ? window.getAudioSamples() : null;
+      });
+
+      if (!audioData || !audioData.samples || audioData.samples.length === 0) {
+        // No samples available yet
+        // Log first few times to debug
+        if (this.audioSampleCount === 0) {
+          console.log(`⚠️  No audio samples available yet`);
+        }
+        return;
+      }
+
+      // Convert Float32 samples to PCM16
+      // Note: audioData.samples is number[] from page.evaluate(), convert to Float32Array
+      const float32Samples = new Float32Array(audioData.samples);
+      const pcm16Data = convertFloat32ToPCM16(float32Samples);
+
+      // Write PCM16 samples to stream
+      const written = this.audioStream.write(Buffer.from(pcm16Data));
+
+      this.audioSampleCount += audioData.samples.length;
+
+      // Log progress every ~48000 samples (1 second of audio at 48kHz)
+      if (this.audioSampleCount % 48000 < audioData.samples.length) {
+        const elapsed = (Date.now() - this.lastAudioTime) / 1000;
+        console.log(
+          `🎤 Captured ${Math.floor(this.audioSampleCount / 48000)}s of audio (${audioData.sampleRate}Hz)`,
+        );
+        this.lastAudioTime = Date.now();
+      }
+
+      // Handle backpressure
+      if (!written) {
+        await new Promise((resolve) =>
+          this.audioStream?.once("drain", resolve),
+        );
+      }
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        !error.message.includes("execution context")
+      ) {
+        console.error("Error capturing audio samples:", error);
       }
     }
   }
@@ -309,11 +440,18 @@ export class AgoraRTCBridge {
    * Cleanup resources
    */
   private async cleanup(): Promise<void> {
-    // Stop frame capture
-    this.isCapturing = false;
-    if (this.captureInterval) {
-      clearTimeout(this.captureInterval);
-      this.captureInterval = null;
+    // Stop captures
+    this.isCapturingVideo = false;
+    this.isCapturingAudio = false;
+
+    if (this.videoCaptureInterval) {
+      clearTimeout(this.videoCaptureInterval);
+      this.videoCaptureInterval = null;
+    }
+
+    if (this.audioCaptureInterval) {
+      clearTimeout(this.audioCaptureInterval);
+      this.audioCaptureInterval = null;
     }
 
     // Leave Agora channel
@@ -359,7 +497,8 @@ export class AgoraRTCBridge {
 
     this.browser = null;
     this.page = null;
-    this.frameStream = null;
+    this.videoStream = null;
+    this.audioStream = null;
   }
 
   /**
