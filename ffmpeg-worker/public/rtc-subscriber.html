@@ -52,99 +52,85 @@
 
       // Audio processing state
       window.audioState = {
-        audioContext: null,
-        sourceNode: null,
-        processorNode: null,
-        sampleBuffer: [], // Buffer to accumulate samples between reads
+        recorder: null,
+        audioChunks: [], // Array of Blob chunks from MediaRecorder
         sampleRate: 48000,
         isCapturing: false,
       };
 
-      // Setup audio capture pipeline
+      // Setup audio capture pipeline with MediaRecorder
       function setupAudioCapture(audioTrack) {
         try {
-          console.log("Setting up audio capture...");
-
-          // Create AudioContext (sample rate will be determined by browser)
-          const audioContext = new (
-            window.AudioContext || window.webkitAudioContext
-          )();
-          window.audioState.audioContext = audioContext;
-          window.audioState.sampleRate = audioContext.sampleRate;
-
-          console.log(
-            `AudioContext created with sample rate: ${audioContext.sampleRate}`,
-          );
+          console.log("Setting up audio capture with MediaRecorder...");
 
           // Get MediaStreamTrack from Agora audio track and create MediaStream
-          // In Agora Web SDK 4.x, use getMediaStreamTrack() not getMediaStream()
           const mediaStreamTrack = audioTrack.getMediaStreamTrack();
           const mediaStream = new MediaStream([mediaStreamTrack]);
 
-          // Create source node from MediaStream
-          const sourceNode = audioContext.createMediaStreamSource(mediaStream);
-          window.audioState.sourceNode = sourceNode;
+          // Check if MediaRecorder is supported
+          if (!window.MediaRecorder) {
+            throw new Error("MediaRecorder API not supported");
+          }
 
-          // Create ScriptProcessorNode (4096 samples buffer size, 1 input channel, 1 output channel)
-          // Note: ScriptProcessorNode is deprecated but still widely supported
-          // For production, consider migrating to AudioWorkletNode
-          const processorNode = audioContext.createScriptProcessor(4096, 1, 1);
-          window.audioState.processorNode = processorNode;
+          // Check supported MIME types
+          const mimeTypes = [
+            "audio/webm;codecs=opus",
+            "audio/webm",
+            "audio/ogg;codecs=opus",
+          ];
 
-          // Process audio samples
-          let processCallCount = 0;
-          processorNode.onaudioprocess = (event) => {
-            if (!window.audioState.isCapturing) return;
-
-            processCallCount++;
-
-            // Log first few calls for debugging
-            if (processCallCount <= 3) {
-              console.log(
-                `🎵 onaudioprocess called (${processCallCount}), capturing: ${window.audioState.isCapturing}`,
-              );
+          let selectedMimeType = null;
+          for (const mimeType of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+              selectedMimeType = mimeType;
+              console.log(`Using MIME type: ${mimeType}`);
+              break;
             }
+          }
 
-            const inputBuffer = event.inputBuffer;
-            const samples = inputBuffer.getChannelData(0); // Float32Array [-1.0, 1.0]
+          if (!selectedMimeType) {
+            throw new Error("No supported audio MIME type found");
+          }
 
-            // Log sample info on first call
-            if (processCallCount === 1) {
-              console.log(
-                `First audio buffer: ${samples.length} samples, first value: ${samples[0]}`,
-              );
-            }
+          // Create MediaRecorder
+          const recorder = new MediaRecorder(mediaStream, {
+            mimeType: selectedMimeType,
+            audioBitsPerSecond: 128000, // 128 kbps
+          });
 
-            // Add samples to buffer (convert to regular array for serialization)
-            window.audioState.sampleBuffer.push(...samples);
+          window.audioState.recorder = recorder;
 
-            // Limit buffer size to prevent memory issues (max ~2 seconds of audio)
-            const maxBufferSize = window.audioState.sampleRate * 2;
-            if (window.audioState.sampleBuffer.length > maxBufferSize) {
-              const excess =
-                window.audioState.sampleBuffer.length - maxBufferSize;
-              window.audioState.sampleBuffer.splice(0, excess);
-              console.warn(`Audio buffer overflow, dropped ${excess} samples`);
+          // Handle data available event
+          recorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              window.audioState.audioChunks.push(event.data);
+
+              // Log first few chunks
+              if (window.audioState.audioChunks.length <= 3) {
+                console.log(
+                  `🎵 Audio chunk ${window.audioState.audioChunks.length}: ${event.data.size} bytes`,
+                );
+              }
             }
           };
 
-          // Connect nodes: source -> processor -> destination
-          // Note: We need to connect to destination even though we don't play audio,
-          // otherwise the processor won't fire events
-          sourceNode.connect(processorNode);
-          processorNode.connect(audioContext.destination);
+          recorder.onerror = (error) => {
+            console.error("MediaRecorder error:", error);
+          };
 
-          // Resume AudioContext if suspended (required for headless browsers)
-          if (audioContext.state === "suspended") {
-            console.log("AudioContext suspended, resuming...");
-            audioContext.resume().then(() => {
-              console.log(`AudioContext resumed, state: ${audioContext.state}`);
-            });
-          } else {
-            console.log(`AudioContext state: ${audioContext.state}`);
-          }
+          recorder.onstart = () => {
+            console.log("MediaRecorder started");
+            window.audioState.isCapturing = true;
+          };
 
-          window.audioState.isCapturing = true;
+          recorder.onstop = () => {
+            console.log("MediaRecorder stopped");
+            window.audioState.isCapturing = false;
+          };
+
+          // Start recording with timeslice (request data every 100ms)
+          recorder.start(100);
+
           console.log("✅ Audio capture pipeline established");
         } catch (error) {
           console.error("Failed to setup audio capture:", error);
@@ -313,31 +299,41 @@
         }
       };
 
-      // Audio samples extraction function exposed to Puppeteer
-      window.getAudioSamples = function () {
+      // Audio chunks extraction function exposed to Puppeteer
+      window.getAudioChunks = async function () {
         if (
           !window.audioState ||
           !window.audioState.isCapturing ||
-          window.audioState.sampleBuffer.length === 0
+          window.audioState.audioChunks.length === 0
         ) {
           return null;
         }
 
         try {
-          // Get all accumulated samples
-          const samples = window.audioState.sampleBuffer.slice(); // Copy array
+          // Get all accumulated chunks
+          const chunks = window.audioState.audioChunks.slice();
 
           // Clear buffer for next batch
-          window.audioState.sampleBuffer = [];
+          window.audioState.audioChunks = [];
+
+          // Convert Blobs to ArrayBuffers, then to regular Arrays for Puppeteer serialization
+          // ArrayBuffers cannot be serialized directly by Puppeteer
+          const arrayBuffers = await Promise.all(
+            chunks.map((blob) => blob.arrayBuffer()),
+          );
+
+          const arrays = arrayBuffers.map((buf) =>
+            Array.from(new Uint8Array(buf)),
+          );
 
           return {
-            samples: samples, // Float32Array values as regular array
-            sampleRate: window.audioState.sampleRate,
+            chunks: arrays, // Array of Array<number>
+            chunkCount: arrays.length,
+            totalBytes: arrays.reduce((sum, arr) => sum + arr.length, 0),
             timestamp: Date.now(),
-            sampleCount: samples.length,
           };
         } catch (error) {
-          console.error("Audio sample extraction error:", error);
+          console.error("Audio chunk extraction error:", error);
           return null;
         }
       };
@@ -350,14 +346,12 @@
         if (window.audioState) {
           window.audioState.isCapturing = false;
 
-          if (window.audioState.processorNode) {
-            window.audioState.processorNode.disconnect();
-          }
-          if (window.audioState.sourceNode) {
-            window.audioState.sourceNode.disconnect();
-          }
-          if (window.audioState.audioContext) {
-            await window.audioState.audioContext.close();
+          if (
+            window.audioState.recorder &&
+            window.audioState.recorder.state !== "inactive"
+          ) {
+            window.audioState.recorder.stop();
+            console.log("MediaRecorder stopped");
           }
 
           console.log("Audio capture stopped");

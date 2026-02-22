@@ -178,13 +178,9 @@ export class FFmpegManager {
       "-i",
       videoFifo,
 
-      // Audio input (PCM16 mono from Web Audio API)
+      // Audio input (WebM/Opus from MediaRecorder)
       "-f",
-      "s16le", // signed 16-bit little endian
-      "-ar",
-      "48000", // sample rate
-      "-ac",
-      "1", // mono channel (will convert to stereo later)
+      "webm", // WebM container with Opus codec
       "-thread_queue_size",
       "512", // Increase buffer for async input
       "-i",

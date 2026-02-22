@@ -1,9 +1,6 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import { Writable } from "stream";
-import {
-  convertRGBAtoYUV420,
-  convertFloat32ToPCM16,
-} from "../utils/frameConverter";
+import { convertRGBAtoYUV420 } from "../utils/frameConverter";
 
 export interface RTCBridgeConfig {
   appId: string;
@@ -22,11 +19,11 @@ interface AgoraState {
   error: string | null;
 }
 
-interface AudioSamples {
-  samples: number[];
-  sampleRate: number;
+interface AudioChunks {
+  chunks: number[][]; // Array of byte arrays (serialized from Blobs)
+  chunkCount: number;
+  totalBytes: number;
   timestamp: number;
-  sampleCount: number;
 }
 
 /**
@@ -277,7 +274,7 @@ export class AgoraRTCBridge {
       const startTime = Date.now();
 
       try {
-        await this.captureAndWriteAudioSamples();
+        await this.captureAndWriteAudioChunks();
       } catch (error) {
         if (
           error instanceof Error &&
@@ -373,56 +370,65 @@ export class AgoraRTCBridge {
   /**
    * Capture audio samples and write to stream
    */
-  private async captureAndWriteAudioSamples(): Promise<void> {
+  /**
+   * Capture audio chunks (WebM/Opus) and write to stream
+   */
+  private async captureAndWriteAudioChunks(): Promise<void> {
     if (!this.page || !this.audioStream) return;
 
     try {
-      // Get audio samples from browser
-      const audioData: AudioSamples | null = await this.page.evaluate(() => {
-        // @ts-ignore - window is available in browser context
-        return window.getAudioSamples ? window.getAudioSamples() : null;
-      });
+      // Get audio chunks from browser (WebM/Opus format)
+      const audioData: AudioChunks | null = await this.page.evaluate(
+        async () => {
+          // @ts-ignore - window is available in browser context
+          return window.getAudioChunks ? await window.getAudioChunks() : null;
+        },
+      );
 
-      if (!audioData || !audioData.samples || audioData.samples.length === 0) {
-        // No samples available yet
-        // Log first few times to debug
+      if (!audioData || !audioData.chunks || audioData.chunks.length === 0) {
+        // No chunks available yet
+        // Log first time only to debug
         if (this.audioSampleCount === 0) {
-          console.log(`⚠️  No audio samples available yet`);
+          console.log(`⚠️  No audio chunks available yet`);
         }
         return;
       }
 
-      // Convert Float32 samples to PCM16
-      // Note: audioData.samples is number[] from page.evaluate(), convert to Float32Array
-      const float32Samples = new Float32Array(audioData.samples);
-      const pcm16Data = convertFloat32ToPCM16(float32Samples);
+      // Write each WebM chunk to stream
+      for (const chunk of audioData.chunks) {
+        const buffer = Buffer.from(chunk);
+        const written = this.audioStream.write(buffer);
 
-      // Write PCM16 samples to stream
-      const written = this.audioStream.write(Buffer.from(pcm16Data));
-
-      this.audioSampleCount += audioData.samples.length;
-
-      // Log progress every ~48000 samples (1 second of audio at 48kHz)
-      if (this.audioSampleCount % 48000 < audioData.samples.length) {
-        const elapsed = (Date.now() - this.lastAudioTime) / 1000;
-        console.log(
-          `🎤 Captured ${Math.floor(this.audioSampleCount / 48000)}s of audio (${audioData.sampleRate}Hz)`,
-        );
-        this.lastAudioTime = Date.now();
+        // Handle backpressure
+        if (!written) {
+          await new Promise((resolve) =>
+            this.audioStream?.once("drain", resolve),
+          );
+        }
       }
 
-      // Handle backpressure
-      if (!written) {
-        await new Promise((resolve) =>
-          this.audioStream?.once("drain", resolve),
+      this.audioSampleCount += audioData.totalBytes;
+
+      // Log progress every ~100KB
+      const progressThreshold = 100 * 1024; // 100KB
+      if (
+        Math.floor(this.audioSampleCount / progressThreshold) >
+        Math.floor(
+          (this.audioSampleCount - audioData.totalBytes) / progressThreshold,
+        )
+      ) {
+        const mbCaptured = (this.audioSampleCount / (1024 * 1024)).toFixed(2);
+        console.log(
+          `🎤 Captured ${mbCaptured}MB of audio (${audioData.chunkCount} chunks)`,
         );
+        this.lastAudioTime = Date.now();
       }
     } catch (error) {
       if (
         error instanceof Error &&
         !error.message.includes("execution context")
       ) {
-        console.error("Error capturing audio samples:", error);
+        console.error("Error capturing audio chunks:", error);
       }
     }
   }
