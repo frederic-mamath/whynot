@@ -1,7 +1,7 @@
 # Phase 3: Docker Containerization & Local Testing
 
 **Duration**: 2-3 hours  
-**Status**: ⬜ Not Started  
+**Status**: 🔄 In Progress (Started: 2026-02-23)  
 **Prerequisites**: Phase 2.5 completed ✅ (Agora RTC Bridge working locally)
 
 ---
@@ -360,6 +360,7 @@ echo "  3. Verify stream appears on Cloudflare"
    - Check latency (~8-12s acceptable)
 
 6. **Test graceful shutdown**:
+
    ```bash
    docker-compose stop ffmpeg-worker
    ```

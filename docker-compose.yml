@@ -103,6 +103,50 @@ services:
       timeout: 3s
       retries: 3
 
+  # ============================================
+  # FFmpeg Worker
+  # ============================================
+  ffmpeg-worker:
+    build:
+      context: ./ffmpeg-worker
+      dockerfile: Dockerfile
+    container_name: whynot-ffmpeg-worker
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=debug
+      - AGORA_APP_ID=${AGORA_APP_ID}
+      - AGORA_APP_CERTIFICATE=${AGORA_APP_CERTIFICATE}
+      - MAX_CONCURRENT_STREAMS=3
+      - FFMPEG_LOG_LEVEL=warning
+      - HEALTH_PORT=3001
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - whynot-network
+    # Increase shared memory for Chromium
+    shm_size: 2gb
+    # Resource limits (optional, for development)
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://localhost:3001/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 # ============================================
 # Volumes
 # ============================================
