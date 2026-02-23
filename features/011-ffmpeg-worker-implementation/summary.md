@@ -1,11 +1,12 @@
 # Feature 011: FFmpeg Worker Implementation - Summary
 
-**Status**: ✅ Phase 2 Complete - Ready for End-to-End Testing  
+**Status**: ✅ Phase 2.5 Complete - End-to-End Streaming Working  
 **Related ADR**: [ADR-001: Custom FFmpeg RTMP Relay](../../docs/adr/001-custom-ffmpeg-rtmp-relay.md)  
 **Prerequisites**: [Dev-Quality Track 010: Docker Compose Architecture](../../dev-quality/010-docker-compose-architecture/summary.md) ✅  
 **Created**: 2026-02-19  
 **Phase 1 Completed**: 2026-02-19  
 **Phase 2 Completed**: 2026-02-19 (including channelRouter integration)  
+**Phase 2.5 Completed**: 2026-02-22 (video + audio streaming with MediaRecorder)  
 **Estimated Duration**: 2-3 weeks
 
 ---
@@ -309,94 +310,81 @@ The `channelRouter` has been updated to use `FFmpegRelayService` instead of `Hyb
 
 ---
 
-### Phase 2.5: Agora RTC Bridge in Worker - Puppeteer Approach (8-10h) 🔄
+### Phase 2.5: Agora RTC Bridge in Worker - Puppeteer Approach (8-10h) ✅
 
 **Goal**: Connect FFmpeg worker to Agora RTC using Puppeteer + Web SDK to receive live frames
 
-**Status**: 🔄 **IN PROGRESS** (2026-02-19)
+**Status**: ✅ **COMPLETED** (2026-02-22)  
+**Actual Duration**: 12 hours (including MediaRecorder pivot)
 
-**Problem Identified**:
+**Problem Solved**:
 
-After Phase 2, the worker can:
+After Phase 2, FFmpeg stdin received no data because no component subscribed to Agora RTC frames.
 
-- ✅ Receive jobs from Redis queue
-- ✅ Spawn FFmpeg process with RTMP output URL
-- ❌ **But FFmpeg stdin receives no data** → stream never starts
+**Solution Implemented - Puppeteer + MediaRecorder**:
 
-**Root Cause**:
+1. ✅ Worker launches headless Chrome via Puppeteer
+2. ✅ Loads `rtc-subscriber.html` with Agora Web SDK 4.20.0
+3. ✅ Worker joins as audience (UID 999999) using Agora RTC **free tier**
+4. ✅ **Video**: Canvas API captures frames @ 10 FPS → RGBA → YUV420p → FIFO → FFmpeg
+5. ✅ **Audio**: MediaRecorder captures WebM/Opus → FIFO → FFmpeg (decodes Opus)
+6. ✅ Named pipes (FIFOs) multiplex video + audio to FFmpeg dual inputs
+7. ✅ FFmpeg encodes and pushes RTMP to Cloudflare
+8. ✅ End-to-end working: Seller → Agora → Worker → FFmpeg → Cloudflare → Buyer
 
-FFmpeg is configured with `-i pipe:0` (read from stdin), but there's no source piping RTC frames to it.
+**Key Technical Decision - MediaRecorder vs ScriptProcessorNode**:
 
-**Solution - Puppeteer + Web SDK** (uses Agora RTC free tier):
+Initially attempted ScriptProcessorNode (Web Audio API) for PCM extraction, but it doesn't fire events in Puppeteer headless. Pivoted to MediaRecorder API which:
 
-1. Worker launches headless Chrome via Puppeteer
-2. Loads HTML page with Agora Web SDK
-3. Web SDK subscribes to RTC channel (as audience, like a buyer)
-4. Extract frames via Canvas API (video) and Web Audio API (audio)
-5. Convert frames to raw format (YUV420p + PCM)
-6. Pipe to FFmpeg stdin
-
-**Why Puppeteer**:
-
-- ✅ Uses Agora RTC free tier (<10K min/mois = **$0 Agora cost**)
-- ✅ No paid Media Pull/Push API needed
-- ✅ Worker = virtual buyer participant in RTC channel
-- ⚠️ Higher CPU/RAM (needs 4GB RAM instead of 2GB)
+- ✅ Works perfectly in headless browsers
+- ✅ Hardware-accelerated Opus encoding (lower CPU)
+- ✅ Modern, stable API (ScriptProcessorNode is deprecated)
+- ⚠️ Audio is Opus 128kbps (vs lossless PCM) but difference imperceptible
 
 **Deliverables**:
 
-- HTML subscriber page with Agora Web SDK
-- `AgoraRTCBridge` service (Puppeteer integration)
-- Frame extraction and conversion utilities
-- FFmpeg stdin piping integration
+- ✅ `ffmpeg-worker/public/rtc-subscriber.html` - Agora Web SDK + MediaRecorder
+- ✅ `ffmpeg-worker/src/services/AgoraRTCBridge.ts` - Puppeteer + frame/audio capture
+- ✅ `ffmpeg-worker/src/services/FFmpegManager.ts` - FIFO management + dual input
+- ✅ `ffmpeg-worker/src/utils/frameConverter.ts` - RGBA→YUV420p conversion
+- ✅ Backend generates Agora tokens (audience role, UID 999999)
 
-**New Files**:
+**Performance Metrics (PoC Baseline)**:
 
-```
-ffmpeg-worker/
-├── public/
-│   └── rtc-subscriber.html        # NEW - Agora Web SDK page
-├── src/
-│   ├── services/
-│   │   ├── AgoraRTCBridge.ts       # NEW - Puppeteer + frame capture
-│   │   └── FFmpegManager.ts        # UPDATE - Connect to bridge
-│   └── utils/
-│       └── frameConverter.ts       # NEW - RGBA→YUV, audio→PCM
-```
+| Metric             | Current            | Target (Phase 4) |
+| ------------------ | ------------------ | ---------------- |
+| Video Resolution   | 640×360            | 1280×720 (720p)  |
+| Video FPS          | 10 FPS             | 30 FPS           |
+| Audio Quality      | Opus 128kbps       | Opus 256kbps     |
+| CPU Usage          | 80-100% per stream | 20-30% with GPU  |
+| RAM Usage          | ~2.5GB per stream  | ~1GB             |
+| End-to-end Latency | 8-12s              | 5-8s             |
 
-**Technical Workflow**:
+**Known Limitations (PoC)**:
 
-```typescript
-// 1. Launch Puppeteer
-browser = await puppeteer.launch({ headless: true });
-page = await browser.newPage();
+- ⚠️ **Low FPS**: 10 FPS due to `page.evaluate()` serialization bottleneck (0.9MB RGBA per frame)
+- ⚠️ **Low Resolution**: 640×360 (sellers publish 720p but worker captures 360p)
+- ⚠️ **High CPU**: 80-100% per stream (limits to ~3-5 concurrent streams per worker)
+- ⚠️ **High RAM**: ~2.5GB per stream (Puppeteer + Chrome overhead)
+- ✅ **Audio Quality**: Acceptable (Opus 128kbps imperceptible loss)
 
-// 2. Navigate to subscriber page
-await page.goto("http://localhost:3001/rtc-subscriber.html?channel=...");
+**Cost Analysis** (50 channels × 3h/day × 30d = 4,500 min/mois):
 
-// 3. Web SDK joins and subscribes (in browser context)
-client.on("user-published", async (user) => {
-  await client.subscribe(user, "video");
-  await client.subscribe(user, "audio");
-});
+| Component                      | Cost/mois                    |
+| ------------------------------ | ---------------------------- |
+| Agora RTC (free tier <10K min) | $0                           |
+| Render.com Pro (4GB RAM)       | $85                          |
+| Redis                          | $10                          |
+| **Total**                      | **$95**                      |
+| **Savings vs current**         | **-$445 (82% reduction)** ✅ |
 
-// 4. Extract frames via Canvas API
-setInterval(() => {
-  const frame = canvas.toDataURL(); // or getImageData
-  // Pipe to FFmpeg stdin
-}, 1000 / 30); // 30 FPS
-```
+**Production Readiness**:
 
-**Dependencies**:
-
-```json
-{
-  "puppeteer": "^21.x", // Headless browser
-  "@types/puppeteer": "^5.x" // TypeScript types
-}
-```
-
-**Infrastructure Impact**:
+- ✅ **Functional**: Video + audio streaming works end-to-end
+- ⚠️ **Scalable**: Limited to 3-5 streams per worker (CPU constraint)
+- ✅ **Cost-Effective**: 82% cheaper than Agora Cloud Recording
+- ⚠️ **Performance**: Acceptable for staging, needs GPU optimization for production
+- 📋 **Next**: Deploy to Render staging → validate with real users → Phase 4 GPU optimization
 
 - Worker RAM: 2GB → **4GB** (Puppeteer + Chrome)
 - Worker vCPU: 1 → **2** (rendering + encoding)
@@ -421,32 +409,56 @@ setInterval(() => {
 
 ---
 
-### Phase 3: Local Docker Testing (4-6h)
+### Phase 3: Docker Containerization & Local Testing (2-3h)
 
-**Goal**: Verify full pipeline works locally with docker-compose
+**Goal**: Package FFmpeg worker into Docker container and validate locally
 
-**Test Scenarios**:
+**Status**: ⬜ Not Started
 
-1. **Single stream**: Seller publishes → FFmpeg → Cloudflare → Buyer watches HLS
-2. **Multiple streams**: 3-5 concurrent sellers
-3. **Stream restart**: Stop/start same channel
-4. **Worker restart**: Kill FFmpeg worker, ensure recovery
-5. **Resource limits**: Monitor CPU/RAM with 5 streams
+**Why Docker First, GPU Later**:
+
+- Get to production faster (Render.com in Phase 4)
+- Validate containerization before GPU complexity
+- CPU encoding acceptable for PoC (10 FPS @ 640×360)
+- GPU optimization deferred to Phase 7
 
 **Deliverables**:
 
+- `ffmpeg-worker/Dockerfile` - Multi-stage build with FFmpeg + Chromium
 - Updated `docker-compose.yml` with ffmpeg-worker service
-- Testing script (`scripts/test-ffmpeg-relay.sh`)
-- Performance benchmarks document
+- Health check endpoint (HTTP on port 3001)
+- Local testing scripts
+
+**Key Tasks**:
+
+1. Create production Dockerfile (libx264 CPU encoding)
+2. Install Chromium for Puppeteer
+3. Add ffmpeg-worker to docker-compose
+4. Test end-to-end streaming in Docker
+5. Validate resource usage (CPU/RAM)
 
 **Acceptance Criteria**:
 
-- [ ] `docker-compose up` starts all 4 services
-- [ ] Single stream works end-to-end
-- [ ] 5 concurrent streams run simultaneously
-- [ ] Worker recovers from crashes
-- [ ] CPU usage < 80% with 5 streams
-- [ ] Memory usage < 2GB with 5 streams
+- [ ] Dockerfile builds without errors (< 2GB image)
+- [ ] `docker-compose up` starts all services
+- [ ] FFmpeg worker connects to Redis
+- [ ] Puppeteer can launch Chromium in container
+- [ ] End-to-end streaming works (1 stream)
+- [ ] Health check endpoint responds
+- [ ] Graceful shutdown works
+- [ ] CPU < 100% per stream, RAM < 3GB per stream
+
+**Performance Baseline** (CPU encoding):
+
+| Metric     | Expected | Notes                    |
+| ---------- | -------- | ------------------------ |
+| Resolution | 640×360  | Acceptable for PoC       |
+| FPS        | 10 FPS   | Acceptable for PoC       |
+| CPU/stream | 80-100%  | Limits to 3-5 concurrent |
+| RAM/stream | 2-3GB    | Puppeteer overhead       |
+| Image Size | ~1.5GB   | Multi-stage optimized    |
+
+📄 **Detailed Plan**: [phase-3-docker-containerization.md](phase-3-docker-containerization.md)
 
 ---
 
@@ -559,6 +571,74 @@ services:
 - [ ] Zero data loss during scaling events
 - [ ] Cost validated: < $150/month for 50 streams
 - [ ] Runbook covers: crashes, high CPU, Redis failure, Render outage
+
+---
+
+### Phase 7: GPU Optimization & AWS EC2 Deployment (6-8h) 🎮
+
+**Goal**: Optimize streaming performance with GPU hardware acceleration
+
+**Status**: ⬜ Not Started (Optional - After Phase 6 Production Validation)
+
+**Why GPU Acceleration**:
+
+After validating the system works with CPU encoding (Phases 1-6), optimize for production-grade quality:
+
+- ✅ **720p @ 30 FPS** (vs 360p @ 10 FPS on CPU)
+- ✅ **20-30% CPU usage** (vs 80-100% on CPU)
+- ✅ **More streams per instance** (10-15 vs 3-5)
+- ⚠️ Requires AWS EC2 g4dn instances (more complex infrastructure)
+
+**Target Infrastructure**:
+
+- **AWS EC2 g4dn.xlarge**: 4 vCPU, 16GB RAM, NVIDIA Tesla T4 GPU
+- **Cost**: ~$0.526/hour = ~$380/month per instance (vs $85 Render)
+- **Break-even**: Need 40+ concurrent streams to justify GPU cost
+
+**Deliverables**:
+
+- Multi-architecture Dockerfile (GPU + CPU fallback)
+- FFmpeg NVENC encoder configuration (h264_nvenc)
+- Auto-detect GPU availability at runtime
+- AWS EC2 deployment scripts
+- Performance benchmarks (GPU vs CPU)
+
+**Key Tasks**:
+
+1. **Dockerfile with NVIDIA CUDA** (nvidia/cuda:12.0 base image)
+2. **FFmpeg with NVENC support** (hardware-accelerated H.264)
+3. **Auto-detect GPU/CPU** and choose codec dynamically
+4. **AWS EC2 setup** (g4dn.xlarge + NVIDIA drivers)
+5. **Deploy and benchmark** (compare 720p@30fps vs 360p@10fps)
+6. **Cost analysis** (GPU vs CPU scaling)
+
+**Acceptance Criteria**:
+
+- [ ] Dockerfile builds with GPU and CPU support
+- [ ] FFmpeg uses h264_nvenc when GPU available
+- [ ] Gracefully falls back to libx264 without GPU
+- [ ] Deploy to AWS EC2 g4dn.xlarge successfully
+- [ ] Achieve 720p @ 30 FPS with < 30% CPU usage
+- [ ] 10+ concurrent streams per GPU instance
+- [ ] Cost analysis: GPU economical at 40+ streams
+
+**Performance Target** (GPU encoding):
+
+| Metric           | CPU (Phase 3-6) | GPU (Phase 7) | Improvement   |
+| ---------------- | --------------- | ------------- | ------------- |
+| Resolution       | 640×360         | 1280×720      | 4x pixels     |
+| FPS              | 10 FPS          | 30 FPS        | 3x smoother   |
+| CPU/stream       | 80-100%         | 20-30%        | 70% reduction |
+| Streams/instance | 3-5             | 10-15         | 3x capacity   |
+| Quality          | Acceptable      | Production    | ✨            |
+
+📄 **Detailed Plan**: [phase-7-gpu-optimization-aws-ec2.md](phase-7-gpu-optimization-aws-ec2.md)
+
+**Note**: This phase is optional. Run CPU-based solution (Phases 1-6) in production first, then optimize with GPU only if:
+
+- Stream volume > 40 concurrent channels
+- Users complain about video quality
+- ROI justifies infrastructure complexity
 
 ---
 

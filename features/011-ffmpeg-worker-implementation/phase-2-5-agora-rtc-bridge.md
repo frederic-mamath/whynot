@@ -1,8 +1,9 @@
 # Phase 2.5: Agora RTC Bridge in Worker (Puppeteer Approach)
 
-**Status**: 🔄 In Progress  
+**Status**: ✅ Completed  
 **Started**: 2026-02-19  
-**Estimated Duration**: 8-10 hours
+**Completed**: 2026-02-22  
+**Actual Duration**: 12 hours (including audio MediaRecorder pivot)
 
 ---
 
@@ -624,6 +625,95 @@ If Media Pull adds too much latency or complexity:
    - VOD processing
 
 **Trade-off**: Keeps Agora Recording costs, but simpler architecture.
+
+---
+
+## Implementation Summary & Known Limitations
+
+### ✅ What Was Implemented
+
+**Architecture**:
+
+- Puppeteer launches headless Chrome to run Agora Web SDK 4.20.0
+- Worker joins Agora channel as audience (UID 999999) - uses FREE RTC tier
+- Video: Canvas API captures frames → RGBA → YUV420p → Named pipe (FIFO) → FFmpeg
+- Audio: MediaRecorder captures WebM/Opus chunks → Named pipe (FIFO) → FFmpeg
+- FFmpeg multiplexes video + audio → encodes → pushes RTMP to Cloudflare
+
+**Key Technical Decisions**:
+
+1. **MediaRecorder instead of ScriptProcessorNode** (Feb 22 pivot):
+   - ScriptProcessorNode (deprecated) doesn't fire events in Puppeteer headless
+   - MediaRecorder is modern, works perfectly in headless, hardware-accelerated
+   - Trade-off: Audio is Opus 128kbps (vs lossless PCM) but difference imperceptible
+   - FFmpeg decodes Opus → re-encodes to AAC/Opus for RTMP
+
+2. **Named Pipes (FIFOs) for dual input**:
+   - Video FIFO: `/tmp/whynot-video-{channelId}.fifo`
+   - Audio FIFO: `/tmp/whynot-audio-{channelId}.fifo`
+   - Allows FFmpeg to read both inputs independently
+   - Auto-cleanup on stream end, error, or shutdown
+
+3. **Resolution & Framerate constraints**:
+   - Hardcoded to 640×360 @ 10 FPS (CPU limitations)
+   - `page.evaluate()` serialization bottleneck (~0.9MB RGBA per frame)
+   - Acceptable for PoC, will be optimized in Phase 4 with GPU
+
+**Files Created/Modified**:
+
+- `ffmpeg-worker/public/rtc-subscriber.html` - Agora Web SDK integration with MediaRecorder
+- `ffmpeg-worker/src/services/AgoraRTCBridge.ts` - Puppeteer lifecycle + frame/audio capture
+- `ffmpeg-worker/src/services/FFmpegManager.ts` - FIFO management + dual input FFmpeg args
+- `ffmpeg-worker/src/utils/frameConverter.ts` - RGBA→YUV420p conversion
+- `ffmpeg-worker/src/config/index.ts` - Agora config (appId, workerUid)
+- Backend already provided Agora tokens (no changes needed)
+
+### ⚠️ Known Limitations (PoC Baseline)
+
+| Limitation                       | Current State                   | Target (Phase 4+)                  | Impact                    | Workaround                                      |
+| -------------------------------- | ------------------------------- | ---------------------------------- | ------------------------- | ----------------------------------------------- |
+| **Low FPS**                      | 10 FPS                          | 30 FPS                             | Video slightly choppy     | Acceptable for PoC, will optimize with GPU      |
+| **Low Resolution**               | 640×360                         | 1280×720 (720p)                    | Lower quality             | Seller publishes 720p, but worker captures 360p |
+| **High CPU Usage**               | 80-100% per stream              | 20-30% with GPU                    | Limits concurrent streams | Current max ~3-5 streams per worker             |
+| **High RAM Usage**               | ~2.5GB per stream (Puppeteer)   | ~1GB with optimization             | Requires 4GB RAM worker   | Render.com Pro plan ($85/mois)                  |
+| **Audio Compression**            | Opus 128kbps                    | Lossless PCM or Opus 256kbps       | Negligible quality loss   | Imperceptible to buyers                         |
+| **`page.evaluate()` Bottleneck** | Serializes 0.9MB RGBA per frame | Use shared memory or native module | Limits FPS                | Accepted for PoC                                |
+
+### 📊 Performance Metrics (PoC Baseline)
+
+**Measured on local dev (MacBook M1)**:
+
+- Video capture: ~10 FPS (100ms per frame with `page.evaluate()`)
+- Audio capture: ~100ms chunks (MediaRecorder timeslice)
+- CPU usage: 80-100% per stream (Chrome rendering + FFmpeg encoding)
+- RAM usage: ~2.5GB per stream
+- End-to-end latency: ~8-12s (Seller → Agora → Worker → FFmpeg → Cloudflare → Buyer)
+
+**Cost Analysis** (50 channels × 3h/day × 30d = 4,500 min/mois):
+| Component | Cost/mois |
+|-----------|-----------|
+| Agora RTC (free tier <10K min) | $0 |
+| Render.com Pro (4GB RAM) | $85 |
+| Redis | $10 |
+| **Total** | **$95** |
+| **Savings vs current** | **-$445 (82% reduction)** |
+
+### 🚀 Production Readiness Assessment
+
+| Category           | Status           | Notes                                       |
+| ------------------ | ---------------- | ------------------------------------------- |
+| **Functional**     | ✅ Complete      | Video + audio streaming works end-to-end    |
+| **Stable**         | ⚠️ Needs testing | Requires 30-min continuous stream test      |
+| **Scalable**       | ⚠️ Limited       | Max 3-5 streams per worker (CPU constraint) |
+| **Cost-Effective** | ✅ Validated     | 82% cheaper than current solution           |
+| **Monitorable**    | ❌ Basic         | Needs metrics, alerts, health checks        |
+| **Documented**     | ✅ Good          | Architecture and limitations documented     |
+
+**Recommendation**:
+
+- ✅ Ready for Phase 3 (Render deployment + staging testing)
+- ⚠️ NOT ready for production (needs Phase 4 GPU optimization + Phase 5 monitoring)
+- 🎯 Target: Deploy to staging, validate with real users, plan Phase 4
 
 ---
 

@@ -1,14 +1,14 @@
-# Phase 3: Docker Containerization & AWS EC2 Deployment
+# Phase 7: GPU Optimization & AWS EC2 Deployment
 
 **Duration**: 6-8 hours  
 **Status**: ⬜ Not Started  
-**Prerequisites**: Phase 1 & 2 completed ✅ + Phase 2.5 (Puppeteer RTC Bridge) ✅
+**Prerequisites**: Phase 1-6 completed ✅ (especially Phase 3: Docker CPU baseline working)
 
 ---
 
 ## 🎯 Objective
 
-Create production-ready Docker image with GPU support for AWS EC2 deployment:
+Optimize streaming performance with GPU hardware acceleration on AWS EC2:
 
 1. **Build Dockerfile** with NVIDIA CUDA + FFmpeg NVENC support
 2. **Auto-detect GPU/CPU** and fallback gracefully
