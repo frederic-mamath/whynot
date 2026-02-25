@@ -1,0 +1,20 @@
+{
+  "ImageId": "ami-0dac4f1599d320d97",
+  "InstanceType": "g4dn.xlarge",
+  "KeyName": "whynot-ffmpeg-worker",
+  "SecurityGroupIds": ["sg-0c5e5fb81f12c467f"],
+  "IamInstanceProfile": {
+    "Name": "WhyNotFFmpegWorkerProfile"
+  },
+  "BlockDeviceMappings": [
+    {
+      "DeviceName": "/dev/sda1",
+      "Ebs": {
+        "VolumeSize": 30,
+        "VolumeType": "gp3",
+        "DeleteOnTermination": true
+      }
+    }
+  ],
+  "UserData": "IyEvYmluL2Jhc2gKIyBEb3dubG9hZCBEb2NrZXIgaW1hZ2UgZnJvbSBTMwphd3MgczMgY3AgczM6Ly93aHlub3QtZGVwbG95bWVudHMvd2h5bm90LWZmbXBlZy13b3JrZXItZ3B1LnRhci5neiAvdG1wLwpkb2NrZXIgbG9hZCA8IC90bXAvd2h5bm90LWZmbXBlZy13b3JrZXItZ3B1LnRhci5negpybSAvdG1wL3doeW5vdC1mZm1wZWctd29ya2VyLWdwdS50YXIuZ3oKCiMgU3RhcnQgdGhlIHdvcmtlciBzZXJ2aWNlCnN5c3RlbWN0bCBzdGFydCBmZm1wZWctd29ya2VyCgo="
+}
