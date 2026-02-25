@@ -4,4 +4,6 @@ dist/
 npm-debug.log
 .DS_Store
 *.log
+
 *.tar.gz
+lambda-autoscaler/package/*
