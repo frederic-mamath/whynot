@@ -966,7 +966,7 @@ echo "✅ Docker image saved"
 # Create S3 bucket for deployment artifacts
 BUCKET_NAME="whynot-deployments"
 
-aws s3 mb s3://$BUCKET_NAME --region us-east-1
+aws s3 mb s3://$BUCKET_NAME --region eu-west-3
 
 # Upload image
 aws s3 cp whynot-ffmpeg-worker-gpu.tar.gz s3://$BUCKET_NAME/
@@ -1124,9 +1124,9 @@ import os
 import json
 from datetime import datetime
 
-ec2 = boto3.client('ec2', region_name='us-east-1')
-ssm = boto3.client('ssm', region_name='us-east-1')
-cloudwatch = boto3.client('cloudwatch', region_name='us-east-1')
+ec2 = boto3.client('ec2', region_name='eu-west-3')
+ssm = boto3.client('ssm', region_name='eu-west-3')
+cloudwatch = boto3.client('cloudwatch', region_name='eu-west-3')
 
 SPOT_REQUEST_ID = os.environ['SPOT_REQUEST_ID']
 IDLE_THRESHOLD_MINUTES = int(os.environ.get('IDLE_THRESHOLD_MINUTES', 15))
@@ -1379,7 +1379,7 @@ cat > lambda-policy.json <<'EOF'
       "Action": [
         "ssm:GetParameter"
       ],
-      "Resource": "arn:aws:ssm:us-east-1:*:parameter/whynot/*"
+      "Resource": "arn:aws:ssm:eu-west-3:*:parameter/whynot/*"
     },
     {
       "Effect": "Allow",
