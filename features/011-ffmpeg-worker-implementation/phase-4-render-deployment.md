@@ -781,9 +781,11 @@ echo "✅ Cloudflare credentials stored"
 **4.4.4: Verify Parameters**
 
 ```bash
-# List all parameters
-aws ssm describe-parameters \
-  --parameter-filters "Key=Name,Values=/whynot/"
+# List all parameters by path (correct way to filter by prefix)
+aws ssm get-parameters-by-path \
+  --path "/whynot/" \
+  --query "Parameters[*].[Name,Type]" \
+  --output table
 
 # Should show 5 parameters:
 # - /whynot/redis-url
@@ -801,6 +803,12 @@ aws ssm get-parameter \
 
 echo "✅ All parameters verified"
 ```
+
+**⚠️ Troubleshooting**: Si aucun paramètre n'apparaît, vérifiez que :
+
+- Vous êtes dans la **bonne région** : `aws configure get region` (doit montrer `eu-west-3`)
+- Les paramètres existent vraiment : Vérifiez dans la console AWS Parameter Store
+- La région de la console AWS correspond à celle de votre CLI
 
 **Acceptance Criteria**:
 
