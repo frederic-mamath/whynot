@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agora RTC Subscriber</title>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
+  </head>
+  <body>
+    <h1>RTC Subscriber (Worker)</h1>
+    <video
+      id="remote-video"
+      autoplay
+      playsinline
+      muted
+      style="width: 640px; height: 360px; background: #000"
+    ></video>
+    <canvas
+      id="frame-canvas"
+      width="640"
+      height="360"
+      style="display: none"
+    ></canvas>
+    <div id="status">Initializing...</div>
+
+    <script>
+      // Get params from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const appId = urlParams.get("appId");
+      const channel = urlParams.get("channel");
+      const token = urlParams.get("token");
+      const uid = 999999; // Fixed UID for worker
+
+      console.log("Initializing Agora RTC subscriber...");
+      console.log("AppId:", appId);
+      console.log("Channel:", channel);
+      console.log("Token:", token ? "provided" : "missing");
+
+      // Create Agora client
+      const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+
+      // Global state exposed to Puppeteer
+      window.agoraState = {
+        client: null,
+        videoTrack: null,
+        audioTrack: null,
+        videoReady: false,
+        audioReady: false,
+        joined: false,
+        error: null,
+      };
+
+      // Audio processing state
+      window.audioState = {
+        recorder: null,
+        audioChunks: [], // Array of Blob chunks from MediaRecorder
+        sampleRate: 48000,
+        isCapturing: false,
+      };
+
+      // Setup audio capture pipeline with MediaRecorder
+      function setupAudioCapture(audioTrack) {
+        try {
+          console.log("Setting up audio capture with MediaRecorder...");
+
+          // Get MediaStreamTrack from Agora audio track and create MediaStream
+          const mediaStreamTrack = audioTrack.getMediaStreamTrack();
+          const mediaStream = new MediaStream([mediaStreamTrack]);
+
+          // Check if MediaRecorder is supported
+          if (!window.MediaRecorder) {
+            throw new Error("MediaRecorder API not supported");
+          }
+
+          // Check supported MIME types
+          const mimeTypes = [
+            "audio/webm;codecs=opus",
+            "audio/webm",
+            "audio/ogg;codecs=opus",
+          ];
+
+          let selectedMimeType = null;
+          for (const mimeType of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+              selectedMimeType = mimeType;
+              console.log(`Using MIME type: ${mimeType}`);
+              break;
+            }
+          }
+
+          if (!selectedMimeType) {
+            throw new Error("No supported audio MIME type found");
+          }
+
+          // Create MediaRecorder
+          const recorder = new MediaRecorder(mediaStream, {
+            mimeType: selectedMimeType,
+            audioBitsPerSecond: 128000, // 128 kbps
+          });
+
+          window.audioState.recorder = recorder;
+
+          // Handle data available event
+          recorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0) {
+              window.audioState.audioChunks.push(event.data);
+
+              // Log first few chunks
+              if (window.audioState.audioChunks.length <= 3) {
+                console.log(
+                  `🎵 Audio chunk ${window.audioState.audioChunks.length}: ${event.data.size} bytes`,
+                );
+              }
+            }
+          };
+
+          recorder.onerror = (error) => {
+            console.error("MediaRecorder error:", error);
+          };
+
+          recorder.onstart = () => {
+            console.log("MediaRecorder started");
+            window.audioState.isCapturing = true;
+          };
+
+          recorder.onstop = () => {
+            console.log("MediaRecorder stopped");
+            window.audioState.isCapturing = false;
+          };
+
+          // Start recording with timeslice (request data every 100ms)
+          recorder.start(100);
+
+          console.log("✅ Audio capture pipeline established");
+        } catch (error) {
+          console.error("Failed to setup audio capture:", error);
+          window.agoraState.error = `Audio capture error: ${error.message}`;
+        }
+      }
+
+      // Handle user published event
+      client.on("user-published", async (user, mediaType) => {
+        console.log(`User ${user.uid} published ${mediaType}`);
+        document.getElementById("status").innerText =
+          `Subscribing to ${mediaType}...`;
+
+        try {
+          await client.subscribe(user, mediaType);
+          console.log(`Subscribed to user ${user.uid} ${mediaType}`);
+
+          if (mediaType === "video") {
+            const videoTrack = user.videoTrack;
+            window.agoraState.videoTrack = videoTrack;
+
+            // Play video and wait for it to actually start playing
+            videoTrack.play("remote-video");
+
+            // Wait for video element to start playing before marking ready
+            const videoElement = document.getElementById("remote-video");
+            videoElement.addEventListener(
+              "playing",
+              () => {
+                window.agoraState.videoReady = true;
+                console.log("✅ Video track ready and playing");
+                document.getElementById("status").innerText = "Video streaming";
+              },
+              { once: true },
+            );
+
+            // Fallback: mark ready after 2 seconds if 'playing' event doesn't fire
+            setTimeout(() => {
+              if (!window.agoraState.videoReady) {
+                window.agoraState.videoReady = true;
+                console.log("✅ Video track ready (fallback timeout)");
+              }
+            }, 2000);
+          }
+
+          if (mediaType === "audio") {
+            const audioTrack = user.audioTrack;
+            audioTrack.play();
+            window.agoraState.audioTrack = audioTrack;
+            window.agoraState.audioReady = true;
+            console.log("✅ Audio track ready");
+
+            // Setup audio capture pipeline
+            setupAudioCapture(audioTrack);
+          }
+        } catch (error) {
+          console.error("Subscribe error:", error);
+          window.agoraState.error = error.message;
+          document.getElementById("status").innerText =
+            `Error: ${error.message}`;
+        }
+      });
+
+      // Handle user unpublished event
+      client.on("user-unpublished", (user, mediaType) => {
+        console.log(`User ${user.uid} unpublished ${mediaType}`);
+        if (mediaType === "video") {
+          window.agoraState.videoReady = false;
+          window.agoraState.videoTrack = null;
+        }
+        if (mediaType === "audio") {
+          window.agoraState.audioReady = false;
+          window.agoraState.audioTrack = null;
+        }
+        document.getElementById("status").innerText = "User left channel";
+      });
+
+      // Handle user left event
+      client.on("user-left", (user, reason) => {
+        console.log(`User ${user.uid} left: ${reason}`);
+        window.agoraState.videoReady = false;
+        window.agoraState.audioReady = false;
+        document.getElementById("status").innerText = `User left: ${reason}`;
+      });
+
+      // Handle connection state change
+      client.on("connection-state-change", (curState, prevState, reason) => {
+        console.log(
+          `Connection state: ${prevState} -> ${curState} (${reason})`,
+        );
+        if (curState === "DISCONNECTED") {
+          window.agoraState.joined = false;
+          document.getElementById("status").innerText = "Disconnected";
+        }
+      });
+
+      // Initialize connection
+      async function init() {
+        try {
+          console.log("Setting client role to audience...");
+          await client.setClientRole("audience");
+
+          console.log(`Joining channel: ${channel}`);
+          document.getElementById("status").innerText = "Joining channel...";
+
+          await client.join(appId, channel, token, uid);
+
+          console.log("✅ Successfully joined channel");
+          window.agoraState.client = client;
+          window.agoraState.joined = true;
+          document.getElementById("status").innerText =
+            "Connected - waiting for publisher...";
+        } catch (error) {
+          console.error("Failed to join channel:", error);
+          window.agoraState.error = error.message;
+          document.getElementById("status").innerText =
+            `Error: ${error.message}`;
+        }
+      }
+
+      // Start initialization
+      init().catch((error) => {
+        console.error("Init error:", error);
+        window.agoraState.error = error.message;
+      });
+
+      // Frame extraction function exposed to Puppeteer
+      window.getVideoFrame = function () {
+        const video = document.getElementById("remote-video");
+        const canvas = document.getElementById("frame-canvas");
+
+        if (!video || !canvas) {
+          return null;
+        }
+
+        // Check if video is playing and has dimensions
+        if (
+          video.videoWidth === 0 ||
+          video.videoHeight === 0 ||
+          video.paused ||
+          video.readyState < 2
+        ) {
+          return null;
+        }
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return null;
+
+        try {
+          // Draw current video frame to canvas
+          ctx.drawImage(video, 0, 0, 640, 360);
+
+          // Get pixel data (RGBA format)
+          const imageData = ctx.getImageData(0, 0, 640, 360);
+
+          // Return pixel data as array (will be serialized by Puppeteer)
+          return {
+            width: 640,
+            height: 360,
+            data: Array.from(imageData.data), // Convert Uint8ClampedArray to Array
+            timestamp: Date.now(),
+          };
+        } catch (error) {
+          console.error("Frame capture error:", error);
+          return null;
+        }
+      };
+
+      // Audio chunks extraction function exposed to Puppeteer
+      window.getAudioChunks = async function () {
+        if (
+          !window.audioState ||
+          !window.audioState.isCapturing ||
+          window.audioState.audioChunks.length === 0
+        ) {
+          return null;
+        }
+
+        try {
+          // Get all accumulated chunks
+          const chunks = window.audioState.audioChunks.slice();
+
+          // Clear buffer for next batch
+          window.audioState.audioChunks = [];
+
+          // Convert Blobs to ArrayBuffers, then to regular Arrays for Puppeteer serialization
+          // ArrayBuffers cannot be serialized directly by Puppeteer
+          const arrayBuffers = await Promise.all(
+            chunks.map((blob) => blob.arrayBuffer()),
+          );
+
+          const arrays = arrayBuffers.map((buf) =>
+            Array.from(new Uint8Array(buf)),
+          );
+
+          return {
+            chunks: arrays, // Array of Array<number>
+            chunkCount: arrays.length,
+            totalBytes: arrays.reduce((sum, arr) => sum + arr.length, 0),
+            timestamp: Date.now(),
+          };
+        } catch (error) {
+          console.error("Audio chunk extraction error:", error);
+          return null;
+        }
+      };
+
+      // Cleanup function exposed to Puppeteer
+      window.cleanup = async function () {
+        console.log("Cleaning up...");
+
+        // Stop audio capture
+        if (window.audioState) {
+          window.audioState.isCapturing = false;
+
+          if (
+            window.audioState.recorder &&
+            window.audioState.recorder.state !== "inactive"
+          ) {
+            window.audioState.recorder.stop();
+            console.log("MediaRecorder stopped");
+          }
+
+          console.log("Audio capture stopped");
+        }
+
+        // Leave Agora channel
+        if (window.agoraState.client) {
+          await window.agoraState.client.leave();
+          console.log("Left channel");
+        }
+      };
+    </script>
+  </body>
+</html>

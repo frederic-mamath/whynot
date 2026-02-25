@@ -16,19 +16,19 @@ import {
 } from "../websocket/broadcast";
 import { EventEmitter } from "events";
 import { observable } from "@trpc/server/observable";
-import { HybridStreamingService } from "../services/hybridStreamingService";
+import { FFmpegRelayService } from "../services/ffmpegRelayService";
 
 // Event emitter for channel events
 const channelEvents = new EventEmitter();
 channelEvents.setMaxListeners(100);
 
-// Lazy initialization of HybridStreamingService
-let hybridStreamingService: HybridStreamingService | null = null;
-function getHybridStreamingService(): HybridStreamingService {
-  if (!hybridStreamingService) {
-    hybridStreamingService = new HybridStreamingService();
+// Lazy initialization of FFmpegRelayService
+let ffmpegRelayService: FFmpegRelayService | null = null;
+function getFFmpegRelayService(): FFmpegRelayService {
+  if (!ffmpegRelayService) {
+    ffmpegRelayService = new FFmpegRelayService();
   }
-  return hybridStreamingService;
+  return ffmpegRelayService;
 }
 
 async function isChannelHost(
@@ -100,25 +100,25 @@ export const channelRouter = router({
         role: "host",
       });
 
-      // Start hybrid streaming (Agora Cloud Recording → Cloudflare Stream)
+      // Start FFmpeg relay (RTC → RTMP → Cloudflare Stream)
       let hlsPlaybackUrl: string | null = null;
       console.log(
-        `[ChannelRouter] Initiating hybrid streaming for channel ${channel.id}...`,
+        `[ChannelRouter] Initiating FFmpeg relay for channel ${channel.id}...`,
       );
       try {
-        const hybridStreaming = getHybridStreamingService();
-        const result = await hybridStreaming.startHybridStreaming(
-          channel.id,
-          channel.id.toString(),
-          dynamicUid,
-        );
+        const ffmpegRelay = getFFmpegRelayService();
+        const result = await ffmpegRelay.startRelay({
+          channelId: channel.id,
+          channelName: channel.id.toString(),
+          sellerUid: dynamicUid,
+        });
         hlsPlaybackUrl = result.hlsPlaybackUrl;
         console.log(
-          `[ChannelRouter] ✅ Hybrid streaming started. HLS URL: ${hlsPlaybackUrl}`,
+          `[ChannelRouter] ✅ FFmpeg relay started. HLS URL: ${hlsPlaybackUrl}, Job ID: ${result.jobId}`,
         );
       } catch (error) {
         console.error(
-          `[ChannelRouter] ❌ Failed to start hybrid streaming for channel ${channel.id}`,
+          `[ChannelRouter] ❌ Failed to start FFmpeg relay for channel ${channel.id}`,
         );
         console.error(
           `[ChannelRouter] Error:`,
@@ -380,17 +380,17 @@ export const channelRouter = router({
       // Check if user is the host
       const isHost = await isChannelHost(input.channelId, ctx.userId);
 
-      // If host is leaving, stop hybrid streaming
+      // If host is leaving, stop FFmpeg relay
       if (isHost) {
         try {
-          const hybridStreaming = getHybridStreamingService();
-          await hybridStreaming.stopHybridStreaming(input.channelId);
+          const ffmpegRelay = getFFmpegRelayService();
+          await ffmpegRelay.stopRelay(input.channelId);
           console.log(
-            `Hybrid streaming stopped for channel ${input.channelId} (host left)`,
+            `FFmpeg relay stopped for channel ${input.channelId} (host left)`,
           );
         } catch (error) {
           console.error(
-            `Failed to stop hybrid streaming for channel ${input.channelId}:`,
+            `Failed to stop FFmpeg relay for channel ${input.channelId}:`,
             error,
           );
           // Continue anyway - user can still leave
@@ -780,15 +780,15 @@ export const channelRouter = router({
   getStatus: publicProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ input }) => {
-      const hybridStreaming = getHybridStreamingService();
-      return hybridStreaming.getStreamingStatus(input.channelId);
+      const ffmpegRelay = getFFmpegRelayService();
+      return ffmpegRelay.getStreamingStatus(input.channelId);
     }),
 
   /**
    * Health check for streaming services
    */
   healthCheck: publicProcedure.query(async () => {
-    const hybridStreaming = getHybridStreamingService();
-    return hybridStreaming.healthCheck();
+    const ffmpegRelay = getFFmpegRelayService();
+    return ffmpegRelay.healthCheck();
   }),
 });

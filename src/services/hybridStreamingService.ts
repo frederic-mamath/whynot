@@ -1,17 +1,17 @@
 import { db } from "../db";
-import { RecordingManager } from "./recordingManager";
+import { FFmpegRelayService } from "./ffmpegRelayService";
 import { CloudflareStreamService } from "./cloudflareStreamService";
 
 /**
  * Hybrid Streaming Service
- * Orchestrates Agora Cloud Recording → Cloudflare Stream for cost-effective distribution
+ * Orchestrates FFmpeg Worker → Cloudflare Stream for cost-effective distribution
  */
 export class HybridStreamingService {
-  private recordingManager: RecordingManager;
+  private ffmpegRelay: FFmpegRelayService;
   private cloudflareStream: CloudflareStreamService;
 
   constructor() {
-    this.recordingManager = new RecordingManager();
+    this.ffmpegRelay = new FFmpegRelayService();
     this.cloudflareStream = new CloudflareStreamService();
   }
 
@@ -25,38 +25,22 @@ export class HybridStreamingService {
     sellerUid: number,
   ): Promise<{ hlsPlaybackUrl: string; streamKeyId: string }> {
     console.log(
-      `[HybridStreaming] 🚀 Starting for channel ${channelId}, seller UID: ${sellerUid}`,
+      `[HybridStreaming] 🚀 Starting FFmpeg relay for channel ${channelId}, seller UID: ${sellerUid}`,
     );
 
     try {
-      // Update channel status to "starting"
-      console.log(
-        `[HybridStreaming] Step 1/5: Setting relay_status to 'starting'`,
-      );
-      await db
-        .updateTable("channels")
-        .set({
-          relay_status: "starting",
-          relay_started_at: new Date(),
-        })
-        .where("id", "=", channelId)
-        .execute();
-
-      // Start Agora Cloud Recording → Cloudflare Stream relay
-      console.log(`[HybridStreaming] Step 2/5: Starting recording manager...`);
-      const { hlsPlaybackUrl } = await this.recordingManager.startRecording(
+      // Start FFmpeg relay (creates Cloudflare Stream + enqueues Redis job)
+      console.log(`[HybridStreaming] Starting FFmpeg relay...`);
+      const { hlsPlaybackUrl } = await this.ffmpegRelay.startRelay({
         channelId,
         channelName,
         sellerUid,
-      );
+      });
       console.log(
-        `[HybridStreaming] Step 2/5: ✅ Recording started, HLS: ${hlsPlaybackUrl}`,
+        `[HybridStreaming] ✅ FFmpeg relay started, HLS: ${hlsPlaybackUrl}`,
       );
 
-      // Get stream key ID from database (set by RecordingManager)
-      console.log(
-        `[HybridStreaming] Step 3/5: Retrieving stream_key_id from DB...`,
-      );
+      // Get stream key ID from database (set by FFmpegRelayService)
       const channel = await db
         .selectFrom("channels")
         .select("stream_key_id")
@@ -67,25 +51,9 @@ export class HybridStreamingService {
         console.error(
           `[HybridStreaming] ❌ Stream key ID not found in database!`,
         );
-        throw new Error("Stream key ID not found after starting recording");
+        throw new Error("Stream key ID not found after starting relay");
       }
-      console.log(
-        `[HybridStreaming] Step 3/5: ✅ Stream key: ${channel.stream_key_id}`,
-      );
-
-      // Update status to "active"
-      console.log(
-        `[HybridStreaming] Step 4/5: Setting relay_status to 'active'`,
-      );
-      await db
-        .updateTable("channels")
-        .set({ relay_status: "active" })
-        .where("id", "=", channelId)
-        .execute();
-
-      console.log(
-        `[HybridStreaming] Step 5/5: ✅ SUCCESS - Hybrid streaming active for channel ${channelId}`,
-      );
+      console.log(`[HybridStreaming] ✅ Stream key: ${channel.stream_key_id}`);
 
       return {
         hlsPlaybackUrl,
@@ -94,16 +62,11 @@ export class HybridStreamingService {
     } catch (error) {
       console.error(`[HybridStreaming] ❌ FAILED for channel ${channelId}:`);
       console.error(
-        `[HybridStreaming] Error message:`,
+        `[HybridStreaming] Error:`,
         error instanceof Error ? error.message : String(error),
-      );
-      console.error(
-        `[HybridStreaming] Error stack:`,
-        error instanceof Error ? error.stack : "No stack trace",
       );
 
       // Update status to "error"
-      console.log(`[HybridStreaming] Setting relay_status to 'error'`);
       await db
         .updateTable("channels")
         .set({ relay_status: "error" })
@@ -119,11 +82,11 @@ export class HybridStreamingService {
    * Called when seller ends broadcast
    */
   async stopHybridStreaming(channelId: number): Promise<void> {
-    console.log(`Stopping hybrid streaming for channel ${channelId}`);
+    console.log(`Stopping FFmpeg relay for channel ${channelId}`);
 
     try {
-      // Stop Agora Cloud Recording
-      await this.recordingManager.stopRecording(channelId);
+      // Stop FFmpeg relay
+      await this.ffmpegRelay.stopRelay(channelId);
 
       // Update channel status
       await db
@@ -136,12 +99,10 @@ export class HybridStreamingService {
         .where("id", "=", channelId)
         .execute();
 
-      console.log(
-        `Hybrid streaming stopped successfully for channel ${channelId}`,
-      );
+      console.log(`FFmpeg relay stopped successfully for channel ${channelId}`);
     } catch (error) {
       console.error(
-        `Failed to stop hybrid streaming for channel ${channelId}:`,
+        `Failed to stop FFmpeg relay for channel ${channelId}:`,
         error,
       );
       throw error;
@@ -158,7 +119,38 @@ export class HybridStreamingService {
     hlsPlaybackUrl: string | null;
     recordingUrl: string | null;
   }> {
-    return this.recordingManager.getRecordingStatus(channelId);
+    const channel = await db
+      .selectFrom("channels")
+      .selectAll()
+      .where("id", "=", channelId)
+      .executeTakeFirst();
+
+    if (!channel) {
+      throw new Error(`Channel ${channelId} not found`);
+    }
+
+    let isLive = false;
+    if (channel.stream_key_id) {
+      try {
+        const status = await this.cloudflareStream.getStreamStatus(
+          channel.stream_key_id,
+        );
+        isLive = status.isLive;
+      } catch (error) {
+        console.error(
+          `Failed to get Cloudflare stream status for channel ${channelId}:`,
+          error,
+        );
+      }
+    }
+
+    return {
+      isActive: channel.relay_status === "active",
+      isLive,
+      hlsPlaybackUrl: channel.hls_playback_url,
+      recordingUrl: channel.stream_recording_url,
+      relayStatus: channel.relay_status,
+    };
   }
 
   /**

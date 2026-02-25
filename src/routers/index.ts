@@ -12,6 +12,7 @@ import { payoutRouter } from "./payout";
 import { profileRouter } from "./profile";
 import { recordingRouter } from "./recording";
 import { analyticsRouter } from "./analyticsRouter";
+import { relayRouter } from "./relay";
 
 export const appRouter = router({
   auth: authRouter,
@@ -27,6 +28,7 @@ export const appRouter = router({
   profile: profileRouter,
   recording: recordingRouter,
   analytics: analyticsRouter,
+  relay: relayRouter,
 });
 
 export type AppRouter = typeof appRouter;
