@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Base Image with FFmpeg
 # ============================================
-FROM node:20-slim as base
+FROM node:20-slim AS base
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -35,7 +35,7 @@ RUN ffmpeg -version
 # ============================================
 # Stage 2: Dependencies
 # ============================================
-FROM base as deps
+FROM base AS deps
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ RUN npm ci
 # ============================================
 # Stage 3: Builder
 # ============================================
-FROM deps as builder
+FROM deps AS builder
 
 WORKDIR /app
 
