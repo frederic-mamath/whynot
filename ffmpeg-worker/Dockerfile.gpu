@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Base with CUDA support
 # ============================================
-FROM nvidia/cuda:12.2.0-base-ubuntu22.04 as base
+FROM nvidia/cuda:12.2.0-base-ubuntu22.04 AS base
 
 WORKDIR /app
 
@@ -42,7 +42,7 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
 # ============================================
 # Stage 2: Dependencies
 # ============================================
-FROM base as deps
+FROM base AS deps
 
 COPY package*.json ./
 RUN npm ci --production && npm cache clean --force
@@ -50,7 +50,7 @@ RUN npm ci --production && npm cache clean --force
 # ============================================
 # Stage 3: Builder
 # ============================================
-FROM base as builder
+FROM base AS builder
 
 COPY package*.json ./
 RUN npm ci
