@@ -18,7 +18,8 @@
     "migrate": "tsx migrate.ts",
     "migrate:prod": "NODE_ENV=production tsx migrate.ts",
     "tunnel:db": "ssh -N -L 5433:localhost:5432 o2",
-    "heroku-postbuild": "npm run build"
+    "heroku-postbuild": "npm run build",
+    "render:get-ip": "dig +short https://whynot-backend-1sgz.onrender.com"
   },
   "keywords": [],
   "author": "",
