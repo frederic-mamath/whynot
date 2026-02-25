@@ -15,6 +15,9 @@ export class RedisConsumer {
   constructor(streamService: StreamService) {
     this.streamService = streamService;
 
+    // Detect TLS from redis URL
+    const isTLS = config.redis.url.startsWith("rediss://");
+
     this.worker = new Worker<StreamJob>(
       config.redis.queueName,
       async (job: Job<StreamJob>) => {
@@ -24,6 +27,13 @@ export class RedisConsumer {
         connection: {
           host: this.getRedisHost(),
           port: this.getRedisPort(),
+          username: this.getRedisUsername(),
+          password: this.getRedisPassword(),
+          ...(isTLS && {
+            tls: {
+              rejectUnauthorized: false,
+            },
+          }),
         },
         concurrency: config.ffmpeg.maxConcurrentStreams,
         limiter: {
@@ -89,6 +99,22 @@ export class RedisConsumer {
   private getRedisPort(): number {
     const url = new URL(config.redis.url);
     return parseInt(url.port) || 6379;
+  }
+
+  /**
+   * Parse Redis URL for username
+   */
+  private getRedisUsername(): string | undefined {
+    const url = new URL(config.redis.url);
+    return url.username || undefined;
+  }
+
+  /**
+   * Parse Redis URL for password
+   */
+  private getRedisPassword(): string | undefined {
+    const url = new URL(config.redis.url);
+    return url.password || undefined;
   }
 
   /**
