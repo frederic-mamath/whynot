@@ -540,7 +540,8 @@ nvidia-smi
 # +-------------------------------+----------------------+----------------------+
 
 # Verify Docker can use GPU
-docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+# Note: Using CUDA 12.2.0 image (compatible with your CUDA 13.1 driver)
+docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
 
 # Should show the same GPU info
 # If you see the GPU, you're good! ✅
@@ -551,7 +552,7 @@ docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
 ```bash
 # Pull base images to AMI (so they don't need to download every time)
 docker pull node:20-slim
-docker pull nvidia/cuda:12.0-base-ubuntu22.04
+docker pull nvidia/cuda:12.2.0-base-ubuntu22.04
 
 echo "✅ Docker images pre-loaded in AMI"
 ```
