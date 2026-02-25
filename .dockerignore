@@ -1,0 +1,53 @@
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+
+# Build outputs (will be built in container)
+dist/
+client/dist/
+
+# Git
+.git/
+.gitignore
+
+# Environment files (will be injected at runtime)
+.env
+.env.*
+
+# Documentation
+*.md
+docs/
+
+# Development files
+dev-quality/
+features/
+
+# Tests
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Deployment configs
+Procfile
+heroku.yml
+render.yaml
+
+# Misc
+*.log
+coverage/
+.cache/

@@ -60,9 +60,11 @@ The server will run on `http://localhost:3000` and serve both the API and the Re
 ### Available Procedures
 
 #### `auth.register`
+
 Register a new user.
 
 **Input:**
+
 ```typescript
 {
   email: string;
@@ -71,21 +73,24 @@ Register a new user.
 ```
 
 **Output:**
+
 ```typescript
 {
   user: {
     id: number;
     email: string;
     isVerified: boolean;
-  };
+  }
   token: string;
 }
 ```
 
 #### `auth.login`
+
 Login with email and password.
 
 **Input:**
+
 ```typescript
 {
   email: string;
@@ -94,21 +99,24 @@ Login with email and password.
 ```
 
 **Output:**
+
 ```typescript
 {
   user: {
     id: number;
     email: string;
     isVerified: boolean;
-  };
+  }
   token: string;
 }
 ```
 
 #### `auth.me`
+
 Get current authenticated user (requires Bearer token).
 
 **Output:**
+
 ```typescript
 {
   id: number;
@@ -170,6 +178,7 @@ whynot/
 ## Testing with cURL
 
 ### Register
+
 ```bash
 curl -X POST http://localhost:3000/trpc/auth.register \
   -H "Content-Type: application/json" \
@@ -177,6 +186,7 @@ curl -X POST http://localhost:3000/trpc/auth.register \
 ```
 
 ### Login
+
 ```bash
 curl -X POST http://localhost:3000/trpc/auth.login \
   -H "Content-Type: application/json" \
@@ -184,6 +194,7 @@ curl -X POST http://localhost:3000/trpc/auth.login \
 ```
 
 ### Get Current User
+
 ```bash
 curl http://localhost:3000/trpc/auth.me \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
@@ -225,3 +236,37 @@ npm run dev:client
 ```
 
 Then visit `http://localhost:5173` to see the application.
+
+---
+
+## 🐳 Docker & Deployment
+
+WhyNot now supports Docker Compose for local development and Render.com for production deployment.
+
+### Quick Start with Docker
+
+```bash
+# Start all services (backend, postgres, redis)
+./scripts/docker-dev.sh
+
+# Run migrations
+./scripts/docker-migrate.sh
+
+# View logs
+./scripts/docker-logs.sh
+
+# Stop all services
+./scripts/docker-stop.sh
+```
+
+### Deployment Guides
+
+- **[Render Deployment Guide](RENDER_DEPLOYMENT.md)** - Complete guide for deploying to Render.com
+- **[Environment Variables Checklist](RENDER_ENV_CHECKLIST.md)** - All required environment variables
+
+### Key Files
+
+- `docker-compose.yml` - Local development orchestration
+- `Dockerfile` - Multi-stage backend container build
+- `render.yaml` - Render.com infrastructure as code
+- `scripts/` - Docker helper scripts

@@ -1,0 +1,115 @@
+services:
+  # ============================================
+  # Backend Service (Web)
+  # ============================================
+  - type: web
+    name: whynot-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon # oregon, frankfurt, singapore, etc.
+    plan: free # free (hobby with sleep after 15min), starter ($7), standard ($25), pro ($85)
+    healthCheckPath: /health
+    envVars:
+      # Database Connection (individual vars)
+      - key: DB_HOST
+        fromDatabase:
+          name: whynot-db
+          property: host
+
+      - key: DB_PORT
+        fromDatabase:
+          name: whynot-db
+          property: port
+
+      - key: DB_NAME
+        fromDatabase:
+          name: whynot-db
+          property: database
+
+      - key: DB_USER
+        fromDatabase:
+          name: whynot-db
+          property: user
+
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: whynot-db
+          property: password
+
+      # Redis Connection (use Upstash - see RENDER_DEPLOYMENT.md)
+      - key: REDIS_URL
+        sync: false # Add manually from Upstash dashboard
+
+      # Application
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3000
+
+      - key: JWT_SECRET
+        generateValue: true # Auto-generate secure secret
+
+      # Agora RTC (Manual entry in Render dashboard)
+      - key: AGORA_APP_ID
+        sync: false
+
+      - key: AGORA_APP_CERTIFICATE
+        sync: false
+
+      - key: AGORA_CUSTOMER_ID
+        sync: false
+
+      - key: AGORA_CUSTOMER_SECRET
+        sync: false
+
+      # Cloudflare Stream
+      - key: CLOUDFLARE_STREAM_ACCOUNT_ID
+        sync: false
+
+      - key: CLOUDFLARE_STREAM_API_TOKEN
+        sync: false
+
+      # AWS S3 (Optional)
+      - key: AWS_S3_ACCESS_KEY
+        sync: false
+
+      - key: AWS_S3_SECRET_KEY
+        sync: false
+
+      - key: AWS_S3_BUCKET
+        sync: false
+
+      - key: AWS_S3_REGION
+        value: 0 # 0=us-east-1
+
+      # Stripe
+      - key: STRIPE_SECRET_KEY
+        sync: false
+
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+
+# ============================================
+# Databases
+# ============================================
+databases:
+  - name: whynot-db
+    databaseName: whynot
+    plan: free # free (1GB), starter ($7/month), standard ($20+/month)
+    region: oregon
+    ipAllowList: [] # Empty = allow all (recommended for serverless)
+
+
+# ============================================
+# Redis - Use Upstash (free tier available)
+# ============================================
+# Render doesn't support Redis natively in blueprints.
+# Setup instructions:
+# 1. Create free account at https://upstash.com
+# 2. Create Redis database (free tier: 10K commands/day)
+# 3. Copy REDIS_URL from Upstash dashboard
+# 4. Add to Render environment variables manually
