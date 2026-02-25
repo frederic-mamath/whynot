@@ -668,17 +668,13 @@ exit
 Back on your Mac:
 
 ```bash
-# Stop the instance (required for clean AMI)
-aws ec2 stop-instances --instance-ids $INSTANCE_ID
-
-echo "Waiting for instance to stop..."
-aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
-
-# Create AMI
+# Create AMI directly from running instance
+# (No need to stop - one-time Spot instances cannot be stopped anyway!)
 AMI_ID=$(aws ec2 create-image \
   --instance-id $INSTANCE_ID \
   --name "whynot-ffmpeg-worker-gpu-$(date +%Y%m%d-%H%M%S)" \
   --description "Ubuntu 22.04 + NVIDIA drivers + Docker + GPU support for FFmpeg worker" \
+  --no-reboot \
   --query 'ImageId' \
   --output text)
 
@@ -697,7 +693,9 @@ echo "💾 Save this AMI ID - you'll use it to launch Spot instances"
 echo $AMI_ID > ami-id.txt
 
 # Terminate the builder instance (no longer needed)
+echo "Terminating temporary builder instance..."
 aws ec2 terminate-instances --instance-ids $INSTANCE_ID
+echo "✅ Builder instance terminated"
 
 echo "✅ Builder instance terminated (AMI is saved)"
 ```
