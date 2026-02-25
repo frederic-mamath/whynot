@@ -833,7 +833,7 @@ Create a new Dockerfile for GPU:
 # ============================================
 # Stage 1: Base with CUDA support
 # ============================================
-FROM nvidia/cuda:12.0-base-ubuntu22.04 as base
+FROM nvidia/cuda:12.2.0-base-ubuntu22.04 as base
 
 WORKDIR /app
 
