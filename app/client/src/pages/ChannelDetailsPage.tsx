@@ -186,9 +186,9 @@ export default function ChannelDetailsPage() {
         tokenPreview: config.token.substring(0, 20) + "...",
       });
 
-      // Create client
+      // Create client in "live" mode for broadcast (1 host → many viewers)
       const agoraClient = AgoraRTC.createClient({
-        mode: "rtc",
+        mode: "live",
         codec: "vp8",
       });
 
@@ -290,7 +290,13 @@ export default function ChannelDetailsPage() {
         throw new Error("Failed to join channel after retries");
       }
 
-      // Only create and publish tracks for sellers (broadcasters)
+      // Set client role: host can publish, audience can only subscribe
+      await agoraClient.setClientRole(config.isHost ? "host" : "audience");
+      console.log(
+        `✅ Client role set to: ${config.isHost ? "host" : "audience"}`,
+      );
+
+      // Only create and publish tracks for hosts (broadcasters)
       if (config.isHost) {
         console.log(
           "🎥 Creating local video and audio tracks (broadcaster mode)...",
@@ -776,8 +782,8 @@ export default function ChannelDetailsPage() {
               Stopping the channel properly
             </DialogTitle>
             <DialogDescription>
-              Closing the stream and releasing your camera. This should only take
-              a few seconds.
+              Closing the stream and releasing your camera. This should only
+              take a few seconds.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
