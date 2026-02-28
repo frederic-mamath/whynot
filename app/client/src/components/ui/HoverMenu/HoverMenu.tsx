@@ -33,6 +33,8 @@ export default function HoverMenu({
   className,
 }: HoverMenuProps) {
   const [open, setOpen] = useState(false);
+  /** Whether the panel is still in the DOM (kept mounted during exit animation) */
+  const [mounted, setMounted] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -50,11 +52,20 @@ export default function HoverMenu({
 
   const handleEnter = () => {
     cancelClose();
-    setOpen(true);
+    setMounted(true);
+    // Ensure mount happens before open triggers the enter animation
+    requestAnimationFrame(() => setOpen(true));
   };
 
   const handleLeave = () => {
     scheduleClose();
+  };
+
+  /** When closing animation ends, unmount the panel */
+  const handleAnimationEnd = () => {
+    if (!open) {
+      setMounted(false);
+    }
   };
 
   /* Cleanup on unmount */
@@ -100,14 +111,19 @@ export default function HoverMenu({
       </button>
 
       {/* Panel */}
-      {open && (
-        <div className={cn("absolute left-0 top-full pt-2 z-50", className)}>
+      {mounted && (
+        <div
+          className={cn("absolute left-0 top-full pt-2 z-50", className)}
+          onTransitionEnd={handleAnimationEnd}
+        >
           <div
             className={cn(
               "min-w-[200px] rounded-xl border border-border bg-popover p-1.5",
               "shadow-lg shadow-black/8 dark:shadow-black/25",
-              "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
-              "duration-150",
+              "transition-all duration-150 ease-out",
+              open
+                ? "opacity-100 scale-100 translate-y-0"
+                : "opacity-0 scale-95 -translate-y-1",
             )}
           >
             <ul className="flex flex-col gap-0.5">
