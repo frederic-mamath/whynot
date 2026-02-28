@@ -19,15 +19,19 @@ const getDatabaseUrl = () => {
   return `postgres://${user}:${password}@${host}:${port}/${database}`;
 };
 
-const isProduction = process.env.NODE_ENV === "production";
+// SSL: enabled by default in production, overridable via DB_SSL env var
+const sslEnabled =
+  process.env.DB_SSL !== undefined
+    ? process.env.DB_SSL === "true"
+    : process.env.NODE_ENV === "production";
+
 console.log(
-  `📊 Database mode: ${isProduction ? "PRODUCTION (SSL enabled)" : "DEVELOPMENT (SSL disabled)"}`,
+  `📊 Database mode: ${process.env.NODE_ENV || "development"} | SSL: ${sslEnabled ? "enabled" : "disabled"}`,
 );
 
 const pool = new Pool({
   connectionString: getDatabaseUrl(),
-  // Render managed databases require SSL in production
-  ssl: isProduction
+  ssl: sslEnabled
     ? {
         rejectUnauthorized: false,
       }
