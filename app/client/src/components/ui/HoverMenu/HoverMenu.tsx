@@ -53,8 +53,11 @@ export default function HoverMenu({
   const handleEnter = () => {
     cancelClose();
     setMounted(true);
-    // Ensure mount happens before open triggers the enter animation
-    requestAnimationFrame(() => setOpen(true));
+    // Double rAF: first ensures the DOM is painted in "closed" state,
+    // second triggers the CSS transition to "open" state
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setOpen(true));
+    });
   };
 
   const handleLeave = () => {
