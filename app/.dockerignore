@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.staging
+.env.example
+.DS_Store
+debug
+*.tar.gz
+client/dist

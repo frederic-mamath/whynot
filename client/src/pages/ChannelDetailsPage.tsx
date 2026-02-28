@@ -776,8 +776,8 @@ export default function ChannelDetailsPage() {
               Stopping the channel properly
             </DialogTitle>
             <DialogDescription>
-              Closing the stream and releasing your camera. This should only take
-              a few seconds.
+              Closing the stream and releasing your camera. This should only
+              take a few seconds.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
