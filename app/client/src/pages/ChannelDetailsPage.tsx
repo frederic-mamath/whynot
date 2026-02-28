@@ -758,8 +758,7 @@ export default function ChannelDetailsPage() {
       </div>
 
       <ParticipantList
-        localUserId={channelConfig?.uid || 0}
-        remoteUsers={Array.from(remoteUsers.values())}
+        channelId={Number(channelId)}
         isOpen={showParticipants}
         onClose={() => setShowParticipants(false)}
       />

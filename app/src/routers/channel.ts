@@ -260,6 +260,38 @@ export const channelRouter = router({
     }),
 
   /**
+   * Get channel participants with display names
+   */
+  participants: publicProcedure
+    .input(
+      z.object({
+        channelId: z.number(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const participants =
+        await channelParticipantRepository.getActiveParticipantsWithUserInfo(
+          input.channelId,
+        );
+
+      return participants.map((p) => {
+        const hasName = p.firstname || p.lastname;
+        const displayName = hasName
+          ? [p.firstname, p.lastname].filter(Boolean).join(" ")
+          : p.email;
+
+        return {
+          userId: p.user_id,
+          displayName,
+          email: p.email,
+          role: p.role,
+          joinedAt: p.joined_at,
+          isCurrentUser: p.user_id === ctx.userId,
+        };
+      });
+    }),
+
+  /**
    * End a channel (host only)
    */
   end: publicProcedure
