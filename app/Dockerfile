@@ -18,16 +18,21 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install production dependencies only
+# Install production dependencies + tsx for migrations
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev && npm install tsx && npm cache clean --force
 
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy migrations for runtime migration support
+# Copy migrations for startup execution
 COPY migrations ./migrations
 COPY migrate.ts ./migrate.ts
+COPY src/db ./src/db
+
+# Copy entrypoint script
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3000
 
@@ -35,4 +40,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
-CMD ["node", "dist/index.js"]
+ENTRYPOINT ["./entrypoint.sh"]
