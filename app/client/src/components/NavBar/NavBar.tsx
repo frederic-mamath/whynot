@@ -26,14 +26,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from "../ui/navigation-menu";
+import { HoverMenu } from "../ui/HoverMenu";
 import { toast } from "sonner";
 import ThemeToggle from "../ui/theme-toggle";
 
@@ -107,116 +100,33 @@ export default function NavBar() {
           <div className="hidden xl:flex items-center gap-2">
             {authenticated ? (
               <>
-                <NavigationMenu>
-                  <NavigationMenuList>
-                    {/* Browse */}
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger>Browse</NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="w-[200px] p-2">
-                          <li>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to="/channels"
-                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
-                              >
-                                <Video className="size-4" />
-                                <span className="text-sm font-medium">
-                                  Channels
-                                </span>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
+                <HoverMenu
+                  trigger="Browse"
+                  items={[{ icon: Video, label: "Channels", to: "/channels" }]}
+                />
 
-                    {/* My Activity */}
-                    <NavigationMenuItem>
-                      <NavigationMenuTrigger>My Activity</NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="w-[200px] p-2">
-                          <li>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to="/dashboard"
-                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
-                              >
-                                <Home className="size-4" />
-                                <span className="text-sm font-medium">
-                                  Dashboard
-                                </span>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                          <li>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to="/profile"
-                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
-                              >
-                                <UserCircle className="size-4" />
-                                <span className="text-sm font-medium">
-                                  Profile
-                                </span>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                          <li>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to="/my-orders"
-                                className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
-                              >
-                                <ShoppingBag className="size-4" />
-                                <span className="text-sm font-medium">
-                                  My Orders
-                                </span>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
+                <HoverMenu
+                  trigger="My Activity"
+                  items={[
+                    { icon: Home, label: "Dashboard", to: "/dashboard" },
+                    { icon: UserCircle, label: "Profile", to: "/profile" },
+                    { icon: ShoppingBag, label: "My Orders", to: "/my-orders" },
+                  ]}
+                />
 
-                    {/* Sell - Sellers only */}
-                    {isSeller && (
-                      <NavigationMenuItem>
-                        <NavigationMenuTrigger>Sell</NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <ul className="w-[200px] p-2">
-                            <li>
-                              <NavigationMenuLink asChild>
-                                <Link
-                                  to="/shops"
-                                  className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
-                                >
-                                  <Store className="size-4" />
-                                  <span className="text-sm font-medium">
-                                    Shops
-                                  </span>
-                                </Link>
-                              </NavigationMenuLink>
-                            </li>
-                            <li>
-                              <NavigationMenuLink asChild>
-                                <Link
-                                  to="/pending-deliveries"
-                                  className="flex items-center gap-3 rounded-md p-3 hover:bg-accent transition-colors"
-                                >
-                                  <Package className="size-4" />
-                                  <span className="text-sm font-medium">
-                                    Deliveries
-                                  </span>
-                                </Link>
-                              </NavigationMenuLink>
-                            </li>
-                          </ul>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    )}
-                  </NavigationMenuList>
-                </NavigationMenu>
+                {isSeller && (
+                  <HoverMenu
+                    trigger="Sell"
+                    items={[
+                      { icon: Store, label: "Shops", to: "/shops" },
+                      {
+                        icon: Package,
+                        label: "Deliveries",
+                        to: "/pending-deliveries",
+                      },
+                    ]}
+                  />
+                )}
 
                 {/* Separator */}
                 <div className="h-6 w-px bg-border mx-2" />
