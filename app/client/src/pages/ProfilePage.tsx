@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,15 +66,16 @@ export default function ProfilePage() {
   const utils = trpc.useUtils();
 
   // Load profile
-  const { data: profile, isLoading } = trpc.profile.me.useQuery(undefined, {
-    onSuccess: (data) => {
-      if (!profileLoaded) {
-        setFirstName(data.firstName || "");
-        setLastName(data.lastName || "");
-        setProfileLoaded(true);
-      }
-    },
-  });
+  const { data: profile, isLoading } = trpc.profile.me.useQuery();
+
+  // Populate form state from DB data (only on initial load)
+  useEffect(() => {
+    if (profile && !profileLoaded) {
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
+      setProfileLoaded(true);
+    }
+  }, [profile, profileLoaded]);
 
   // Update profile mutation
   const updateProfile = trpc.profile.update.useMutation({

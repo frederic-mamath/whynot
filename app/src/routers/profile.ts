@@ -51,6 +51,8 @@ export const profileRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const updated = await userRepository.updateProfile(ctx.user.id, {
+        firstname: input.firstName,
+        lastname: input.lastName,
         first_name: input.firstName,
         last_name: input.lastName,
       });
