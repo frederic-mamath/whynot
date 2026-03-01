@@ -25,12 +25,12 @@ Where `NNN` is a zero-padded sequential number (e.g., `001`, `002`).
 
 ### Statuses
 
-| Status | Meaning |
-|--------|---------|
-| `proposed` | Under discussion, not yet agreed upon |
-| `accepted` | Agreed and in effect |
-| `deprecated` | No longer relevant (superseded or abandoned) |
-| `superseded by ADR-NNN` | Replaced by a newer decision |
+| Status                  | Meaning                                      |
+| ----------------------- | -------------------------------------------- |
+| `proposed`              | Under discussion, not yet agreed upon        |
+| `accepted`              | Agreed and in effect                         |
+| `deprecated`            | No longer relevant (superseded or abandoned) |
+| `superseded by ADR-NNN` | Replaced by a newer decision                 |
 
 ### Immutability
 
@@ -42,7 +42,7 @@ Once accepted, an ADR should **not** be modified. If a decision changes, create 
 
 Use the following template when creating a new ADR:
 
-````markdown
+```markdown
 # ADR-NNN: Title
 
 **Status:** proposed | accepted | deprecated | superseded by ADR-NNN
@@ -61,10 +61,10 @@ State the decision clearly and concisely.
 
 ## Alternatives Considered
 
-| Alternative | Pros | Cons | Verdict |
-|-------------|------|------|---------|
-| Option A | ... | ... | Rejected / Chosen |
-| Option B | ... | ... | Rejected / Chosen |
+| Alternative | Pros | Cons | Verdict           |
+| ----------- | ---- | ---- | ----------------- |
+| Option A    | ...  | ...  | Rejected / Chosen |
+| Option B    | ...  | ...  | Rejected / Chosen |
 
 ## Consequences
 
@@ -79,12 +79,12 @@ State the decision clearly and concisely.
 ### Risks
 
 - What could go wrong? What needs monitoring?
-````
+```
 
 ---
 
 ## Index
 
-| # | Title | Status | Date |
-|---|-------|--------|------|
+| #                                         | Title                       | Status   | Date       |
+| ----------------------------------------- | --------------------------- | -------- | ---------- |
 | [001](001-mobile-app-technology-stack.md) | Mobile App Technology Stack | accepted | 2026-03-01 |

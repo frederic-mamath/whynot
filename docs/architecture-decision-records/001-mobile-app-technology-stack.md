@@ -134,14 +134,14 @@ This approach is chosen over npm workspaces to keep the two projects **decoupled
 
 ## Alternatives Considered
 
-| Alternative | Pros | Cons | Verdict |
-|-------------|------|------|---------|
-| **Flutter** | Single codebase for both platforms, mature ecosystem, fast rendering | Different language (Dart) — no TypeScript sharing, can't import `AppRouter` types, team has no Dart experience | **Rejected** — TypeScript type sharing is a key requirement |
-| **React Native CLI (vanilla)** | Full native control from day 1, no Expo abstraction layer | Complex setup (Xcode + Android Studio mandatory), no OTA updates, more boilerplate for permissions/builds | **Rejected** — Expo provides the same native access via Dev Client with less friction |
-| **Expo bare workflow** | Full native access + some Expo tooling | More complex than managed, manual native project maintenance | **Rejected** — Managed + Dev Client provides equivalent native access with simpler maintenance |
-| **PWA (Progressive Web App)** | No separate codebase, reuse existing frontend entirely | Limited camera/mic access on iOS, no push notifications (iOS 16+), poor streaming performance, no app store presence | **Rejected** — Live streaming and native device access are core requirements |
-| **npm workspaces (for type sharing)** | Automatic type resolution, single `npm install` | Couples both projects, complicates CI/CD, risk of dependency conflicts, overkill for sharing a few type files | **Rejected** — Simplicity wins; copy script is sufficient for now, can migrate to workspaces later |
-| **React Navigation** | Mature, flexible, well-documented | More verbose configuration, manual deep linking setup, not file-based | **Rejected** — Expo Router provides a more modern DX with less boilerplate |
+| Alternative                           | Pros                                                                 | Cons                                                                                                                 | Verdict                                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Flutter**                           | Single codebase for both platforms, mature ecosystem, fast rendering | Different language (Dart) — no TypeScript sharing, can't import `AppRouter` types, team has no Dart experience       | **Rejected** — TypeScript type sharing is a key requirement                                        |
+| **React Native CLI (vanilla)**        | Full native control from day 1, no Expo abstraction layer            | Complex setup (Xcode + Android Studio mandatory), no OTA updates, more boilerplate for permissions/builds            | **Rejected** — Expo provides the same native access via Dev Client with less friction              |
+| **Expo bare workflow**                | Full native access + some Expo tooling                               | More complex than managed, manual native project maintenance                                                         | **Rejected** — Managed + Dev Client provides equivalent native access with simpler maintenance     |
+| **PWA (Progressive Web App)**         | No separate codebase, reuse existing frontend entirely               | Limited camera/mic access on iOS, no push notifications (iOS 16+), poor streaming performance, no app store presence | **Rejected** — Live streaming and native device access are core requirements                       |
+| **npm workspaces (for type sharing)** | Automatic type resolution, single `npm install`                      | Couples both projects, complicates CI/CD, risk of dependency conflicts, overkill for sharing a few type files        | **Rejected** — Simplicity wins; copy script is sufficient for now, can migrate to workspaces later |
+| **React Navigation**                  | Mature, flexible, well-documented                                    | More verbose configuration, manual deep linking setup, not file-based                                                | **Rejected** — Expo Router provides a more modern DX with less boilerplate                         |
 
 ## Consequences
 
