@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Camera, Link as LinkIcon, X, Loader2, ImagePlus } from "lucide-react";
+import { Camera, Link as LinkIcon, X, Loader2, Images } from "lucide-react";
 import { Button } from "../button";
 import { Input } from "../input";
 import { Label } from "../label";
@@ -30,7 +30,8 @@ export function ImageUploader({
   const [activeTab, setActiveTab] = useState<TabMode>("capture");
   const [urlInput, setUrlInput] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const uploadMutation = trpc.image.upload.useMutation();
 
@@ -68,9 +69,12 @@ export function ImageUploader({
       toast.error(error.message || "Failed to upload image");
     } finally {
       setIsUploading(false);
-      // Reset the file input so the same file can be selected again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      // Reset both file inputs so the same file can be selected again
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = "";
+      }
+      if (galleryInputRef.current) {
+        galleryInputRef.current.value = "";
       }
     }
   };
@@ -169,40 +173,79 @@ export function ImageUploader({
           {/* Tab content */}
           {activeTab === "capture" ? (
             <div className="space-y-2">
+              {/* Hidden input for camera (capture attribute forces camera on mobile) */}
               <input
-                ref={fileInputRef}
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="image-camera-input"
+              />
+              {/* Hidden input for gallery (no capture = opens file picker / gallery) */}
+              <input
+                ref={galleryInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleFileSelect}
                 className="hidden"
-                id="image-capture-input"
+                id="image-gallery-input"
               />
-              <Button
-                type="button"
-                variant="outline"
-                className={cn(
-                  "w-full h-24 border-2 border-dashed flex flex-col items-center justify-center gap-1",
-                  isUploading && "pointer-events-none opacity-60",
-                )}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="size-6 animate-spin text-primary" />
-                    <span className="text-xs text-muted-foreground">
-                      Uploading...
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <ImagePlus className="size-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      Take a photo or choose from gallery
-                    </span>
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "flex-1 h-24 border-2 border-dashed flex flex-col items-center justify-center gap-1",
+                    isUploading && "pointer-events-none opacity-60",
+                  )}
+                  onClick={() => cameraInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="size-6 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">
+                        Uploading...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="size-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        Take a photo
+                      </span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "flex-1 h-24 border-2 border-dashed flex flex-col items-center justify-center gap-1",
+                    isUploading && "pointer-events-none opacity-60",
+                  )}
+                  onClick={() => galleryInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="size-6 animate-spin text-primary" />
+                      <span className="text-xs text-muted-foreground">
+                        Uploading...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Images className="size-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        Gallery
+                      </span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex gap-2">
