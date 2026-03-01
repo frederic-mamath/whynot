@@ -129,7 +129,7 @@ This approach is chosen over npm workspaces to keep the two projects **decoupled
 ### UI framework
 
 - Native React Native components as the base
-- **NativeWind** (Tailwind CSS for React Native) to reuse the same design token conventions (`bg-primary`, `text-foreground`, etc.) from the web app's Tailwind config
+- **react-native-unistyles v3** for styling — enhanced `StyleSheet.create()` with theme support, breakpoints, and TypeScript-first API. Design tokens (colors, spacing, radii) are extracted from the web app's CSS variables and registered as Unistyles themes (light + dark, following OS preference)
 - Custom component library inspired by the existing Shadcn UI components, adapted for native
 
 ## Alternatives Considered
@@ -151,7 +151,7 @@ This approach is chosen over npm workspaces to keep the two projects **decoupled
 - JWT auth, base64 image uploads, and tRPC API work identically from mobile
 - OTA updates via EAS Update allow quick bug fixes without App Store review
 - Expo Router provides type-safe, file-based routing with built-in deep linking
-- NativeWind allows reusing the same Tailwind design tokens from the web app
+- Unistyles v3 allows reusing the same design tokens from the web app with native StyleSheet semantics
 - `mobile-app/` is fully decoupled — web app development is unaffected
 - Same TypeScript language across the entire stack (backend, web, mobile)
 

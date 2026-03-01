@@ -2,7 +2,7 @@
 
 ## Objective
 
-Set up the Expo project in `mobile-app/`, configure NativeWind with design tokens matching the web app, install core dependencies, configure EAS for builds, and validate with a working Dev Client.
+Set up the Expo project in `mobile-app/`, configure react-native-unistyles v3 with design tokens matching the web app, install core dependencies, configure EAS for builds, and validate with a working Dev Client.
 
 ## User-Facing Changes
 
@@ -15,8 +15,8 @@ No user-facing changes — this is infrastructure setup. After this phase, the a
 - `app.json` — Expo configuration (name, slug, bundle ID, permissions)
 - `package.json` — Dependencies
 - `tsconfig.json` — TypeScript config with path aliases
-- `tailwind.config.js` — NativeWind config with WhyNot design tokens
-- `global.css` — NativeWind CSS entry
+- `src/lib/theme.ts` — Design tokens (colors, spacing, radii) for light/dark themes
+- `src/lib/unistyles.ts` — Unistyles configuration (themes + breakpoints)
 - `eas.json` — EAS Build profiles (development, preview, production)
 - `app/_layout.tsx` — Root layout (placeholder)
 - `app/index.tsx` — Home screen (placeholder)
@@ -35,7 +35,7 @@ No user-facing changes — this is infrastructure setup. After this phase, the a
 
 1. Create Expo project via `npx create-expo-app@latest`
 2. Install core dependencies: `expo-secure-store`, `expo-constants`, `expo-status-bar`
-3. Install NativeWind + Tailwind CSS and configure with project design tokens
+3. Install react-native-unistyles and configure with project design tokens
 4. Configure TypeScript with `@/` path aliases
 5. Create source directory structure (`src/components/`, `src/hooks/`, `src/lib/`, `src/types/server/`, `src/utils/`, `scripts/`)
 6. Configure `app.json` with app identity (`fr.mamath.whynot`), permissions, scheme
@@ -45,8 +45,8 @@ No user-facing changes — this is infrastructure setup. After this phase, the a
 
 ## Design Considerations
 
-- NativeWind v4 uses the `global.css` approach (CSS-based, not className transform)
-- Design tokens (colors, spacing) should match `STYLING.md` from the web app
+- Unistyles v3 uses enhanced `StyleSheet.create()` with theming callback `(theme) => ({...})`
+- Design tokens (colors, spacing, radii) extracted from web app's `index.css` (oklch → hex)
 - Path alias `@/` maps to `./src/` for clean imports
 - Expo Router uses the `app/` directory for file-based routing (separate from `src/`)
 - The `mobile-app/` directory is fully independent — no npm workspaces
@@ -55,7 +55,7 @@ No user-facing changes — this is infrastructure setup. After this phase, the a
 
 - [ ] `mobile-app/` directory exists at repo root with valid Expo project
 - [ ] `npx expo start` runs without errors
-- [ ] NativeWind configured and a styled placeholder screen renders
+- [ ] Unistyles configured with light/dark themes and a styled placeholder screen renders
 - [ ] TypeScript compiles with `@/` alias working
 - [ ] `eas.json` present with development/preview/production profiles
 - [ ] `.env.example` documents all required environment variables
@@ -65,7 +65,7 @@ No user-facing changes — this is infrastructure setup. After this phase, the a
 
 - [ ] `npx expo start` launches the dev server
 - [ ] Metro bundler resolves `@/` imports
-- [ ] NativeWind classes render correctly on placeholder screen
+- [ ] Unistyles theme colors render correctly on placeholder screen
 - [ ] `npx expo lint` passes (if configured)
 
 ## Status
