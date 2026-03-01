@@ -1,13 +1,13 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
-  Users as UsersIcon,
   Wifi,
   WifiOff,
   ArrowLeft,
   Eye,
   Sparkles,
   Loader2,
+  Radio,
 } from "lucide-react";
 import AgoraRTC, {
   IAgoraRTCClient,
@@ -88,6 +88,18 @@ export default function ChannelDetailsPage() {
     description: string;
     imageUrl: string | null;
   } | null>(null);
+
+  // Fetch real participant count (viewers don't publish, so remoteUsers.size is always 0)
+  const { data: participantsData } = trpc.channel.participants.useQuery(
+    { channelId: Number(channelId) },
+    {
+      enabled: !!channelId && joined,
+      refetchInterval: 5000,
+    },
+  );
+  const viewerCount = participantsData
+    ? participantsData.filter((p) => !p.isCurrentUser).length
+    : 0;
 
   // Check authentication
   useEffect(() => {
@@ -624,11 +636,18 @@ export default function ChannelDetailsPage() {
         <div className="absolute inset-0 lg:aspect-[9/16] lg:mx-auto bg-black lg:rounded-lg overflow-hidden">
           {/* Main Video Container */}
           <div className="relative w-full h-full bg-black">
-            {/* Remote User Video (Primary - The Broadcaster) */}
-            {Array.from(remoteUsers.entries()).length > 0 ? (
+            {channelConfig?.isHost ? (
+              /* Host Self-View: Local video displayed full-screen in the main area */
+              <div className="w-full h-full">
+                <div
+                  id="local-player"
+                  className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
+                />
+              </div>
+            ) : Array.from(remoteUsers.entries()).length > 0 ? (
+              /* Viewer: Show the broadcaster's remote video */
               <div className="w-full h-full">
                 {Array.from(remoteUsers.entries()).map(([uid], index) => {
-                  // Only show first remote user (broadcaster) in main view
                   if (index === 0) {
                     return (
                       <div key={uid} className="w-full h-full relative">
@@ -636,20 +655,6 @@ export default function ChannelDetailsPage() {
                           id={`remote-player-${uid}`}
                           className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
                         />
-
-                        {/* Broadcaster Info Overlay (Top) */}
-                        <div className="absolute top-20 left-4 flex items-center gap-2">
-                          <div className="size-10 rounded-full bg-primary flex items-center justify-center">
-                            <span className="text-sm font-bold text-primary-foreground">
-                              {uid.toString().slice(0, 2)}
-                            </span>
-                          </div>
-                          <div className="bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
-                            <span className="text-sm font-medium">
-                              User {uid}
-                            </span>
-                          </div>
-                        </div>
                       </div>
                     );
                   }
@@ -657,46 +662,35 @@ export default function ChannelDetailsPage() {
                 })}
               </div>
             ) : (
-              // Placeholder when no broadcaster
+              /* Viewer: Placeholder when broadcaster hasn't started */
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center space-y-4 text-white">
-                  {channelConfig?.isHost ? (
-                    <>
-                      <UsersIcon className="size-16 mx-auto text-white/60" />
-                      <h3 className="text-lg font-semibold">
-                        Waiting for participants
-                      </h3>
-                      <p className="text-sm text-white/60">
-                        Invite others to join this channel
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="size-16 mx-auto text-white/60" />
-                      <h3 className="text-lg font-semibold">
-                        Waiting for broadcaster
-                      </h3>
-                      <p className="text-sm text-white/60">
-                        The stream will appear when the broadcaster starts
-                      </p>
-                    </>
-                  )}
+                  <Eye className="size-16 mx-auto text-white/60" />
+                  <h3 className="text-lg font-semibold">
+                    Waiting for broadcaster
+                  </h3>
+                  <p className="text-sm text-white/60">
+                    The stream will appear when the broadcaster starts
+                  </p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Local Video (Picture-in-Picture) - Only for Broadcasters */}
-          {channelConfig?.isHost && localVideoTrack && (
-            <div className="absolute top-20 right-4 w-24 h-32 z-20">
-              <div className="relative bg-card rounded-lg overflow-hidden border-2 border-primary shadow-lg">
-                <div
-                  id="local-player"
-                  className="w-full h-full [&>div]:!w-full [&>div]:!h-full [&_video]:!w-full [&_video]:!h-full [&_video]:!object-cover"
-                />
-                <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-background/80 backdrop-blur-sm rounded text-xs font-medium">
-                  You
-                </div>
+          {/* LIVE Badge - Only for the host */}
+          {channelConfig?.isHost && joined && (
+            <div className="absolute top-16 left-4 z-30 flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-md shadow-lg">
+                <Radio className="size-3.5 text-white animate-pulse" />
+                <span className="text-xs font-bold text-white uppercase tracking-wide">
+                  Live
+                </span>
+              </div>
+              <div className="flex items-center gap-1 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md">
+                <Eye className="size-3.5 text-foreground" />
+                <span className="text-xs font-medium text-foreground">
+                  {viewerCount}
+                </span>
               </div>
             </div>
           )}
@@ -706,7 +700,7 @@ export default function ChannelDetailsPage() {
             <VerticalControlPanel
               audioMuted={audioMuted}
               videoMuted={videoMuted}
-              viewerCount={Array.from(remoteUsers.values()).length}
+              viewerCount={viewerCount}
               productCount={promotedProducts.filter((p) => p.isActive).length}
               highlightedProductCount={highlightedProduct ? 1 : 0}
               showBroadcastControls={channelConfig?.isHost ?? false}
