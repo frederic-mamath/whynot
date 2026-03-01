@@ -1,54 +1,72 @@
-import { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Package } from 'lucide-react';
-import { trpc } from '../lib/trpc';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Label } from '../components/ui/label';
-import { toast } from 'sonner';
-import Container from '../components/Container';
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Package } from "lucide-react";
+import { trpc } from "../lib/trpc";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
+import { toast } from "sonner";
+import Container from "../components/Container";
+import {
+  ImageUploader,
+  ProductImageItem,
+} from "../components/ui/ImageUploader";
 
 export default function ProductCreatePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [images, setImages] = useState<ProductImageItem[]>([]);
 
   const { data: shop } = trpc.shop.get.useQuery(
     { shopId: shopIdNum },
-    { enabled: shopIdNum > 0 }
+    { enabled: shopIdNum > 0 },
   );
 
   const createProduct = trpc.product.create.useMutation({
-    onSuccess: () => {
-      toast.success('Product created successfully!');
-      navigate(`/shops/${shopIdNum}/products`);
-    },
     onError: (error) => {
       toast.error(`Failed to create product: ${error.message}`);
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const addImageMutation = trpc.product.addImage.useMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error('Product name is required');
+      toast.error("Product name is required");
       return;
     }
 
-    createProduct.mutate({
-      shopId: shopIdNum,
-      name: name.trim(),
-      description: description.trim() || null,
-      price: price ? parseFloat(price) : null,
-      imageUrl: imageUrl.trim() || null,
-    });
+    try {
+      const product = await createProduct.mutateAsync({
+        shopId: shopIdNum,
+        name: name.trim(),
+        description: description.trim() || undefined,
+        price: price ? parseFloat(price) : undefined,
+        imageUrl: images.length > 0 ? images[0].url : null,
+      });
+
+      // Save all images to product_images table
+      for (let i = 0; i < images.length; i++) {
+        await addImageMutation.mutateAsync({
+          productId: product.id,
+          url: images[i].url,
+          cloudinaryPublicId: images[i].cloudinaryPublicId ?? null,
+        });
+      }
+
+      toast.success("Product created successfully!");
+      navigate(`/shops/${shopIdNum}/products`);
+    } catch (error: any) {
+      toast.error(`Failed to create product: ${error.message}`);
+    }
   };
 
   if (!shop) {
@@ -73,7 +91,9 @@ export default function ProductCreatePage() {
           <div className="flex items-center gap-3 mb-6">
             <Package className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Create Product</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                Create Product
+              </h1>
               <p className="text-sm text-muted-foreground">{shop.name}</p>
             </div>
           </div>
@@ -117,35 +137,16 @@ export default function ProductCreatePage() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="imageUrl">Image URL</Label>
-              <Input
-                id="imageUrl"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-              />
-              {imageUrl && (
-                <div className="mt-3 aspect-square max-w-xs bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.innerHTML = `
-                        <p class="text-sm text-destructive">Invalid image URL</p>
-                      `;
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+            <ImageUploader images={images} onImagesChange={setImages} />
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={createProduct.isPending}>
-                {createProduct.isPending ? 'Creating...' : 'Create Product'}
+              <Button
+                type="submit"
+                disabled={createProduct.isPending || addImageMutation.isPending}
+              >
+                {createProduct.isPending || addImageMutation.isPending
+                  ? "Creating..."
+                  : "Create Product"}
               </Button>
               <Button type="button" variant="outline" asChild>
                 <Link to={`/shops/${shopIdNum}/products`}>Cancel</Link>

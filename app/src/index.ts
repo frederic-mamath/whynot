@@ -131,7 +131,7 @@ app.post(
 );
 
 // Body parsing
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 // Request logging
 app.use(requestLogger);

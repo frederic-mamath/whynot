@@ -10,6 +10,7 @@ import { auctionRouter } from "./auction";
 import { orderRouter } from "./order";
 import { payoutRouter } from "./payout";
 import { profileRouter } from "./profile";
+import { imageRouter } from "./image";
 
 export const appRouter = router({
   auth: authRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   order: orderRouter,
   payout: payoutRouter,
   profile: profileRouter,
+  image: imageRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -17,6 +17,7 @@ export interface Database {
   orders: OrdersTable;
   payout_requests: PayoutRequestsTable;
   user_addresses: UserAddressesTable;
+  product_images: ProductImagesTable;
 }
 
 export interface UsersTable {
@@ -186,6 +187,7 @@ export type Bid = Selectable<BidsTable>;
 export type Order = Selectable<OrdersTable>;
 export type PayoutRequest = Selectable<PayoutRequestsTable>;
 export type UserAddress = Selectable<UserAddressesTable>;
+export type ProductImage = Selectable<ProductImagesTable>;
 
 export interface PayoutRequestsTable {
   id: Generated<string>;
@@ -215,4 +217,13 @@ export interface UserAddressesTable {
   is_default: boolean;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
+}
+
+export interface ProductImagesTable {
+  id: Generated<number>;
+  product_id: number;
+  url: string;
+  cloudinary_public_id: string | null;
+  position: number;
+  created_at: Generated<Date>;
 }

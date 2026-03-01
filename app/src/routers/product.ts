@@ -1,24 +1,40 @@
-import { z } from 'zod';
-import { router, protectedProcedure } from '../trpc';
-import { productRepository, channelProductRepository, userShopRoleRepository } from '../repositories';
-import { TRPCError } from '@trpc/server';
-import type { Context } from '../types/context';
-import { mapProductToProductOutboundDto, mapProductWithShopToProductWithShopOutboundDto, mapCreateProductInboundDtoToProduct, mapUpdateProductInboundDtoToProduct } from '../mappers';
+import { z } from "zod";
+import { router, protectedProcedure } from "../trpc";
+import {
+  productRepository,
+  channelProductRepository,
+  userShopRoleRepository,
+  productImageRepository,
+} from "../repositories";
+import { TRPCError } from "@trpc/server";
+import type { Context } from "../types/context";
+import {
+  mapProductToProductOutboundDto,
+  mapProductWithShopToProductWithShopOutboundDto,
+  mapCreateProductInboundDtoToProduct,
+  mapUpdateProductInboundDtoToProduct,
+} from "../mappers";
 
-async function requireProductAccess(ctx: Context, shopId: number): Promise<void> {
+async function requireProductAccess(
+  ctx: Context,
+  shopId: number,
+): Promise<void> {
   if (!ctx.user) {
     throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'You must be logged in',
+      code: "UNAUTHORIZED",
+      message: "You must be logged in",
     });
   }
 
-  const hasAccess = await userShopRoleRepository.hasShopAccess(ctx.user.id, shopId);
+  const hasAccess = await userShopRoleRepository.hasShopAccess(
+    ctx.user.id,
+    shopId,
+  );
 
   if (!hasAccess) {
     throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'You do not have access to this shop',
+      code: "FORBIDDEN",
+      message: "You do not have access to this shop",
     });
   }
 }
@@ -32,7 +48,7 @@ export const productRouter = router({
         description: z.string().optional(),
         price: z.number().min(0).optional(),
         imageUrl: z.string().url().optional().nullable(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       await requireProductAccess(ctx, input.shopId);
@@ -55,16 +71,16 @@ export const productRouter = router({
       z.object({
         shopId: z.number(),
         activeOnly: z.boolean().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       await requireProductAccess(ctx, input.shopId);
 
       const products = await productRepository.findByShopId(
         input.shopId,
-        input.activeOnly
+        input.activeOnly,
       );
-      
+
       return products.map(mapProductToProductOutboundDto);
     }),
 
@@ -75,8 +91,8 @@ export const productRouter = router({
 
       if (!product) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
@@ -93,15 +109,15 @@ export const productRouter = router({
         price: z.number().min(0).optional(),
         imageUrl: z.string().url().optional().nullable(),
         isActive: z.boolean().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const shopId = await productRepository.getShopId(input.productId);
 
       if (!shopId) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
@@ -115,12 +131,15 @@ export const productRouter = router({
         isActive: input.isActive,
       });
 
-      const product = await productRepository.updateById(input.productId, updateData);
+      const product = await productRepository.updateById(
+        input.productId,
+        updateData,
+      );
 
       if (!product) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
@@ -134,8 +153,8 @@ export const productRouter = router({
 
       if (!shopId) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
@@ -151,15 +170,15 @@ export const productRouter = router({
       z.object({
         productId: z.number(),
         channelId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const shopId = await productRepository.getShopId(input.productId);
 
       if (!shopId) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
@@ -167,19 +186,19 @@ export const productRouter = router({
 
       const alreadyAssociated = await channelProductRepository.isAssociated(
         input.channelId,
-        input.productId
+        input.productId,
       );
 
       if (alreadyAssociated) {
         throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'Product is already associated with this channel',
+          code: "CONFLICT",
+          message: "Product is already associated with this channel",
         });
       }
 
       const association = await channelProductRepository.associate(
         input.channelId,
-        input.productId
+        input.productId,
       );
 
       return association;
@@ -190,15 +209,15 @@ export const productRouter = router({
       z.object({
         productId: z.number(),
         channelId: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const shopId = await productRepository.getShopId(input.productId);
 
       if (!shopId) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
@@ -215,5 +234,96 @@ export const productRouter = router({
       const products = await productRepository.findByChannelId(input.channelId);
       return products.map(mapProductToProductOutboundDto);
     }),
-});
 
+  // Product Images
+  addImage: protectedProcedure
+    .input(
+      z.object({
+        productId: z.number(),
+        url: z.string().url(),
+        cloudinaryPublicId: z.string().nullable().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const shopId = await productRepository.getShopId(input.productId);
+      if (!shopId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
+      }
+      await requireProductAccess(ctx, shopId);
+
+      const position = await productImageRepository.getNextPosition(
+        input.productId,
+      );
+      const image = await productImageRepository.save(
+        input.productId,
+        input.url,
+        input.cloudinaryPublicId ?? null,
+        position,
+      );
+
+      // Also set as the product's main image_url if it's the first image
+      if (position === 0) {
+        await productRepository.updateById(input.productId, {
+          image_url: input.url,
+        });
+      }
+
+      return {
+        id: image.id,
+        productId: image.product_id,
+        url: image.url,
+        cloudinaryPublicId: image.cloudinary_public_id,
+        position: image.position,
+        createdAt: image.created_at,
+      };
+    }),
+
+  removeImage: protectedProcedure
+    .input(z.object({ imageId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const image = await productImageRepository.findById(input.imageId);
+      if (!image) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Image not found" });
+      }
+
+      const shopId = await productRepository.getShopId(image.product_id);
+      if (!shopId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
+      }
+      await requireProductAccess(ctx, shopId);
+
+      await productImageRepository.deleteById(input.imageId);
+
+      // Update main image_url: use next image or null
+      const remaining = await productImageRepository.findByProductId(
+        image.product_id,
+      );
+      await productRepository.updateById(image.product_id, {
+        image_url: remaining.length > 0 ? remaining[0].url : null,
+      });
+
+      return { success: true };
+    }),
+
+  listImages: protectedProcedure
+    .input(z.object({ productId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const images = await productImageRepository.findByProductId(
+        input.productId,
+      );
+      return images.map((img) => ({
+        id: img.id,
+        productId: img.product_id,
+        url: img.url,
+        cloudinaryPublicId: img.cloudinary_public_id,
+        position: img.position,
+        createdAt: img.created_at,
+      }));
+    }),
+});
