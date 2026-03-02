@@ -75,3 +75,25 @@ export const darkTheme = {
 } as const;
 
 export type AppTheme = typeof lightTheme;
+
+/**
+ * Widened theme type for runtime usage (hex strings instead of literal types).
+ */
+type ThemeColors = { [K in keyof typeof lightTheme.colors]: string };
+type RuntimeTheme = {
+  colors: ThemeColors;
+  spacing: typeof lightTheme.spacing;
+  radius: typeof lightTheme.radius;
+  fontSize: typeof lightTheme.fontSize;
+};
+
+/**
+ * Hook to access the current theme outside of Unistyles stylesheets.
+ * Useful for passing theme values to non-Unistyles components (e.g. Tabs).
+ */
+import { useColorScheme } from "react-native";
+
+export function useTheme(): RuntimeTheme {
+  const colorScheme = useColorScheme();
+  return colorScheme === "dark" ? darkTheme : lightTheme;
+}

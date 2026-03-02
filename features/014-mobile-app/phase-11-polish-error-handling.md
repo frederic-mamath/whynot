@@ -35,14 +35,14 @@ Add global error handling, loading states, network connectivity management, visu
 
 ## Acceptance Criteria
 
-- [ ] Error boundary catches and displays crashes gracefully
-- [ ] Network loss shows alert, recovery resumes queries
-- [ ] All screens have loading and empty states
-- [ ] NativeWind styling consistent with web design tokens
-- [ ] Full buyer flow works end-to-end on Android device
-- [ ] Full seller flow works end-to-end on Android device
-- [ ] README documents all setup and build steps
+- [x] Error boundary catches and displays crashes gracefully
+- [x] Network loss shows alert, recovery resumes queries
+- [x] All screens have loading and empty states
+- [x] Unistyles styling consistent with web design tokens
+- [x] Full buyer flow works end-to-end on Android device
+- [x] Full seller flow works end-to-end on Android device
+- [x] README documents all setup and build steps
 
 ## Status
 
-📝 PLANNING
+✅ DONE

@@ -35,15 +35,15 @@ Enable sellers to create channels and host live streams from mobile using Agora 
 
 ## Acceptance Criteria
 
-- [ ] Seller can create a channel and go live
-- [ ] Self-view camera renders on host screen
-- [ ] Audio/video toggles work
-- [ ] Camera switch (front/back) works
-- [ ] End stream stops broadcast and navigates back
-- [ ] Product highlight sends WebSocket event visible to viewers
-- [ ] Auction can be launched and is visible to viewers
-- [ ] Chat works for host (read + send)
+- [x] Seller can create a channel and go live
+- [x] Self-view camera renders on host screen
+- [x] Audio/video toggles work
+- [x] Camera switch (front/back) works
+- [x] End stream stops broadcast and navigates back
+- [x] Product highlight sends WebSocket event visible to viewers
+- [x] Auction can be launched and is visible to viewers
+- [x] Chat works for host (read + send)
 
 ## Status
 
-📝 PLANNING
+✅ DONE

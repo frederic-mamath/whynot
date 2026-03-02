@@ -45,4 +45,4 @@ Add auction functionality to the live viewer: display active auctions, allow bid
 
 ## Status
 
-📝 PLANNING
+✅ DONE

@@ -22,17 +22,17 @@ As a **seller**, I want to manage my shop, create products (with camera photos),
 
 | Phase    | Description                            | Status |
 | -------- | -------------------------------------- | ------ |
-| Phase 1  | Project Initialization & Configuration | ⏳     |
-| Phase 2  | Type Sync & tRPC Client                | 📝     |
-| Phase 3  | Authentication System                  | 📝     |
-| Phase 4  | Navigation & App Shell                 | 📝     |
-| Phase 5  | Buyer Core Screens                     | 📝     |
-| Phase 6  | Live Viewer (Video + Chat)             | 📝     |
-| Phase 7  | Live Viewer (Auctions)                 | 📝     |
-| Phase 8  | Seller: Shop & Product Management      | 📝     |
-| Phase 9  | Seller: Live Hosting                   | 📝     |
-| Phase 10 | Orders & Stripe Payments               | 📝     |
-| Phase 11 | Polish, Error Handling & Verification  | 📝     |
+| Phase 1  | Project Initialization & Configuration | ✅     |
+| Phase 2  | Type Sync & tRPC Client                | ✅     |
+| Phase 3  | Authentication System                  | ✅     |
+| Phase 4  | Navigation & App Shell                 | ✅     |
+| Phase 5  | Buyer Core Screens                     | ✅     |
+| Phase 6  | Live Viewer (Video + Chat)             | ✅     |
+| Phase 7  | Live Viewer (Auctions)                 | ✅     |
+| Phase 8  | Seller: Shop & Product Management      | ✅     |
+| Phase 9  | Seller: Live Hosting                   | ✅     |
+| Phase 10 | Orders & Stripe Payments               | ✅     |
+| Phase 11 | Polish, Error Handling & Verification  | ✅     |
 
 ## UI/UX Components
 

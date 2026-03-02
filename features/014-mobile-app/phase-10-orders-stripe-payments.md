@@ -37,13 +37,13 @@ Integrate Stripe React Native SDK for payment processing, implement the payment 
 
 ## Acceptance Criteria
 
-- [ ] Stripe PaymentSheet opens with correct amount
-- [ ] Payment completes successfully
-- [ ] Order status updates after payment
-- [ ] Order detail screen shows correct information
-- [ ] Seller can mark orders as shipped
-- [ ] Failed payments show error message
+- [x] Stripe PaymentSheet opens with correct amount
+- [x] Payment completes successfully
+- [x] Order status updates after payment
+- [x] Order detail screen shows correct information
+- [x] Seller can mark orders as shipped
+- [x] Failed payments show error message
 
 ## Status
 
-📝 PLANNING
+✅ DONE

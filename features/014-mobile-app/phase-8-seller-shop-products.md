@@ -39,13 +39,13 @@ Implement seller screens for managing shops and products, including product crea
 
 ## Acceptance Criteria
 
-- [ ] Sellers can view, create shops
-- [ ] Products CRUD works with images
-- [ ] Camera captures photo and uploads to Cloudinary
-- [ ] Gallery selection uploads to Cloudinary
-- [ ] Multi-image support (up to 5 per product)
-- [ ] Pending deliveries list with mark-as-shipped action
+- [x] Sellers can view, create shops
+- [x] Products CRUD works with images
+- [x] Camera captures photo and uploads to Cloudinary
+- [x] Gallery selection uploads to Cloudinary
+- [x] Multi-image support (up to 5 per product)
+- [x] Pending deliveries list with mark-as-shipped action
 
 ## Status
 
-📝 PLANNING
+✅ DONE

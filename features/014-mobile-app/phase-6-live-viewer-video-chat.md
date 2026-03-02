@@ -48,4 +48,4 @@ Implement the live channel viewer screen with Agora RTC video playback, real-tim
 
 ## Status
 
-📝 PLANNING
+✅ DONE

@@ -42,4 +42,4 @@ Implement JWT-based authentication using `expo-secure-store` with login, registe
 
 ## Status
 
-📝 PLANNING
+✅ DONE
