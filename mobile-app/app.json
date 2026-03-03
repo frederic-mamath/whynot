@@ -37,7 +37,6 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "react-native-unistyles",
       [
         "@stripe/stripe-react-native",
         {
@@ -48,9 +47,12 @@
     ],
     "extra": {
       "apiUrl": "https://whynot-app.onrender.com",
+      "stripePublishableKey": "pk_test_51RX5wpFpXSJuaxQVgRq7ESvBfZuVGMUC50zBcr8lWtlaiSPjd4FShApmDX7BDlY9UYQ2vTrMpLoPvvdgZNvGythr00ge5JIFoi",
       "eas": {
-        "projectId": "your-eas-project-id"
-      }
-    }
+        "projectId": "50620817-a61d-4545-8091-6566e41f711f"
+      },
+      "router": {}
+    },
+    "owner": "frederic-mamath"
   }
 }
