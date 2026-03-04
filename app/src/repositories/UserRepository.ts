@@ -165,6 +165,25 @@ export class UserRepository {
 
     return Number(result.count);
   }
+
+  /**
+   * Update Stripe Customer ID for a buyer
+   * Similar to: UPDATE users SET stripe_customer_id = ?, updated_at = NOW() WHERE id = ?
+   */
+  async updateStripeCustomerId(
+    userId: number,
+    stripeCustomerId: string,
+  ): Promise<User | undefined> {
+    return db
+      .updateTable("users")
+      .set({
+        stripe_customer_id: stripeCustomerId,
+        updated_at: new Date(),
+      })
+      .where("id", "=", userId)
+      .returningAll()
+      .executeTakeFirst();
+  }
 }
 
 // Export singleton instance (Spring @Repository bean style)

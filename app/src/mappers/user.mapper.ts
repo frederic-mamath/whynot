@@ -26,5 +26,6 @@ export function mapCreateUserInboundDtoToUser(
     last_name: dto.lastName ?? null,
     stripe_account_id: null,
     stripe_onboarding_complete: false,
+    stripe_customer_id: null,
   };
 }

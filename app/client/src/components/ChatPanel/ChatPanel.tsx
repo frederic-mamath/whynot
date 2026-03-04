@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useWebSocketStatus } from "@/hooks/useWebSocketStatus";
 import { HighlightedProduct } from "../HighlightedProduct";
 import { AuctionWidget } from "../AuctionWidget";
+import { PaymentRequiredDialog } from "../PaymentRequiredDialog";
 
 interface ChatPanelProps {
   channelId: number;
@@ -34,22 +35,30 @@ export function ChatPanel({
   const [messages, setMessages] = useState<any[]>([]);
   const [localEndsAt, setLocalEndsAt] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const { isConnected } = useWebSocketStatus();
   const utils = trpc.useUtils();
 
-  // Fetch active auction
-  const { data: activeAuction, refetch: refetchAuction } = trpc.auction.getActive.useQuery(
-    { channelId },
-    { 
-      refetchInterval: 5000, // Poll every 5s as fallback
-      refetchOnWindowFocus: true,
-    }
+  // Check buyer payment status
+  const { data: paymentStatus } = trpc.payment.getPaymentStatus.useQuery(
+    undefined,
+    { enabled: !!currentUserId },
   );
+
+  // Fetch active auction
+  const { data: activeAuction, refetch: refetchAuction } =
+    trpc.auction.getActive.useQuery(
+      { channelId },
+      {
+        refetchInterval: 5000, // Poll every 5s as fallback
+        refetchOnWindowFocus: true,
+      },
+    );
 
   // Fetch bid history if auction exists
   const { data: bids = [] } = trpc.auction.getBidHistory.useQuery(
     { auctionId: activeAuction?.id || "" },
-    { enabled: !!activeAuction }
+    { enabled: !!activeAuction },
   );
 
   // Update local endsAt when auction changes
@@ -88,22 +97,22 @@ export function ChatPanel({
     },
     onSuccess: (data) => {
       setIsClosing(false);
-      console.log('[auction.close] Auction closed:', data);
+      console.log("[auction.close] Auction closed:", data);
       refetchAuction();
     },
     onError: (error) => {
       setIsClosing(false);
       // Ignore "already closed" errors
-      if (!error.message.includes('not active')) {
-        console.error('[auction.close] Failed to close auction:', error);
-        toast.error('Failed to close auction automatically');
+      if (!error.message.includes("not active")) {
+        console.error("[auction.close] Failed to close auction:", error);
+        toast.error("Failed to close auction automatically");
       }
     },
   });
 
   // Auto-close when timer expires
   useEffect(() => {
-    if (!activeAuction || activeAuction.status !== 'active' || isClosing) {
+    if (!activeAuction || activeAuction.status !== "active" || isClosing) {
       return;
     }
 
@@ -114,7 +123,10 @@ export function ChatPanel({
 
       // Close when timer expires
       if (timeRemaining <= 0) {
-        console.log('[auction.auto-close] Timer expired, closing auction:', activeAuction.id);
+        console.log(
+          "[auction.auto-close] Timer expired, closing auction:",
+          activeAuction.id,
+        );
         closeAuctionMutation.mutate({ auctionId: activeAuction.id });
         clearInterval(interval);
       }
@@ -140,7 +152,7 @@ export function ChatPanel({
 
   const handleManualClose = () => {
     if (!activeAuction) return;
-    if (confirm('Are you sure you want to end this auction early?')) {
+    if (confirm("Are you sure you want to end this auction early?")) {
       closeAuctionMutation.mutate({ auctionId: activeAuction.id });
     }
   };
@@ -202,53 +214,53 @@ export function ChatPanel({
       enabled: true,
       onData: (event: any) => {
         switch (event.type) {
-          case 'auction:started':
+          case "auction:started":
             toast.info("Auction started!");
             refetchAuction();
             break;
-            
-          case 'auction:bid_placed':
+
+          case "auction:bid_placed":
             refetchAuction();
             if (event.bidderId !== currentUserId) {
               toast.info(
-                `${event.bidderUsername} bid $${event.amount.toFixed(2)}`
+                `${event.bidderUsername} bid $${event.amount.toFixed(2)}`,
               );
             }
             break;
-            
-          case 'auction:extended':
+
+          case "auction:extended":
             toast.info("Auction extended by 30 seconds!");
             setLocalEndsAt(event.newEndsAt);
             refetchAuction();
             break;
-            
-          case 'auction:ended':
+
+          case "auction:ended":
             if (event.hasWinner && event.winnerUsername) {
               toast.success(
-                `Auction won by ${event.winnerUsername} for $${event.finalPrice.toFixed(2)}`
+                `Auction won by ${event.winnerUsername} for $${event.finalPrice.toFixed(2)}`,
               );
             } else {
-              toast.info('Auction ended with no bids');
+              toast.info("Auction ended with no bids");
             }
             refetchAuction();
             break;
-            
-          case 'auction:bought_out':
+
+          case "auction:bought_out":
             toast.success(
-              `${event.buyerUsername} bought for $${event.buyoutPrice.toFixed(2)}`
+              `${event.buyerUsername} bought for $${event.buyoutPrice.toFixed(2)}`,
             );
             refetchAuction();
             break;
-            
-          case 'auction:outbid':
+
+          case "auction:outbid":
             toast.warning(
-              `You've been outbid on ${event.productName}! Current bid: $${event.currentBid.toFixed(2)}`
+              `You've been outbid on ${event.productName}! Current bid: $${event.currentBid.toFixed(2)}`,
             );
             break;
-            
-          case 'auction:won':
+
+          case "auction:won":
             toast.success(
-              `🎉 You won ${event.productName} for $${event.finalPrice.toFixed(2)}!`
+              `🎉 You won ${event.productName} for $${event.finalPrice.toFixed(2)}!`,
             );
             break;
         }
@@ -256,7 +268,7 @@ export function ChatPanel({
       onError: (error) => {
         console.error("Auction events subscription error:", error);
       },
-    }
+    },
   );
 
   const handleSendMessage = (content: string) => {
@@ -300,6 +312,8 @@ export function ChatPanel({
               isHostOrSeller={isHostOrSeller}
               isLoading={false}
               isClosing={isClosing}
+              hasPaymentMethod={paymentStatus?.hasPaymentMethod ?? false}
+              onPaymentRequired={() => setPaymentDialogOpen(true)}
             />
           ) : highlightedProduct ? (
             <HighlightedProduct
@@ -312,6 +326,16 @@ export function ChatPanel({
           ) : null}
         </div>
       )}
+
+      {/* Payment Required Dialog */}
+      <PaymentRequiredDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        onSuccess={() => {
+          utils.payment.getPaymentStatus.invalidate();
+          setPaymentDialogOpen(false);
+        }}
+      />
     </div>
   );
 }

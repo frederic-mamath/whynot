@@ -11,7 +11,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, MapPin, Plus, Pencil, Trash2, Star } from "lucide-react";
+import {
+  User,
+  MapPin,
+  Plus,
+  Pencil,
+  Trash2,
+  Star,
+  CreditCard,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +41,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
 
 interface AddressFormData {
   label: string;
@@ -62,11 +73,15 @@ export default function ProfilePage() {
   const [addressForm, setAddressForm] = useState<AddressFormData>(emptyAddress);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<number | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const utils = trpc.useUtils();
 
   // Load profile
   const { data: profile, isLoading } = trpc.profile.me.useQuery();
+
+  // Load payment status
+  const { data: paymentStatus } = trpc.payment.getPaymentStatus.useQuery();
 
   // Populate form state from DB data (only on initial load)
   useEffect(() => {
@@ -262,6 +277,82 @@ export default function ProfilePage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Payment Method */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="size-5" />
+                Payment Method
+              </CardTitle>
+              <CardDescription>
+                Required to place bids in live auctions
+              </CardDescription>
+            </div>
+            {paymentStatus?.hasPaymentMethod && (
+              <Button
+                variant="outline"
+                onClick={() => setPaymentDialogOpen(true)}
+              >
+                Change
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {paymentStatus?.hasPaymentMethod ? (
+            <div className="space-y-3">
+              {paymentStatus.paymentMethods.map((pm) => (
+                <div
+                  key={pm.id}
+                  className="flex items-center gap-3 border rounded-lg p-3"
+                >
+                  <CheckCircle2 className="size-5 text-green-500 shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium capitalize">
+                      {pm.wallet
+                        ? pm.wallet.replace("_", " ")
+                        : pm.card
+                          ? `${pm.card.brand} •••• ${pm.card.last4}`
+                          : pm.type}
+                    </p>
+                    {pm.card && !pm.wallet && (
+                      <p className="text-xs text-muted-foreground">
+                        Expires {pm.card.expMonth}/{pm.card.expYear}
+                      </p>
+                    )}
+                  </div>
+                  <Badge variant="secondary">Active</Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <AlertCircle className="size-10 mx-auto mb-3 text-amber-500 opacity-70" />
+              <p className="text-sm font-medium">
+                No payment method configured
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                You need a payment method to bid in auctions
+              </p>
+              <Button onClick={() => setPaymentDialogOpen(true)}>
+                <CreditCard className="size-4 mr-2" />
+                Add payment method
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <PaymentSetupDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        onSuccess={() => {
+          utils.payment.getPaymentStatus.invalidate();
+        }}
+      />
 
       {/* Delivery Addresses */}
       <Card>

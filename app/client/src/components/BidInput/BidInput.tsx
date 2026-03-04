@@ -9,9 +9,19 @@ interface BidInputProps {
   currentBid: number;
   onPlaceBid: (amount: number) => Promise<void>;
   disabled?: boolean;
+  /** When false, clicking Place Bid will call onPaymentRequired instead */
+  hasPaymentMethod?: boolean;
+  /** Called when user tries to bid without a payment method */
+  onPaymentRequired?: () => void;
 }
 
-export function BidInput({ currentBid, onPlaceBid, disabled }: BidInputProps) {
+export function BidInput({
+  currentBid,
+  onPlaceBid,
+  disabled,
+  hasPaymentMethod = true,
+  onPaymentRequired,
+}: BidInputProps) {
   const [bidAmount, setBidAmount] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +32,7 @@ export function BidInput({ currentBid, onPlaceBid, disabled }: BidInputProps) {
     setError("");
 
     const numAmount = parseFloat(amount);
-    
+
     if (!amount || isNaN(numAmount)) {
       setError("Please enter a valid amount");
       return false;
@@ -38,6 +48,12 @@ export function BidInput({ currentBid, onPlaceBid, disabled }: BidInputProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Guard: require payment method before bidding
+    if (!hasPaymentMethod) {
+      onPaymentRequired?.();
+      return;
+    }
 
     if (!validateBid(bidAmount)) return;
 
@@ -56,9 +72,10 @@ export function BidInput({ currentBid, onPlaceBid, disabled }: BidInputProps) {
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-2">
       <Label htmlFor="bid-amount" className="text-sm">
-        Next Minimum Bid: <span className="font-semibold">${minBid.toFixed(2)}</span>
+        Next Minimum Bid:{" "}
+        <span className="font-semibold">${minBid.toFixed(2)}</span>
       </Label>
-      
+
       <div className="flex gap-2">
         <div className="relative flex-1">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">

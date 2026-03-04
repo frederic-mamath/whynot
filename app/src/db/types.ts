@@ -31,6 +31,7 @@ export interface UsersTable {
   is_verified: boolean;
   stripe_account_id: string | null;
   stripe_onboarding_complete: boolean;
+  stripe_customer_id: string | null;
   created_at: Date;
   updated_at: Date;
 }

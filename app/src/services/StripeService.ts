@@ -1,11 +1,11 @@
-import Stripe from 'stripe';
+import Stripe from "stripe";
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is required');
+  throw new Error("STRIPE_SECRET_KEY is required");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-12-15.clover',
+  apiVersion: "2025-12-15.clover",
 });
 
 export class StripeService {
@@ -19,7 +19,13 @@ export class StripeService {
     buyerEmail?: string;
     metadata?: Record<string, string>;
   }): Promise<Stripe.PaymentIntent> {
-    const { amount, currency = 'usd', orderId, buyerEmail, metadata = {} } = params;
+    const {
+      amount,
+      currency = "usd",
+      orderId,
+      buyerEmail,
+      metadata = {},
+    } = params;
 
     return stripe.paymentIntents.create({
       amount: Math.round(amount),
@@ -38,14 +44,18 @@ export class StripeService {
   /**
    * Retrieve a payment intent by ID
    */
-  async getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+  async getPaymentIntent(
+    paymentIntentId: string,
+  ): Promise<Stripe.PaymentIntent> {
     return stripe.paymentIntents.retrieve(paymentIntentId);
   }
 
   /**
    * Cancel a payment intent (if still cancelable)
    */
-  async cancelPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+  async cancelPaymentIntent(
+    paymentIntentId: string,
+  ): Promise<Stripe.PaymentIntent> {
     return stripe.paymentIntents.cancel(paymentIntentId);
   }
 
@@ -55,7 +65,7 @@ export class StripeService {
   async createRefund(params: {
     paymentIntentId: string;
     amount?: number; // Optional: partial refund amount in cents
-    reason?: 'duplicate' | 'fraudulent' | 'requested_by_customer';
+    reason?: "duplicate" | "fraudulent" | "requested_by_customer";
     metadata?: Record<string, string>;
   }): Promise<Stripe.Refund> {
     const { paymentIntentId, amount, reason, metadata = {} } = params;
@@ -84,6 +94,56 @@ export class StripeService {
    */
   getStripeInstance(): Stripe {
     return stripe;
+  }
+
+  // ─── Stripe Customer & SetupIntent (for saved payment methods) ──────
+
+  /**
+   * Create a Stripe Customer for a buyer
+   */
+  async createCustomer(params: {
+    email: string;
+    userId: number;
+  }): Promise<Stripe.Customer> {
+    return stripe.customers.create({
+      email: params.email,
+      metadata: { userId: String(params.userId) },
+    });
+  }
+
+  /**
+   * Create a SetupIntent to collect a payment method without charging
+   */
+  async createSetupIntent(params: {
+    customerId: string;
+  }): Promise<Stripe.SetupIntent> {
+    return stripe.setupIntents.create({
+      customer: params.customerId,
+      automatic_payment_methods: { enabled: true },
+    });
+  }
+
+  /**
+   * List saved payment methods for a Stripe Customer
+   */
+  async listPaymentMethods(params: {
+    customerId: string;
+  }): Promise<Stripe.PaymentMethod[]> {
+    const result = await stripe.paymentMethods.list({
+      customer: params.customerId,
+    });
+    return result.data;
+  }
+
+  /**
+   * Check if a customer has at least one payment method
+   */
+  async hasPaymentMethod(params: { customerId: string }): Promise<boolean> {
+    const result = await stripe.paymentMethods.list({
+      customer: params.customerId,
+      limit: 1,
+    });
+    return result.data.length > 0;
   }
 }
 

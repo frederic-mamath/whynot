@@ -1,28 +1,58 @@
-import { router, protectedProcedure, publicProcedure } from '../trpc';
-import { z } from 'zod';
-import { sql } from 'kysely';
-import { 
-  auctionRepository, 
-  bidRepository, 
+import { router, protectedProcedure, publicProcedure } from "../trpc";
+import { z } from "zod";
+import { sql } from "kysely";
+import {
+  auctionRepository,
+  bidRepository,
   orderRepository,
   productRepository,
   channelRepository,
-  userShopRoleRepository
-} from '../repositories';
-import { TRPCError } from '@trpc/server';
-import { db } from '../db';
-import { broadcastToChannel } from '../websocket/broadcast';
-import { mapAuctionToOutboundDto } from '../mappers/auction.mapper';
-import { mapBidToOutboundDto } from '../mappers/bid.mapper';
-import { closeAuction } from '../services/auctionService';
+  userShopRoleRepository,
+} from "../repositories";
+import { TRPCError } from "@trpc/server";
+import { db } from "../db";
+import { broadcastToChannel } from "../websocket/broadcast";
+import { mapAuctionToOutboundDto } from "../mappers/auction.mapper";
+import { mapBidToOutboundDto } from "../mappers/bid.mapper";
+import { closeAuction } from "../services/auctionService";
+import { userRepository } from "../repositories/UserRepository";
+import { stripeService } from "../services/StripeService";
 
-async function isChannelHost(channelId: number, userId: number): Promise<boolean> {
+/**
+ * Verify the user has a saved payment method (defense-in-depth guard).
+ * The frontend should block this first, but we enforce it server-side too.
+ */
+async function requirePaymentMethod(userId: number): Promise<void> {
+  const user = await userRepository.findById(userId);
+  if (!user?.stripe_customer_id) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "You must add a payment method before bidding. Go to Profile → Payment Method.",
+    });
+  }
+  const has = await stripeService.hasPaymentMethod({
+    customerId: user.stripe_customer_id,
+  });
+  if (!has) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message:
+        "You must add a payment method before bidding. Go to Profile → Payment Method.",
+    });
+  }
+}
+
+async function isChannelHost(
+  channelId: number,
+  userId: number,
+): Promise<boolean> {
   const channel = await db
-    .selectFrom('channels')
-    .select('host_id')
-    .where('id', '=', channelId)
+    .selectFrom("channels")
+    .select("host_id")
+    .where("id", "=", channelId)
     .executeTakeFirst();
-    
+
   return channel?.host_id === userId;
 }
 
@@ -39,21 +69,23 @@ export const auctionRouter = router({
    * Start a new auction for a highlighted product
    */
   start: protectedProcedure
-    .input(z.object({
-      productId: z.number(),
-      durationSeconds: z.union([
-        z.literal(60),
-        z.literal(300),
-        z.literal(600),
-        z.literal(1800)
-      ]),
-      buyoutPrice: z.number().optional()
-    }))
+    .input(
+      z.object({
+        productId: z.number(),
+        durationSeconds: z.union([
+          z.literal(60),
+          z.literal(300),
+          z.literal(600),
+          z.literal(1800),
+        ]),
+        buyoutPrice: z.number().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to start an auction',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to start an auction",
         });
       }
 
@@ -61,49 +93,56 @@ export const auctionRouter = router({
       const product = await productRepository.findById(input.productId);
       if (!product) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Product not found',
+          code: "NOT_FOUND",
+          message: "Product not found",
         });
       }
 
       // Verify user has access to this product's shop
-      const hasAccess = await userShopRoleRepository.hasShopAccess(ctx.user.id, product.shop_id);
+      const hasAccess = await userShopRoleRepository.hasShopAccess(
+        ctx.user.id,
+        product.shop_id,
+      );
       if (!hasAccess) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have access to this shop',
+          code: "FORBIDDEN",
+          message: "You do not have access to this shop",
         });
       }
 
       // Find channel where this product is highlighted
       const channel = await db
-        .selectFrom('channels')
+        .selectFrom("channels")
         .selectAll()
-        .where('highlighted_product_id', '=', input.productId)
-        .where('status', '=', 'active')
+        .where("highlighted_product_id", "=", input.productId)
+        .where("status", "=", "active")
         .executeTakeFirst();
 
       if (!channel) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Product must be highlighted in an active channel to start auction',
+          code: "BAD_REQUEST",
+          message:
+            "Product must be highlighted in an active channel to start auction",
         });
       }
 
       // Verify user is channel host
       if (!(await isChannelHost(channel.id, ctx.user.id))) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Only the channel host can start auctions',
+          code: "FORBIDDEN",
+          message: "Only the channel host can start auctions",
         });
       }
 
       // Check no active auction exists for this channel
-      const existingAuction = await auctionRepository.findByChannelId(channel.id, 'active');
+      const existingAuction = await auctionRepository.findByChannelId(
+        channel.id,
+        "active",
+      );
       if (existingAuction) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'An auction is already active in this channel',
+          code: "BAD_REQUEST",
+          message: "An auction is already active in this channel",
         });
       }
 
@@ -112,8 +151,8 @@ export const auctionRouter = router({
       // Validate buyout price
       if (input.buyoutPrice && input.buyoutPrice <= startingPrice) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Buyout price must be greater than starting price',
+          code: "BAD_REQUEST",
+          message: "Buyout price must be greater than starting price",
         });
       }
 
@@ -134,11 +173,13 @@ export const auctionRouter = router({
       });
 
       // Get auction with details for DTO
-      const auctionWithDetails = await auctionRepository.findWithDetails(auction.id);
+      const auctionWithDetails = await auctionRepository.findWithDetails(
+        auction.id,
+      );
       if (!auctionWithDetails) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to retrieve auction details',
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve auction details",
         });
       }
 
@@ -146,7 +187,7 @@ export const auctionRouter = router({
 
       // Broadcast auction started event
       broadcastToChannel(channel.id, {
-        type: 'auction:started',
+        type: "auction:started",
         auction: auctionDto,
       });
 
@@ -157,56 +198,61 @@ export const auctionRouter = router({
    * Place a bid on an active auction
    */
   placeBid: protectedProcedure
-    .input(z.object({
-      auctionId: z.string().uuid(),
-      amount: z.number().min(1)
-    }))
+    .input(
+      z.object({
+        auctionId: z.string().uuid(),
+        amount: z.number().min(1),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to place a bid',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to place a bid",
         });
       }
+
+      // Require a saved payment method before bidding
+      await requirePaymentMethod(ctx.user.id);
 
       // Use transaction for race condition safety
       return await db.transaction().execute(async (trx) => {
         // Lock auction row
         const auction = await trx
-          .selectFrom('auctions')
+          .selectFrom("auctions")
           .selectAll()
-          .where('id', '=', input.auctionId)
+          .where("id", "=", input.auctionId)
           .forUpdate()
           .executeTakeFirst();
 
         if (!auction) {
           throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Auction not found',
+            code: "NOT_FOUND",
+            message: "Auction not found",
           });
         }
 
         // Verify auction is active
-        if (auction.status !== 'active') {
+        if (auction.status !== "active") {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Auction is not active',
+            code: "BAD_REQUEST",
+            message: "Auction is not active",
           });
         }
 
         // Verify auction hasn't ended
         if (new Date() > auction.ends_at) {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Auction has ended',
+            code: "BAD_REQUEST",
+            message: "Auction has ended",
           });
         }
 
         // Verify bidder is not the seller
         if (auction.seller_id === ctx.user!.id) {
           throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'You cannot bid on your own auction',
+            code: "FORBIDDEN",
+            message: "You cannot bid on your own auction",
           });
         }
 
@@ -216,7 +262,7 @@ export const auctionRouter = router({
         // Verify bid amount
         if (input.amount < minBid) {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
+            code: "BAD_REQUEST",
             message: `Bid must be at least $${minBid.toFixed(2)}`,
           });
         }
@@ -225,10 +271,10 @@ export const auctionRouter = router({
         const now = new Date();
         const timeRemaining = auction.ends_at.getTime() - now.getTime();
         const shouldExtend = timeRemaining < 30000; // 30 seconds
-        
+
         let newEndsAt = auction.ends_at;
         let extendedCount = auction.extended_count;
-        
+
         if (shouldExtend) {
           newEndsAt = new Date(auction.ends_at.getTime() + 30000); // Add 30s
           extendedCount += 1;
@@ -236,7 +282,7 @@ export const auctionRouter = router({
 
         // Create bid
         const bid = await trx
-          .insertInto('bids')
+          .insertInto("bids")
           .values({
             id: sql`gen_random_uuid()`,
             auction_id: input.auctionId,
@@ -248,39 +294,40 @@ export const auctionRouter = router({
 
         // Update auction
         await trx
-          .updateTable('auctions')
+          .updateTable("auctions")
           .set({
             current_bid: input.amount.toFixed(2),
             highest_bidder_id: ctx.user!.id,
             ends_at: newEndsAt,
             extended_count: extendedCount,
           })
-          .where('id', '=', input.auctionId)
+          .where("id", "=", input.auctionId)
           .execute();
 
         // Get bidder info for response
         const bidder = await trx
-          .selectFrom('users')
-          .select(['firstname', 'lastname'])
-          .where('id', '=', ctx.user!.id)
+          .selectFrom("users")
+          .select(["firstname", "lastname"])
+          .where("id", "=", ctx.user!.id)
           .executeTakeFirst();
 
-        const bidderUsername = bidder?.firstname && bidder.lastname
-          ? `${bidder.firstname} ${bidder.lastname}`
-          : 'Anonymous';
+        const bidderUsername =
+          bidder?.firstname && bidder.lastname
+            ? `${bidder.firstname} ${bidder.lastname}`
+            : "Anonymous";
 
         // Broadcast events outside transaction
         setTimeout(() => {
           if (shouldExtend) {
             broadcastToChannel(auction.channel_id, {
-              type: 'auction:extended',
+              type: "auction:extended",
               auctionId: input.auctionId,
               newEndsAt: newEndsAt.toISOString(),
             });
           }
 
           broadcastToChannel(auction.channel_id, {
-            type: 'auction:bid_placed',
+            type: "auction:bid_placed",
             auctionId: input.auctionId,
             bidderUsername,
             amount: input.amount,
@@ -306,50 +353,55 @@ export const auctionRouter = router({
    * Buyout an auction immediately
    */
   buyout: protectedProcedure
-    .input(z.object({
-      auctionId: z.string().uuid()
-    }))
+    .input(
+      z.object({
+        auctionId: z.string().uuid(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to buyout an auction',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to buyout an auction",
         });
       }
 
+      // Require a saved payment method before buyout
+      await requirePaymentMethod(ctx.user.id);
+
       return await db.transaction().execute(async (trx) => {
         const auction = await trx
-          .selectFrom('auctions')
+          .selectFrom("auctions")
           .selectAll()
-          .where('id', '=', input.auctionId)
+          .where("id", "=", input.auctionId)
           .forUpdate()
           .executeTakeFirst();
 
         if (!auction) {
           throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Auction not found',
+            code: "NOT_FOUND",
+            message: "Auction not found",
           });
         }
 
-        if (auction.status !== 'active') {
+        if (auction.status !== "active") {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Auction is not active',
+            code: "BAD_REQUEST",
+            message: "Auction is not active",
           });
         }
 
         if (!auction.buyout_price) {
           throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'This auction does not have a buyout price',
+            code: "BAD_REQUEST",
+            message: "This auction does not have a buyout price",
           });
         }
 
         if (auction.seller_id === ctx.user!.id) {
           throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: 'You cannot buyout your own auction',
+            code: "FORBIDDEN",
+            message: "You cannot buyout your own auction",
           });
         }
 
@@ -357,13 +409,13 @@ export const auctionRouter = router({
 
         // Update auction status
         await trx
-          .updateTable('auctions')
-          .set({ 
-            status: 'ended',
+          .updateTable("auctions")
+          .set({
+            status: "ended",
             current_bid: auction.buyout_price,
-            highest_bidder_id: ctx.user!.id
+            highest_bidder_id: ctx.user!.id,
           })
-          .where('id', '=', input.auctionId)
+          .where("id", "=", input.auctionId)
           .execute();
 
         // Create order
@@ -371,7 +423,7 @@ export const auctionRouter = router({
         paymentDeadline.setDate(paymentDeadline.getDate() + 7); // 7 days from now
 
         const order = await trx
-          .insertInto('orders')
+          .insertInto("orders")
           .values({
             id: sql`gen_random_uuid()`,
             auction_id: input.auctionId,
@@ -382,33 +434,34 @@ export const auctionRouter = router({
             platform_fee: calculatePlatformFee(buyoutPrice).toFixed(2),
             seller_payout: calculateSellerPayout(buyoutPrice).toFixed(2),
             payment_deadline: paymentDeadline,
-            payment_status: 'pending',
+            payment_status: "pending",
           })
           .returningAll()
           .executeTakeFirstOrThrow();
 
         // Get buyer info
         const buyer = await trx
-          .selectFrom('users')
-          .select(['firstname', 'lastname'])
-          .where('id', '=', ctx.user!.id)
+          .selectFrom("users")
+          .select(["firstname", "lastname"])
+          .where("id", "=", ctx.user!.id)
           .executeTakeFirst();
 
-        const buyerUsername = buyer?.firstname && buyer.lastname
-          ? `${buyer.firstname} ${buyer.lastname}`
-          : 'Anonymous';
+        const buyerUsername =
+          buyer?.firstname && buyer.lastname
+            ? `${buyer.firstname} ${buyer.lastname}`
+            : "Anonymous";
 
         // Get product info
         const product = await trx
-          .selectFrom('products')
-          .select('name')
-          .where('id', '=', auction.product_id)
+          .selectFrom("products")
+          .select("name")
+          .where("id", "=", auction.product_id)
           .executeTakeFirst();
 
         // Broadcast events
         setTimeout(() => {
           broadcastToChannel(auction.channel_id, {
-            type: 'auction:bought_out',
+            type: "auction:bought_out",
             auctionId: input.auctionId,
             buyerId: ctx.user!.id,
             buyerUsername,
@@ -433,13 +486,18 @@ export const auctionRouter = router({
   getActive: publicProcedure
     .input(z.object({ channelId: z.number() }))
     .query(async ({ input }) => {
-      const auction = await auctionRepository.findByChannelId(input.channelId, 'active');
-      
+      const auction = await auctionRepository.findByChannelId(
+        input.channelId,
+        "active",
+      );
+
       if (!auction) {
         return null;
       }
 
-      const auctionWithDetails = await auctionRepository.findWithDetails(auction.id);
+      const auctionWithDetails = await auctionRepository.findWithDetails(
+        auction.id,
+      );
       if (!auctionWithDetails) {
         return null;
       }
@@ -453,7 +511,9 @@ export const auctionRouter = router({
   getBidHistory: publicProcedure
     .input(z.object({ auctionId: z.string().uuid() }))
     .query(async ({ input }) => {
-      const bids = await bidRepository.findByAuctionIdWithBidders(input.auctionId);
+      const bids = await bidRepository.findByAuctionIdWithBidders(
+        input.auctionId,
+      );
       return bids.map(mapBidToOutboundDto);
     }),
 
@@ -465,28 +525,31 @@ export const auctionRouter = router({
     .query(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
         });
       }
 
       // Verify user has shop access
-      const hasAccess = await userShopRoleRepository.hasShopAccess(ctx.user.id, input.shopId);
+      const hasAccess = await userShopRoleRepository.hasShopAccess(
+        ctx.user.id,
+        input.shopId,
+      );
       if (!hasAccess) {
         throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have access to this shop',
+          code: "FORBIDDEN",
+          message: "You do not have access to this shop",
         });
       }
 
       const auctions = await auctionRepository.findByShopId(input.shopId);
-      
+
       // Get details for each auction
       const auctionsWithDetails = await Promise.all(
         auctions.map(async (auction) => {
           const details = await auctionRepository.findWithDetails(auction.id);
           return details ? mapAuctionToOutboundDto(details) : null;
-        })
+        }),
       );
 
       return auctionsWithDetails.filter((a) => a !== null);
@@ -496,31 +559,36 @@ export const auctionRouter = router({
    * Close an auction (manual or automatic)
    */
   close: protectedProcedure
-    .input(z.object({
-      auctionId: z.string().uuid()
-    }))
+    .input(
+      z.object({
+        auctionId: z.string().uuid(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user) {
         throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: 'You must be logged in to close an auction',
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to close an auction",
         });
       }
 
       // Get auction
       const auction = await auctionRepository.findById(input.auctionId);
-      
+
       if (!auction) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Auction not found' });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Auction not found",
+        });
       }
 
       // Only check permissions if auction is still active
-      if (auction.status === 'active') {
+      if (auction.status === "active") {
         const isHost = await isChannelHost(auction.channel_id, ctx.user.id);
         if (!isHost && auction.seller_id !== ctx.user.id) {
-          throw new TRPCError({ 
-            code: 'FORBIDDEN', 
-            message: 'Only the seller or host can close the auction' 
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only the seller or host can close the auction",
           });
         }
       }
