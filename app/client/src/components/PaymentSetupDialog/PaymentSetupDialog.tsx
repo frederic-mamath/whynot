@@ -165,9 +165,12 @@ export function PaymentSetupDialog({
               Payment method saved successfully!
             </p>
           </div>
-        ) : setupError ? (
+        ) : setupError || (clientSecret && !stripePromise) ? (
           <div className="flex flex-col items-center gap-4 py-6">
-            <p className="text-sm text-destructive text-center">{setupError}</p>
+            <p className="text-sm text-destructive text-center">
+              {setupError ??
+                "Stripe is not configured. Make sure VITE_STRIPE_PUBLISHABLE_KEY is set in the build environment."}
+            </p>
             <Button
               variant="outline"
               onClick={() => {
