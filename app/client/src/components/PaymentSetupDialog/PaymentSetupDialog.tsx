@@ -89,12 +89,15 @@ export function PaymentSetupDialog({
 }: PaymentSetupDialogProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   const createSetupIntent = trpc.payment.createSetupIntent.useMutation({
     onSuccess: (data) => {
       setClientSecret(data.clientSecret);
+      setSetupError(null);
     },
     onError: (err) => {
+      setSetupError(err.message || "Failed to start payment setup");
       toast.error(err.message || "Failed to start payment setup");
     },
   });
@@ -103,13 +106,20 @@ export function PaymentSetupDialog({
   // NOTE: Radix Dialog only calls onOpenChange(false) to close — it never calls
   // onOpenChange(true) on open, so we must watch the `open` prop directly.
   useEffect(() => {
-    if (open && !clientSecret && !createSetupIntent.isPending && !done) {
+    if (
+      open &&
+      !clientSecret &&
+      !createSetupIntent.isPending &&
+      !done &&
+      !setupError
+    ) {
       createSetupIntent.mutate();
     }
     // Reset state when dialog closes
     if (!open) {
       setClientSecret(null);
       setDone(false);
+      setSetupError(null);
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -154,6 +164,19 @@ export function PaymentSetupDialog({
             <p className="text-sm text-muted-foreground">
               Payment method saved successfully!
             </p>
+          </div>
+        ) : setupError ? (
+          <div className="flex flex-col items-center gap-4 py-6">
+            <p className="text-sm text-destructive text-center">{setupError}</p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSetupError(null);
+                createSetupIntent.mutate();
+              }}
+            >
+              Try again
+            </Button>
           </div>
         ) : clientSecret && stripePromise ? (
           <Elements
