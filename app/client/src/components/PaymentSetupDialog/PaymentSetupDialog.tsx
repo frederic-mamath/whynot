@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   Elements,
-  PaymentElement,
+  PaymentRequestButtonElement,
   useStripe,
-  useElements,
 } from "@stripe/react-stripe-js";
+import type { PaymentRequest } from "@stripe/stripe-js";
 import { stripePromise } from "../../lib/stripe";
 import { trpc } from "../../lib/trpc";
 import { Button } from "../ui/button";
@@ -15,59 +15,103 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { CreditCard, Loader2, CheckCircle2 } from "lucide-react";
+import { Wallet, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-// ─── Inner form rendered inside <Elements> ──────────────────────────
+// ─── Wallet-only setup form (Google Pay / Apple Pay) ────────────────
 
-function SetupForm({ onSuccess }: { onSuccess: () => void }) {
+function WalletSetupForm({
+  clientSecret,
+  onSuccess,
+}: {
+  clientSecret: string;
+  onSuccess: () => void;
+}) {
   const stripe = useStripe();
-  const elements = useElements();
-  const [loading, setLoading] = useState(false);
+  const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(
+    null,
+  );
+  // null = still checking, true = available, false = unavailable
+  const [available, setAvailable] = useState<boolean | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
+  useEffect(() => {
+    if (!stripe) return;
 
-    setLoading(true);
-    const { error } = await stripe.confirmSetup({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/profile?payment_setup=true`,
+    const pr = stripe.paymentRequest({
+      country: "FR",
+      currency: "eur",
+      total: {
+        label: "Enregistrer un moyen de paiement",
+        amount: 0,
       },
-      redirect: "if_required",
+      requestPayerName: false,
+      requestPayerEmail: false,
     });
 
-    if (error) {
-      toast.error(error.message || "Failed to save payment method");
-    } else {
-      toast.success("Payment method saved!");
-      onSuccess();
-    }
-    setLoading(false);
-  };
+    pr.canMakePayment().then((result) => {
+      setAvailable(!!result);
+      if (result) setPaymentRequest(pr);
+    });
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
-      <Button type="submit" disabled={!stripe || loading} className="w-full">
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Saving…
-          </>
-        ) : (
-          <>
-            <CreditCard className="mr-2 h-4 w-4" />
-            Save payment method
-          </>
-        )}
-      </Button>
-    </form>
-  );
+    pr.on("paymentmethod", async (event) => {
+      const { error } = await stripe.confirmCardSetup(
+        clientSecret,
+        { payment_method: event.paymentMethod.id },
+        { handleActions: false },
+      );
+
+      if (error) {
+        event.complete("fail");
+        toast.error(error.message || "Échec de l'enregistrement");
+      } else {
+        event.complete("success");
+        toast.success("Moyen de paiement enregistré !");
+        onSuccess();
+      }
+    });
+  }, [stripe, clientSecret]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (available === null) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!available) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-6 text-center">
+        <AlertCircle className="h-8 w-8 text-amber-500" />
+        <p className="text-sm text-muted-foreground">
+          Google Pay et Apple Pay ne sont pas disponibles sur ce navigateur ou
+          cet appareil.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Utilisez Chrome avec un compte Google Wallet configuré, ou Safari sur
+          iOS/macOS avec Apple Pay.
+        </p>
+      </div>
+    );
+  }
+
+  return paymentRequest ? (
+    <div className="py-2">
+      <PaymentRequestButtonElement
+        options={{
+          paymentRequest,
+          style: {
+            paymentRequestButton: {
+              type: "default",
+              theme: "dark",
+              height: "48px",
+            },
+          },
+        }}
+      />
+    </div>
+  ) : null;
 }
-
-// ─── Dialog wrapper ─────────────────────────────────────────────────
 
 interface PaymentSetupDialogProps {
   open: boolean;
@@ -84,8 +128,8 @@ export function PaymentSetupDialog({
   onOpenChange,
   onSuccess,
   blocking = false,
-  title = "Add a payment method",
-  description = "Add a card, Apple Pay, or Google Pay. Your payment method will be saved for future purchases.",
+  title = "Moyen de paiement",
+  description = "Enregistrez Google Pay ou Apple Pay pour pouvoir enchérir.",
 }: PaymentSetupDialogProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -152,7 +196,7 @@ export function PaymentSetupDialog({
         {/* Fixed header */}
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+            <Wallet className="h-5 w-5" />
             {title}
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -164,7 +208,7 @@ export function PaymentSetupDialog({
             <div className="flex flex-col items-center gap-2 py-6">
               <CheckCircle2 className="h-10 w-10 text-green-500" />
               <p className="text-sm text-muted-foreground">
-                Payment method saved successfully!
+                Moyen de paiement enregistré !
               </p>
             </div>
           ) : setupError || (clientSecret && !stripePromise) ? (
@@ -181,15 +225,15 @@ export function PaymentSetupDialog({
                   createSetupIntent();
                 }}
               >
-                Try again
+                Réessayer
               </Button>
             </div>
           ) : clientSecret && stripePromise ? (
-            <Elements
-              stripe={stripePromise}
-              options={{ clientSecret, appearance: { theme: "stripe" } }}
-            >
-              <SetupForm onSuccess={handleSuccess} />
+            <Elements stripe={stripePromise}>
+              <WalletSetupForm
+                clientSecret={clientSecret}
+                onSuccess={handleSuccess}
+              />
             </Elements>
           ) : (
             <div className="flex items-center justify-center py-8">

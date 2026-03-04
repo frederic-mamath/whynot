@@ -56,8 +56,8 @@ export function PaymentRequiredDialog({
           onSuccess();
         }}
         blocking
-        title="Set up payment to bid"
-        description={`Add a card, ${wallet}, or another payment method to start bidding.`}
+        title="Moyen de paiement requis"
+        description={`Enregistrez ${wallet} pour pouvoir enchérir.`}
       />
     );
   }
