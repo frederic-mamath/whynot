@@ -12,6 +12,11 @@ services:
     dockerfilePath: ./app/Dockerfile
     dockerContext: ./app
     healthCheckPath: /health
+    buildArgs:
+      - key: VITE_STRIPE_PUBLISHABLE_KEY
+        value: pk_test_51RX5wpFpXSJuaxQVgRq7ESvBfZuVGMUC50zBcr8lWtlaiSPjd4FShApmDX7BDlY9UYQ2vTrMpLoPvvdgZNvGythr00ge5JIFoi
+      - key: VITE_API_URL
+        value: https://whynot-app.onrender.com
     envVars:
       - key: NODE_ENV
         value: production
