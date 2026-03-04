@@ -6,11 +6,11 @@ Mettre en place i18next dans l'app web et traduire tous les textes utilisateur e
 
 ## User Stories
 
-| User Story                                                                            | Status  |
-| :------------------------------------------------------------------------------------ | :------ |
-| As a user, in all pages, I see all text in French                                     | planned |
-| As a user, in all dialogs and components, I see all text in French                    | planned |
-| As a developer, I have an i18n setup that supports adding new languages in the future | planned |
+| User Story                                                                            | Status    |
+| :------------------------------------------------------------------------------------ | :-------- |
+| As a user, in all pages, I see all text in French                                     | completed |
+| As a user, in all dialogs and components, I see all text in French                    | completed |
+| As a developer, I have an i18n setup that supports adding new languages in the future | completed |
 
 ## Tickets
 
@@ -18,9 +18,9 @@ Mettre en place i18next dans l'app web et traduire tous les textes utilisateur e
 | :-------------------------- | :---------------------------------------------------------------- | :-------- |
 | [ticket-01](./ticket-01.md) | Setup i18next infrastructure + Landing & Auth pages               | completed |
 | [ticket-02](./ticket-02.md) | Dashboard, Profile, NavBar                                        | completed |
-| [ticket-03](./ticket-03.md) | Channel pages + Channel components (controls, participants, chat) | planned   |
-| [ticket-04](./ticket-04.md) | Shop, Product, Vendor pages + components                          | planned   |
-| [ticket-05](./ticket-05.md) | Auction components + Payment dialogs + Orders + remaining         | planned   |
+| [ticket-03](./ticket-03.md) | Channel pages + Channel components (controls, participants, chat) | completed |
+| [ticket-04](./ticket-04.md) | Shop, Product, Vendor pages + components                          | completed |
+| [ticket-05](./ticket-05.md) | Auction components + Payment dialogs + Orders + remaining         | completed |
 
 ## Architecture Decisions
 

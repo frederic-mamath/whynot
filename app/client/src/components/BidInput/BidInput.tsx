@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TrendingUp, AlertCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -25,6 +26,7 @@ export function BidInput({
   const [bidAmount, setBidAmount] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const minBid = currentBid + 1;
 
@@ -34,12 +36,12 @@ export function BidInput({
     const numAmount = parseFloat(amount);
 
     if (!amount || isNaN(numAmount)) {
-      setError("Please enter a valid amount");
+      setError(t("auction.bid.invalidAmount"));
       return false;
     }
 
     if (numAmount < minBid) {
-      setError(`Minimum bid is $${minBid.toFixed(2)}`);
+      setError(t("auction.bid.tooLow", { price: minBid.toFixed(2) }));
       return false;
     }
 
@@ -63,7 +65,7 @@ export function BidInput({
       setBidAmount(""); // Clear input on success
       setError("");
     } catch (err: any) {
-      setError(err.message || "Failed to place bid");
+      setError(err.message || t("auction.bid.failedToBid"));
     } finally {
       setIsSubmitting(false);
     }
@@ -72,8 +74,7 @@ export function BidInput({
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-2">
       <Label htmlFor="bid-amount" className="text-sm">
-        Next Minimum Bid:{" "}
-        <span className="font-semibold">${minBid.toFixed(2)}</span>
+        {t("auction.bid.minBid", { price: minBid.toFixed(2) })}
       </Label>
 
       <div className="flex gap-2">
@@ -99,11 +100,11 @@ export function BidInput({
           className="shrink-0"
         >
           {isSubmitting ? (
-            "Placing..."
+            t("auction.bid.placing")
           ) : (
             <>
               <TrendingUp className="size-4 mr-2" />
-              Place Bid
+              {t("auction.bid.placeBid")}
             </>
           )}
         </Button>

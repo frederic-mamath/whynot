@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { MessageList } from "../MessageList";
 import { MessageInput } from "../MessageInput";
@@ -32,6 +33,7 @@ export function ChatPanel({
   onToggleHighlightedProduct,
   isHost = false,
 }: ChatPanelProps) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<any[]>([]);
   const [localEndsAt, setLocalEndsAt] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
@@ -71,7 +73,7 @@ export function ChatPanel({
   // Place bid mutation
   const placeBidMutation = trpc.auction.placeBid.useMutation({
     onSuccess: () => {
-      toast.success("Bid placed successfully!");
+      toast.success(t("channels.chat.bidSuccess"));
       refetchAuction();
     },
     onError: (error) => {
@@ -82,7 +84,7 @@ export function ChatPanel({
   // Buyout mutation
   const buyoutMutation = trpc.auction.buyout.useMutation({
     onSuccess: (data) => {
-      toast.success(`Purchased for $${data.finalPrice.toFixed(2)}!`);
+      toast.success(t("channels.chat.buyoutSuccess", { price: `$${data.finalPrice.toFixed(2)}` }));
       refetchAuction();
     },
     onError: (error) => {
@@ -105,7 +107,7 @@ export function ChatPanel({
       // Ignore "already closed" errors
       if (!error.message.includes("not active")) {
         console.error("[auction.close] Failed to close auction:", error);
-        toast.error("Failed to close auction automatically");
+        toast.error(t("channels.chat.closeError"));
       }
     },
   });
@@ -152,7 +154,7 @@ export function ChatPanel({
 
   const handleManualClose = () => {
     if (!activeAuction) return;
-    if (confirm("Are you sure you want to end this auction early?")) {
+    if (confirm(t("channels.chat.endConfirm"))) {
       closeAuctionMutation.mutate({ auctionId: activeAuction.id });
     }
   };
@@ -180,7 +182,7 @@ export function ChatPanel({
       },
       onError: (error) => {
         console.error("Subscription error:", error);
-        toast.error("Connection lost. Trying to reconnect...");
+        toast.error(t("channels.chat.connectionLost"));
       },
     },
   );
@@ -196,7 +198,7 @@ export function ChatPanel({
       });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to send message");
+      toast.error(error.message || t("channels.chat.sendError"));
     },
   });
 
@@ -215,7 +217,7 @@ export function ChatPanel({
       onData: (event: any) => {
         switch (event.type) {
           case "auction:started":
-            toast.info("Auction started!");
+            toast.info(t("channels.chat.auctionStarted"));
             refetchAuction();
             break;
 
@@ -223,13 +225,13 @@ export function ChatPanel({
             refetchAuction();
             if (event.bidderId !== currentUserId) {
               toast.info(
-                `${event.bidderUsername} bid $${event.amount.toFixed(2)}`,
+                t("channels.chat.auctionBid", { username: event.bidderUsername, price: `$${event.amount.toFixed(2)}` }),
               );
             }
             break;
 
           case "auction:extended":
-            toast.info("Auction extended by 30 seconds!");
+            toast.info(t("channels.chat.auctionExtended"));
             setLocalEndsAt(event.newEndsAt);
             refetchAuction();
             break;
@@ -237,30 +239,30 @@ export function ChatPanel({
           case "auction:ended":
             if (event.hasWinner && event.winnerUsername) {
               toast.success(
-                `Auction won by ${event.winnerUsername} for $${event.finalPrice.toFixed(2)}`,
+                t("channels.chat.auctionWon", { winner: event.winnerUsername, price: `$${event.finalPrice.toFixed(2)}` }),
               );
             } else {
-              toast.info("Auction ended with no bids");
+              toast.info(t("channels.chat.auctionNoWinner"));
             }
             refetchAuction();
             break;
 
           case "auction:bought_out":
             toast.success(
-              `${event.buyerUsername} bought for $${event.buyoutPrice.toFixed(2)}`,
+              t("channels.chat.auctionBoughtOut", { buyer: event.buyerUsername, price: `$${event.buyoutPrice.toFixed(2)}` }),
             );
             refetchAuction();
             break;
 
           case "auction:outbid":
             toast.warning(
-              `You've been outbid on ${event.productName}! Current bid: $${event.currentBid.toFixed(2)}`,
+              t("channels.chat.auctionOutbid", { product: event.productName, price: `$${event.currentBid.toFixed(2)}` }),
             );
             break;
 
           case "auction:won":
             toast.success(
-              `🎉 You won ${event.productName} for $${event.finalPrice.toFixed(2)}!`,
+              t("channels.chat.auctionYouWon", { product: event.productName, price: `$${event.finalPrice.toFixed(2)}` }),
             );
             break;
         }

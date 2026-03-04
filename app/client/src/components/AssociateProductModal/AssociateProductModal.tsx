@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Link as LinkIcon, Unlink } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { Button } from "../ui/button";
@@ -16,6 +17,7 @@ export default function AssociateProductModal({
   shopId,
   onClose,
 }: AssociateProductModalProps) {
+  const { t } = useTranslation();
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(
     null,
   );
@@ -29,7 +31,7 @@ export default function AssociateProductModal({
 
   const associateMutation = trpc.product.associateToChannel.useMutation({
     onSuccess: () => {
-      toast.success("Product associated with channel");
+      toast.success(t("associateProduct.successAssociate"));
       utils.product.listChannelAssociations.invalidate({ productId });
       setSelectedChannelId(null);
     },
@@ -40,7 +42,7 @@ export default function AssociateProductModal({
 
   const removeMutation = trpc.product.removeFromChannel.useMutation({
     onSuccess: () => {
-      toast.success("Association removed");
+      toast.success(t("associateProduct.successRemove"));
       utils.product.listChannelAssociations.invalidate({ productId });
     },
     onError: (error) => {
@@ -50,7 +52,7 @@ export default function AssociateProductModal({
 
   const handleAssociate = () => {
     if (!selectedChannelId) {
-      toast.error("Please select a channel");
+      toast.error(t("associateProduct.errorSelectChannel"));
       return;
     }
 
@@ -61,7 +63,7 @@ export default function AssociateProductModal({
   };
 
   const handleRemove = (channelId: number) => {
-    if (confirm("Remove this association?")) {
+    if (confirm(t("associateProduct.removeConfirm"))) {
       removeMutation.mutate({
         productId,
         channelId,
@@ -81,7 +83,7 @@ export default function AssociateProductModal({
           <div className="flex items-center gap-2">
             <LinkIcon className="w-6 h-6 text-primary" />
             <h2 className="text-xl font-bold text-foreground">
-              Channel Associations
+              {t("associateProduct.title")}
             </h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -92,7 +94,7 @@ export default function AssociateProductModal({
         <div className="p-6 space-y-6">
           {/* Add Association */}
           <div>
-            <Label htmlFor="channel">Associate with Channel</Label>
+            <Label htmlFor="channel">{t("associateProduct.associateLabel")}</Label>
             <div className="flex gap-2 mt-2">
               <select
                 id="channel"
@@ -102,7 +104,7 @@ export default function AssociateProductModal({
                   setSelectedChannelId(Number(e.target.value) || null)
                 }
               >
-                <option value="">Select a channel...</option>
+                <option value="">{t("associateProduct.selectChannel")}</option>
                 {availableChannels.map((channel) => (
                   <option key={channel.id} value={channel.id}>
                     {channel.name}
@@ -114,17 +116,17 @@ export default function AssociateProductModal({
                 disabled={!selectedChannelId || associateMutation.isPending}
               >
                 <LinkIcon className="w-4 h-4 mr-2" />
-                Associate
+                {t("associateProduct.associate")}
               </Button>
             </div>
             {availableChannels.length === 0 && associations.length > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
-                All channels are already associated
+                {t("associateProduct.allAssociated")}
               </p>
             )}
             {channels.length === 0 && (
               <p className="text-sm text-muted-foreground mt-2">
-                No channels available
+                {t("associateProduct.noChannels")}
               </p>
             )}
           </div>
@@ -132,11 +134,11 @@ export default function AssociateProductModal({
           {/* Current Associations */}
           <div>
             <h3 className="font-semibold text-foreground mb-3">
-              Current Associations
+              {t("associateProduct.currentAssociations")}
             </h3>
             {associations.length === 0 ? (
               <p className="text-sm text-muted-foreground bg-muted p-4 rounded-lg text-center">
-                No channel associations yet
+                {t("associateProduct.noAssociations")}
               </p>
             ) : (
               <div className="space-y-2">
@@ -151,11 +153,10 @@ export default function AssociateProductModal({
                     >
                       <div>
                         <p className="font-medium text-foreground">
-                          {channel?.name || "Unknown Channel"}
+                          {channel?.name || t("associateProduct.unknownChannel")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Associated on{" "}
-                          {new Date(assoc.createdAt).toLocaleDateString()}
+                          {t("associateProduct.associatedOn", { date: new Date(assoc.createdAt).toLocaleDateString() })}
                         </p>
                       </div>
                       <Button
@@ -165,7 +166,7 @@ export default function AssociateProductModal({
                         disabled={removeMutation.isPending}
                       >
                         <Unlink className="w-4 h-4 mr-2" />
-                        Remove
+                        {t("associateProduct.remove")}
                       </Button>
                     </div>
                   );
@@ -177,7 +178,7 @@ export default function AssociateProductModal({
 
         <div className="sticky bottom-0 bg-muted border-t border-border p-6">
           <Button variant="outline" onClick={onClose} className="w-full">
-            Close
+            {t("associateProduct.close")}
           </Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TrendingUp, ChevronDown, ChevronUp, Trophy, User } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
@@ -19,22 +20,23 @@ interface BidHistoryProps {
 
 export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const formatTimeAgo = (isoDate: string): string => {
     const date = new Date(isoDate);
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 10) return "just now";
-    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 10) return t("auction.history.justNow");
+    if (seconds < 60) return t("auction.history.secondsAgo", { s: seconds });
     
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 60) return t("auction.history.minutesAgo", { m: minutes });
     
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return t("auction.history.hoursAgo", { h: hours });
     
-    return `${Math.floor(hours / 24)}d ago`;
+    return t("auction.history.daysAgo", { d: Math.floor(hours / 24) });
   };
 
   const isWinningBid = (amount: number) => amount === currentBid;
@@ -43,7 +45,7 @@ export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps)
   if (bids.length === 0) {
     return (
       <div className="mt-4 text-sm text-muted-foreground text-center py-2">
-        No bids yet. Be the first!
+        {t("auction.history.noBids")}
       </div>
     );
   }
@@ -58,7 +60,7 @@ export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps)
         <div className="flex items-center gap-2">
           <TrendingUp className="size-4" />
           <span className="text-sm font-medium">
-            Bid History ({bids.length})
+          {t("auction.history.title", { count: bids.length })}
           </span>
         </div>
         {isOpen ? (

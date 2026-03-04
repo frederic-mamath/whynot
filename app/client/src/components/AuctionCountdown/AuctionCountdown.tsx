@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Clock } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { cn } from "../../lib/utils";
@@ -14,6 +15,7 @@ export function AuctionCountdown({
   isActive, 
   extendedCount 
 }: AuctionCountdownProps) {
+  const { t } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export function AuctionCountdown({
         aria-live="polite"
         aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
       >
-        {isEnded ? "Ended" : formatTime(timeRemaining)}
+        {isEnded ? t("auction.countdown.ended") : formatTime(timeRemaining)}
       </span>
       {extendedCount > 0 && !isEnded && (
         <Badge variant="secondary" className="text-xs">

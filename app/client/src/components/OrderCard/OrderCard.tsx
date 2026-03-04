@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { PaymentDeadlineCountdown } from "../PaymentDeadlineCountdown";
 import { cn } from "../../lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface OrderCardProps {
   order: {
@@ -27,6 +28,7 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
   const isShipped = order.paymentStatus === "shipped";
   const isFailed = order.paymentStatus === "failed";
   const isRefunded = order.paymentStatus === "refunded";
+  const { t } = useTranslation();
 
   const isExpired = isPending && new Date(order.paymentDeadline) < new Date();
 
@@ -40,12 +42,12 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
   };
 
   const getStatusText = () => {
-    if (isExpired) return "Expired";
-    if (isFailed) return "Payment Failed";
-    if (isRefunded) return "Refunded";
-    if (isPending) return "Pending Payment";
-    if (isPaid) return "Paid - Awaiting Shipment";
-    if (isShipped) return "Shipped";
+    if (isExpired) return t("orderCard.expired");
+    if (isFailed) return t("orderCard.paymentFailed");
+    if (isRefunded) return t("orderCard.refunded");
+    if (isPending) return t("orderCard.pendingPayment");
+    if (isPaid) return t("orderCard.paidAwaiting");
+    if (isShipped) return t("orderCard.shipped");
     return order.paymentStatus;
   };
 
@@ -78,7 +80,7 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
                 <h3 className="font-semibold text-lg">{order.productName}</h3>
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                   <User className="size-4" />
-                  <span>Seller: {order.sellerUsername}</span>
+                  <span>{t("orderCard.seller", { name: order.sellerUsername })}</span>
                 </div>
               </div>
               <Badge variant={getStatusBadgeVariant()} className={cn(
@@ -92,15 +94,15 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             {/* Price Breakdown */}
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Item Price:</span>
+                <span className="text-muted-foreground">{t("orderCard.itemPrice")}</span>
                 <span>${itemPrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Platform Fee (7%):</span>
+                <span className="text-muted-foreground">{t("orderCard.platformFee")}</span>
                 <span>${order.platformFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold text-base pt-1 border-t">
-                <span>Total:</span>
+                <span>{t("orderCard.total")}</span>
                 <span>${order.finalPrice.toFixed(2)}</span>
               </div>
             </div>
@@ -115,8 +117,7 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             {/* Expired Message */}
             {isExpired && (
               <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                This order has expired. Payment was due by{" "}
-                {new Date(order.paymentDeadline).toLocaleDateString()}.
+              {t("orderCard.expiredMessage", { date: new Date(order.paymentDeadline).toLocaleDateString() })}
               </div>
             )}
 
@@ -124,7 +125,7 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
               <Calendar className="size-3" />
               <span>
-                Ordered on {new Date(order.createdAt).toLocaleDateString()}
+              {t("orderCard.orderedOn", { date: new Date(order.createdAt).toLocaleDateString() })}
               </span>
             </div>
 
@@ -136,17 +137,17 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
                   className="w-full md:w-auto"
                 >
                   <CreditCard className="size-4 mr-2" />
-                  Pay Now
+                  {t("orderCard.payNow")}
                 </Button>
               )}
               {isPaid && (
                 <div className="text-sm text-muted-foreground">
-                  Your payment has been received. The seller will ship your order soon.
+                  {t("orderCard.paymentReceived")}
                 </div>
               )}
               {isShipped && (
                 <div className="text-sm text-muted-foreground">
-                  Your order has been shipped!
+                  {t("orderCard.orderShipped")}
                 </div>
               )}
             </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Package } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
@@ -14,9 +15,10 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { t } = useTranslation();
   const formattedPrice = product.price
     ? `$${parseFloat(product.price).toFixed(2)}`
-    : 'Price not set';
+    : t('products.card.priceNotSet');
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
@@ -47,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="font-semibold text-lg line-clamp-1 text-foreground">{product.name}</h3>
           <Badge variant={product.isActive ? 'default' : 'secondary'}>
-            {product.isActive ? 'Active' : 'Inactive'}
+            {product.isActive ? t('products.card.active') : t('products.card.inactive')}
           </Badge>
         </div>
 

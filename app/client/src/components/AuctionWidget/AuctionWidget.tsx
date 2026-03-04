@@ -9,6 +9,7 @@ import { AuctionEndModal } from "../AuctionEndModal";
 import { cn } from "../../lib/utils";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface AuctionWidgetProps {
   auction: {
@@ -65,6 +66,7 @@ export function AuctionWidget({
   onPaymentRequired,
 }: AuctionWidgetProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [showEndModal, setShowEndModal] = useState(false);
   const [hasShownModal, setHasShownModal] = useState(false);
 
@@ -88,8 +90,8 @@ export function AuctionWidget({
       // Show toast for non-winning participants
       if (isParticipant && !isWinner && currentUserId) {
         toast({
-          title: "Auction Ended",
-          description: `You were outbid on ${auction.productName}`,
+          title: t("auction.widget.auctionEnded"),
+          description: t("auction.widget.outbidDesc", { product: auction.productName }),
           variant: "default",
         });
       }
@@ -129,7 +131,7 @@ export function AuctionWidget({
         productName={auction.productName}
         productImage={auction.productImageUrl}
         finalBid={auction.currentBid}
-        winnerUsername={auction.highestBidderUsername || "Unknown"}
+        winnerUsername={auction.highestBidderUsername || t("auction.widget.unknown")}
         totalBids={bids.length}
         isWinner={isWinner}
         isParticipant={isParticipant}
@@ -166,13 +168,13 @@ export function AuctionWidget({
                 {auction.productName}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Starting Price:{" "}
+                {t("auction.widget.startingPrice")}{" "}
                 <span className="font-semibold text-foreground">
                   ${auction.startingPrice.toFixed(2)}
                 </span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Seller: {auction.sellerUsername}
+                {t("auction.widget.seller")} {auction.sellerUsername}
               </p>
             </div>
           </div>
@@ -181,7 +183,7 @@ export function AuctionWidget({
           <div className="mt-4 space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">
-                Current Bid:
+                {t("auction.widget.currentBid")}
               </span>
               <span className="font-bold text-2xl">
                 ${auction.currentBid.toFixed(2)}
@@ -198,8 +200,7 @@ export function AuctionWidget({
             {isEnded && auction.highestBidderUsername && (
               <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md p-3 text-center">
                 <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                  🏆 Won by {auction.highestBidderUsername} for $
-                  {auction.currentBid.toFixed(2)}
+                  {t("auction.widget.wonBy", { winner: auction.highestBidderUsername, price: auction.currentBid.toFixed(2) })}
                 </p>
               </div>
             )}
@@ -220,7 +221,7 @@ export function AuctionWidget({
               size="lg"
             >
               <Zap className="size-4 mr-2" />
-              Buy Now for ${auction.buyoutPrice.toFixed(2)}
+              {t("auction.widget.buyNow", { price: auction.buyoutPrice.toFixed(2) })}
             </Button>
           )}
 
@@ -237,14 +238,14 @@ export function AuctionWidget({
           {/* Seller Note */}
           {isSeller && isActive && (
             <div className="mt-4 text-sm text-muted-foreground text-center py-2 bg-muted/50 rounded-md">
-              You cannot bid on your own auction
+              {t("auction.widget.cannotBid")}
             </div>
           )}
 
           {/* Login Prompt */}
           {isActive && !currentUserId && (
             <div className="mt-4 text-sm text-muted-foreground text-center py-2 bg-muted/50 rounded-md">
-              Log in to place bids
+              {t("auction.widget.loginToBid")}
             </div>
           )}
 
@@ -265,7 +266,7 @@ export function AuctionWidget({
                 disabled={isClosing}
                 className="w-full text-destructive hover:bg-destructive/10"
               >
-                {isClosing ? "Ending Auction..." : "End Auction Early"}
+                {isClosing ? t("auction.widget.endingAuction") : t("auction.widget.endAuctionEarly")}
               </Button>
             </div>
           )}

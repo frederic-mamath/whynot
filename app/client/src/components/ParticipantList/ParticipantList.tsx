@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Sheet,
   SheetContent,
@@ -21,6 +22,7 @@ export default function ParticipantList({
   isOpen,
   onClose,
 }: ParticipantListProps) {
+  const { t } = useTranslation();
   const { data: participants, isLoading } = trpc.channel.participants.useQuery(
     { channelId },
     { enabled: isOpen, refetchInterval: isOpen ? 5000 : false },
@@ -42,14 +44,14 @@ export default function ParticipantList({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Users className="size-5" />
-            Participants ({totalParticipants})
+            {t("participants.title", { count: totalParticipants })}
           </SheetTitle>
           <SheetDescription>
             {totalParticipants === 0
-              ? "No participants yet"
+              ? t("participants.emptyDesc")
               : totalParticipants === 1
-                ? "You are the only participant"
-                : `${totalParticipants} people in this channel`}
+                ? t("participants.onlyYou")
+                : t("participants.countPeople", { count: totalParticipants })}
           </SheetDescription>
         </SheetHeader>
 
@@ -85,7 +87,7 @@ export default function ParticipantList({
                   <span className="font-medium text-sm truncate">
                     {participant.displayName}
                     {participant.isCurrentUser && (
-                      <span className="text-muted-foreground ml-1">(you)</span>
+                      <span className="text-muted-foreground ml-1">{t("participants.you")}</span>
                     )}
                   </span>
                   {participant.role === "host" && (
@@ -94,7 +96,7 @@ export default function ParticipantList({
                       className="gap-1 text-xs shrink-0"
                     >
                       <Crown className="size-3" />
-                      Host
+                      {t("participants.host")}
                     </Badge>
                   )}
                 </div>
@@ -107,10 +109,10 @@ export default function ParticipantList({
             <div className="text-center py-8 px-4 rounded-lg bg-accent/30 border border-dashed border-border">
               <Users className="size-12 mx-auto mb-3 text-muted-foreground" />
               <p className="font-medium text-sm mb-1">
-                No other participants yet
+                {t("participants.noOthers")}
               </p>
               <span className="text-xs text-muted-foreground">
-                Share the channel link to invite others
+                {t("participants.shareLink")}
               </span>
             </div>
           )}

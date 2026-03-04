@@ -10,6 +10,7 @@ import { Package, ShoppingBag, Sparkles, X } from "lucide-react";
 import Button from "../ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Product {
   id: number;
@@ -38,22 +39,23 @@ export default function PromotedProducts({
   highlightedProductId = null,
 }: PromotedProductsProps) {
   const activeProducts = products.filter((p) => p.isActive);
+  const { t } = useTranslation();
 
   const highlightMutation = trpc.channel.highlightProduct.useMutation({
     onSuccess: () => {
-      toast.success("Product highlighted!");
+      toast.success(t("promotedProducts.highlighted"));
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to highlight product");
+      toast.error(error.message || t("promotedProducts.errorHighlight"));
     },
   });
 
   const unhighlightMutation = trpc.channel.unhighlightProduct.useMutation({
     onSuccess: () => {
-      toast.success("Product unhighlighted");
+      toast.success(t("promotedProducts.unhighlighted"));
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to unhighlight product");
+      toast.error(error.message || t("promotedProducts.errorUnhighlight"));
     },
   });
 
@@ -71,12 +73,12 @@ export default function PromotedProducts({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="size-5" />
-            Promoted Products ({activeProducts.length})
+            {t("promotedProducts.title", { count: activeProducts.length })}
           </SheetTitle>
           <SheetDescription>
             {activeProducts.length === 0
-              ? "No products are being promoted"
-              : `${activeProducts.length} product${activeProducts.length === 1 ? "" : "s"} available`}
+              ? t("promotedProducts.emptyState")
+              : t("promotedProducts.nProductsAvailable", { count: activeProducts.length })}
           </SheetDescription>
         </SheetHeader>
 
@@ -84,16 +86,16 @@ export default function PromotedProducts({
           {activeProducts.length === 0 ? (
             <div className="text-center py-8 px-4 rounded-lg bg-accent/30 border border-dashed border-border">
               <ShoppingBag className="size-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="font-medium text-sm mb-1">No promoted products</p>
+              <p className="font-medium text-sm mb-1">{t("promotedProducts.emptyState")}</p>
               <span className="text-xs text-muted-foreground">
-                The host hasn't promoted any products yet
+                {t("promotedProducts.emptyStateDesc")}
               </span>
             </div>
           ) : (
             activeProducts.map((product) => {
               const formattedPrice = product.price
                 ? `$${product.price.toFixed(2)}`
-                : "Price not set";
+                : t("promotedProducts.priceNotSet");
 
               return (
                 <div
@@ -142,7 +144,7 @@ export default function PromotedProducts({
                             className="w-full h-7 text-xs"
                           >
                             <X className="size-3 mr-1" />
-                            Unhighlight
+                            {t("promotedProducts.unhighlight")}
                           </Button>
                         ) : (
                           <Button
@@ -153,7 +155,7 @@ export default function PromotedProducts({
                             className="w-full h-7 text-xs"
                           >
                             <Sparkles className="size-3 mr-1" />
-                            Highlight
+                            {t("promotedProducts.highlight")}
                           </Button>
                         )}
                       </div>
@@ -163,7 +165,7 @@ export default function PromotedProducts({
                     {highlightedProductId === product.id && !canHighlight && (
                       <Badge variant="secondary" className="text-xs mt-2">
                         <Sparkles className="size-3 mr-1" />
-                        Currently Highlighted
+                        {t("promotedProducts.currentlyHighlighted")}
                       </Badge>
                     )}
                   </div>

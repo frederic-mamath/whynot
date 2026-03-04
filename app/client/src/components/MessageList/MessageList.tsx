@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Message } from "../Message";
 import { Loader2, MessageCircle } from "lucide-react";
 
@@ -13,6 +14,7 @@ export function MessageList({
   currentUserId,
   isLoading,
 }: MessageListProps) {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new message
@@ -35,9 +37,9 @@ export function MessageList({
       <div className="flex flex-col items-center justify-center h-full text-white/60 p-4">
         <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
         <p className="text-sm text-center">
-          No messages yet.
+          {t("messages.empty")}
           <br />
-          Start the conversation!
+          {t("messages.startConversation")}
         </p>
       </div>
     );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { X, Sparkles, ExternalLink, Gavel } from "lucide-react";
 import Button from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -30,11 +31,12 @@ export function HighlightedProduct({
   channelId,
 }: HighlightedProductProps) {
   const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const { t } = useTranslation();
   const utils = trpc.useUtils();
 
   const startAuctionMutation = trpc.auction.start.useMutation({
     onSuccess: () => {
-      toast.success("Auction started!");
+      toast.success(t("highlightedProduct.auctionStarted"));
       setShowAuctionModal(false);
       if (channelId) {
         utils.auction.getActive.invalidate({ channelId });
@@ -94,7 +96,7 @@ export function HighlightedProduct({
               </div>
 
               <p className="text-xs text-muted-foreground mb-2">
-                Starting Price: <span className="font-semibold text-foreground">${product.price.toFixed(2)}</span>
+                {t("highlightedProduct.startingPrice", { price: product.price.toFixed(2) })}
               </p>
 
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
@@ -112,7 +114,7 @@ export function HighlightedProduct({
                     disabled={startAuctionMutation.isPending}
                   >
                     <Gavel className="size-3 mr-1" />
-                    Start Auction
+                    {t("highlightedProduct.startAuction")}
                   </Button>
                 )}
                 {onClick && (
@@ -123,7 +125,7 @@ export function HighlightedProduct({
                     className="h-6 text-xs"
                   >
                     <ExternalLink className="size-3 mr-1" />
-                    View Details
+                    {t("highlightedProduct.viewDetails")}
                   </Button>
                 )}
               </div>

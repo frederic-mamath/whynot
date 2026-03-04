@@ -28,6 +28,7 @@ export default function VerticalControlPanel({
   onShowProducts,
   onToggleHighlightedProduct,
 }: VerticalControlPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-3">
       {showBroadcastControls && onToggleAudio && (
@@ -35,7 +36,7 @@ export default function VerticalControlPanel({
           variant={audioMuted ? "destructive" : "secondary"}
           size="icon"
           onClick={onToggleAudio}
-          title={audioMuted ? "Unmute" : "Mute"}
+          title={audioMuted ? t("controls.unmuteMic") : t("controls.muteMic")}
           className="shrink-0 shadow-lg"
         >
           {audioMuted ? (
@@ -51,7 +52,7 @@ export default function VerticalControlPanel({
           variant={videoMuted ? "destructive" : "secondary"}
           size="icon"
           onClick={onToggleVideo}
-          title={videoMuted ? "Turn on camera" : "Turn off camera"}
+          title={videoMuted ? t("controls.cameraOn") : t("controls.cameraOff")}
           className="shrink-0 shadow-lg"
         >
           {videoMuted ? (
@@ -66,7 +67,7 @@ export default function VerticalControlPanel({
         variant="secondary"
         size="icon"
         onClick={onShowParticipants}
-        title="Show participants"
+        title={t("controls.showParticipants")}
         className="shrink-0 relative shadow-lg"
       >
         <UsersIcon className="size-5" />
@@ -82,7 +83,7 @@ export default function VerticalControlPanel({
           variant="secondary"
           size="icon"
           onClick={onShowProducts}
-          title="Show promoted products"
+          title={t("controls.showProducts")}
           className="shrink-0 relative shadow-lg"
         >
           <ShoppingBag className="size-5" />
@@ -99,7 +100,7 @@ export default function VerticalControlPanel({
           variant="secondary"
           size="icon"
           onClick={onToggleHighlightedProduct}
-          title="Toggle highlighted product"
+          title={t("controls.toggleHighlighted")}
           className="shrink-0 relative shadow-lg"
         >
           <Sparkles className="size-5" />

@@ -1,4 +1,5 @@
 import { useState, KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "../ui/input";
 import Button from "../ui/button";
 import { Send } from "lucide-react";
@@ -9,6 +10,7 @@ interface MessageInputProps {
 }
 
 export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -32,7 +34,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={handleKeyPress}
-        placeholder="Type a message..."
+        placeholder={t("messages.placeholder")}
         maxLength={500}
         disabled={disabled}
         className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20"

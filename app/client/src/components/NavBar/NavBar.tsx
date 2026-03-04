@@ -319,7 +319,7 @@ export default function NavBar() {
                           <BadgeCheck className="size-4 mr-2" />
                           {hasPendingRequest
                             ? t("navbar.requestPending")
-                            : t("navbar.becomeSeller")}}
+                            : t("navbar.becomeSeller")}
                         </Button>
                       ) : (
                         <Button

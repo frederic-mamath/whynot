@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 import { ShoppingBag, Package } from "lucide-react";
 import { trpc } from "../lib/trpc";
@@ -17,6 +18,7 @@ function CheckoutForm({ orderId, onSuccess }: { orderId: string; onSuccess: () =
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +33,7 @@ function CheckoutForm({ orderId, onSuccess }: { orderId: string; onSuccess: () =
     });
 
     if (error) {
-      toast.error(error.message || 'Payment failed');
+      toast.error(error.message || t("orders.paymentFailed"));
     } else {
       onSuccess();
     }
@@ -43,7 +45,7 @@ function CheckoutForm({ orderId, onSuccess }: { orderId: string; onSuccess: () =
       <PaymentElement />
       <div className="flex gap-2">
         <Button type="submit" disabled={!stripe || loading} className="flex-1">
-          {loading ? 'Processing...' : 'Pay Now'}
+          {loading ? t("orders.processing") : t("orders.payNow")}
         </Button>
       </div>
     </form>
@@ -55,6 +57,7 @@ export default function MyOrdersPage() {
   const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   const { data: allOrders, isLoading, refetch } = trpc.order.getMyOrders.useQuery({
     status: filter === "all" || filter === "shipped" ? undefined : filter,
@@ -65,7 +68,7 @@ export default function MyOrdersPage() {
   // Handle payment success redirect
   useEffect(() => {
     if (searchParams.get('payment_success') === 'true') {
-      toast.success('Payment successful!');
+      toast.success(t("orders.paymentSuccess"));
       refetch();
       // Remove query parameter
       setSearchParams({}, { replace: true });
@@ -92,7 +95,7 @@ export default function MyOrdersPage() {
       setPayingOrderId(orderId);
     } catch (error: any) {
       console.error('❌ Payment initialization error:', error);
-      toast.error(error.message || 'Failed to initialize payment');
+      toast.error(error.message || t("orders.failedToInit"));
     }
   };
 
@@ -100,7 +103,7 @@ export default function MyOrdersPage() {
     setClientSecret(null);
     setPayingOrderId(null);
     refetch();
-    toast.success('Payment successful!');
+    toast.success(t("orders.paymentSuccess"));
   };
 
   return (
@@ -108,9 +111,9 @@ export default function MyOrdersPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">My Orders</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("orders.title")}</h1>
           <p className="text-muted-foreground">
-            Track and manage your auction wins
+            {t("orders.subtitle")}
           </p>
         </div>
 
@@ -121,28 +124,28 @@ export default function MyOrdersPage() {
             onClick={() => setFilter("all")}
             className={cn(filter !== "all" && "bg-background")}
           >
-            All Orders
+            {t("orders.allOrders")}
           </Button>
           <Button
             variant={filter === "pending" ? "default" : "outline"}
             onClick={() => setFilter("pending")}
             className={cn(filter !== "pending" && "bg-background")}
           >
-            Pending Payment
+            {t("orders.pendingPayment")}
           </Button>
           <Button
             variant={filter === "paid" ? "default" : "outline"}
             onClick={() => setFilter("paid")}
             className={cn(filter !== "paid" && "bg-background")}
           >
-            Paid
+            {t("orders.paid")}
           </Button>
           <Button
             variant={filter === "shipped" ? "default" : "outline"}
             onClick={() => setFilter("shipped")}
             className={cn(filter !== "shipped" && "bg-background")}
           >
-            Shipped
+            {t("orders.shipped")}
           </Button>
         </div>
 
@@ -164,7 +167,7 @@ export default function MyOrdersPage() {
                 {/* Stripe Payment Form */}
                 {payingOrderId === order.id && clientSecret && stripePromise && (
                   <div className="mt-4 p-6 border rounded-lg bg-card">
-                    <h3 className="text-lg font-semibold mb-4">Complete Payment</h3>
+                    <h3 className="text-lg font-semibold mb-4">{t("orders.completePayment")}</h3>
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
                       <CheckoutForm orderId={order.id} onSuccess={handlePaymentSuccess} />
                     </Elements>
@@ -176,7 +179,7 @@ export default function MyOrdersPage() {
                       }}
                       className="mt-4 w-full"
                     >
-                      Cancel
+                      {t("orders.cancel")}
                     </Button>
                   </div>
                 )}
@@ -207,24 +210,26 @@ function OrderCardSkeleton() {
 }
 
 function EmptyState({ filter }: { filter: FilterType }) {
+  const { t } = useTranslation();
+
   const getMessage = () => {
     switch (filter) {
       case "pending":
-        return "You have no pending orders";
+        return t("orders.noPendingOrders");
       case "paid":
-        return "You have no paid orders";
+        return t("orders.noPaidOrders");
       case "shipped":
-        return "You have no shipped orders";
+        return t("orders.noShippedOrders");
       default:
-        return "No orders yet";
+        return t("orders.noOrders");
     }
   };
 
   const getDescription = () => {
     if (filter === "all") {
-      return "Win an auction to see your orders here";
+      return t("orders.winToSeeOrders");
     }
-    return "Orders with this status will appear here";
+    return t("orders.ordersWithStatusWillAppear");
   };
 
   return (
@@ -238,13 +243,13 @@ function EmptyState({ filter }: { filter: FilterType }) {
         <Button asChild>
           <Link to="/channels">
             <Package className="size-4 mr-2" />
-            Browse Channels
+            {t("orders.browseChannels")}
           </Link>
         </Button>
       )}
       {filter !== "all" && (
         <Button variant="outline" onClick={() => window.location.reload()}>
-          View All Orders
+          {t("orders.viewAllOrders")}
         </Button>
       )}
     </div>

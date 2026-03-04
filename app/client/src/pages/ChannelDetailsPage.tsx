@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Wifi,
   WifiOff,
@@ -63,7 +64,7 @@ export default function ChannelDetailsPage() {
   >(new Map());
 
   // Refs to always have current Agora instances for cleanup
-  const clientRef = useRef<IAgoraRTCClient | null>(null);
+  const { t } = useTranslation();
   const localVideoTrackRef = useRef<ICameraVideoTrack | null>(null);
   const localAudioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
   const screenTrackRef = useRef<ICameraVideoTrack | null>(null);
@@ -149,12 +150,12 @@ export default function ChannelDetailsPage() {
             description: event.product.description,
             imageUrl: event.product.imageUrl,
           });
-          toast.success(`${event.product.name} is now highlighted!`, {
+          toast.success(t("channels.details.productHighlighted", { name: event.product.name }), {
             icon: <Sparkles className="size-4 text-primary" />,
           });
         } else if (event.type === "PRODUCT_UNHIGHLIGHTED") {
           setHighlightedProduct(null);
-          toast.info("Product unhighlighted");
+          toast.info(t("channels.details.productUnhighlighted"));
         }
       },
       onError: (error) => {
@@ -602,12 +603,12 @@ export default function ChannelDetailsPage() {
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
               <WifiOff className="size-16 mx-auto text-destructive" />
-              <h2 className="text-xl font-semibold">Connection Error</h2>
+              <h2 className="text-xl font-semibold">{t("channels.details.connectionError")}</h2>
               <div className="text-destructive">{error}</div>
               <Button asChild>
                 <Link to="/channels">
                   <ArrowLeft className="size-4 mr-2" />
-                  Back to Channels
+                  {t("channels.details.backToChannels")}
                 </Link>
               </Button>
             </div>
@@ -622,7 +623,7 @@ export default function ChannelDetailsPage() {
       <div className="min-h-screen bg-background p-6 flex items-center justify-center">
         <div className="text-center space-y-4">
           <Wifi className="size-16 mx-auto text-primary animate-pulse" />
-          <h2 className="text-xl font-semibold">Joining channel...</h2>
+          <h2 className="text-xl font-semibold">{t("channels.details.joiningChannel")}</h2>
         </div>
       </div>
     );
@@ -667,10 +668,10 @@ export default function ChannelDetailsPage() {
                 <div className="text-center space-y-4 text-white">
                   <Eye className="size-16 mx-auto text-white/60" />
                   <h3 className="text-lg font-semibold">
-                    Waiting for broadcaster
+                    {t("channels.details.waitingForBroadcaster")}
                   </h3>
                   <p className="text-sm text-white/60">
-                    The stream will appear when the broadcaster starts
+                    {t("channels.details.streamWillAppear")}
                   </p>
                 </div>
               </div>
@@ -772,16 +773,15 @@ export default function ChannelDetailsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <Loader2 className="size-5 animate-spin text-primary" />
-              Stopping the channel properly
+              {t("channels.details.stoppingChannel")}
             </DialogTitle>
             <DialogDescription>
-              Closing the stream and releasing your camera. This should only
-              take a few seconds.
+              {t("channels.details.stoppingDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={forceLeave}>
-              Do not wait
+              {t("channels.details.doNotWait")}
             </Button>
           </DialogFooter>
         </DialogContent>

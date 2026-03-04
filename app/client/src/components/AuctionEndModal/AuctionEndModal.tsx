@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, DollarSign, Users, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AuctionEndModalProps {
   open: boolean;
@@ -28,6 +29,7 @@ export function AuctionEndModal({
   isParticipant
 }: AuctionEndModalProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [countdown, setCountdown] = useState(10);
 
   // Auto-dismiss after 10 seconds
@@ -65,14 +67,14 @@ export function AuctionEndModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trophy className={isWinner ? "text-yellow-500" : "text-muted-foreground"} />
-            {isWinner ? "🎉 You Won!" : "Auction Ended"}
+            {isWinner ? t("auction.end.youWon") : t("auction.end.ended")}
           </DialogTitle>
           <DialogDescription>
             {isWinner 
-              ? "Congratulations! You won the auction."
+              ? t("auction.end.congratulations")
               : isParticipant
-              ? "Better luck next time!"
-              : "The auction has ended."}
+              ? t("auction.end.betterLuck")
+              : t("auction.end.auctionEnded")}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,11 +95,11 @@ export function AuctionEndModal({
             <h3 className="font-semibold text-lg">{productName}</h3>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
               <DollarSign className="w-4 h-4" />
-              <span>Winning bid: ${finalBid.toFixed(2)}</span>
+              <span>{t("auction.end.winningBid", { price: finalBid.toFixed(2) })}</span>
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
               <Users className="w-4 h-4" />
-              <span>{totalBids} bid{totalBids !== 1 ? 's' : ''}</span>
+              <span>{t("auction.end.bids", { count: totalBids })}</span>
             </div>
           </div>
         </div>
@@ -105,7 +107,7 @@ export function AuctionEndModal({
         {/* Winner Info */}
         <div className="bg-muted p-3 rounded-md">
           <p className="text-sm">
-            <span className="text-muted-foreground">Winner: </span>
+            <span className="text-muted-foreground">{t("auction.end.winner")} </span>
             <span className="font-semibold">{winnerUsername}</span>
           </p>
         </div>
@@ -114,15 +116,15 @@ export function AuctionEndModal({
           {isWinner ? (
             <>
               <Button onClick={handleViewOrders} className="w-full sm:w-auto">
-                View My Orders
+                {t("auction.end.viewOrders")}
               </Button>
               <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
-                Close ({countdown}s)
+                {t("auction.end.close", { s: countdown })}
               </Button>
             </>
           ) : (
             <Button variant="outline" onClick={handleClose} className="w-full">
-              Close ({countdown}s)
+              {t("auction.end.close", { s: countdown })}
             </Button>
           )}
         </DialogFooter>

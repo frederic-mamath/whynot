@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import Button from "@/components/ui/button";
 import {
   Mic,
@@ -31,15 +32,14 @@ export default function ChannelControls({
   onShowParticipants,
   onLeave,
   participantCount,
-}: ChannelControlsProps) {
-  return (
+}: ChannelControlsProps) {  const { t } = useTranslation();  return (
     <div className="flex items-center justify-center gap-2 p-4 bg-background border-t">
       {/* Audio Control */}
       <Button
         variant={audioMuted ? "destructive" : "secondary"}
         size="icon"
         onClick={onToggleAudio}
-        title={audioMuted ? "Unmute microphone" : "Mute microphone"}
+        title={audioMuted ? t("controls.unmuteMic") : t("controls.muteMic")}
       >
         {audioMuted ? (
           <MicOff className="size-4" />
@@ -53,7 +53,7 @@ export default function ChannelControls({
         variant={videoMuted ? "destructive" : "secondary"}
         size="icon"
         onClick={onToggleVideo}
-        title={videoMuted ? "Turn on camera" : "Turn off camera"}
+        title={videoMuted ? t("controls.cameraOn") : t("controls.cameraOff")}
       >
         {videoMuted ? (
           <VideoOff className="size-4" />
@@ -67,7 +67,7 @@ export default function ChannelControls({
         variant={isScreenSharing ? "default" : "outline"}
         size="icon"
         onClick={onToggleScreenShare}
-        title={isScreenSharing ? "Stop sharing" : "Share screen"}
+        title={isScreenSharing ? t("controls.stopSharing") : t("controls.shareScreen")}
       >
         <Share2 className="size-4" />
       </Button>
@@ -76,7 +76,7 @@ export default function ChannelControls({
       <Button
         variant="outline"
         onClick={onShowParticipants}
-        title="Show participants"
+        title={t("controls.showParticipants")}
       >
         <Users className="size-4" />
         <span className="ml-2">{participantCount}</span>
@@ -87,7 +87,7 @@ export default function ChannelControls({
         variant="destructive"
         size="icon"
         onClick={onLeave}
-        title="Leave channel"
+        title={t("controls.leaveChannel")}
       >
         <PhoneOff className="size-4" />
       </Button>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -12,6 +13,7 @@ import AddVendorModal from "../components/AddVendorModal/AddVendorModal";
 import Container from "../components/Container";
 
 export default function ShopDetailsPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate(); // Keep for delete redirect
   const shopId = parseInt(id || "0");
@@ -36,29 +38,29 @@ export default function ShopDetailsPage() {
 
   const updateShopMutation = trpc.shop.update.useMutation({
     onSuccess: () => {
-      toast.success("Shop updated successfully");
+      toast.success(t("shops.details.successUpdate"));
       setIsEditing(false);
       utils.shop.get.invalidate({ shopId });
       utils.shop.list.invalidate();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to update shop");
+      toast.error(error.message || t("shops.details.errorUpdate"));
     },
   });
 
   const deleteShopMutation = trpc.shop.delete.useMutation({
     onSuccess: () => {
-      toast.success("Shop deleted successfully");
+      toast.success(t("shops.details.successDelete"));
       navigate("/shops");
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete shop");
+      toast.error(error.message || t("shops.details.errorDelete"));
     },
   });
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error("Shop name is required");
+      toast.error(t("shops.details.errorNameRequired"));
       return;
     }
 
@@ -72,7 +74,7 @@ export default function ShopDetailsPage() {
   const handleDelete = () => {
     if (
       window.confirm(
-        "Are you sure you want to delete this shop? This action cannot be undone.",
+        t("shops.details.deleteConfirm"),
       )
     ) {
       deleteShopMutation.mutate({ shopId });
@@ -90,7 +92,7 @@ export default function ShopDetailsPage() {
   if (isLoading) {
     return (
       <Container className="py-8">
-        <p>Loading shop...</p>
+        <p>{t("shops.details.loading")}</p>
       </Container>
     );
   }
@@ -98,7 +100,7 @@ export default function ShopDetailsPage() {
   if (!shop) {
     return (
       <Container className="py-8">
-        <p>Shop not found</p>
+        <p>{t("shops.details.notFound")}</p>
       </Container>
     );
   }
@@ -110,7 +112,7 @@ export default function ShopDetailsPage() {
       <Button variant="ghost" className="mb-6" asChild>
         <Link to="/shops">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Shops
+          {t("shops.details.backToShops")}
         </Link>
       </Button>
 
@@ -120,23 +122,23 @@ export default function ShopDetailsPage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="edit-name">Shop Name *</Label>
+                  <Label htmlFor="edit-name">{t("shops.details.nameLabel")}</Label>
                   <Input
                     id="edit-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter shop name"
+                    placeholder={t("shops.details.namePlaceholder")}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-description">Description</Label>
+                  <Label htmlFor="edit-description">{t("shops.details.descLabel")}</Label>
                   <Textarea
                     id="edit-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe your shop"
+                    placeholder={t("shops.details.descPlaceholder")}
                     rows={4}
                   />
                 </div>
@@ -147,12 +149,12 @@ export default function ShopDetailsPage() {
                   <h1 className="text-3xl font-bold">{shop.name}</h1>
                   {shop.role === "shop-owner" && (
                     <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded">
-                      Owner
+                      {t("shops.details.owner")}
                     </span>
                   )}
                   {shop.role === "vendor" && (
                     <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                      Vendor
+                      {t("shops.details.vendor")}
                     </span>
                   )}
                 </div>
@@ -173,11 +175,11 @@ export default function ShopDetailsPage() {
                     size="sm"
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    Save
+                    {t("shops.details.save")}
                   </Button>
                   <Button variant="outline" onClick={handleCancel} size="sm">
                     <X className="mr-2 h-4 w-4" />
-                    Cancel
+                    {t("shops.details.cancel")}
                   </Button>
                 </>
               ) : (
@@ -187,7 +189,7 @@ export default function ShopDetailsPage() {
                   size="sm"
                 >
                   <Edit2 className="mr-2 h-4 w-4" />
-                  Edit
+                  {t("shops.details.edit")}
                 </Button>
               )}
             </div>
@@ -198,7 +200,7 @@ export default function ShopDetailsPage() {
           <Link to={`/shops/${shopId}/products`}>
             <Button variant="outline">
               <Package className="mr-2 h-4 w-4" />
-              Manage Products
+              {t("shops.details.manageProducts")}
             </Button>
           </Link>
           {isOwner && (
@@ -208,7 +210,7 @@ export default function ShopDetailsPage() {
               disabled={deleteShopMutation.isPending}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Shop
+              {t("shops.details.deleteShop")}
             </Button>
           )}
         </div>
@@ -216,11 +218,11 @@ export default function ShopDetailsPage() {
 
       <div className="bg-card rounded-lg border border-border p-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Vendors</h2>
+          <h2 className="text-2xl font-bold">{t("shops.details.vendors")}</h2>
           {isOwner && (
             <Button onClick={() => setShowAddVendor(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Vendor
+              {t("shops.details.addVendor")}
             </Button>
           )}
         </div>

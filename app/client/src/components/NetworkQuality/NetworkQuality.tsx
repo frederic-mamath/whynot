@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IAgoraRTCClient } from 'agora-rtc-sdk-ng';
 import { Badge } from '../ui/badge';
 import { Wifi, WifiOff } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function NetworkQuality({ client }: NetworkQualityProps) {
     downlinkQuality: 0,
     uplinkQuality: 0,
   });
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!client) return;
@@ -44,20 +46,20 @@ export default function NetworkQuality({ client }: NetworkQualityProps) {
   const getQualityConfig = (quality: QualityLevel) => {
     switch (quality) {
       case 0:
-        return { label: 'Unknown', variant: 'secondary' as const, color: 'text-muted-foreground' };
+        return { label: t('networkQuality.unknown'), variant: 'secondary' as const, color: 'text-muted-foreground' };
       case 1:
-        return { label: 'Excellent', variant: 'default' as const, color: 'text-green-500' };
+        return { label: t('networkQuality.excellent'), variant: 'default' as const, color: 'text-green-500' };
       case 2:
-        return { label: 'Good', variant: 'default' as const, color: 'text-green-500' };
+        return { label: t('networkQuality.good'), variant: 'default' as const, color: 'text-green-500' };
       case 3:
-        return { label: 'Fair', variant: 'secondary' as const, color: 'text-yellow-500' };
+        return { label: t('networkQuality.fair'), variant: 'secondary' as const, color: 'text-yellow-500' };
       case 4:
-        return { label: 'Poor', variant: 'destructive' as const, color: 'text-orange-500' };
+        return { label: t('networkQuality.poor'), variant: 'destructive' as const, color: 'text-orange-500' };
       case 5:
       case 6:
-        return { label: 'Bad', variant: 'destructive' as const, color: 'text-red-500' };
+        return { label: t('networkQuality.bad'), variant: 'destructive' as const, color: 'text-red-500' };
       default:
-        return { label: 'Unknown', variant: 'secondary' as const, color: 'text-muted-foreground' };
+        return { label: t('networkQuality.unknown'), variant: 'secondary' as const, color: 'text-muted-foreground' };
     }
   };
 

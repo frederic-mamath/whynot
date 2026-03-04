@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Package, Trash2, Link as LinkIcon } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
@@ -16,6 +17,7 @@ import {
 } from "../components/ui/ImageUploader";
 
 export default function ProductUpdatePage() {
+  const { t } = useTranslation();
   const { id, productId } = useParams<{ id: string; productId: string }>();
   const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;
@@ -79,17 +81,17 @@ export default function ProductUpdatePage() {
 
   const updateProduct = trpc.product.update.useMutation({
     onError: (error) => {
-      toast.error(`Failed to update product: ${error.message}`);
+      toast.error(t("products.update.errorUpdate", { message: error.message }));
     },
   });
 
   const deleteProduct = trpc.product.delete.useMutation({
     onSuccess: () => {
-      toast.success("Product deleted successfully!");
+      toast.success(t("products.update.successDelete"));
       navigate(`/shops/${shopIdNum}/products`);
     },
     onError: (error) => {
-      toast.error(`Failed to delete product: ${error.message}`);
+      toast.error(t("products.update.errorDelete", { message: error.message }));
     },
   });
 
@@ -100,7 +102,7 @@ export default function ProductUpdatePage() {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Product name is required");
+      toast.error(t("products.update.errorNameRequired"));
       return;
     }
 
@@ -133,15 +135,15 @@ export default function ProductUpdatePage() {
         });
       }
 
-      toast.success("Product updated successfully!");
+      toast.success(t("products.update.successUpdate"));
       navigate(`/shops/${shopIdNum}/products`);
     } catch (error: any) {
-      toast.error(`Failed to update product: ${error.message}`);
+      toast.error(t("products.update.errorUpdate", { message: (error as any).message }));
     }
   };
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    if (confirm(t("products.update.deleteConfirm"))) {
       deleteProduct.mutate({ productId: productIdNum });
     }
   };
@@ -149,7 +151,7 @@ export default function ProductUpdatePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t("products.update.loading")}</p>
       </div>
     );
   }
@@ -157,7 +159,7 @@ export default function ProductUpdatePage() {
   if (!product || !shop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-destructive">Product not found</p>
+        <p className="text-destructive">{t("products.update.notFound")}</p>
       </div>
     );
   }
@@ -168,7 +170,7 @@ export default function ProductUpdatePage() {
         <Button variant="ghost" className="mb-6" asChild>
           <Link to={`/shops/${shopIdNum}/products`}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Products
+            {t("products.update.backToProducts")}
           </Link>
         </Button>
 
@@ -190,38 +192,38 @@ export default function ProductUpdatePage() {
               disabled={deleteProduct.isPending}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Delete
+              {t("products.update.delete")}
             </Button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name">Product Name *</Label>
+              <Label htmlFor="name">{t("products.update.nameLabel")}</Label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter product name"
+                placeholder={t("products.update.namePlaceholder")}
                 maxLength={255}
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("products.update.descLabel")}</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter product description"
+                placeholder={t("products.update.descPlaceholder")}
                 rows={4}
                 maxLength={1000}
               />
             </div>
 
             <div>
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">{t("products.update.priceLabel")}</Label>
               <Input
                 id="price"
                 type="number"
@@ -236,14 +238,14 @@ export default function ProductUpdatePage() {
             <ImageUploader images={images} onImagesChange={setImages} />
 
             <div className="flex items-center gap-3">
-              <Label htmlFor="isActive">Status</Label>
+              <Label htmlFor="isActive">{t("products.update.statusLabel")}</Label>
               <Button
                 type="button"
                 variant={isActive ? "default" : "secondary"}
                 size="sm"
                 onClick={() => setIsActive(!isActive)}
               >
-                {isActive ? "Active" : "Inactive"}
+                {isActive ? t("products.update.active") : t("products.update.inactive")}
               </Button>
             </div>
 
@@ -259,11 +261,11 @@ export default function ProductUpdatePage() {
                 {updateProduct.isPending ||
                 addImageMutation.isPending ||
                 removeImageMutation.isPending
-                  ? "Saving..."
-                  : "Save Changes"}
+                  ? t("products.update.saving")
+                  : t("products.update.submit")}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link to={`/shops/${shopIdNum}/products`}>Cancel</Link>
+                <Link to={`/shops/${shopIdNum}/products`}>{t("products.update.cancel")}</Link>
               </Button>
             </div>
           </form>
@@ -274,16 +276,15 @@ export default function ProductUpdatePage() {
           <div className="flex items-center gap-2 mb-4">
             <LinkIcon className="w-5 h-5 text-foreground" />
             <h2 className="text-xl font-semibold text-foreground">
-              Channel Associations
+              {t("products.update.channelAssociations")}
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Associate this product with channels to make it available for
-            promotion
+            {t("products.update.channelAssociationsDesc")}
           </p>
           <Button variant="outline" onClick={() => setShowAssociateModal(true)}>
             <LinkIcon className="w-4 h-4 mr-2" />
-            Manage Associations
+            {t("products.update.manageAssociations")}
           </Button>
         </div>
       </Container>

@@ -1,16 +1,18 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
 import { Plus, Store, Users } from "lucide-react";
 import Container from "../components/Container";
 
 export default function ShopListPage() {
+  const { t } = useTranslation();
   const { data: shops, isLoading } = trpc.shop.list.useQuery();
 
   if (isLoading) {
     return (
       <Container className="py-8">
-        <p>Loading shops...</p>
+        <p>{t("shops.list.loading")}</p>
       </Container>
     );
   }
@@ -19,13 +21,13 @@ export default function ShopListPage() {
     <Container className="py-8" size="lg">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Shops</h1>
-          <p className="text-muted-foreground">Manage your shops and vendors</p>
+          <h1 className="text-3xl font-bold mb-2">{t("shops.list.title")}</h1>
+          <p className="text-muted-foreground">{t("shops.list.subtitle")}</p>
         </div>
         <Link to="/shops/create">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Create Shop
+            {t("shops.list.createShop")}
           </Button>
         </Link>
       </div>
@@ -34,15 +36,15 @@ export default function ShopListPage() {
         <div className="text-center py-12">
           <Store className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">
-            No shops yet
+            {t("shops.list.noShops")}
           </h3>
           <p className="text-muted-foreground mb-6">
-            Create your first shop to get started
+            {t("shops.list.noShopsDesc")}
           </p>
           <Link to="/shops/create">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Create Shop
+              {t("shops.list.createShop")}
             </Button>
           </Link>
         </div>
@@ -61,12 +63,12 @@ export default function ShopListPage() {
                 </div>
                 {shop.role === "shop-owner" && (
                   <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded">
-                    Owner
+                    {t("shops.list.owner")}
                   </span>
                 )}
                 {shop.role === "vendor" && (
                   <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                    Vendor
+                    {t("shops.list.vendor")}
                   </span>
                 )}
               </div>
@@ -77,7 +79,7 @@ export default function ShopListPage() {
               )}
               <div className="flex items-center text-sm text-muted-foreground">
                 <Users className="h-4 w-4 mr-1" />
-                <span>{shop.vendor_count || 0} vendors</span>
+                <span>{t("shops.list.vendors", { count: shop.vendor_count || 0 })}</span>
               </div>
             </Link>
           ))}

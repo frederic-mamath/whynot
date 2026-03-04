@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Clock } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -8,6 +9,7 @@ interface PaymentDeadlineCountdownProps {
 
 export function PaymentDeadlineCountdown({ deadline }: PaymentDeadlineCountdownProps) {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const calculateTimeRemaining = () => {
@@ -43,7 +45,7 @@ export function PaymentDeadlineCountdown({ deadline }: PaymentDeadlineCountdownP
     return (
       <div className="flex items-center gap-2">
         <Clock className="size-4 text-destructive" />
-        <span className="text-sm text-destructive font-medium">Expired</span>
+        <span className="text-sm text-destructive font-medium">{t("paymentDeadline.expired")}</span>
       </div>
     );
   }
@@ -52,7 +54,7 @@ export function PaymentDeadlineCountdown({ deadline }: PaymentDeadlineCountdownP
     <div className="flex items-center gap-2">
       <Clock className={cn("size-4", getUrgencyColor())} />
       <span className={cn("text-sm font-medium", getUrgencyColor())}>
-        Pay within: {formatTime(timeRemaining)}
+        {t("paymentDeadline.payWithin", { time: formatTime(timeRemaining) })}
       </span>
     </div>
   );

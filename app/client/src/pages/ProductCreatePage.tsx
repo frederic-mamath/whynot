@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Package } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "../components/ui/ImageUploader";
 
 export default function ProductCreatePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;
@@ -30,7 +32,7 @@ export default function ProductCreatePage() {
 
   const createProduct = trpc.product.create.useMutation({
     onError: (error) => {
-      toast.error(`Failed to create product: ${error.message}`);
+      toast.error(t("products.create.errorCreate", { message: error.message }));
     },
   });
 
@@ -40,7 +42,7 @@ export default function ProductCreatePage() {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Product name is required");
+      toast.error(t("products.create.errorNameRequired"));
       return;
     }
 
@@ -62,17 +64,17 @@ export default function ProductCreatePage() {
         });
       }
 
-      toast.success("Product created successfully!");
+      toast.success(t("products.create.successCreate"));
       navigate(`/shops/${shopIdNum}/products`);
     } catch (error: any) {
-      toast.error(`Failed to create product: ${error.message}`);
+      toast.error(t("products.create.errorCreate", { message: (error as any).message }));
     }
   };
 
   if (!shop) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-destructive">Shop not found</p>
+        <p className="text-destructive">{t("products.create.notFound")}</p>
       </div>
     );
   }
@@ -83,7 +85,7 @@ export default function ProductCreatePage() {
         <Button variant="ghost" className="mb-6" asChild>
           <Link to={`/shops/${shopIdNum}/products`}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Products
+            {t("products.create.backToProducts")}
           </Link>
         </Button>
 
@@ -92,7 +94,7 @@ export default function ProductCreatePage() {
             <Package className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Create Product
+                {t("products.create.title")}
               </h1>
               <p className="text-sm text-muted-foreground">{shop.name}</p>
             </div>
@@ -100,32 +102,32 @@ export default function ProductCreatePage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name">Product Name *</Label>
+              <Label htmlFor="name">{t("products.create.nameLabel")}</Label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter product name"
+                placeholder={t("products.create.namePlaceholder")}
                 maxLength={255}
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("products.create.descLabel")}</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter product description"
+                placeholder={t("products.create.descPlaceholder")}
                 rows={4}
                 maxLength={1000}
               />
             </div>
 
             <div>
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">{t("products.create.priceLabel")}</Label>
               <Input
                 id="price"
                 type="number"
@@ -145,11 +147,11 @@ export default function ProductCreatePage() {
                 disabled={createProduct.isPending || addImageMutation.isPending}
               >
                 {createProduct.isPending || addImageMutation.isPending
-                  ? "Creating..."
-                  : "Create Product"}
+                  ? t("products.create.creating")
+                  : t("products.create.submit")}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link to={`/shops/${shopIdNum}/products`}>Cancel</Link>
+                <Link to={`/shops/${shopIdNum}/products`}>{t("products.create.cancel")}</Link>
               </Button>
             </div>
           </form>

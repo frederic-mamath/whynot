@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Clock, Zap } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -23,10 +24,10 @@ interface AuctionConfigModalProps {
 }
 
 const DURATION_OPTIONS = [
-  { value: 60, label: "1 minute" },
-  { value: 300, label: "5 minutes" },
-  { value: 600, label: "10 minutes" },
-  { value: 1800, label: "30 minutes" },
+  { value: 60, labelKey: "auction.config.duration1min" },
+  { value: 300, labelKey: "auction.config.duration5min" },
+  { value: 600, labelKey: "auction.config.duration10min" },
+  { value: 1800, labelKey: "auction.config.duration30min" },
 ];
 
 export function AuctionConfigModal({
@@ -37,6 +38,7 @@ export function AuctionConfigModal({
   onClose,
   onStart,
 }: AuctionConfigModalProps) {
+  const { t } = useTranslation();
   const [durationSeconds, setDurationSeconds] = useState<number>(300); // Default 5 min
   const [buyoutPrice, setBuyoutPrice] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +52,7 @@ export function AuctionConfigModal({
     if (buyoutPrice) {
       const buyoutNum = parseFloat(buyoutPrice);
       if (isNaN(buyoutNum) || buyoutNum <= startingPrice) {
-        setError(`Buyout price must be greater than $${startingPrice.toFixed(2)}`);
+        setError(t("auction.config.errorBuyout", { price: startingPrice.toFixed(2) }));
         return;
       }
     }
@@ -63,7 +65,7 @@ export function AuctionConfigModal({
       });
       onClose();
     } catch (err: any) {
-      setError(err.message || "Failed to start auction");
+      setError(err.message || t("auction.config.errorStart"));
     } finally {
       setIsSubmitting(false);
     }
@@ -79,14 +81,14 @@ export function AuctionConfigModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Start Auction</DialogTitle>
+          <DialogTitle>{t("auction.config.title")}</DialogTitle>
           <DialogDescription>{productName}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Starting Price Display */}
           <div>
-            <Label className="text-sm text-muted-foreground">Starting Price</Label>
+            <Label className="text-sm text-muted-foreground">{t("auction.config.startingPriceLabel")}</Label>
             <p className="text-2xl font-bold">${startingPrice.toFixed(2)}</p>
           </div>
 
@@ -94,7 +96,7 @@ export function AuctionConfigModal({
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Clock className="size-4" />
-              Duration
+              {t("auction.config.durationLabel")}
             </Label>
             <div className="grid grid-cols-2 gap-2">
               {DURATION_OPTIONS.map((option) => (
@@ -109,7 +111,7 @@ export function AuctionConfigModal({
                       : "border-input bg-background hover:bg-accent"
                   )}
                 >
-                  {option.label}
+                  {t(option.labelKey)}
                 </button>
               ))}
             </div>
@@ -119,7 +121,7 @@ export function AuctionConfigModal({
           <div className="space-y-2">
             <Label htmlFor="buyout-price" className="flex items-center gap-2">
               <Zap className="size-4" />
-              Buyout Price (Optional)
+              {t("auction.config.buyoutPriceLabel")}
             </Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -138,7 +140,7 @@ export function AuctionConfigModal({
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Buyers can purchase instantly at this price
+              {t("auction.config.buyoutPriceHint")}
             </p>
           </div>
 
@@ -156,10 +158,10 @@ export function AuctionConfigModal({
               onClick={onClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("auction.config.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Starting..." : "Start Auction"}
+              {isSubmitting ? t("auction.config.starting") : t("auction.config.start")}
             </Button>
           </DialogFooter>
         </form>
