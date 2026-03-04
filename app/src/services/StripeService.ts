@@ -119,7 +119,11 @@ export class StripeService {
   }): Promise<Stripe.SetupIntent> {
     return stripe.setupIntents.create({
       customer: params.customerId,
-      automatic_payment_methods: { enabled: true },
+      // Restrict to 'card' only — this covers physical cards, Apple Pay and Google Pay.
+      // Apple Pay / Google Pay are wallets on top of the card infrastructure, not
+      // separate payment method types. Using automatic_payment_methods would also
+      // show Klarna, Bancontact, etc. which we don't want for a bidding pre-auth.
+      payment_method_types: ["card"],
     });
   }
 

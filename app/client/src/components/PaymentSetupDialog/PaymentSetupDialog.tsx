@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Elements,
   PaymentElement,
@@ -99,11 +99,22 @@ export function PaymentSetupDialog({
     },
   });
 
-  // Request a SetupIntent when the dialog opens
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen && !clientSecret && !createSetupIntent.isPending) {
+  // Trigger SetupIntent creation when the dialog opens.
+  // NOTE: Radix Dialog only calls onOpenChange(false) to close — it never calls
+  // onOpenChange(true) on open, so we must watch the `open` prop directly.
+  useEffect(() => {
+    if (open && !clientSecret && !createSetupIntent.isPending && !done) {
       createSetupIntent.mutate();
     }
+    // Reset state when dialog closes
+    if (!open) {
+      setClientSecret(null);
+      setDone(false);
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Request a SetupIntent when the dialog opens
+  const handleOpenChange = (nextOpen: boolean) => {
     // If blocking, don't allow dismissal unless done
     if (!nextOpen && blocking && !done) return;
     onOpenChange(nextOpen);
