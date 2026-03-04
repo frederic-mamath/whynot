@@ -16,7 +16,7 @@ Mettre en place i18next dans l'app web et traduire tous les textes utilisateur e
 
 | Ticket                      | Description                                                       | Status  |
 | :-------------------------- | :---------------------------------------------------------------- | :------ |
-| [ticket-01](./ticket-01.md) | Setup i18next infrastructure + Landing & Auth pages               | planned |
+| [ticket-01](./ticket-01.md) | Setup i18next infrastructure + Landing & Auth pages               | completed |
 | [ticket-02](./ticket-02.md) | Dashboard, Profile, NavBar                                        | planned |
 | [ticket-03](./ticket-03.md) | Channel pages + Channel components (controls, participants, chat) | planned |
 | [ticket-04](./ticket-04.md) | Shop, Product, Vendor pages + components                          | planned |

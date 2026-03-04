@@ -1,0 +1,100 @@
+{
+  "common": {
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordPlaceholder": "••••••••"
+  },
+  "landing": {
+    "hero": {
+      "title1": "Shopping en direct,",
+      "title2": "Enchères en temps réel",
+      "description": "Rejoignez le futur du commerce interactif. Regardez des lives, chattez avec les vendeurs et enchérissez sur des produits exclusifs en temps réel. Pourquoi acheter seul quand vous pouvez acheter en direct ?",
+      "ctaStart": "Commencer à enchérir",
+      "ctaSignIn": "Se connecter",
+      "badgeLive": "Interactions en direct",
+      "badgeBidding": "Enchères en temps réel",
+      "badgeDeals": "Offres exclusives"
+    },
+    "howItWorks": {
+      "title": "Comment fonctionne WhyNot",
+      "subtitle": "Une expérience fluide pour les acheteurs et les vendeurs",
+      "buyers": {
+        "title": "Pour les acheteurs",
+        "step1Title": "Parcourir les chaînes en direct",
+        "step1Desc": "Découvrez des lives passionnants de vendeurs présentant leurs produits",
+        "step2Title": "Interagir et s'engager",
+        "step2Desc": "Chattez avec les vendeurs et les autres acheteurs en temps réel pendant le live",
+        "step3Title": "Enchérir sur les produits",
+        "step3Desc": "Placez votre enchère quand un produit vous intéresse et remportez de bonnes affaires",
+        "step4Title": "Gagner et recevoir",
+        "step4Desc": "Remportez l'enchère et recevez le produit livré à votre adresse"
+      },
+      "sellers": {
+        "title": "Pour les vendeurs",
+        "step1Title": "Créer votre boutique",
+        "step1Desc": "Créez votre boutique et ajoutez les produits que vous souhaitez mettre aux enchères",
+        "step2Title": "Passer en direct",
+        "step2Desc": "Démarrez une chaîne en direct et présentez vos produits aux acheteurs potentiels",
+        "step3Title": "Lancer des enchères",
+        "step3Desc": "Mettez en avant des produits pendant votre live et lancez des enchères pour créer de l'animation",
+        "step4Title": "Vendre et expédier",
+        "step4Desc": "Clôturez l'enchère, traitez les commandes et livrez aux gagnants"
+      }
+    },
+    "features": {
+      "title": "Pourquoi choisir WhyNot ?",
+      "subtitle": "La façon la plus engageante d'acheter et de vendre en ligne",
+      "liveStreaming": {
+        "title": "Streaming en direct",
+        "desc": "Streaming vidéo haute qualité propulsé par Agora pour des interactions fluides et en temps réel entre vendeurs et acheteurs"
+      },
+      "chat": {
+        "title": "Chat en temps réel",
+        "desc": "Échangez avec les vendeurs et la communauté via la messagerie instantanée pendant les enchères en direct"
+      },
+      "auctions": {
+        "title": "Enchères en direct",
+        "desc": "Système d'enchères compétitives où le plus offrant remporte des produits exclusifs à des prix attractifs"
+      },
+      "shopping": {
+        "title": "Shopping sans friction",
+        "desc": "Gagnez vos enchères et finalisez vos achats grâce au paiement intégré et au suivi de livraison"
+      },
+      "dashboard": {
+        "title": "Tableau de bord vendeur",
+        "desc": "Des outils puissants pour les vendeurs pour gérer leurs boutiques, produits, lives et suivre leurs performances"
+      },
+      "deals": {
+        "title": "Offres exclusives",
+        "desc": "Accédez à des produits uniques et des offres spéciales disponibles uniquement pendant les ventes aux enchères en direct"
+      }
+    },
+    "cta": {
+      "title": "Prêt à rejoindre l'action ?",
+      "subtitle": "Que vous souhaitiez découvrir des offres incroyables ou toucher de nouveaux clients, WhyNot est votre plateforme de commerce interactif en direct.",
+      "startShopping": "Commencer les achats en direct",
+      "becomeSeller": "Devenir vendeur"
+    }
+  },
+  "login": {
+    "title": "Bon retour",
+    "subtitle": "Connectez-vous à votre compte",
+    "submitLoading": "Connexion en cours...",
+    "submit": "Se connecter",
+    "noAccount": "Pas encore de compte ?",
+    "signUp": "S'inscrire"
+  },
+  "register": {
+    "title": "Créer un compte",
+    "subtitle": "Inscrivez-vous pour commencer",
+    "confirmPassword": "Confirmer le mot de passe",
+    "passwordHint": "Doit contenir au moins 6 caractères",
+    "submitLoading": "Création en cours...",
+    "submit": "Créer un compte",
+    "alreadyAccount": "Déjà un compte ?",
+    "signIn": "Se connecter",
+    "errorPasswordMatch": "Les mots de passe ne correspondent pas",
+    "errorPasswordLength": "Le mot de passe doit contenir au moins 6 caractères"
+  }
+}

@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Video,
   Gavel,
@@ -15,6 +16,7 @@ import Button from "../components/ui/button";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -38,23 +40,21 @@ export default function Landing() {
 
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-                Live Shopping,
+                {t("landing.hero.title1")}
                 <br />
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Real-Time Auctions
+                  {t("landing.hero.title2")}
                 </span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4 leading-relaxed">
-                Join the future of interactive commerce. Watch live streams,
-                chat with sellers, and bid on exclusive products in real-time.
-                Why shop alone when you can shop live?
+                {t("landing.hero.description")}
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-4">
               <Button size="lg" className="w-full sm:w-auto text-base" asChild>
                 <Link to="/register">
-                  Start Bidding Now
+                  {t("landing.hero.ctaStart")}
                   <ArrowRight className="size-5 ml-2" />
                 </Link>
               </Button>
@@ -64,22 +64,22 @@ export default function Landing() {
                 className="w-full sm:w-auto text-base"
                 asChild
               >
-                <Link to="/login">Sign In</Link>
+                <Link to="/login">{t("landing.hero.ctaSignIn")}</Link>
               </Button>
             </div>
 
             <div className="pt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Users className="size-4" />
-                <span>Live interactions</span>
+                <span>{t("landing.hero.badgeLive")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Gavel className="size-4" />
-                <span>Real-time bidding</span>
+                <span>{t("landing.hero.badgeBidding")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Sparkles className="size-4" />
-                <span>Exclusive deals</span>
+                <span>{t("landing.hero.badgeDeals")}</span>
               </div>
             </div>
           </div>
@@ -91,10 +91,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              How WhyNot Works
+              {t("landing.howItWorks.title")}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              A seamless experience for both buyers and sellers
+              {t("landing.howItWorks.subtitle")}
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export default function Landing() {
                 <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <ShoppingBag className="size-6 text-primary" />
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold">For Buyers</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold">{t("landing.howItWorks.buyers.title")}</h3>
               </div>
 
               <div className="space-y-4">
@@ -115,11 +115,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Browse Live Channels
+                      {t("landing.howItWorks.buyers.step1Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Discover exciting live streams from sellers showcasing
-                      their products
+                      {t("landing.howItWorks.buyers.step1Desc")}
                     </p>
                   </div>
                 </div>
@@ -130,11 +129,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Interact & Engage
+                      {t("landing.howItWorks.buyers.step2Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Chat with sellers and other buyers in real-time during the
-                      stream
+                      {t("landing.howItWorks.buyers.step2Desc")}
                     </p>
                   </div>
                 </div>
@@ -145,11 +143,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Bid on Products
+                      {t("landing.howItWorks.buyers.step3Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Place your bid when a product catches your eye and win
-                      great deals
+                      {t("landing.howItWorks.buyers.step3Desc")}
                     </p>
                   </div>
                 </div>
@@ -160,11 +157,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Win & Receive
+                      {t("landing.howItWorks.buyers.step4Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Win the auction and get the product delivered to your
-                      address
+                      {t("landing.howItWorks.buyers.step4Desc")}
                     </p>
                   </div>
                 </div>
@@ -177,7 +173,7 @@ export default function Landing() {
                 <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <TrendingUp className="size-6 text-primary" />
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold">For Sellers</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold">{t("landing.howItWorks.sellers.title")}</h3>
               </div>
 
               <div className="space-y-4">
@@ -187,10 +183,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Set Up Your Shop
+                      {t("landing.howItWorks.sellers.step1Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Create your shop and add products you want to auction
+                      {t("landing.howItWorks.sellers.step1Desc")}
                     </p>
                   </div>
                 </div>
@@ -201,11 +197,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Go Live & Stream
+                      {t("landing.howItWorks.sellers.step2Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Start a live channel and showcase your products to
-                      potential buyers
+                      {t("landing.howItWorks.sellers.step2Desc")}
                     </p>
                   </div>
                 </div>
@@ -216,11 +211,10 @@ export default function Landing() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-lg mb-1">
-                      Launch Auctions
+                      {t("landing.howItWorks.sellers.step3Title")}
                     </h4>
                     <p className="text-muted-foreground">
-                      Promote products during your stream and start auctions to
-                      create excitement
+                      {t("landing.howItWorks.sellers.step3Desc")}
                     </p>
                   </div>
                 </div>
@@ -230,10 +224,9 @@ export default function Landing() {
                     4
                   </div>
                   <div>
-                    <h4 className="font-semibold text-lg mb-1">Sell & Ship</h4>
+                    <h4 className="font-semibold text-lg mb-1">{t("landing.howItWorks.sellers.step4Title")}</h4>
                     <p className="text-muted-foreground">
-                      Close the auction, process orders, and deliver to winning
-                      bidders
+                      {t("landing.howItWorks.sellers.step4Desc")}
                     </p>
                   </div>
                 </div>
@@ -248,10 +241,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              Why Choose WhyNot?
+              {t("landing.features.title")}
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              The most engaging way to buy and sell online
+              {t("landing.features.subtitle")}
             </p>
           </div>
 
@@ -264,11 +257,10 @@ export default function Landing() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-center">
-                Live Streaming
+                {t("landing.features.liveStreaming.title")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground text-center">
-                High-quality video streaming powered by Agora for smooth,
-                real-time interactions between sellers and buyers
+                {t("landing.features.liveStreaming.desc")}
               </p>
             </div>
 
@@ -280,11 +272,10 @@ export default function Landing() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-center">
-                Real-Time Chat
+                {t("landing.features.chat.title")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground text-center">
-                Engage with sellers and community through instant messaging
-                during live auctions
+                {t("landing.features.chat.desc")}
               </p>
             </div>
 
@@ -296,11 +287,10 @@ export default function Landing() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-center">
-                Live Auctions
+                {t("landing.features.auctions.title")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground text-center">
-                Competitive bidding system where the highest bidder wins
-                exclusive products at great prices
+                {t("landing.features.auctions.desc")}
               </p>
             </div>
 
@@ -312,11 +302,10 @@ export default function Landing() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-center">
-                Seamless Shopping
+                {t("landing.features.shopping.title")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground text-center">
-                Win your bids and complete purchases with integrated payment and
-                delivery tracking
+                {t("landing.features.shopping.desc")}
               </p>
             </div>
 
@@ -328,11 +317,10 @@ export default function Landing() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-center">
-                Seller Dashboard
+                {t("landing.features.dashboard.title")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground text-center">
-                Powerful tools for sellers to manage shops, products, streams,
-                and track sales performance
+                {t("landing.features.dashboard.desc")}
               </p>
             </div>
 
@@ -344,11 +332,10 @@ export default function Landing() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-center">
-                Exclusive Deals
+                {t("landing.features.deals.title")}
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground text-center">
-                Access unique products and special offers only available during
-                live auction events
+                {t("landing.features.deals.desc")}
               </p>
             </div>
           </div>
@@ -363,16 +350,15 @@ export default function Landing() {
             <Gavel className="size-12 sm:size-14 text-primary" />
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-            Ready to Join the Action?
+            {t("landing.cta.title")}
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto">
-            Whether you're looking to discover amazing deals or reach new
-            customers, WhyNot is your platform for live interactive commerce.
+            {t("landing.cta.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" className="w-full sm:w-auto text-base" asChild>
               <Link to="/register">
-                Start Shopping Live
+                {t("landing.cta.startShopping")}
                 <ArrowRight className="size-5 ml-2" />
               </Link>
             </Button>
@@ -382,7 +368,7 @@ export default function Landing() {
               className="w-full sm:w-auto text-base"
               asChild
             >
-              <Link to="/register">Become a Seller</Link>
+              <Link to="/register">{t("landing.cta.becomeSeller")}</Link>
             </Button>
           </div>
         </div>

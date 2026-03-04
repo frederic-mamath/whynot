@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LogIn, Mail, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { setToken } from "../lib/auth";
 import Button from "../components/ui/button";
@@ -17,6 +18,7 @@ import {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -41,8 +43,8 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardTitle>{t("login.title")}</CardTitle>
+          <CardDescription>{t("login.subtitle")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -54,7 +56,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
@@ -63,14 +65,14 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="you@example.com"
+                  placeholder={t("common.emailPlaceholder")}
                   className="pl-10"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("common.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
@@ -80,7 +82,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  placeholder="••••••••"
+                  placeholder={t("common.passwordPlaceholder")}
                   className="pl-10"
                 />
               </div>
@@ -92,19 +94,19 @@ export default function Login() {
               className="w-full"
             >
               <LogIn className="size-4 mr-2" />
-              {loginMutation.isLoading ? "Signing in..." : "Sign In"}
+              {loginMutation.isLoading ? t("login.submitLoading") : t("login.submit")}
             </Button>
           </form>
         </CardContent>
 
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            {t("login.noAccount")}{" "}
             <Link
               to="/register"
               className="text-primary hover:underline font-medium"
             >
-              Sign up
+              {t("login.signUp")}
             </Link>
           </p>
         </CardFooter>
