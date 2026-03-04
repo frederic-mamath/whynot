@@ -1,6 +1,7 @@
 import { trpc } from "../lib/trpc";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Video, Users, Lock, Plus, Store } from "lucide-react";
 import { isAuthenticated } from "../lib/auth";
 import Button from "../components/ui/button";
@@ -16,6 +17,7 @@ import { Alert, AlertDescription } from "../components/ui/alert";
 
 export default function ChannelListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: channels, isLoading } = trpc.channel.list.useQuery();
   const { data: userRoles, isLoading: isLoadingRoles } =
     trpc.role.myRoles.useQuery();
@@ -69,12 +71,12 @@ export default function ChannelListPage() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Live Channels</h1>
+          <h1 className="text-3xl font-bold">{t("channels.list.title")}</h1>
           {canCreateChannel ? (
             <Button asChild>
               <Link to="/create-channel">
                 <Plus className="size-4 mr-2" />
-                Create Channel
+                {t("channels.list.createChannel")}
               </Link>
             </Button>
           ) : (
@@ -82,8 +84,8 @@ export default function ChannelListPage() {
               <Store className="size-4" />
               <AlertDescription>
                 {!isSeller
-                  ? "Only sellers can create channels. Request seller access from the menu."
-                  : "You need at least one shop to create a channel."}
+                  ? t("channels.list.noSellerAlert")
+                  : t("channels.list.noShopAlert")}
               </AlertDescription>
             </Alert>
           )}
@@ -92,24 +94,26 @@ export default function ChannelListPage() {
         {channels?.length === 0 ? (
           <div className="text-center py-12">
             <Video className="size-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No active channels</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {t("channels.list.noChannels")}
+            </h3>
             {canCreateChannel ? (
               <>
                 <p className="text-muted-foreground mb-4">
-                  Be the first to create a live channel!
+                  {t("channels.list.firstCreate")}
                 </p>
                 <Button asChild>
                   <Link to="/create-channel">
                     <Plus className="size-4 mr-2" />
-                    Create Channel
+                    {t("channels.list.createChannel")}
                   </Link>
                 </Button>
               </>
             ) : (
               <p className="text-muted-foreground">
                 {!isSeller
-                  ? "Only sellers with shops can create channels."
-                  : "You need at least one shop to create a channel."}
+                  ? t("channels.list.onlySellersCanCreate")
+                  : t("channels.list.needShop")}
               </p>
             )}
           </div>
@@ -129,7 +133,7 @@ export default function ChannelListPage() {
                     {channel.is_private && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground bg-accent px-2 py-1 rounded">
                         <Lock className="size-3" />
-                        Private
+                        {t("channels.list.private")}
                       </div>
                     )}
                   </div>
@@ -158,9 +162,11 @@ export default function ChannelListPage() {
                   >
                     {channel.participantCount >=
                     (channel.max_participants || 10) ? (
-                      <span>Full</span>
+                      <span>{t("channels.list.full")}</span>
                     ) : (
-                      <Link to={`/channel/${channel.id}`}>Join Channel</Link>
+                      <Link to={`/channel/${channel.id}`}>
+                        {t("channels.list.join")}
+                      </Link>
                     )}
                   </Button>
                 </CardFooter>

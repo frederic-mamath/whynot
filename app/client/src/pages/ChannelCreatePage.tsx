@@ -1,5 +1,6 @@
 import { useState, FormEvent, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Plus, Video, Lock, Users, ArrowLeft, Store } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
@@ -16,6 +17,7 @@ import {
 
 export default function ChannelCreatePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [maxParticipants, setMaxParticipants] = useState(10);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -32,7 +34,7 @@ export default function ChannelCreatePage() {
 
   useEffect(() => {
     if (!isLoadingShops && userShops && userShops.length === 0) {
-      setError("You must have at least one shop to create a channel");
+      setError(t("channels.create.noShopError"));
     }
   }, [userShops, isLoadingShops]);
 
@@ -50,12 +52,12 @@ export default function ChannelCreatePage() {
     setError("");
 
     if (!userShops || userShops.length === 0) {
-      setError("You must have at least one shop to create a channel");
+      setError(t("channels.create.noShopError"));
       return;
     }
 
     if (name.length < 3) {
-      setError("Channel name must be at least 3 characters");
+      setError(t("channels.create.channelNameError"));
       return;
     }
 
@@ -72,7 +74,7 @@ export default function ChannelCreatePage() {
         <Button variant="ghost" asChild>
           <Link to="/channels">
             <ArrowLeft className="size-4 mr-2" />
-            Back to channels
+            {t("channels.create.backToChannels")}
           </Link>
         </Button>
 
@@ -80,10 +82,10 @@ export default function ChannelCreatePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Video className="size-6" />
-              Create Live Channel
+              {t("channels.create.title")}
             </CardTitle>
             <CardDescription>
-              Start a new live video/audio channel
+              {t("channels.create.description")}
             </CardDescription>
           </CardHeader>
 
@@ -94,9 +96,9 @@ export default function ChannelCreatePage() {
                 {error.includes("shop") && (
                   <p className="mt-2">
                     <Link to="/shops" className="underline font-medium">
-                      Create a shop first
+                      {t("channels.create.createShopFirst")}
                     </Link>{" "}
-                    to start creating channels.
+                    {t("channels.create.createShopFirstSuffix")}
                   </p>
                 )}
               </div>
@@ -104,19 +106,19 @@ export default function ChannelCreatePage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Channel Name</Label>
+                <Label htmlFor="name">{t("channels.create.channelName")}</Label>
                 <Input
                   type="text"
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="My Awesome Stream"
+                  placeholder={t("channels.create.channelNamePlaceholder")}
                   required
                   minLength={3}
                   maxLength={100}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Choose a descriptive name for your channel (3-100 characters)
+                  {t("channels.create.channelNameHint")}
                 </p>
               </div>
 
@@ -126,7 +128,7 @@ export default function ChannelCreatePage() {
                   className="flex items-center gap-2"
                 >
                   <Users className="size-4" />
-                  Max Participants
+                  {t("channels.create.maxParticipants")}
                 </Label>
                 <Input
                   type="number"
@@ -137,7 +139,7 @@ export default function ChannelCreatePage() {
                   max={50}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Maximum number of participants (2-50)
+                  {t("channels.create.maxParticipantsHint")}
                 </p>
               </div>
 
@@ -154,7 +156,7 @@ export default function ChannelCreatePage() {
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <Lock className="size-4" />
-                  Make this channel private
+                  {t("channels.create.privateChannel")}
                 </Label>
               </div>
 
@@ -168,7 +170,9 @@ export default function ChannelCreatePage() {
                 className="w-full"
               >
                 <Plus className="size-4 mr-2" />
-                {createMutation.isPending ? "Creating..." : "Create Channel"}
+                {createMutation.isPending
+                  ? t("channels.create.creating")
+                  : t("channels.create.submit")}
               </Button>
             </form>
           </CardContent>

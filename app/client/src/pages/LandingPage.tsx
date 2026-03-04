@@ -105,7 +105,9 @@ export default function Landing() {
                 <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <ShoppingBag className="size-6 text-primary" />
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold">{t("landing.howItWorks.buyers.title")}</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold">
+                  {t("landing.howItWorks.buyers.title")}
+                </h3>
               </div>
 
               <div className="space-y-4">
@@ -173,7 +175,9 @@ export default function Landing() {
                 <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center">
                   <TrendingUp className="size-6 text-primary" />
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold">{t("landing.howItWorks.sellers.title")}</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold">
+                  {t("landing.howItWorks.sellers.title")}
+                </h3>
               </div>
 
               <div className="space-y-4">
@@ -224,7 +228,9 @@ export default function Landing() {
                     4
                   </div>
                   <div>
-                    <h4 className="font-semibold text-lg mb-1">{t("landing.howItWorks.sellers.step4Title")}</h4>
+                    <h4 className="font-semibold text-lg mb-1">
+                      {t("landing.howItWorks.sellers.step4Title")}
+                    </h4>
                     <p className="text-muted-foreground">
                       {t("landing.howItWorks.sellers.step4Desc")}
                     </p>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +65,7 @@ const emptyAddress: AddressFormData = {
 };
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -95,62 +97,62 @@ export default function ProfilePage() {
   // Update profile mutation
   const updateProfile = trpc.profile.update.useMutation({
     onSuccess: () => {
-      toast.success("Profile updated successfully");
+      toast.success(t("profile.personalInfo.toastSuccess"));
       utils.profile.me.invalidate();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to update profile");
+      toast.error(error.message || t("profile.personalInfo.toastError"));
     },
   });
 
   // Create address mutation
   const createAddress = trpc.profile.addresses.create.useMutation({
     onSuccess: () => {
-      toast.success("Address added successfully");
+      toast.success(t("profile.addresses.toastAdded"));
       utils.profile.me.invalidate();
       setAddressDialogOpen(false);
       setAddressForm(emptyAddress);
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to add address");
+      toast.error(error.message || t("profile.addresses.toastAddFailed"));
     },
   });
 
   // Update address mutation
   const updateAddress = trpc.profile.addresses.update.useMutation({
     onSuccess: () => {
-      toast.success("Address updated successfully");
+      toast.success(t("profile.addresses.toastUpdated"));
       utils.profile.me.invalidate();
       setAddressDialogOpen(false);
       setEditingAddress(null);
       setAddressForm(emptyAddress);
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to update address");
+      toast.error(error.message || t("profile.addresses.toastUpdateFailed"));
     },
   });
 
   // Delete address mutation
   const deleteAddress = trpc.profile.addresses.delete.useMutation({
     onSuccess: () => {
-      toast.success("Address deleted successfully");
+      toast.success(t("profile.addresses.toastDeleted"));
       utils.profile.me.invalidate();
       setDeleteDialogOpen(false);
       setAddressToDelete(null);
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete address");
+      toast.error(error.message || t("profile.addresses.toastDeleteFailed"));
     },
   });
 
   // Set default address mutation
   const setDefaultAddress = trpc.profile.addresses.setDefault.useMutation({
     onSuccess: () => {
-      toast.success("Default address updated");
+      toast.success(t("profile.addresses.toastDefaultSet"));
       utils.profile.me.invalidate();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to set default address");
+      toast.error(error.message || t("profile.addresses.toastDefaultFailed"));
     },
   });
 
@@ -211,7 +213,7 @@ export default function ProfilePage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading profile...</p>
+          <p className="mt-4 text-muted-foreground">{t("profile.loading")}</p>
         </div>
       </div>
     );
@@ -220,10 +222,8 @@ export default function ProfilePage() {
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your personal information and delivery addresses
-        </p>
+        <h1 className="text-3xl font-bold">{t("profile.title")}</h1>
+        <p className="text-muted-foreground mt-2">{t("profile.subtitle")}</p>
       </div>
 
       {/* Personal Information */}
@@ -231,36 +231,40 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="size-5" />
-            Personal Information
+            {t("profile.personalInfo.title")}
           </CardTitle>
           <CardDescription>
-            Update your name and contact details
+            {t("profile.personalInfo.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">
+                  {t("profile.personalInfo.firstName")}
+                </Label>
                 <Input
                   id="firstName"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Enter your first name"
+                  placeholder={t("profile.personalInfo.firstNamePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">
+                  {t("profile.personalInfo.lastName")}
+                </Label>
                 <Input
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Enter your last name"
+                  placeholder={t("profile.personalInfo.lastNamePlaceholder")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input
                 id="email"
                 value={profile?.email || ""}
@@ -268,11 +272,13 @@ export default function ProfilePage() {
                 className="bg-muted"
               />
               <p className="text-xs text-muted-foreground">
-                Email cannot be changed
+                {t("profile.personalInfo.emailNote")}
               </p>
             </div>
             <Button type="submit" disabled={updateProfile.isPending}>
-              {updateProfile.isPending ? "Saving..." : "Save Changes"}
+              {updateProfile.isPending
+                ? t("profile.personalInfo.saveLoading")
+                : t("profile.personalInfo.save")}
             </Button>
           </form>
         </CardContent>
@@ -285,10 +291,10 @@ export default function ProfilePage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="size-5" />
-                Payment Method
+                {t("profile.payment.title")}
               </CardTitle>
               <CardDescription>
-                Required to place bids in live auctions
+                {t("profile.payment.description")}
               </CardDescription>
             </div>
             {paymentStatus?.hasPaymentMethod && (
@@ -296,7 +302,7 @@ export default function ProfilePage() {
                 variant="outline"
                 onClick={() => setPaymentDialogOpen(true)}
               >
-                Change
+                {t("profile.payment.change")}
               </Button>
             )}
           </div>
@@ -324,7 +330,9 @@ export default function ProfilePage() {
                       </p>
                     )}
                   </div>
-                  <Badge variant="secondary">Active</Badge>
+                  <Badge variant="secondary">
+                    {t("profile.payment.active")}
+                  </Badge>
                 </div>
               ))}
             </div>
@@ -332,14 +340,14 @@ export default function ProfilePage() {
             <div className="text-center py-6">
               <AlertCircle className="size-10 mx-auto mb-3 text-amber-500 opacity-70" />
               <p className="text-sm font-medium">
-                No payment method configured
+                {t("profile.payment.noMethod")}
               </p>
               <p className="text-xs text-muted-foreground mt-1 mb-4">
-                You need a payment method to bid in auctions
+                {t("profile.payment.noMethodHint")}
               </p>
               <Button onClick={() => setPaymentDialogOpen(true)}>
                 <CreditCard className="size-4 mr-2" />
-                Add payment method
+                {t("profile.payment.addMethod")}
               </Button>
             </div>
           )}
@@ -361,15 +369,15 @@ export default function ProfilePage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="size-5" />
-                Delivery Addresses
+                {t("profile.addresses.title")}
               </CardTitle>
               <CardDescription>
-                Manage your shipping addresses for orders
+                {t("profile.addresses.description")}
               </CardDescription>
             </div>
             <Button onClick={handleAddAddress}>
               <Plus className="size-4 mr-2" />
-              Add Address
+              {t("profile.addresses.add")}
             </Button>
           </div>
         </CardHeader>
@@ -377,10 +385,8 @@ export default function ProfilePage() {
           {profile?.addresses.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <MapPin className="size-12 mx-auto mb-3 opacity-50" />
-              <p>No addresses added yet</p>
-              <p className="text-sm mt-1">
-                Add an address to complete your profile
-              </p>
+              <p>{t("profile.addresses.empty")}</p>
+              <p className="text-sm mt-1">{t("profile.addresses.emptyHint")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -399,7 +405,7 @@ export default function ProfilePage() {
                             className="flex items-center gap-1"
                           >
                             <Star className="size-3 fill-current" />
-                            Default
+                            {t("profile.addresses.default")}
                           </Badge>
                         )}
                       </div>
@@ -456,96 +462,102 @@ export default function ProfilePage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingAddress ? "Edit Address" : "Add New Address"}
+              {editingAddress
+                ? t("profile.addresses.dialogTitleEdit")
+                : t("profile.addresses.dialogTitleAdd")}
             </DialogTitle>
             <DialogDescription>
-              Enter your delivery address details
+              {t("profile.addresses.dialogDescription")}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitAddress} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="label">Label</Label>
+              <Label htmlFor="label">{t("profile.addresses.label")}</Label>
               <Input
                 id="label"
                 value={addressForm.label}
                 onChange={(e) =>
                   setAddressForm({ ...addressForm, label: e.target.value })
                 }
-                placeholder="e.g., Home, Work"
+                placeholder={t("profile.addresses.labelPlaceholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="street">Street Address</Label>
+              <Label htmlFor="street">{t("profile.addresses.street")}</Label>
               <Input
                 id="street"
                 value={addressForm.street}
                 onChange={(e) =>
                   setAddressForm({ ...addressForm, street: e.target.value })
                 }
-                placeholder="123 Main St"
+                placeholder={t("profile.addresses.streetPlaceholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="street2">Apt, Suite (optional)</Label>
+              <Label htmlFor="street2">{t("profile.addresses.street2")}</Label>
               <Input
                 id="street2"
                 value={addressForm.street2}
                 onChange={(e) =>
                   setAddressForm({ ...addressForm, street2: e.target.value })
                 }
-                placeholder="Apt 4B"
+                placeholder={t("profile.addresses.street2Placeholder")}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">{t("profile.addresses.city")}</Label>
                 <Input
                   id="city"
                   value={addressForm.city}
                   onChange={(e) =>
                     setAddressForm({ ...addressForm, city: e.target.value })
                   }
-                  placeholder="New York"
+                  placeholder={t("profile.addresses.cityPlaceholder")}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
+                <Label htmlFor="state">{t("profile.addresses.state")}</Label>
                 <Input
                   id="state"
                   value={addressForm.state}
                   onChange={(e) =>
                     setAddressForm({ ...addressForm, state: e.target.value })
                   }
-                  placeholder="NY"
+                  placeholder={t("profile.addresses.statePlaceholder")}
                   required
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="zipCode">ZIP Code</Label>
+                <Label htmlFor="zipCode">
+                  {t("profile.addresses.zipCode")}
+                </Label>
                 <Input
                   id="zipCode"
                   value={addressForm.zipCode}
                   onChange={(e) =>
                     setAddressForm({ ...addressForm, zipCode: e.target.value })
                   }
-                  placeholder="10001"
+                  placeholder={t("profile.addresses.zipCodePlaceholder")}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country">
+                  {t("profile.addresses.country")}
+                </Label>
                 <Input
                   id="country"
                   value={addressForm.country}
                   onChange={(e) =>
                     setAddressForm({ ...addressForm, country: e.target.value })
                   }
-                  placeholder="US"
+                  placeholder={t("profile.addresses.countryPlaceholder")}
                   maxLength={2}
                   required
                 />
@@ -561,7 +573,7 @@ export default function ProfilePage() {
                   setAddressForm(emptyAddress);
                 }}
               >
-                Cancel
+                {t("profile.addresses.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -569,11 +581,11 @@ export default function ProfilePage() {
               >
                 {editingAddress
                   ? updateAddress.isPending
-                    ? "Saving..."
-                    : "Save Changes"
+                    ? t("profile.addresses.saveLoading")
+                    : t("profile.addresses.saveChanges")
                   : createAddress.isPending
-                    ? "Adding..."
-                    : "Add Address"}
+                    ? t("profile.addresses.addLoading")
+                    : t("profile.addresses.addSubmit")}
               </Button>
             </DialogFooter>
           </form>
@@ -584,19 +596,22 @@ export default function ProfilePage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Address</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("profile.addresses.deleteTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this address? This action cannot
-              be undone.
+              {t("profile.addresses.deleteDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("profile.addresses.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t("profile.addresses.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

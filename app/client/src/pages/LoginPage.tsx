@@ -94,7 +94,9 @@ export default function Login() {
               className="w-full"
             >
               <LogIn className="size-4 mr-2" />
-              {loginMutation.isLoading ? t("login.submitLoading") : t("login.submit")}
+              {loginMutation.isLoading
+                ? t("login.submitLoading")
+                : t("login.submit")}
             </Button>
           </form>
         </CardContent>

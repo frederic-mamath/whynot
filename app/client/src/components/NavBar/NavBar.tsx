@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Video,
   Home,
@@ -32,6 +33,7 @@ import ThemeToggle from "../ui/theme-toggle";
 
 export default function NavBar() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const authenticated = isAuthenticated();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -47,13 +49,13 @@ export default function NavBar() {
 
   const requestSellerRole = trpc.role.requestSellerRole.useMutation({
     onSuccess: (data) => {
-      toast.success("Request Submitted", {
+      toast.success(t("navbar.requestSubmitted"), {
         description: data.message,
       });
       utils.role.myRoles.invalidate();
     },
     onError: (error) => {
-      toast.error("Request Failed", {
+      toast.error(t("navbar.requestFailed"), {
         description: error.message,
       });
     },
@@ -101,27 +103,27 @@ export default function NavBar() {
             {authenticated ? (
               <>
                 <HoverMenu
-                  trigger="Browse"
-                  items={[{ icon: Video, label: "Channels", to: "/channels" }]}
+                  trigger={t("navbar.browse")}
+                  items={[{ icon: Video, label: t("navbar.channels"), to: "/channels" }]}
                 />
 
                 <HoverMenu
-                  trigger="My Activity"
+                  trigger={t("navbar.myActivity")}
                   items={[
-                    { icon: Home, label: "Dashboard", to: "/dashboard" },
-                    { icon: UserCircle, label: "Profile", to: "/profile" },
-                    { icon: ShoppingBag, label: "My Orders", to: "/my-orders" },
+                    { icon: Home, label: t("navbar.dashboard"), to: "/dashboard" },
+                    { icon: UserCircle, label: t("navbar.profile"), to: "/profile" },
+                    { icon: ShoppingBag, label: t("navbar.myOrders"), to: "/my-orders" },
                   ]}
                 />
 
                 {isSeller && (
                   <HoverMenu
-                    trigger="Sell"
+                    trigger={t("navbar.sell")}
                     items={[
-                      { icon: Store, label: "Shops", to: "/shops" },
+                      { icon: Store, label: t("navbar.shops"), to: "/shops" },
                       {
                         icon: Package,
-                        label: "Deliveries",
+                        label: t("navbar.deliveries"),
                         to: "/pending-deliveries",
                       },
                     ]}
@@ -140,13 +142,13 @@ export default function NavBar() {
                     disabled={hasPendingRequest || requestSellerRole.isPending}
                   >
                     <BadgeCheck className="size-4 mr-2" />
-                    {hasPendingRequest ? "Pending" : "Become a Seller"}
+                    {hasPendingRequest ? t("navbar.requestPending") : t("navbar.becomeSeller")}
                   </Button>
                 ) : (
                   <Button variant="default" size="sm" asChild>
                     <Link to="/create-channel">
                       <Plus className="size-4 mr-2" />
-                      Create
+                      {t("navbar.create")}
                     </Link>
                   </Button>
                 )}
@@ -171,8 +173,8 @@ export default function NavBar() {
 
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="size-4 mr-2" />
-                  <span className="hidden lg:inline">Logout</span>
-                  <span className="lg:hidden">Exit</span>
+                  <span className="hidden lg:inline">{t("navbar.logout")}</span>
+                  <span className="lg:hidden">{t("navbar.exit")}</span>
                 </Button>
               </>
             ) : (
@@ -182,14 +184,14 @@ export default function NavBar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/login">
                     <LogIn className="size-4 mr-2" />
-                    Login
+                    {t("navbar.login")}
                   </Link>
                 </Button>
 
                 <Button variant="default" size="sm" asChild>
                   <Link to="/register">
                     <UserPlus className="size-4 mr-2" />
-                    Sign Up
+                    {t("navbar.signUp")}
                   </Link>
                 </Button>
               </>
@@ -210,10 +212,10 @@ export default function NavBar() {
             </SheetTrigger>
             <SheetContent className="w-[75%] sm:max-w-[320px]">
               <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
+                <SheetTitle>{t("navbar.menu")}</SheetTitle>
                 <SheetClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
                   <X className="size-4" />
-                  <span className="sr-only">Close</span>
+                  <span className="sr-only">{t("navbar.close")}</span>
                 </SheetClose>
               </SheetHeader>
               <div className="flex flex-col h-full pt-6">
@@ -236,37 +238,37 @@ export default function NavBar() {
                     <nav className="flex flex-col gap-1 flex-1">
                       {/* Browse Section */}
                       <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Browse
+                        {t("navbar.browse")}
                       </div>
                       <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/channels" onClick={closeSheet}>
                           <Video className="size-4 mr-2" />
-                          Channels
+                          {t("navbar.channels")}
                         </Link>
                       </Button>
 
                       {/* My Activity Section */}
                       <div className="px-2 py-1 mt-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        My Activity
+                        {t("navbar.myActivity")}
                       </div>
                       <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/dashboard" onClick={closeSheet}>
                           <Home className="size-4 mr-2" />
-                          Dashboard
+                          {t("navbar.dashboard")}
                         </Link>
                       </Button>
 
                       <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/profile" onClick={closeSheet}>
                           <UserCircle className="size-4 mr-2" />
-                          Profile
+                          {t("navbar.profile")}
                         </Link>
                       </Button>
 
                       <Button variant="ghost" className="justify-start" asChild>
                         <Link to="/my-orders" onClick={closeSheet}>
                           <ShoppingBag className="size-4 mr-2" />
-                          My Orders
+                          {t("navbar.myOrders")}
                         </Link>
                       </Button>
 
@@ -274,7 +276,7 @@ export default function NavBar() {
                       {isSeller && (
                         <>
                           <div className="px-2 py-1 mt-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Sell
+                            {t("navbar.sell")}
                           </div>
                           <Button
                             variant="ghost"
@@ -283,7 +285,7 @@ export default function NavBar() {
                           >
                             <Link to="/shops" onClick={closeSheet}>
                               <Store className="size-4 mr-2" />
-                              Shops
+                              {t("navbar.shops")}
                             </Link>
                           </Button>
 
@@ -294,7 +296,7 @@ export default function NavBar() {
                           >
                             <Link to="/pending-deliveries" onClick={closeSheet}>
                               <Package className="size-4 mr-2" />
-                              Pending Deliveries
+                              {t("navbar.pendingDeliveries")}
                             </Link>
                           </Button>
                         </>
@@ -316,8 +318,8 @@ export default function NavBar() {
                         >
                           <BadgeCheck className="size-4 mr-2" />
                           {hasPendingRequest
-                            ? "Request Pending"
-                            : "Become a Seller"}
+                            ? t("navbar.requestPending")
+                            : t("navbar.becomeSeller")}}
                         </Button>
                       ) : (
                         <Button
@@ -327,7 +329,7 @@ export default function NavBar() {
                         >
                           <Link to="/create-channel" onClick={closeSheet}>
                             <Plus className="size-4 mr-2" />
-                            Create Channel
+                            {t("navbar.createChannel")}
                           </Link>
                         </Button>
                       )}
@@ -341,7 +343,7 @@ export default function NavBar() {
                         onClick={handleLogout}
                       >
                         <LogOut className="size-4 mr-2" />
-                        Logout
+                        {t("navbar.logout")}
                       </Button>
                     </div>
                   </>
@@ -350,14 +352,14 @@ export default function NavBar() {
                     <Button variant="ghost" className="justify-start" asChild>
                       <Link to="/login" onClick={closeSheet}>
                         <LogIn className="size-4 mr-2" />
-                        Login
+                        {t("navbar.login")}
                       </Link>
                     </Button>
 
                     <Button variant="default" className="justify-start" asChild>
                       <Link to="/register" onClick={closeSheet}>
                         <UserPlus className="size-4 mr-2" />
-                        Sign Up
+                        {t("navbar.signUp")}
                       </Link>
                     </Button>
                   </nav>

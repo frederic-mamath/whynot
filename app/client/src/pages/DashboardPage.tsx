@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { LogOut, User, Mail, Calendar, CheckCircle, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { removeToken, isAuthenticated } from "../lib/auth";
 import { useEffect } from "react";
@@ -14,6 +15,7 @@ import { Skeleton } from "../components/ui/skeleton";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: user, isLoading, error } = trpc.auth.me.useQuery();
 
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function Dashboard() {
             <div className="text-center space-y-4">
               <div className="text-destructive">{error.message}</div>
               <Button asChild>
-                <Link to="/login">Go to Login</Link>
+                <Link to="/login">{t("dashboard.goToLogin")}</Link>
               </Button>
             </div>
           </CardContent>
@@ -97,10 +99,10 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">{t("dashboard.title")}</h1>
           <Button variant="outline" onClick={handleLogout}>
             <LogOut className="size-4 mr-2" />
-            Logout
+            {t("dashboard.logout")}
           </Button>
         </div>
 
@@ -108,14 +110,14 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="size-5" />
-              Your Profile
+              {t("dashboard.yourProfile")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between py-3 border-b border-border">
                 <span className="text-sm font-medium text-muted-foreground">
-                  User ID
+                  {t("dashboard.userId")}
                 </span>
                 <span className="text-sm font-mono">{user?.id}</span>
               </div>
@@ -123,25 +125,25 @@ export default function Dashboard() {
               <div className="flex items-center justify-between py-3 border-b border-border">
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Mail className="size-4" />
-                  Email
+                  {t("dashboard.email")}
                 </span>
                 <span className="text-sm">{user?.email}</span>
               </div>
 
               <div className="flex items-center justify-between py-3 border-b border-border">
                 <span className="text-sm font-medium text-muted-foreground">
-                  Status
+                  {t("dashboard.status")}
                 </span>
                 <span className="text-sm flex items-center gap-2">
                   {user?.isVerified ? (
                     <>
                       <CheckCircle className="size-4 text-emerald-500 dark:text-emerald-400" />
-                      Verified
+                      {t("dashboard.verified")}
                     </>
                   ) : (
                     <>
                       <Clock className="size-4 text-yellow-500" />
-                      Pending
+                      {t("dashboard.pending")}
                     </>
                   )}
                 </span>
@@ -150,7 +152,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between py-3">
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Calendar className="size-4" />
-                  Member Since
+                  {t("dashboard.memberSince")}
                 </span>
                 <span className="text-sm">
                   {user?.createdAt
