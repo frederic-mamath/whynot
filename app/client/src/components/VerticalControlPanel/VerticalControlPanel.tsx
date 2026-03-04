@@ -1,4 +1,12 @@
-import { Mic, MicOff, Video, VideoOff, Users as UsersIcon, ShoppingBag, Sparkles } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  Users as UsersIcon,
+  ShoppingBag,
+  Sparkles,
+} from "lucide-react";
 import Button from "../ui/button";
 
 interface VerticalControlPanelProps {

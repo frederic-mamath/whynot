@@ -84,7 +84,11 @@ export function ChatPanel({
   // Buyout mutation
   const buyoutMutation = trpc.auction.buyout.useMutation({
     onSuccess: (data) => {
-      toast.success(t("channels.chat.buyoutSuccess", { price: `$${data.finalPrice.toFixed(2)}` }));
+      toast.success(
+        t("channels.chat.buyoutSuccess", {
+          price: `$${data.finalPrice.toFixed(2)}`,
+        }),
+      );
       refetchAuction();
     },
     onError: (error) => {
@@ -225,7 +229,10 @@ export function ChatPanel({
             refetchAuction();
             if (event.bidderId !== currentUserId) {
               toast.info(
-                t("channels.chat.auctionBid", { username: event.bidderUsername, price: `$${event.amount.toFixed(2)}` }),
+                t("channels.chat.auctionBid", {
+                  username: event.bidderUsername,
+                  price: `$${event.amount.toFixed(2)}`,
+                }),
               );
             }
             break;
@@ -239,7 +246,10 @@ export function ChatPanel({
           case "auction:ended":
             if (event.hasWinner && event.winnerUsername) {
               toast.success(
-                t("channels.chat.auctionWon", { winner: event.winnerUsername, price: `$${event.finalPrice.toFixed(2)}` }),
+                t("channels.chat.auctionWon", {
+                  winner: event.winnerUsername,
+                  price: `$${event.finalPrice.toFixed(2)}`,
+                }),
               );
             } else {
               toast.info(t("channels.chat.auctionNoWinner"));
@@ -249,20 +259,29 @@ export function ChatPanel({
 
           case "auction:bought_out":
             toast.success(
-              t("channels.chat.auctionBoughtOut", { buyer: event.buyerUsername, price: `$${event.buyoutPrice.toFixed(2)}` }),
+              t("channels.chat.auctionBoughtOut", {
+                buyer: event.buyerUsername,
+                price: `$${event.buyoutPrice.toFixed(2)}`,
+              }),
             );
             refetchAuction();
             break;
 
           case "auction:outbid":
             toast.warning(
-              t("channels.chat.auctionOutbid", { product: event.productName, price: `$${event.currentBid.toFixed(2)}` }),
+              t("channels.chat.auctionOutbid", {
+                product: event.productName,
+                price: `$${event.currentBid.toFixed(2)}`,
+              }),
             );
             break;
 
           case "auction:won":
             toast.success(
-              t("channels.chat.auctionYouWon", { product: event.productName, price: `$${event.finalPrice.toFixed(2)}` }),
+              t("channels.chat.auctionYouWon", {
+                product: event.productName,
+                price: `$${event.finalPrice.toFixed(2)}`,
+              }),
             );
             break;
         }

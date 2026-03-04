@@ -18,7 +18,11 @@ interface BidHistoryProps {
   currentBid: number;
 }
 
-export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps) {
+export function BidHistory({
+  bids,
+  currentUserId,
+  currentBid,
+}: BidHistoryProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
 
@@ -29,13 +33,13 @@ export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps)
 
     if (seconds < 10) return t("auction.history.justNow");
     if (seconds < 60) return t("auction.history.secondsAgo", { s: seconds });
-    
+
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return t("auction.history.minutesAgo", { m: minutes });
-    
+
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return t("auction.history.hoursAgo", { h: hours });
-    
+
     return t("auction.history.daysAgo", { d: Math.floor(hours / 24) });
   };
 
@@ -60,7 +64,7 @@ export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps)
         <div className="flex items-center gap-2">
           <TrendingUp className="size-4" />
           <span className="text-sm font-medium">
-          {t("auction.history.title", { count: bids.length })}
+            {t("auction.history.title", { count: bids.length })}
           </span>
         </div>
         {isOpen ? (
@@ -78,16 +82,17 @@ export function BidHistory({ bids, currentUserId, currentBid }: BidHistoryProps)
               className={cn(
                 "flex items-center justify-between p-2 rounded-md text-sm",
                 isCurrentUserBid(bid.bidderId) && "bg-primary/10",
-                isWinningBid(bid.amount) && "bg-amber-50 dark:bg-amber-950"
+                isWinningBid(bid.amount) && "bg-amber-50 dark:bg-amber-950",
               )}
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {isWinningBid(bid.amount) && (
                   <Trophy className="size-3 text-amber-500 shrink-0" />
                 )}
-                {isCurrentUserBid(bid.bidderId) && !isWinningBid(bid.amount) && (
-                  <User className="size-3 text-primary shrink-0" />
-                )}
+                {isCurrentUserBid(bid.bidderId) &&
+                  !isWinningBid(bid.amount) && (
+                    <User className="size-3 text-primary shrink-0" />
+                  )}
                 <span className="font-medium truncate">
                   {bid.bidderUsername}
                 </span>

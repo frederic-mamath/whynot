@@ -67,7 +67,9 @@ export default function ProductCreatePage() {
       toast.success(t("products.create.successCreate"));
       navigate(`/shops/${shopIdNum}/products`);
     } catch (error: any) {
-      toast.error(t("products.create.errorCreate", { message: (error as any).message }));
+      toast.error(
+        t("products.create.errorCreate", { message: (error as any).message }),
+      );
     }
   };
 
@@ -115,7 +117,9 @@ export default function ProductCreatePage() {
             </div>
 
             <div>
-              <Label htmlFor="description">{t("products.create.descLabel")}</Label>
+              <Label htmlFor="description">
+                {t("products.create.descLabel")}
+              </Label>
               <Textarea
                 id="description"
                 value={description}
@@ -151,7 +155,9 @@ export default function ProductCreatePage() {
                   : t("products.create.submit")}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link to={`/shops/${shopIdNum}/products`}>{t("products.create.cancel")}</Link>
+                <Link to={`/shops/${shopIdNum}/products`}>
+                  {t("products.create.cancel")}
+                </Link>
               </Button>
             </div>
           </form>

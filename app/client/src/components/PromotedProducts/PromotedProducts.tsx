@@ -78,7 +78,9 @@ export default function PromotedProducts({
           <SheetDescription>
             {activeProducts.length === 0
               ? t("promotedProducts.emptyState")
-              : t("promotedProducts.nProductsAvailable", { count: activeProducts.length })}
+              : t("promotedProducts.nProductsAvailable", {
+                  count: activeProducts.length,
+                })}
           </SheetDescription>
         </SheetHeader>
 
@@ -86,7 +88,9 @@ export default function PromotedProducts({
           {activeProducts.length === 0 ? (
             <div className="text-center py-8 px-4 rounded-lg bg-accent/30 border border-dashed border-border">
               <ShoppingBag className="size-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="font-medium text-sm mb-1">{t("promotedProducts.emptyState")}</p>
+              <p className="font-medium text-sm mb-1">
+                {t("promotedProducts.emptyState")}
+              </p>
               <span className="text-xs text-muted-foreground">
                 {t("promotedProducts.emptyStateDesc")}
               </span>

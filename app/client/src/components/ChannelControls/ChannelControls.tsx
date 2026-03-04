@@ -32,7 +32,9 @@ export default function ChannelControls({
   onShowParticipants,
   onLeave,
   participantCount,
-}: ChannelControlsProps) {  const { t } = useTranslation();  return (
+}: ChannelControlsProps) {
+  const { t } = useTranslation();
+  return (
     <div className="flex items-center justify-center gap-2 p-4 bg-background border-t">
       {/* Audio Control */}
       <Button
@@ -67,7 +69,11 @@ export default function ChannelControls({
         variant={isScreenSharing ? "default" : "outline"}
         size="icon"
         onClick={onToggleScreenShare}
-        title={isScreenSharing ? t("controls.stopSharing") : t("controls.shareScreen")}
+        title={
+          isScreenSharing
+            ? t("controls.stopSharing")
+            : t("controls.shareScreen")
+        }
       >
         <Share2 className="size-4" />
       </Button>

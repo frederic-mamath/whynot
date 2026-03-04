@@ -47,7 +47,10 @@ export function HighlightedProduct({
     },
   });
 
-  const handleStartAuction = async (config: { durationSeconds: number; buyoutPrice?: number }) => {
+  const handleStartAuction = async (config: {
+    durationSeconds: number;
+    buyoutPrice?: number;
+  }) => {
     await startAuctionMutation.mutateAsync({
       productId: product.id,
       ...config,
@@ -96,7 +99,9 @@ export function HighlightedProduct({
               </div>
 
               <p className="text-xs text-muted-foreground mb-2">
-                {t("highlightedProduct.startingPrice", { price: product.price.toFixed(2) })}
+                {t("highlightedProduct.startingPrice", {
+                  price: product.price.toFixed(2),
+                })}
               </p>
 
               <p className="text-xs text-muted-foreground line-clamp-2 mb-2">

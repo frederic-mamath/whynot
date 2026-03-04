@@ -91,7 +91,9 @@ export function AuctionWidget({
       if (isParticipant && !isWinner && currentUserId) {
         toast({
           title: t("auction.widget.auctionEnded"),
-          description: t("auction.widget.outbidDesc", { product: auction.productName }),
+          description: t("auction.widget.outbidDesc", {
+            product: auction.productName,
+          }),
           variant: "default",
         });
       }
@@ -131,7 +133,9 @@ export function AuctionWidget({
         productName={auction.productName}
         productImage={auction.productImageUrl}
         finalBid={auction.currentBid}
-        winnerUsername={auction.highestBidderUsername || t("auction.widget.unknown")}
+        winnerUsername={
+          auction.highestBidderUsername || t("auction.widget.unknown")
+        }
         totalBids={bids.length}
         isWinner={isWinner}
         isParticipant={isParticipant}
@@ -200,7 +204,10 @@ export function AuctionWidget({
             {isEnded && auction.highestBidderUsername && (
               <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md p-3 text-center">
                 <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                  {t("auction.widget.wonBy", { winner: auction.highestBidderUsername, price: auction.currentBid.toFixed(2) })}
+                  {t("auction.widget.wonBy", {
+                    winner: auction.highestBidderUsername,
+                    price: auction.currentBid.toFixed(2),
+                  })}
                 </p>
               </div>
             )}
@@ -221,7 +228,9 @@ export function AuctionWidget({
               size="lg"
             >
               <Zap className="size-4 mr-2" />
-              {t("auction.widget.buyNow", { price: auction.buyoutPrice.toFixed(2) })}
+              {t("auction.widget.buyNow", {
+                price: auction.buyoutPrice.toFixed(2),
+              })}
             </Button>
           )}
 
@@ -266,7 +275,9 @@ export function AuctionWidget({
                 disabled={isClosing}
                 className="w-full text-destructive hover:bg-destructive/10"
               >
-                {isClosing ? t("auction.widget.endingAuction") : t("auction.widget.endAuctionEarly")}
+                {isClosing
+                  ? t("auction.widget.endingAuction")
+                  : t("auction.widget.endAuctionEarly")}
               </Button>
             </div>
           )}

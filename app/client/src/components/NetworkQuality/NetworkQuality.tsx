@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { IAgoraRTCClient } from 'agora-rtc-sdk-ng';
-import { Badge } from '../ui/badge';
-import { Wifi, WifiOff } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { IAgoraRTCClient } from "agora-rtc-sdk-ng";
+import { Badge } from "../ui/badge";
+import { Wifi, WifiOff } from "lucide-react";
+import { cn } from "../../lib/utils";
 
 interface NetworkQualityProps {
   client: IAgoraRTCClient | null;
@@ -36,30 +36,58 @@ export default function NetworkQuality({ client }: NetworkQualityProps) {
       });
     };
 
-    client.on('network-quality', handleNetworkQuality);
+    client.on("network-quality", handleNetworkQuality);
 
     return () => {
-      client.off('network-quality', handleNetworkQuality);
+      client.off("network-quality", handleNetworkQuality);
     };
   }, [client]);
 
   const getQualityConfig = (quality: QualityLevel) => {
     switch (quality) {
       case 0:
-        return { label: t('networkQuality.unknown'), variant: 'secondary' as const, color: 'text-muted-foreground' };
+        return {
+          label: t("networkQuality.unknown"),
+          variant: "secondary" as const,
+          color: "text-muted-foreground",
+        };
       case 1:
-        return { label: t('networkQuality.excellent'), variant: 'default' as const, color: 'text-green-500' };
+        return {
+          label: t("networkQuality.excellent"),
+          variant: "default" as const,
+          color: "text-green-500",
+        };
       case 2:
-        return { label: t('networkQuality.good'), variant: 'default' as const, color: 'text-green-500' };
+        return {
+          label: t("networkQuality.good"),
+          variant: "default" as const,
+          color: "text-green-500",
+        };
       case 3:
-        return { label: t('networkQuality.fair'), variant: 'secondary' as const, color: 'text-yellow-500' };
+        return {
+          label: t("networkQuality.fair"),
+          variant: "secondary" as const,
+          color: "text-yellow-500",
+        };
       case 4:
-        return { label: t('networkQuality.poor'), variant: 'destructive' as const, color: 'text-orange-500' };
+        return {
+          label: t("networkQuality.poor"),
+          variant: "destructive" as const,
+          color: "text-orange-500",
+        };
       case 5:
       case 6:
-        return { label: t('networkQuality.bad'), variant: 'destructive' as const, color: 'text-red-500' };
+        return {
+          label: t("networkQuality.bad"),
+          variant: "destructive" as const,
+          color: "text-red-500",
+        };
       default:
-        return { label: t('networkQuality.unknown'), variant: 'secondary' as const, color: 'text-muted-foreground' };
+        return {
+          label: t("networkQuality.unknown"),
+          variant: "secondary" as const,
+          color: "text-muted-foreground",
+        };
     }
   };
 

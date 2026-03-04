@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next';
-import { Package } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { useTranslation } from "react-i18next";
+import { Package } from "lucide-react";
+import { Badge } from "../ui/badge";
 
 interface ProductCardProps {
   product: {
@@ -18,11 +18,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { t } = useTranslation();
   const formattedPrice = product.price
     ? `$${parseFloat(product.price).toFixed(2)}`
-    : t('products.card.priceNotSet');
+    : t("products.card.priceNotSet");
 
   return (
-    <div className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-    >
+    <div className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
       <div className="aspect-square bg-muted flex items-center justify-center">
         {product.imageUrl ? (
           <img
@@ -30,7 +29,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.currentTarget.style.display = 'none';
+              e.currentTarget.style.display = "none";
               e.currentTarget.parentElement!.innerHTML = `
                 <div class="flex items-center justify-center w-full h-full">
                   <svg class="w-16 h-16 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,9 +46,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-lg line-clamp-1 text-foreground">{product.name}</h3>
-          <Badge variant={product.isActive ? 'default' : 'secondary'}>
-            {product.isActive ? t('products.card.active') : t('products.card.inactive')}
+          <h3 className="font-semibold text-lg line-clamp-1 text-foreground">
+            {product.name}
+          </h3>
+          <Badge variant={product.isActive ? "default" : "secondary"}>
+            {product.isActive
+              ? t("products.card.active")
+              : t("products.card.inactive")}
           </Badge>
         </div>
 
@@ -64,7 +67,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             {formattedPrice}
           </span>
           {product.shopName && (
-            <span className="text-xs text-muted-foreground">{product.shopName}</span>
+            <span className="text-xs text-muted-foreground">
+              {product.shopName}
+            </span>
           )}
         </div>
       </div>

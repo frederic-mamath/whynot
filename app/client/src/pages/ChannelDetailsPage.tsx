@@ -150,9 +150,14 @@ export default function ChannelDetailsPage() {
             description: event.product.description,
             imageUrl: event.product.imageUrl,
           });
-          toast.success(t("channels.details.productHighlighted", { name: event.product.name }), {
-            icon: <Sparkles className="size-4 text-primary" />,
-          });
+          toast.success(
+            t("channels.details.productHighlighted", {
+              name: event.product.name,
+            }),
+            {
+              icon: <Sparkles className="size-4 text-primary" />,
+            },
+          );
         } else if (event.type === "PRODUCT_UNHIGHLIGHTED") {
           setHighlightedProduct(null);
           toast.info(t("channels.details.productUnhighlighted"));
@@ -603,7 +608,9 @@ export default function ChannelDetailsPage() {
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
               <WifiOff className="size-16 mx-auto text-destructive" />
-              <h2 className="text-xl font-semibold">{t("channels.details.connectionError")}</h2>
+              <h2 className="text-xl font-semibold">
+                {t("channels.details.connectionError")}
+              </h2>
               <div className="text-destructive">{error}</div>
               <Button asChild>
                 <Link to="/channels">
@@ -623,7 +630,9 @@ export default function ChannelDetailsPage() {
       <div className="min-h-screen bg-background p-6 flex items-center justify-center">
         <div className="text-center space-y-4">
           <Wifi className="size-16 mx-auto text-primary animate-pulse" />
-          <h2 className="text-xl font-semibold">{t("channels.details.joiningChannel")}</h2>
+          <h2 className="text-xl font-semibold">
+            {t("channels.details.joiningChannel")}
+          </h2>
         </div>
       </div>
     );

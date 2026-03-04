@@ -20,7 +20,10 @@ interface AuctionConfigModalProps {
   startingPrice: number;
   isOpen: boolean;
   onClose: () => void;
-  onStart: (config: { durationSeconds: number; buyoutPrice?: number }) => Promise<void>;
+  onStart: (config: {
+    durationSeconds: number;
+    buyoutPrice?: number;
+  }) => Promise<void>;
 }
 
 const DURATION_OPTIONS = [
@@ -52,7 +55,9 @@ export function AuctionConfigModal({
     if (buyoutPrice) {
       const buyoutNum = parseFloat(buyoutPrice);
       if (isNaN(buyoutNum) || buyoutNum <= startingPrice) {
-        setError(t("auction.config.errorBuyout", { price: startingPrice.toFixed(2) }));
+        setError(
+          t("auction.config.errorBuyout", { price: startingPrice.toFixed(2) }),
+        );
         return;
       }
     }
@@ -88,7 +93,9 @@ export function AuctionConfigModal({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Starting Price Display */}
           <div>
-            <Label className="text-sm text-muted-foreground">{t("auction.config.startingPriceLabel")}</Label>
+            <Label className="text-sm text-muted-foreground">
+              {t("auction.config.startingPriceLabel")}
+            </Label>
             <p className="text-2xl font-bold">${startingPrice.toFixed(2)}</p>
           </div>
 
@@ -108,7 +115,7 @@ export function AuctionConfigModal({
                     "px-4 py-3 rounded-md border-2 text-sm font-medium transition-colors",
                     durationSeconds === option.value
                       ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input bg-background hover:bg-accent"
+                      : "border-input bg-background hover:bg-accent",
                   )}
                 >
                   {t(option.labelKey)}
@@ -161,7 +168,9 @@ export function AuctionConfigModal({
               {t("auction.config.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t("auction.config.starting") : t("auction.config.start")}
+              {isSubmitting
+                ? t("auction.config.starting")
+                : t("auction.config.start")}
             </Button>
           </DialogFooter>
         </form>

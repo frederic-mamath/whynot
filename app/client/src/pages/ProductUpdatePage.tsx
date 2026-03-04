@@ -138,7 +138,9 @@ export default function ProductUpdatePage() {
       toast.success(t("products.update.successUpdate"));
       navigate(`/shops/${shopIdNum}/products`);
     } catch (error: any) {
-      toast.error(t("products.update.errorUpdate", { message: (error as any).message }));
+      toast.error(
+        t("products.update.errorUpdate", { message: (error as any).message }),
+      );
     }
   };
 
@@ -211,7 +213,9 @@ export default function ProductUpdatePage() {
             </div>
 
             <div>
-              <Label htmlFor="description">{t("products.update.descLabel")}</Label>
+              <Label htmlFor="description">
+                {t("products.update.descLabel")}
+              </Label>
               <Textarea
                 id="description"
                 value={description}
@@ -238,14 +242,18 @@ export default function ProductUpdatePage() {
             <ImageUploader images={images} onImagesChange={setImages} />
 
             <div className="flex items-center gap-3">
-              <Label htmlFor="isActive">{t("products.update.statusLabel")}</Label>
+              <Label htmlFor="isActive">
+                {t("products.update.statusLabel")}
+              </Label>
               <Button
                 type="button"
                 variant={isActive ? "default" : "secondary"}
                 size="sm"
                 onClick={() => setIsActive(!isActive)}
               >
-                {isActive ? t("products.update.active") : t("products.update.inactive")}
+                {isActive
+                  ? t("products.update.active")
+                  : t("products.update.inactive")}
               </Button>
             </div>
 
@@ -265,7 +273,9 @@ export default function ProductUpdatePage() {
                   : t("products.update.submit")}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link to={`/shops/${shopIdNum}/products`}>{t("products.update.cancel")}</Link>
+                <Link to={`/shops/${shopIdNum}/products`}>
+                  {t("products.update.cancel")}
+                </Link>
               </Button>
             </div>
           </form>

@@ -104,15 +104,33 @@ export default function NavBar() {
               <>
                 <HoverMenu
                   trigger={t("navbar.browse")}
-                  items={[{ icon: Video, label: t("navbar.channels"), to: "/channels" }]}
+                  items={[
+                    {
+                      icon: Video,
+                      label: t("navbar.channels"),
+                      to: "/channels",
+                    },
+                  ]}
                 />
 
                 <HoverMenu
                   trigger={t("navbar.myActivity")}
                   items={[
-                    { icon: Home, label: t("navbar.dashboard"), to: "/dashboard" },
-                    { icon: UserCircle, label: t("navbar.profile"), to: "/profile" },
-                    { icon: ShoppingBag, label: t("navbar.myOrders"), to: "/my-orders" },
+                    {
+                      icon: Home,
+                      label: t("navbar.dashboard"),
+                      to: "/dashboard",
+                    },
+                    {
+                      icon: UserCircle,
+                      label: t("navbar.profile"),
+                      to: "/profile",
+                    },
+                    {
+                      icon: ShoppingBag,
+                      label: t("navbar.myOrders"),
+                      to: "/my-orders",
+                    },
                   ]}
                 />
 
@@ -142,7 +160,9 @@ export default function NavBar() {
                     disabled={hasPendingRequest || requestSellerRole.isPending}
                   >
                     <BadgeCheck className="size-4 mr-2" />
-                    {hasPendingRequest ? t("navbar.requestPending") : t("navbar.becomeSeller")}
+                    {hasPendingRequest
+                      ? t("navbar.requestPending")
+                      : t("navbar.becomeSeller")}
                   </Button>
                 ) : (
                   <Button variant="default" size="sm" asChild>

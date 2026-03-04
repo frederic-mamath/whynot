@@ -10,10 +10,10 @@ interface AuctionCountdownProps {
   extendedCount: number;
 }
 
-export function AuctionCountdown({ 
-  endsAt, 
-  isActive, 
-  extendedCount 
+export function AuctionCountdown({
+  endsAt,
+  isActive,
+  extendedCount,
 }: AuctionCountdownProps) {
   const { t } = useTranslation();
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
@@ -40,7 +40,7 @@ export function AuctionCountdown({
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const getUrgencyColor = (): string => {
@@ -55,7 +55,7 @@ export function AuctionCountdown({
   return (
     <div className="flex items-center gap-2">
       <Clock className={cn("size-4", getUrgencyColor())} />
-      <span 
+      <span
         className={cn("font-mono text-sm", getUrgencyColor())}
         role="timer"
         aria-live="polite"

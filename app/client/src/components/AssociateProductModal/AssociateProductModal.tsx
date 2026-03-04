@@ -94,7 +94,9 @@ export default function AssociateProductModal({
         <div className="p-6 space-y-6">
           {/* Add Association */}
           <div>
-            <Label htmlFor="channel">{t("associateProduct.associateLabel")}</Label>
+            <Label htmlFor="channel">
+              {t("associateProduct.associateLabel")}
+            </Label>
             <div className="flex gap-2 mt-2">
               <select
                 id="channel"
@@ -153,10 +155,15 @@ export default function AssociateProductModal({
                     >
                       <div>
                         <p className="font-medium text-foreground">
-                          {channel?.name || t("associateProduct.unknownChannel")}
+                          {channel?.name ||
+                            t("associateProduct.unknownChannel")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {t("associateProduct.associatedOn", { date: new Date(assoc.createdAt).toLocaleDateString() })}
+                          {t("associateProduct.associatedOn", {
+                            date: new Date(
+                              assoc.createdAt,
+                            ).toLocaleDateString(),
+                          })}
                         </p>
                       </div>
                       <Button

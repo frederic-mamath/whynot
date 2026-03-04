@@ -8,13 +8,30 @@ import { Skeleton } from "../components/ui/skeleton";
 import { OrderCard } from "../components/OrderCard";
 import { toast } from "sonner";
 import { cn } from "../lib/utils";
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 import { debugLog } from "../lib/debug";
 
-type FilterType = "all" | "pending" | "paid" | "shipped" | "failed" | "refunded";
+type FilterType =
+  | "all"
+  | "pending"
+  | "paid"
+  | "shipped"
+  | "failed"
+  | "refunded";
 
-function CheckoutForm({ orderId, onSuccess }: { orderId: string; onSuccess: () => void }) {
+function CheckoutForm({
+  orderId,
+  onSuccess,
+}: {
+  orderId: string;
+  onSuccess: () => void;
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -59,7 +76,11 @@ export default function MyOrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
 
-  const { data: allOrders, isLoading, refetch } = trpc.order.getMyOrders.useQuery({
+  const {
+    data: allOrders,
+    isLoading,
+    refetch,
+  } = trpc.order.getMyOrders.useQuery({
     status: filter === "all" || filter === "shipped" ? undefined : filter,
   });
 
@@ -67,7 +88,7 @@ export default function MyOrdersPage() {
 
   // Handle payment success redirect
   useEffect(() => {
-    if (searchParams.get('payment_success') === 'true') {
+    if (searchParams.get("payment_success") === "true") {
       toast.success(t("orders.paymentSuccess"));
       refetch();
       // Remove query parameter
@@ -76,7 +97,7 @@ export default function MyOrdersPage() {
   }, [searchParams, setSearchParams, refetch]);
 
   // Filter shipped orders client-side (shipped_at is not null and payment_status is 'paid')
-  const orders = allOrders?.filter(order => {
+  const orders = allOrders?.filter((order) => {
     if (filter === "shipped") {
       return order.paymentStatus === "shipped";
     }
@@ -84,17 +105,17 @@ export default function MyOrdersPage() {
   });
 
   const handlePayNow = async (orderId: string) => {
-    debugLog('🔵 Pay Now clicked for order:', orderId);
-    debugLog('🔵 Stripe Promise:', stripePromise);
+    debugLog("🔵 Pay Now clicked for order:", orderId);
+    debugLog("🔵 Stripe Promise:", stripePromise);
     try {
-      debugLog('🔵 Calling createPayment...');
+      debugLog("🔵 Calling createPayment...");
       const result = await createPayment.mutateAsync({ orderId });
-      debugLog('✅ Result:', result);
-      debugLog('✅ Client Secret:', result.clientSecret ? 'SET' : 'NULL');
+      debugLog("✅ Result:", result);
+      debugLog("✅ Client Secret:", result.clientSecret ? "SET" : "NULL");
       setClientSecret(result.clientSecret || null);
       setPayingOrderId(orderId);
     } catch (error: any) {
-      console.error('❌ Payment initialization error:', error);
+      console.error("❌ Payment initialization error:", error);
       toast.error(error.message || t("orders.failedToInit"));
     }
   };
@@ -112,9 +133,7 @@ export default function MyOrdersPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("orders.title")}</h1>
-          <p className="text-muted-foreground">
-            {t("orders.subtitle")}
-          </p>
+          <p className="text-muted-foreground">{t("orders.subtitle")}</p>
         </div>
 
         {/* Filter Tabs */}
@@ -163,26 +182,36 @@ export default function MyOrdersPage() {
             orders?.map((order) => (
               <div key={order.id}>
                 <OrderCard order={order} onPayNow={handlePayNow} />
-                
+
                 {/* Stripe Payment Form */}
-                {payingOrderId === order.id && clientSecret && stripePromise && (
-                  <div className="mt-4 p-6 border rounded-lg bg-card">
-                    <h3 className="text-lg font-semibold mb-4">{t("orders.completePayment")}</h3>
-                    <Elements stripe={stripePromise} options={{ clientSecret }}>
-                      <CheckoutForm orderId={order.id} onSuccess={handlePaymentSuccess} />
-                    </Elements>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => {
-                        setPayingOrderId(null);
-                        setClientSecret(null);
-                      }}
-                      className="mt-4 w-full"
-                    >
-                      {t("orders.cancel")}
-                    </Button>
-                  </div>
-                )}
+                {payingOrderId === order.id &&
+                  clientSecret &&
+                  stripePromise && (
+                    <div className="mt-4 p-6 border rounded-lg bg-card">
+                      <h3 className="text-lg font-semibold mb-4">
+                        {t("orders.completePayment")}
+                      </h3>
+                      <Elements
+                        stripe={stripePromise}
+                        options={{ clientSecret }}
+                      >
+                        <CheckoutForm
+                          orderId={order.id}
+                          onSuccess={handlePaymentSuccess}
+                        />
+                      </Elements>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setPayingOrderId(null);
+                          setClientSecret(null);
+                        }}
+                        className="mt-4 w-full"
+                      >
+                        {t("orders.cancel")}
+                      </Button>
+                    </div>
+                  )}
               </div>
             ))
           )}

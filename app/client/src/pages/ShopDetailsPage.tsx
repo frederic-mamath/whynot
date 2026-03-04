@@ -72,11 +72,7 @@ export default function ShopDetailsPage() {
   };
 
   const handleDelete = () => {
-    if (
-      window.confirm(
-        t("shops.details.deleteConfirm"),
-      )
-    ) {
+    if (window.confirm(t("shops.details.deleteConfirm"))) {
       deleteShopMutation.mutate({ shopId });
     }
   };
@@ -122,7 +118,9 @@ export default function ShopDetailsPage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="edit-name">{t("shops.details.nameLabel")}</Label>
+                  <Label htmlFor="edit-name">
+                    {t("shops.details.nameLabel")}
+                  </Label>
                   <Input
                     id="edit-name"
                     type="text"
@@ -133,7 +131,9 @@ export default function ShopDetailsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-description">{t("shops.details.descLabel")}</Label>
+                  <Label htmlFor="edit-description">
+                    {t("shops.details.descLabel")}
+                  </Label>
                   <Textarea
                     id="edit-description"
                     value={description}

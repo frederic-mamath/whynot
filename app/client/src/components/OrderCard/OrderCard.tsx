@@ -80,13 +80,18 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
                 <h3 className="font-semibold text-lg">{order.productName}</h3>
                 <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                   <User className="size-4" />
-                  <span>{t("orderCard.seller", { name: order.sellerUsername })}</span>
+                  <span>
+                    {t("orderCard.seller", { name: order.sellerUsername })}
+                  </span>
                 </div>
               </div>
-              <Badge variant={getStatusBadgeVariant()} className={cn(
-                isPaid && "bg-green-500 hover:bg-green-600",
-                isShipped && "bg-blue-500 hover:bg-blue-600"
-              )}>
+              <Badge
+                variant={getStatusBadgeVariant()}
+                className={cn(
+                  isPaid && "bg-green-500 hover:bg-green-600",
+                  isShipped && "bg-blue-500 hover:bg-blue-600",
+                )}
+              >
                 {getStatusText()}
               </Badge>
             </div>
@@ -94,11 +99,15 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             {/* Price Breakdown */}
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("orderCard.itemPrice")}</span>
+                <span className="text-muted-foreground">
+                  {t("orderCard.itemPrice")}
+                </span>
                 <span>${itemPrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("orderCard.platformFee")}</span>
+                <span className="text-muted-foreground">
+                  {t("orderCard.platformFee")}
+                </span>
                 <span>${order.platformFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold text-base pt-1 border-t">
@@ -117,7 +126,9 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             {/* Expired Message */}
             {isExpired && (
               <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-              {t("orderCard.expiredMessage", { date: new Date(order.paymentDeadline).toLocaleDateString() })}
+                {t("orderCard.expiredMessage", {
+                  date: new Date(order.paymentDeadline).toLocaleDateString(),
+                })}
               </div>
             )}
 
@@ -125,7 +136,9 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
               <Calendar className="size-3" />
               <span>
-              {t("orderCard.orderedOn", { date: new Date(order.createdAt).toLocaleDateString() })}
+                {t("orderCard.orderedOn", {
+                  date: new Date(order.createdAt).toLocaleDateString(),
+                })}
               </span>
             </div>
 

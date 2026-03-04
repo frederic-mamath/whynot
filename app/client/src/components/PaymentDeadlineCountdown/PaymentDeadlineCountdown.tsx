@@ -7,7 +7,9 @@ interface PaymentDeadlineCountdownProps {
   deadline: string;
 }
 
-export function PaymentDeadlineCountdown({ deadline }: PaymentDeadlineCountdownProps) {
+export function PaymentDeadlineCountdown({
+  deadline,
+}: PaymentDeadlineCountdownProps) {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const { t } = useTranslation();
 
@@ -45,7 +47,9 @@ export function PaymentDeadlineCountdown({ deadline }: PaymentDeadlineCountdownP
     return (
       <div className="flex items-center gap-2">
         <Clock className="size-4 text-destructive" />
-        <span className="text-sm text-destructive font-medium">{t("paymentDeadline.expired")}</span>
+        <span className="text-sm text-destructive font-medium">
+          {t("paymentDeadline.expired")}
+        </span>
       </div>
     );
   }

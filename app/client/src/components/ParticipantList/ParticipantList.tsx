@@ -87,7 +87,9 @@ export default function ParticipantList({
                   <span className="font-medium text-sm truncate">
                     {participant.displayName}
                     {participant.isCurrentUser && (
-                      <span className="text-muted-foreground ml-1">{t("participants.you")}</span>
+                      <span className="text-muted-foreground ml-1">
+                        {t("participants.you")}
+                      </span>
                     )}
                   </span>
                   {participant.role === "host" && (

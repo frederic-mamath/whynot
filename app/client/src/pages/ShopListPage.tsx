@@ -79,7 +79,9 @@ export default function ShopListPage() {
               )}
               <div className="flex items-center text-sm text-muted-foreground">
                 <Users className="h-4 w-4 mr-1" />
-                <span>{t("shops.list.vendors", { count: shop.vendor_count || 0 })}</span>
+                <span>
+                  {t("shops.list.vendors", { count: shop.vendor_count || 0 })}
+                </span>
               </div>
             </Link>
           ))}
