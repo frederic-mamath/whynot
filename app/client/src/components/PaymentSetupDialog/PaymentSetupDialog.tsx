@@ -91,35 +91,34 @@ export function PaymentSetupDialog({
   const [done, setDone] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
 
-  const createSetupIntent = trpc.payment.createSetupIntent.useMutation({
-    onSuccess: (data) => {
-      setClientSecret(data.clientSecret);
-      setSetupError(null);
-    },
-    onError: (err) => {
-      setSetupError(err.message || "Failed to start payment setup");
-      toast.error(err.message || "Failed to start payment setup");
-    },
-  });
+  const { mutate: createSetupIntent, isPending } =
+    trpc.payment.createSetupIntent.useMutation({
+      onSuccess: (data) => {
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+          setSetupError(null);
+        } else {
+          setSetupError(
+            "Stripe returned an empty client secret. Please try again.",
+          );
+        }
+      },
+      onError: (err) => {
+        setSetupError(err.message || "Failed to start payment setup");
+        toast.error(err.message || "Failed to start payment setup");
+      },
+    });
 
   // Trigger SetupIntent creation when the dialog opens.
-  // NOTE: Radix Dialog only calls onOpenChange(false) to close — it never calls
-  // onOpenChange(true) on open, so we must watch the `open` prop directly.
+  // Important: keep the dependency array minimal — only `open`.
+  // All guards are removed to avoid stale closure issues in production.
   useEffect(() => {
-    if (
-      open &&
-      !clientSecret &&
-      !createSetupIntent.isPending &&
-      !done &&
-      !setupError
-    ) {
-      createSetupIntent.mutate();
-    }
-    // Reset state when dialog closes
-    if (!open) {
-      setClientSecret(null);
-      setDone(false);
-      setSetupError(null);
+    // Always reset state on open/close to avoid leftover stale data
+    setClientSecret(null);
+    setDone(false);
+    setSetupError(null);
+    if (open) {
+      createSetupIntent();
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -173,9 +172,10 @@ export function PaymentSetupDialog({
             </p>
             <Button
               variant="outline"
+              disabled={isPending}
               onClick={() => {
                 setSetupError(null);
-                createSetupIntent.mutate();
+                createSetupIntent();
               }}
             >
               Try again
