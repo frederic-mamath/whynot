@@ -143,13 +143,14 @@ export function PaymentSetupDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="sm:max-w-md"
+        className="sm:max-w-md flex flex-col max-h-[90dvh] p-0 gap-0"
         // Prevent closing by clicking outside when blocking
         onInteractOutside={
           blocking && !done ? (e) => e.preventDefault() : undefined
         }
       >
-        <DialogHeader>
+        {/* Fixed header */}
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
             {title}
@@ -157,42 +158,45 @@ export function PaymentSetupDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        {done ? (
-          <div className="flex flex-col items-center gap-2 py-6">
-            <CheckCircle2 className="h-10 w-10 text-green-500" />
-            <p className="text-sm text-muted-foreground">
-              Payment method saved successfully!
-            </p>
-          </div>
-        ) : setupError || (clientSecret && !stripePromise) ? (
-          <div className="flex flex-col items-center gap-4 py-6">
-            <p className="text-sm text-destructive text-center">
-              {setupError ??
-                "Stripe is not configured. Make sure VITE_STRIPE_PUBLISHABLE_KEY is set in the build environment."}
-            </p>
-            <Button
-              variant="outline"
-              disabled={isPending}
-              onClick={() => {
-                setSetupError(null);
-                createSetupIntent();
-              }}
+        {/* Scrollable body */}
+        <div className="overflow-y-auto px-6 pb-6 flex-1">
+          {done ? (
+            <div className="flex flex-col items-center gap-2 py-6">
+              <CheckCircle2 className="h-10 w-10 text-green-500" />
+              <p className="text-sm text-muted-foreground">
+                Payment method saved successfully!
+              </p>
+            </div>
+          ) : setupError || (clientSecret && !stripePromise) ? (
+            <div className="flex flex-col items-center gap-4 py-6">
+              <p className="text-sm text-destructive text-center">
+                {setupError ??
+                  "Stripe is not configured. Make sure VITE_STRIPE_PUBLISHABLE_KEY is set in the build environment."}
+              </p>
+              <Button
+                variant="outline"
+                disabled={isPending}
+                onClick={() => {
+                  setSetupError(null);
+                  createSetupIntent();
+                }}
+              >
+                Try again
+              </Button>
+            </div>
+          ) : clientSecret && stripePromise ? (
+            <Elements
+              stripe={stripePromise}
+              options={{ clientSecret, appearance: { theme: "stripe" } }}
             >
-              Try again
-            </Button>
-          </div>
-        ) : clientSecret && stripePromise ? (
-          <Elements
-            stripe={stripePromise}
-            options={{ clientSecret, appearance: { theme: "stripe" } }}
-          >
-            <SetupForm onSuccess={handleSuccess} />
-          </Elements>
-        ) : (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
+              <SetupForm onSuccess={handleSuccess} />
+            </Elements>
+          ) : (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
