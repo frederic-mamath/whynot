@@ -15,6 +15,7 @@ import {
   CardContent,
   CardFooter,
 } from "../components/ui/card";
+import OAuthButtons from "../components/ui/OAuthButtons";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -55,6 +56,8 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <OAuthButtons />
+
             <div className="space-y-2">
               <Label htmlFor="email">{t("common.email")}</Label>
               <div className="relative">

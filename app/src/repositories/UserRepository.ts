@@ -184,6 +184,50 @@ export class UserRepository {
       .returningAll()
       .executeTakeFirst();
   }
+
+  /**
+   * Create user via OAuth (no password)
+   */
+  async saveOAuthUser(
+    email: string,
+    firstName?: string | null,
+    lastName?: string | null,
+  ): Promise<User> {
+    return db
+      .insertInto("users")
+      .values({
+        email,
+        password: null as any,
+        firstname: firstName || null,
+        lastname: lastName || null,
+        first_name: firstName || null,
+        last_name: lastName || null,
+        is_verified: true,
+        stripe_onboarding_complete: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
+  /**
+   * Update user password
+   */
+  async updatePassword(
+    userId: number,
+    hashedPassword: string,
+  ): Promise<User | undefined> {
+    return db
+      .updateTable("users")
+      .set({
+        password: hashedPassword,
+        updated_at: new Date(),
+      })
+      .where("id", "=", userId)
+      .returningAll()
+      .executeTakeFirst();
+  }
 }
 
 // Export singleton instance (Spring @Repository bean style)

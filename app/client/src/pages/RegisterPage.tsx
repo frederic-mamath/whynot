@@ -15,6 +15,7 @@ import {
   CardContent,
   CardFooter,
 } from "../components/ui/card";
+import OAuthButtons from "../components/ui/OAuthButtons";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [oauthConflict, setOauthConflict] = useState<string[] | null>(null);
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
@@ -30,7 +32,12 @@ export default function Register() {
       navigate("/dashboard");
     },
     onError: (err) => {
-      setError(err.message);
+      if (err.message.startsWith("oauth_account_exists:")) {
+        const providers = err.message.split(":")[1].split(",");
+        setOauthConflict(providers);
+      } else {
+        setError(err.message);
+      }
     },
   });
 
@@ -66,7 +73,48 @@ export default function Register() {
             </div>
           )}
 
+          {oauthConflict && (
+            <div className="mb-4 p-4 rounded-md bg-muted border space-y-3">
+              <p className="text-sm font-medium">
+                Un compte existe déjà avec cet e-mail via{" "}
+                {oauthConflict
+                  .map((p) => (p === "apple" ? "Apple" : "Google"))
+                  .join(" et ")}
+                .
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Connectez-vous avec votre compte existant pour continuer.
+              </p>
+              <div className="flex gap-2">
+                {oauthConflict.includes("google") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.location.href = "/auth/google";
+                    }}
+                  >
+                    Se connecter avec Google
+                  </Button>
+                )}
+                {oauthConflict.includes("apple") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.location.href = "/auth/apple";
+                    }}
+                  >
+                    Se connecter avec Apple
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            <OAuthButtons />
+
             <div className="space-y-2">
               <Label htmlFor="email">{t("common.email")}</Label>
               <div className="relative">

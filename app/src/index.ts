@@ -1,11 +1,14 @@
 import express from "express";
 import cors from "cors";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
 import { Context } from "./types/context";
 import { verifyToken } from "./utils/auth";
 import { logger } from "./utils/logger";
 import { createWebSocketServer } from "./websocket/server";
+import oauthRoutes from "./routes/oauth";
 import {
   securityHeaders,
   rateLimit,
@@ -15,6 +18,8 @@ import {
   startAuctionProcessor,
   stopAuctionProcessor,
 } from "./jobs/auctionProcessor";
+import passport from "./config/passport";
+import { pool } from "./db";
 import * as dotenv from "dotenv";
 import path from "path";
 
@@ -45,6 +50,34 @@ if (!isProduction) {
     }),
   );
 }
+
+// Session middleware
+const PgSession = connectPgSimple(session);
+app.use(
+  session({
+    store: new PgSession({
+      pool: pool as any,
+      tableName: "session",
+      createTableIfMissing: true,
+    }),
+    secret:
+      process.env.SESSION_SECRET ||
+      process.env.JWT_SECRET ||
+      "session-secret-change-me",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: isProduction,
+      httpOnly: true,
+      sameSite: isProduction ? "strict" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  }),
+);
+
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Stripe webhook endpoint (MUST be before express.json())
 app.post(
@@ -139,16 +172,22 @@ app.use(requestLogger);
 const createContext = ({
   req,
 }: trpcExpress.CreateExpressContextOptions): Context => {
+  // 1. Try session-based auth (web)
+  if (req.session?.passport?.user) {
+    return { userId: req.session.passport.user, req };
+  }
+
+  // 2. Fallback to JWT auth (mobile)
   const token = req.headers.authorization?.replace("Bearer ", "");
 
   if (token) {
     const payload = verifyToken(token);
     if (payload) {
-      return { userId: payload.userId };
+      return { userId: payload.userId, req };
     }
   }
 
-  return {};
+  return { req };
 };
 
 // Health check endpoint (no auth, no rate limiting)
@@ -159,6 +198,9 @@ app.get("/health", (req, res) => {
     environment: process.env.NODE_ENV || "development",
   });
 });
+
+// OAuth routes (Google, Apple)
+app.use(oauthRoutes);
 
 // tRPC endpoint with rate limiting
 app.use(

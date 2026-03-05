@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
 import { trpc, wsClient } from "./lib/trpc";
-import { getToken } from "./lib/auth";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -24,6 +23,7 @@ import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
+import AccountMergePage from "./pages/AccountMergePage";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 
 function AppContent() {
@@ -33,6 +33,7 @@ function AppContent() {
         <Route path="/" element={<WelcomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/account-merge" element={<AccountMergePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route
           path="/profile"
@@ -123,9 +124,11 @@ function App() {
           // HTTP link for queries and mutations
           false: httpBatchLink({
             url: "/trpc", // Use relative URL (same domain as frontend)
-            headers() {
-              const token = getToken();
-              return token ? { authorization: `Bearer ${token}` } : {};
+            fetch(url, options) {
+              return fetch(url, {
+                ...options,
+                credentials: "include",
+              });
             },
           }),
         }),

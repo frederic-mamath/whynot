@@ -17,7 +17,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
-import { isAuthenticated, removeToken } from "../../lib/auth";
+import { removeToken } from "../../lib/auth";
 import Button from "../ui/button";
 import {
   Sheet,
@@ -34,12 +34,15 @@ import ThemeToggle from "../ui/theme-toggle";
 export default function NavBar() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const authenticated = isAuthenticated();
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { data: user } = trpc.auth.me.useQuery(undefined, {
-    enabled: authenticated,
-  });
+  const { data: user, isLoading: isAuthLoading } = trpc.auth.me.useQuery(
+    undefined,
+    {
+      retry: false,
+    },
+  );
+  const authenticated = !!user;
 
   const { data: userRoles } = trpc.role.myRoles.useQuery(undefined, {
     enabled: authenticated,
@@ -68,6 +71,15 @@ export default function NavBar() {
       (role) => role.role_name === "SELLER" && role.activated_at === null,
     ) ?? false;
 
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      removeToken();
+      setSheetOpen(false);
+      utils.auth.me.invalidate();
+      navigate("/");
+    },
+  });
+
   const handleRequestSellerRole = async () => {
     try {
       await requestSellerRole.mutateAsync();
@@ -77,9 +89,7 @@ export default function NavBar() {
   };
 
   const handleLogout = () => {
-    removeToken();
-    setSheetOpen(false);
-    navigate("/");
+    logoutMutation.mutate();
   };
 
   const closeSheet = () => setSheetOpen(false);

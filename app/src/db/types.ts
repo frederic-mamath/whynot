@@ -18,12 +18,13 @@ export interface Database {
   payout_requests: PayoutRequestsTable;
   user_addresses: UserAddressesTable;
   product_images: ProductImagesTable;
+  auth_providers: AuthProvidersTable;
 }
 
 export interface UsersTable {
   id: Generated<number>;
   email: string;
-  password: string;
+  password: string | null;
   firstname: string | null;
   lastname: string | null;
   first_name: string | null;
@@ -228,3 +229,14 @@ export interface ProductImagesTable {
   position: number;
   created_at: Generated<Date>;
 }
+
+export interface AuthProvidersTable {
+  id: Generated<number>;
+  user_id: number;
+  provider: string;
+  provider_user_id: string;
+  provider_email: string | null;
+  created_at: Generated<Date>;
+}
+
+export type AuthProvider = Selectable<AuthProvidersTable>;

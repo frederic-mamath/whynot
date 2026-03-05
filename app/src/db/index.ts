@@ -29,7 +29,7 @@ console.log(
   `📊 Database mode: ${process.env.NODE_ENV || "development"} | SSL: ${sslEnabled ? "enabled" : "disabled"}`,
 );
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: getDatabaseUrl(),
   ssl: sslEnabled
     ? {
