@@ -46,6 +46,8 @@ const WelcomePage = () => {
           color: "rgb(119, 119, 119)",
           fontSize: "13px",
           lineHeight: "18px",
+          display: "flex",
+          gap: "4px",
         }}
       >
         <div>Déjà un compte ?</div>
