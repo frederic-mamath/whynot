@@ -1,18 +1,10 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
 import { trpc, wsClient } from "./lib/trpc";
 import { getToken } from "./lib/auth";
-import NavBar from "./components/NavBar";
 import ErrorBoundary from "./components/ErrorBoundary";
-import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -32,16 +24,13 @@ import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
+import WelcomePage from "./pages/WelcomePage/WelcomePage";
 
 function AppContent() {
-  const location = useLocation();
-  const isChannelPage = location.pathname.startsWith("/channel/");
-
   return (
     <>
-      {!isChannelPage && <NavBar />}
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<WelcomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
