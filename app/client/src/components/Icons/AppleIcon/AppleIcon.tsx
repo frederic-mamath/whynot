@@ -1,9 +1,13 @@
-const AppleIcon = () => {
+interface Props {
+  size?: number;
+}
+
+const AppleIcon = ({ size = 18 }: Props) => {
   return (
     <svg
       fill="#000000"
-      width="800px"
-      height="800px"
+      width={size}
+      height={size}
       viewBox="-52.01 0 560.035 560.035"
       xmlns="http://www.w3.org/2000/svg"
     >

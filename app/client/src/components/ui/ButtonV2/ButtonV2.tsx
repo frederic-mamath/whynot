@@ -1,30 +1,25 @@
+import { cn } from "@/lib/utils";
+
 interface Props {
   icon?: React.ReactNode;
   href?: string;
   label: string;
-  style?: React.CSSProperties;
+  className?: string;
 }
 
-const ButtonV2 = ({ icon, label, href, style }: Props) => {
+const ButtonV2 = ({ icon, label, href, className }: Props) => {
   return (
     <button
-      className="relative overflow-hidden transition-colors before:pointer-events-none before:absolute before:inset-0 before:bg-white/10 before:opacity-0 before:transition-opacity hover:before:opacity-100 hover:cursor-pointer"
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "8px",
-        borderRadius: "28px",
-        ...style,
-      }}
+      className={cn(
+        "relative overflow-hidden transition-colors",
+        "before:pointer-events-none before:absolute before:inset-0 before:bg-white/10 before:opacity-0 before:transition-opacity hover:before:opacity-100 hover:cursor-pointer",
+        "flex items-center justify-center gap-2 rounded-[28px]",
+        className,
+      )}
     >
       <a
         href={href}
-        style={{
-          marginTop: "14px",
-          marginBottom: "14px",
-          width: "100%",
-        }}
+        className="py-[14px] w-full text-center flex items-center justify-center gap-2"
       >
         <div>{icon}</div>
         <div>{label}</div>

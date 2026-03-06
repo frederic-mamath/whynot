@@ -29,7 +29,6 @@ import {
 } from "../ui/sheet";
 import { HoverMenu } from "../ui/HoverMenu";
 import { toast } from "sonner";
-import ThemeToggle from "../ui/theme-toggle";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -187,7 +186,6 @@ export default function NavBar() {
                 <div className="h-6 w-px bg-border mx-2" />
 
                 {/* Account */}
-                <ThemeToggle />
                 {user && (
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-accent">
@@ -209,8 +207,6 @@ export default function NavBar() {
               </>
             ) : (
               <>
-                <ThemeToggle />
-
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/login">
                     <LogIn className="size-4 mr-2" />
@@ -249,9 +245,6 @@ export default function NavBar() {
                 </SheetClose>
               </SheetHeader>
               <div className="flex flex-col h-full pt-6">
-                <div className="flex items-center justify-end mb-4">
-                  <ThemeToggle />
-                </div>
                 {authenticated ? (
                   <>
                     {user && (

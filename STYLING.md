@@ -2,74 +2,89 @@
 
 ## Design System
 
-**Shadcn UI** + **Tailwind CSS** + **Lucide Icons** + **Dark Mode**
+**Shadcn UI** + **Tailwind CSS** + **Lucide Icons**
 
 - Always use Shadcn components from `client/src/components/ui/`
 - If component doesn't exist, check [Shadcn docs](https://ui.shadcn.com/)
 - All styling via Tailwind CSS utilities (no CSS modules)
 - Icons from [Lucide React](https://lucide.dev/)
-- Dark mode powered by `next-themes`
 
-## Dark Mode
+## Thème & Design Tokens (Tailwind v4)
 
-### Theme Provider
-The app uses `ThemeProvider` from `client/src/components/ThemeProvider` to manage theme state.
+Ce projet utilise l'approche **CSS-first** de Tailwind CSS v4 — pas de `tailwind.config.js`.  
+Les couleurs, polices et tokens sont définis directement dans `client/src/index.css`.
 
-```tsx
-import { ThemeProvider } from "./components/ThemeProvider";
+> **WelcomePage** (`client/src/pages/WelcomePage/WelcomePage.tsx`) est le **playground du design system**.  
+> Teste toute modification de palette ou de typographie ici en premier.
 
-<ThemeProvider defaultTheme="system" storageKey="whynot-ui-theme">
-  {/* Your app */}
-</ThemeProvider>
-```
+### Ajouter une couleur custom
 
-### Using Theme in Components
-```tsx
-import { useTheme } from "../components/ThemeProvider";
+```css
+/* Étape 1 — Définir la valeur brute dans :root */
+:root {
+  --brand-yellow: rgb(224, 255, 0);
+}
 
-function MyComponent() {
-  const { theme, setTheme } = useTheme();
-  
-  return (
-    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-      Toggle theme
-    </button>
-  );
+/* Étape 2 — Mapper dans @theme inline */
+@theme inline {
+  --color-brand-yellow: var(--brand-yellow);
 }
 ```
 
-### Theme Toggle Component
-Use the `ThemeToggle` component for a pre-built theme switcher:
-```tsx
-import ThemeToggle from "../components/ui/ThemeToggle";
+Tailwind génère automatiquement les classes utilitaires :
 
-<ThemeToggle />
+```tsx
+<div className="bg-brand-yellow text-brand-yellow border-brand-yellow" />
 ```
 
-Cycles through: Light → Dark → System → Light
+### Tokens de base disponíbles
 
-### Dark Mode Classes
-Tailwind automatically applies dark mode classes when `.dark` is on the root element:
+Toujours préférer les tokens aux couleurs Tailwind brutes :
+
 ```tsx
-<div className="bg-white dark:bg-gray-900 text-black dark:text-white">
-  Automatically adapts to theme
-</div>
+<div className="bg-background text-foreground" />   // Fond de page & texte principal
+<div className="bg-card text-card-foreground" />     // Surfaces card
+<div className="text-primary" />                     // Couleur d'accent de marque
+<div className="text-muted-foreground" />            // Texte secondaire
+<div className="border-border" />                    // Bordures par défaut
 ```
 
-However, prefer using **design tokens** (e.g., `bg-background`, `text-foreground`) which automatically adapt to the current theme.
+### Utiliser les polices
+
+Les polices sont déclarées via `@font-face` dans `index.css` puis mappées dans `@theme inline` :
+
+```css
+@theme inline {
+  --font-outfit: "Outfit", sans-serif;
+  --font-syne: "Syne", sans-serif;
+}
+```
+
+Usage dans les composants :
+
+```tsx
+<h1 className="font-outfit font-black">popup</h1>
+<h2 className="font-syne font-extrabold">Achète et vends en live.</h2>
+```
+
+### Ajouter une nouvelle police
+
+1. Copier le fichier `.ttf` dans `client/src/assets/fonts/`
+2. Ajouter un bloc `@font-face` dans `index.css` (voir les déclarations Outfit/Syne existantes)
+3. Mapper dans `@theme inline` : `--font-ma-police: "Ma Police", sans-serif;`
+4. Utiliser la classe `font-ma-police` dans les composants
 
 ## Approach
 
 ### Mobile-First Responsive Design
+
 Always start with mobile styles, then add responsive breakpoints:
 
 ```tsx
 // Mobile first (default = mobile)
 <div className="flex-col gap-2 text-sm">
-  
   {/* Tablet and up */}
   <div className="md:flex-row md:gap-4 md:text-base">
-    
     {/* Desktop and up */}
     <div className="lg:gap-6 lg:text-lg" />
   </div>
@@ -77,12 +92,14 @@ Always start with mobile styles, then add responsive breakpoints:
 ```
 
 **Breakpoints:**
+
 - `sm:` - 640px and up (small tablets)
 - `md:` - 768px and up (tablets)
 - `lg:` - 1024px and up (desktops)
 - `xl:` - 1280px and up (large desktops)
 
 ### Tailwind Utilities
+
 Apply classes directly in JSX:
 
 ```tsx
@@ -92,24 +109,29 @@ Apply classes directly in JSX:
 ```
 
 ### Conditional Styling
+
 Use `cn()` helper:
 
 ```tsx
-import { cn } from '../lib/utils';
+import { cn } from "../lib/utils";
 
-<Button className={cn(
-  "px-4 py-2",
-  isActive && "bg-indigo-500",
-  isDisabled && "opacity-50"
-)} />
+<Button
+  className={cn(
+    "px-4 py-2",
+    isActive && "bg-indigo-500",
+    isDisabled && "opacity-50",
+  )}
+/>;
 ```
 
 ## Components
 
 ### Shadcn Components
+
 Check `client/src/components/ui/` first. If not found, check [Shadcn docs](https://ui.shadcn.com/).
 
 ### Button Variants
+
 ```tsx
 import { Button } from '../components/ui/button';
 
@@ -122,6 +144,7 @@ import { Button } from '../components/ui/button';
 ```
 
 ### Icons
+
 ```tsx
 import { User, Settings, LogOut } from 'lucide-react';
 
@@ -134,48 +157,52 @@ import { User, Settings, LogOut } from 'lucide-react';
 Use Sonner for toast notifications:
 
 ```tsx
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
-toast.success('Success message');
-toast.error('Error message');
-toast.info('Info message');
-toast.warning('Warning message');
+toast.success("Success message");
+toast.error("Error message");
+toast.info("Info message");
+toast.warning("Warning message");
 ```
 
 ## Common Patterns
 
 ### Layout
+
 ```tsx
 // Flexbox
-className="flex items-center justify-between gap-4"
-className="flex flex-col md:flex-row" // Mobile: column, Desktop: row
+className = "flex items-center justify-between gap-4";
+className = "flex flex-col md:flex-row"; // Mobile: column, Desktop: row
 
 // Grid
-className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
 
 // Container
-className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8"
+className = "max-w-7xl mx-auto px-4 md:px-6 lg:px-8";
 ```
 
 ### Spacing
+
 ```tsx
-className="p-4"       // padding all sides
-className="px-4 py-2" // horizontal and vertical padding
-className="gap-4"     // gap between flex/grid items
+className = "p-4"; // padding all sides
+className = "px-4 py-2"; // horizontal and vertical padding
+className = "gap-4"; // gap between flex/grid items
 ```
 
 ### Typography
+
 ```tsx
-className="text-sm md:text-base"      // Responsive text
-className="font-medium"                // Weight
-className="text-gray-900"              // Color
+className = "text-sm md:text-base"; // Responsive text
+className = "font-medium"; // Weight
+className = "text-gray-900"; // Color
 ```
 
 ### Responsive Utilities
+
 ```tsx
-className="hidden md:block"            // Hide on mobile
-className="block md:hidden"            // Show only on mobile
-className="w-full md:w-1/2 lg:w-1/3"  // Responsive widths
+className = "hidden md:block"; // Hide on mobile
+className = "block md:hidden"; // Show only on mobile
+className = "w-full md:w-1/2 lg:w-1/3"; // Responsive widths
 ```
 
 ## Accessibility

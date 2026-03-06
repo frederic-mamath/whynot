@@ -22,7 +22,6 @@ import ProfilePage from "./pages/ProfilePage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { ThemeProvider } from "./components/ThemeProvider";
 import AccountMergePage from "./pages/AccountMergePage";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 
@@ -142,15 +141,13 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="system" storageKey="whynot-ui-theme">
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </QueryClientProvider>
-        </trpc.Provider>
-      </ThemeProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </QueryClientProvider>
+      </trpc.Provider>
     </ErrorBoundary>
   );
 }

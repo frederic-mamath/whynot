@@ -1,10 +1,14 @@
-const MailIcon = () => {
+interface Props {
+  size?: number;
+}
+
+const MailIcon = ({ size = 18 }: Props) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      height="24px"
+      height={size}
       viewBox="0 0 24 24"
-      width="24px"
+      width={size}
       fill="#e3e3e3"
     >
       <path d="M0 0h24v24H0V0z" fill="none" />
