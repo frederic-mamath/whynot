@@ -24,13 +24,13 @@ const WelcomePage = () => {
         <ButtonV2
           href="/auth/apple"
           label="Continuer avec Apple"
-          className="bg-white text-black w-full"
+          className="bg-white text-black w-full font-bold"
           icon={<AppleIcon />}
         />
         <ButtonV2
           href="/auth/google"
           label="Continuer avec Google"
-          className="text-white w-full border border-border"
+          className="text-white w-full border border-border bg-[rgb(26,_26,_26)] font-bold"
           icon={<GoogleIcon />}
         />
 
@@ -42,7 +42,7 @@ const WelcomePage = () => {
 
         <ButtonV2
           label="S'inscrire avec un email"
-          className="text-primary w-full border border-primary bg-transparent"
+          className="text-primary w-full border border-primary bg-transparent font-bold"
           href="/register"
           icon={<MailIcon />}
         />
