@@ -11,43 +11,55 @@ const WelcomePage = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
+        paddingTop: "40px",
+        paddingBottom: "40px",
       }}
     >
       <div
         style={{
-          color: "rgb(224, 255, 0)",
-          fontSize: "42px",
-          fontFamily: "Outfit, sans-serif",
-          fontWeight: 900,
-          letterSpacing: "-1.5px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          flex: 1,
         }}
       >
-        popup
+        <div
+          style={{
+            color: "rgb(224, 255, 0)",
+            fontSize: "42px",
+            fontFamily: "Outfit, sans-serif",
+            fontWeight: 900,
+            letterSpacing: "-1.5px",
+          }}
+        >
+          popup
+        </div>
+        <div
+          style={{
+            fontFamily: "Syne, sans-serif",
+            color: "rgb(240, 240, 232)",
+            fontSize: "22px",
+            fontWeight: 800,
+            lineHeight: "26px",
+          }}
+        >
+          Achète et vends en live.
+        </div>
+        <p
+          style={{
+            fontFamily: "Outfit, sans-serif",
+            color: "rgb(119, 119, 119)",
+            fontSize: "13px",
+            lineHeight: "18px",
+            textAlign: "center",
+          }}
+        >
+          Rejoins la communauté de live shopping.
+          <br />
+          Regarde, achète, vends - en quelques taps.
+        </p>
       </div>
-      <div
-        style={{
-          fontFamily: "Syne, sans-serif",
-          color: "rgb(240, 240, 232)",
-          fontSize: "22px",
-          fontWeight: 800,
-          lineHeight: "26px",
-        }}
-      >
-        Achète et vends en live.
-      </div>
-      <p
-        style={{
-          fontFamily: "Outfit, sans-serif",
-          color: "rgb(119, 119, 119)",
-          fontSize: "13px",
-          lineHeight: "18px",
-          textAlign: "center",
-        }}
-      >
-        Rejoins la communauté de live shopping.
-        <br />
-        Regarde, achète, vends - en quelques taps.
-      </p>
       <div
         style={{
           display: "flex",
@@ -84,9 +96,11 @@ const WelcomePage = () => {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "12px",
             width: "100%",
             maxWidth: "327px",
+            paddingTop: "4px",
+            paddingBottom: "4px",
           }}
         >
           <div
@@ -115,25 +129,25 @@ const WelcomePage = () => {
             borderStyle: "solid",
           }}
         />
-      </div>
-      <div
-        style={{
-          fontFamily: "Outfit, sans-serif",
-          color: "rgb(119, 119, 119)",
-          fontSize: "13px",
-          lineHeight: "18px",
-          display: "flex",
-          gap: "4px",
-        }}
-      >
-        <div>Déjà un compte ?</div>
-        <button
+        <div
           style={{
-            color: "rgb(224, 255, 0)",
+            fontFamily: "Outfit, sans-serif",
+            color: "rgb(119, 119, 119)",
+            fontSize: "13px",
+            lineHeight: "18px",
+            display: "flex",
+            gap: "4px",
           }}
         >
-          Se connecter
-        </button>
+          <div>Déjà un compte ?</div>
+          <button
+            style={{
+              color: "rgb(224, 255, 0)",
+            }}
+          >
+            Se connecter
+          </button>
+        </div>
       </div>
     </div>
   );
