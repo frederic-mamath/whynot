@@ -4,7 +4,7 @@ import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
 import { trpc, wsClient } from "./lib/trpc";
 import ErrorBoundary from "./components/ErrorBoundary";
-import LoginPage from "./pages/LoginPage";
+import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChannelListPage from "./pages/ChannelListPage";

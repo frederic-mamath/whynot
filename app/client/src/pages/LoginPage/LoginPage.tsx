@@ -1,21 +1,13 @@
 import { useState, FormEvent } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { LogIn, Mail, Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { trpc } from "../lib/trpc";
-import { setToken } from "../lib/auth";
-import Button from "../components/ui/button";
-import Input from "../components/ui/input";
-import Label from "../components/ui/label";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "../components/ui/card";
-import OAuthButtons from "../components/ui/OAuthButtons";
+import { trpc } from "../../lib/trpc";
+import { setToken } from "../../lib/auth";
+import OAuthButtons from "@/components/OAuthButtons";
+import OrDivider from "@/components/OrDivider/OrDivider";
+import Input from "@/components/ui/Input/Input";
+import ButtonV2 from "@/components/ui/ButtonV2";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -41,7 +33,38 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen px-6 py-10">
+      <Link to="/" className="text-muted flex gap-2 items-center">
+        <ArrowLeft size={16} />
+        <div className="text-[12px]">Retour</div>
+      </Link>
+      <div className="font-syne text-foreground text-[22px] font-extrabold leading-[26px]">
+        Content de te revoir
+      </div>
+      <div className="font-outfit text-muted-foreground text-[13px] leading-[18px]">
+        Connecte-toi à ton compte Popup
+      </div>
+      <OAuthButtons />
+      <OrDivider />
+      <Input
+        icon={<Mail />}
+        label={t("common.email")}
+        type="email"
+        placeholder={t("common.emailPlaceholder")}
+      />
+      <Input
+        icon={<Lock />}
+        label={t("common.password")}
+        type="password"
+        placeholder={t("common.passwordPlaceholder")}
+      />
+      <div>Mot de passe oublié ?</div>
+      <ButtonV2 label={t("login.submit")} />
+      <div>
+        <div>Pas encore de compte ?</div>
+        <Link to="/">S'inscrire</Link>
+      </div>
+      {/* <div></div>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{t("login.title")}</CardTitle>
@@ -115,7 +138,7 @@ export default function Login() {
             </Link>
           </p>
         </CardFooter>
-      </Card>
+      </Card> */}
     </div>
   );
 }

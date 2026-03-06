@@ -15,7 +15,7 @@ import {
   CardContent,
   CardFooter,
 } from "../components/ui/card";
-import OAuthButtons from "../components/ui/OAuthButtons";
+import OAuthButtons from "../components/OAuthButtons";
 
 export default function Register() {
   const navigate = useNavigate();
