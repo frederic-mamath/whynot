@@ -13,12 +13,15 @@ const Input = ({ icon, label, placeholder, type, description }: Props) => {
   const inputId = useId();
 
   return (
-    <div className="has-[input:focus]:ring-2 has-[input:focus]:ring-primary-600 has-[input:focus]:border-transparent">
+    <div>
       <label htmlFor={inputId}>{label}</label>
-      <div onClick={() => inputRef.current?.focus()}>
+      <div
+        onClick={() => inputRef.current?.focus()}
+        className="has-[input:focus]:ring-2 has-[input:focus]:ring-primary"
+      >
         <div>{icon}</div>
         <input
-          className="[:focus]:border-transparent"
+          className="focus:outline-none"
           id={inputId}
           ref={inputRef}
           type={type}
