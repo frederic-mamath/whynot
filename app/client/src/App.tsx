@@ -28,79 +28,81 @@ import WelcomePage from "./pages/WelcomePage/WelcomePage";
 function AppContent() {
   return (
     <>
-      <Routes>
-        <Route path="/" element={<WelcomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/account-merge" element={<AccountMergePage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/my-orders"
-          element={
-            <ProtectedRoute>
-              <MyOrdersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pending-deliveries"
-          element={
-            <ProtectedRoute requireRole="SELLER">
-              <PendingDeliveriesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/channels" element={<ChannelListPage />} />
-        <Route
-          path="/create-channel"
-          element={
-            <ProtectedRoute requireRole="SELLER">
-              <ChannelCreatePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/channel/:channelId" element={<ChannelDetailsPage />} />
-        <Route
-          path="/shops"
-          element={
-            <ProtectedRoute requireRole="SELLER">
-              <ShopListPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/shops/create"
-          element={
-            <ProtectedRoute requireRole="SELLER">
-              <ShopCreatePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/shops/:id"
-          element={
-            <ProtectedRoute requireRole="SELLER">
-              <ShopLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<ShopDetailsPage />} />
-          <Route path="products" element={<ProductListPage />} />
-          <Route path="products/create" element={<ProductCreatePage />} />
+      <div className="max-w-[460px]">
+        <Routes>
+          <Route path="/" element={<WelcomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/account-merge" element={<AccountMergePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route
-            path="products/:productId/edit"
-            element={<ProductUpdatePage />}
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
           />
-        </Route>
-      </Routes>
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute>
+                <MyOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pending-deliveries"
+            element={
+              <ProtectedRoute requireRole="SELLER">
+                <PendingDeliveriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/channels" element={<ChannelListPage />} />
+          <Route
+            path="/create-channel"
+            element={
+              <ProtectedRoute requireRole="SELLER">
+                <ChannelCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/channel/:channelId" element={<ChannelDetailsPage />} />
+          <Route
+            path="/shops"
+            element={
+              <ProtectedRoute requireRole="SELLER">
+                <ShopListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shops/create"
+            element={
+              <ProtectedRoute requireRole="SELLER">
+                <ShopCreatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shops/:id"
+            element={
+              <ProtectedRoute requireRole="SELLER">
+                <ShopLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ShopDetailsPage />} />
+            <Route path="products" element={<ProductListPage />} />
+            <Route path="products/create" element={<ProductCreatePage />} />
+            <Route
+              path="products/:productId/edit"
+              element={<ProductUpdatePage />}
+            />
+          </Route>
+        </Routes>
+      </div>
       <Toaster />
     </>
   );
