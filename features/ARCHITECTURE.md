@@ -1,109 +1,52 @@
 # Features Track Architecture
 
-**Last Updated**: March 4, 2026
+**Last Updated**: March 8, 2026
 
 ---
 
-## Purpose
+## Core Principles
 
-The `features` directory tracks **new feature development** — user-facing functionality, UI improvements, and business capabilities.
-
----
-
-## Directory Structure
-
-> **Note:** Features 001–015 use the legacy phase-based structure (`phase-N-{name}.md`).
-> **From feature 016 onwards**, the ticket-based structure below is the standard.
-
-```
-features/
-├── ARCHITECTURE.md
-├── {NNN}-{feature-name}/
-│   ├── summary.md
-│   └── ticket-{XXX}.md
-```
-
-### Naming Convention
-
-- Directory: `{NNN}-{kebab-case-name}` (e.g. `016-stripe-checkout`)
-- Tickets: `ticket-01.md`, `ticket-02.md`, …
+1. **The Human is Master:** You are an assistant to a human developer. Your role is to map their vision into a structured, executable plan.
+2. **Atomic Delivery:** Every ticket must be small enough to be completed in a **single day** by a human.
+3. **Stability First:** At the end of every ticket, the application **must be in a stable, buildable state.** It is better to have a tiny working slice than a massive broken one.
 
 ---
 
-## Core Philosophy
+## Directory Architecture
 
-1. **Atomic Delivery**: Each ticket is completable in **one working day** by one developer.
-2. **Stability First**: After every ticket, the app must be **buildable and stable**.
-3. **The Human is Master**: Tickets map the developer's vision into an executable plan.
+All feature planning must be organized in the following structure:
 
----
+- `features/`
+  - `<feature_id_01>-<feature_name>/`
+    - `ticket-<ticket_id_01>.md`
+    - `summary.md`
 
-## `summary.md` Template
+## Ticket Template (`ticket-XXX.md`)
 
-```markdown
-# Feature NNN — {Feature Name}
+When generating a ticket, use the following exact structure:
 
-## Overview
-
-One-sentence description.
-
-## User Stories
-
-| User Story                          | Status                           |
-| :---------------------------------- | :------------------------------- |
-| As a..., when I..., I should see... | planned / developing / completed |
-
-## Tickets
-
-| Ticket                      | Description       | Status                           |
-| :-------------------------- | :---------------- | :------------------------------- |
-| [ticket-01](./ticket-01.md) | Short description | planned / developing / completed |
-```
-
----
-
-## `ticket-XXX.md` Template
-
-```markdown
-# Ticket XX — {Title}
-
-## Acceptance Criteria
+### Acceptance Criteria
 
 - As <user_type>, in <page_name>, when I <action>, I should see <expected_output>
+- [User Story 1...]
+- [User Story 2...]
 
-## Technical Strategy
+### Technical Strategy
 
-- Backend | Frontend
-  - <Layer> (e.g. Service, Repository, Component)
+- [Backend | Frontend]
+  - <Layer of abstraction> (e.g., Controller, Service, Repository, Component, Configuration)
     - `<File Path>`
-      - `<function or block>`: Brief description.
+      - `<Function name or Logic block>`: Brief description of the update or creation.
 
-## Manual operations to configure services
+### Manual operations to configure services
 
-- Name of the service (e.g. Stripe, Agora…)
-- Step-by-step instructions for any third-party configuration needed.
-```
+- Name of the service (Ex: Stripe, Agora, ...)
+- Step-by-step instructions for any manual configuration needed on third-party services, including links to relevant documentation.
 
----
+## Summary Template (`summary.md`)
 
-## Legacy Structure (features 001–015)
+The summary file tracks the overall progress of the feature. It must contain a two-column table:
 
-Features 001–015 use the older phase-based format:
-
-```
-{NNN}-{feature-name}/
-├── summary.md
-├── phase-1-{name}.md
-├── phase-2-{name}.md
-└── phase-N-{name}.md
-```
-
-Do **not** apply the ticket format to these existing features.
-
----
-
-## Related Documentation
-
-- `../ARCHITECTURE.md` — Overall system architecture
-- `../STYLING.md` — UI/styling conventions (mandatory for all features)
-- `../dev-quality/ARCHITECTURE.md` — Technical improvement tracks
+| User Story | Status                               |
+| :--------- | :----------------------------------- |
+| As a...    | [planned \| developing \| completed] |

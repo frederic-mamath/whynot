@@ -1,6 +1,16 @@
 ---
 name: planning-feature
 description: A protocol for breaking down complex features into atomic, daily-deliverable tickets that maintain project stability and clear documentation.
+handoffs:
+  - label: Start Implementation
+    agent: agent
+    prompt: "Start implementation"
+    send: true
+  - label: Open in Editor
+    agent: agent
+    prompt: "#createFile the plan as is into an untitled file (`untitled:plan-${camelCaseName}.prompt.md` without frontmatter) for further refinement."
+    send: true
+    showContinueOn: false
 ---
 
 ## Core Philosophy
