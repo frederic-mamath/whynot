@@ -26,7 +26,7 @@ const WelcomePage = () => {
         <OrDivider />
         <ButtonV2
           label="S'inscrire avec un email"
-          className="text-primary w-full border border-primary bg-transparent font-bold"
+          className="text-primary w-full border-2 border-primary bg-transparent font-bold"
           href="/register"
           icon={<MailIcon />}
         />

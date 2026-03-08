@@ -33,36 +33,58 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen px-6 py-10">
-      <Link to="/" className="text-muted flex gap-2 items-center">
+    <div className="min-h-screen px-6 py-10 flex flex-col">
+      <Link
+        to="/"
+        className="text-muted flex gap-2 items-center mb-3 font-semibold"
+      >
         <ArrowLeft size={16} />
         <div className="text-[12px]">Retour</div>
       </Link>
-      <div className="font-syne text-foreground text-[22px] font-extrabold leading-[26px]">
+      <div className="font-syne text-foreground text-[22px] font-extrabold leading-[26px] mb-1">
         Content de te revoir
       </div>
-      <div className="font-outfit text-muted-foreground text-[13px] leading-[18px]">
+      <div className="font-outfit text-muted-foreground text-[13px] leading-[18px] mb-6">
         Connecte-toi à ton compte Popup
       </div>
-      <OAuthButtons />
+      <div className="flex flex-col gap-[10px]">
+        <OAuthButtons />
+      </div>
       <OrDivider />
+      <div></div>
       <Input
+        className="mb-4"
         icon={<Mail />}
         label={t("common.email")}
         type="email"
         placeholder={t("common.emailPlaceholder")}
       />
       <Input
+        className="mb-4"
         icon={<Lock />}
         label={t("common.password")}
         type="password"
         placeholder={t("common.passwordPlaceholder")}
       />
-      <div>Mot de passe oublié ?</div>
-      <ButtonV2 label={t("login.submit")} />
-      <div>
-        <div>Pas encore de compte ?</div>
-        <Link to="/">S'inscrire</Link>
+      <div className="flex justify-end mb-4">
+        <Link
+          to="/forgot-password"
+          className="text-txt-secondary text-[11px] font-semibold"
+        >
+          Mot de passe oublié ?
+        </Link>
+      </div>
+      <ButtonV2
+        className="bg-b-primary text-txt-primary font-semibold w-full"
+        label={t("login.submit")}
+      />
+      <div className="flex flex-col flex-1 justify-end">
+        <div className="font-outfit text-muted-foreground text-[13px] leading-[18px] flex gap-1 justify-center">
+          <div>Pas encore de compte ?</div>
+          <Link to="/" className="text-primary">
+            S'inscrire
+          </Link>
+        </div>
       </div>
       {/* <div></div>
       <Card className="w-full max-w-md">

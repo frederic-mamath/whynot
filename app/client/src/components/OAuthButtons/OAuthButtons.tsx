@@ -14,7 +14,7 @@ export default function OAuthButtons() {
       <ButtonV2
         href="/auth/google"
         label="Continuer avec Google"
-        className="text-white w-full border border-border bg-[rgb(26,_26,_26)] font-bold"
+        className="text-white w-full border-2 border-border bg-[rgb(26,_26,_26)] border-[rgb(51,_51,_51)] font-bold"
         icon={<GoogleIcon />}
       />
     </>

@@ -19,7 +19,7 @@ const ButtonV2 = ({ icon, label, href, className }: Props) => {
     >
       <a
         href={href}
-        className="py-[14px] w-full text-center flex items-center justify-center gap-2"
+        className="py-[14px] w-full text-center flex items-center justify-center gap-2 text-[13px]"
       >
         <div>{icon}</div>
         <div>{label}</div>

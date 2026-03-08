@@ -11,7 +11,7 @@
 @font-face {
   font-family: "Outfit";
   src: url("./assets/fonts/Outfit-VariableFont_wght.ttf") format("truetype");
-  font-weight: 100 900;
+  font-weight: 100 600 900;
   font-style: normal;
   font-display: swap;
 }
@@ -19,7 +19,7 @@
 @font-face {
   font-family: "Syne";
   src: url("./assets/fonts/Syne-VariableFont_wght.ttf") format("truetype");
-  font-weight: 400 800;
+  font-weight: 400 600 800;
   font-style: normal;
   font-display: swap;
 }
@@ -68,6 +68,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-divider: var(--border-light);
+  --color-b-primary: var(--action-b-primary);
+  --color-txt-primary: var(--action-txt-primary);
+  --color-b-secondary: var(--action-b-secondary);
+  --color-txt-secondary: var(--action-txt-secondary);
 }
 
 :root {
@@ -105,6 +110,11 @@
   --accent-foreground: oklch(0.216 0.006 56.043);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.923 0.003 48.717);
+  --border-light: rgb(42, 42, 42);
+  --action-txt-primary: rgb(13, 13, 13);
+  --action-txt-secondary: rgb(255, 45, 146);
+  --action-b-primary: rgb(224, 255, 0);
+  --action-b-secondary: rgb(255, 45, 146);
   --input: oklch(0.923 0.003 48.717);
   --ring: oklch(0.709 0.01 56.259);
   --chart-1: oklch(0.646 0.222 41.116);

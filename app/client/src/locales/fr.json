@@ -2,7 +2,7 @@
   "common": {
     "email": "E-mail",
     "password": "Mot de passe",
-    "emailPlaceholder": "vous@exemple.com",
+    "emailPlaceholder": "toi@email.com",
     "passwordPlaceholder": "••••••••"
   },
   "landing": {
