@@ -8,7 +8,11 @@ import {
   verifyMergeToken,
 } from "../utils/auth";
 import { accountMergeService } from "../services/AccountMergeService";
+import { passwordResetService } from "../services/PasswordResetService";
 import { TRPCError } from "@trpc/server";
+
+// In-memory rate limiting for forgot-password (email -> timestamps)
+const rateLimitMap = new Map<string, number[]>();
 
 export const authRouter = router({
   register: publicProcedure
@@ -245,5 +249,53 @@ export const authRouter = router({
       );
 
       return { success: true };
+    }),
+
+  forgotPassword: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Rate limiting: 3 requests per 15 minutes per email
+      const key = input.email.toLowerCase();
+      const now = Date.now();
+      const window = rateLimitMap.get(key);
+
+      if (window) {
+        // Clean old entries
+        const recent = window.filter((t) => now - t < 15 * 60 * 1000);
+        if (recent.length >= 3) {
+          // Still return success to avoid enumeration
+          return { success: true };
+        }
+        recent.push(now);
+        rateLimitMap.set(key, recent);
+      } else {
+        rateLimitMap.set(key, [now]);
+      }
+
+      await passwordResetService.requestReset(input.email);
+      return { success: true };
+    }),
+
+  resetPassword: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+        password: z.string().min(6),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        await passwordResetService.resetPassword(input.token, input.password);
+        return { success: true };
+      } catch {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Token invalide ou expiré",
+        });
+      }
     }),
 });

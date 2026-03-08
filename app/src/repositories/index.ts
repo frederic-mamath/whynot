@@ -25,6 +25,7 @@ export { roleRepository } from "./RoleRepository";
 export { userRoleRepository } from "./UserRoleRepository";
 export { messageRepository } from "./MessageRepository";
 export { productImageRepository } from "./ProductImageRepository";
+export { passwordResetTokenRepository } from "./PasswordResetTokenRepository";
 
 // Auction-related repositories
 import { AuctionRepository } from "./AuctionRepository";

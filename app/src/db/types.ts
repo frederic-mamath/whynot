@@ -19,6 +19,7 @@ export interface Database {
   user_addresses: UserAddressesTable;
   product_images: ProductImagesTable;
   auth_providers: AuthProvidersTable;
+  password_reset_tokens: PasswordResetTokensTable;
 }
 
 export interface UsersTable {
@@ -240,3 +241,14 @@ export interface AuthProvidersTable {
 }
 
 export type AuthProvider = Selectable<AuthProvidersTable>;
+
+export interface PasswordResetTokensTable {
+  id: Generated<number>;
+  user_id: number;
+  token_hash: string;
+  expires_at: Date;
+  used_at: Date | null;
+  created_at: Generated<Date>;
+}
+
+export type PasswordResetToken = Selectable<PasswordResetTokensTable>;

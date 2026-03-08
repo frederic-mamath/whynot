@@ -24,6 +24,8 @@ import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountMergePage from "./pages/AccountMergePage";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage/ResetPasswordPage";
 
 function AppContent() {
   return (
@@ -34,6 +36,8 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/account-merge" element={<AccountMergePage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route
             path="/profile"

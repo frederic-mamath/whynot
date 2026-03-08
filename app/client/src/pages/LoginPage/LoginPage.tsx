@@ -80,6 +80,7 @@ export default function Login() {
         <ButtonV2
           className="bg-b-primary text-txt-primary font-semibold w-full"
           label={t("login.submit")}
+          type="submit"
         />
       </form>
       <div className="flex flex-col flex-1 justify-end">
