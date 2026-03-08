@@ -3,20 +3,22 @@ import { useId, useRef } from "react";
 
 interface Props {
   className?: string;
+  description?: string;
   icon: React.ReactNode;
   label: string;
-  type: React.HTMLInputTypeAttribute;
+  onChange: (value: string) => void;
   placeholder?: string;
-  description?: string;
+  type: React.HTMLInputTypeAttribute;
 }
 
 const Input = ({
   className,
+  description,
   icon,
   label,
+  onChange,
   placeholder,
   type,
-  description,
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
@@ -44,6 +46,7 @@ const Input = ({
           ref={inputRef}
           type={type}
           placeholder={placeholder}
+          onChange={(e) => onChange?.(e.target.value)}
         />
       </div>
       {description && <p>{description}</p>}

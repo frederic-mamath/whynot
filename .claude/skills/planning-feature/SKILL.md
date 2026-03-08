@@ -65,6 +65,8 @@ The summary file tracks the overall progress of the feature. It must contain a t
 
 ## Workflow Instructions
 
+0. **Planning:** Before starting any development, you will ask all the questions related to the feature to ensure you have a clear understanding of the requirements and constraints.
 1. **Initialization:** When a user starts a new feature, create the folder, the initial `summary.md`, and the first `ticket-01.md`.
 2. **Estimation:** If a proposed task feels larger than a day's work, suggest breaking it into `part-a` and `part-b` tickets.
 3. **Context Maintenance:** Always reference the `summary.md` before starting a new ticket to ensure alignment with the overall feature goal.
+4. **Implementation:** Before implementing all the tickets in one go, you will let the user review them and set a button in the IDE to start the implementation.

@@ -52,32 +52,36 @@ export default function Login() {
       </div>
       <OrDivider />
       <div></div>
-      <Input
-        className="mb-4"
-        icon={<Mail />}
-        label={t("common.email")}
-        type="email"
-        placeholder={t("common.emailPlaceholder")}
-      />
-      <Input
-        className="mb-4"
-        icon={<Lock />}
-        label={t("common.password")}
-        type="password"
-        placeholder={t("common.passwordPlaceholder")}
-      />
-      <div className="flex justify-end mb-4">
-        <Link
-          to="/forgot-password"
-          className="text-txt-secondary text-[11px] font-semibold"
-        >
-          Mot de passe oublié ?
-        </Link>
-      </div>
-      <ButtonV2
-        className="bg-b-primary text-txt-primary font-semibold w-full"
-        label={t("login.submit")}
-      />
+      <form onSubmit={handleSubmit}>
+        <Input
+          className="mb-4"
+          icon={<Mail />}
+          label={t("common.email")}
+          type="email"
+          placeholder={t("common.emailPlaceholder")}
+          onChange={(value) => setEmail(value)}
+        />
+        <Input
+          className="mb-4"
+          icon={<Lock />}
+          label={t("common.password")}
+          type="password"
+          placeholder={t("common.passwordPlaceholder")}
+          onChange={(value) => setPassword(value)}
+        />
+        <div className="flex justify-end mb-4">
+          <Link
+            to="/forgot-password"
+            className="text-txt-secondary text-[11px] font-semibold"
+          >
+            Mot de passe oublié ?
+          </Link>
+        </div>
+        <ButtonV2
+          className="bg-b-primary text-txt-primary font-semibold w-full"
+          label={t("login.submit")}
+        />
+      </form>
       <div className="flex flex-col flex-1 justify-end">
         <div className="font-outfit text-muted-foreground text-[13px] leading-[18px] flex gap-1 justify-center">
           <div>Pas encore de compte ?</div>
