@@ -35,13 +35,14 @@ const Input = ({
         onClick={() => inputRef.current?.focus()}
         className={cn(
           "border-2 border-[rgb(51,_51,_51)] rounded-[14px] has-[input:focus]:ring-2 has-[input:focus]:ring-primary",
+          "transition-shadow duration-200 ease-in",
           "flex items-center",
           "gap-4 p-3",
         )}
       >
         <div>{icon}</div>
         <input
-          className="focus:outline-none"
+          className="focus:outline-none flex-1"
           id={inputId}
           ref={inputRef}
           type={type}
