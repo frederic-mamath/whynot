@@ -1,6 +1,6 @@
-import { db } from '../db';
-import { Selectable } from 'kysely';
-import { ProductsTable } from '../db/types';
+import { db } from "../db";
+import { Selectable } from "kysely";
+import { ProductsTable } from "../db/types";
 
 type Product = Selectable<ProductsTable>;
 
@@ -9,16 +9,15 @@ type Product = Selectable<ProductsTable>;
  * Handles all product-related database operations
  */
 export class ProductRepository {
-  
   /**
    * Find product by ID
    * Similar to: SELECT * FROM products WHERE id = ?
    */
   async findById(id: number): Promise<Product | undefined> {
     return db
-      .selectFrom('products')
+      .selectFrom("products")
       .selectAll()
-      .where('id', '=', id)
+      .where("id", "=", id)
       .executeTakeFirst();
   }
 
@@ -28,15 +27,15 @@ export class ProductRepository {
    */
   async findByShopId(shopId: number, activeOnly = false): Promise<Product[]> {
     let query = db
-      .selectFrom('products')
+      .selectFrom("products")
       .selectAll()
-      .where('shop_id', '=', shopId)
-      .orderBy('created_at', 'desc');
-    
+      .where("shop_id", "=", shopId)
+      .orderBy("created_at", "desc");
+
     if (activeOnly) {
-      query = query.where('is_active', '=', true);
+      query = query.where("is_active", "=", true);
     }
-    
+
     return query.execute();
   }
 
@@ -46,32 +45,36 @@ export class ProductRepository {
    */
   async findAllActive(): Promise<Product[]> {
     return db
-      .selectFrom('products')
+      .selectFrom("products")
       .selectAll()
-      .where('is_active', '=', true)
-      .orderBy('created_at', 'desc')
+      .where("is_active", "=", true)
+      .orderBy("created_at", "desc")
       .execute();
   }
 
   /**
    * Find products by channel
-   * Similar to: SELECT p.* FROM products p 
-   *             INNER JOIN channel_products cp ON cp.product_id = p.id 
+   * Similar to: SELECT p.* FROM products p
+   *             INNER JOIN channel_products cp ON cp.product_id = p.id
    *             WHERE cp.channel_id = ? AND p.is_active = true
    */
   async findByChannelId(channelId: number): Promise<Product[]> {
     return db
-      .selectFrom('products')
-      .innerJoin('channel_products', 'channel_products.product_id', 'products.id')
-      .selectAll('products')
-      .where('channel_products.channel_id', '=', channelId)
-      .where('products.is_active', '=', true)
+      .selectFrom("products")
+      .innerJoin(
+        "channel_products",
+        "channel_products.product_id",
+        "products.id",
+      )
+      .selectAll("products")
+      .where("channel_products.channel_id", "=", channelId)
+      .where("products.is_active", "=", true)
       .execute();
   }
 
   /**
    * Create new product
-   * Similar to: INSERT INTO products (shop_id, name, description, price, image_url, is_active, created_at, updated_at) 
+   * Similar to: INSERT INTO products (shop_id, name, description, price, image_url, is_active, created_at, updated_at)
    *             VALUES (?, ?, ?, ?, ?, true, NOW(), NOW())
    */
   async save(data: {
@@ -80,9 +83,13 @@ export class ProductRepository {
     description: string | null;
     price: string | null;
     image_url: string | null;
+    starting_price?: string | null;
+    wished_price?: string | null;
+    category_id?: number | null;
+    condition_id?: number | null;
   }): Promise<Product> {
     return db
-      .insertInto('products')
+      .insertInto("products")
       .values({
         ...data,
         is_active: true,
@@ -95,7 +102,7 @@ export class ProductRepository {
 
   /**
    * Update product
-   * Similar to: UPDATE products SET name = ?, description = ?, price = ?, image_url = ?, is_active = ?, updated_at = NOW() 
+   * Similar to: UPDATE products SET name = ?, description = ?, price = ?, image_url = ?, is_active = ?, updated_at = NOW()
    *             WHERE id = ?
    */
   async updateById(
@@ -106,15 +113,19 @@ export class ProductRepository {
       price?: string | null;
       image_url?: string | null;
       is_active?: boolean;
-    }
+      starting_price?: string | null;
+      wished_price?: string | null;
+      category_id?: number | null;
+      condition_id?: number | null;
+    },
   ): Promise<Product | undefined> {
     return db
-      .updateTable('products')
+      .updateTable("products")
       .set({
         ...data,
         updated_at: new Date(),
       })
-      .where('id', '=', productId)
+      .where("id", "=", productId)
       .returningAll()
       .executeTakeFirst();
   }
@@ -123,7 +134,10 @@ export class ProductRepository {
    * Set product active status (soft delete)
    * Similar to: UPDATE products SET is_active = ?, updated_at = NOW() WHERE id = ?
    */
-  async setActive(productId: number, isActive: boolean): Promise<Product | undefined> {
+  async setActive(
+    productId: number,
+    isActive: boolean,
+  ): Promise<Product | undefined> {
     return this.updateById(productId, { is_active: isActive });
   }
 
@@ -133,10 +147,10 @@ export class ProductRepository {
    */
   async deleteById(id: number): Promise<boolean> {
     const result = await db
-      .deleteFrom('products')
-      .where('id', '=', id)
+      .deleteFrom("products")
+      .where("id", "=", id)
       .executeTakeFirst();
-    
+
     return Number(result.numDeletedRows) > 0;
   }
 
@@ -146,11 +160,11 @@ export class ProductRepository {
    */
   async getShopId(productId: number): Promise<number | undefined> {
     const result = await db
-      .selectFrom('products')
-      .select(['shop_id'])
-      .where('id', '=', productId)
+      .selectFrom("products")
+      .select(["shop_id"])
+      .where("id", "=", productId)
       .executeTakeFirst();
-    
+
     return result?.shop_id;
   }
 
@@ -160,12 +174,12 @@ export class ProductRepository {
    */
   async belongsToShop(productId: number, shopId: number): Promise<boolean> {
     const product = await db
-      .selectFrom('products')
-      .select(['id'])
-      .where('id', '=', productId)
-      .where('shop_id', '=', shopId)
+      .selectFrom("products")
+      .select(["id"])
+      .where("id", "=", productId)
+      .where("shop_id", "=", shopId)
       .executeTakeFirst();
-    
+
     return product !== undefined;
   }
 }

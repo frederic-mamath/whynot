@@ -6,6 +6,10 @@ export interface ProductOutboundDto {
   price: number | null;
   imageUrl: string | null;
   isActive: boolean;
+  startingPrice: number | null;
+  wishedPrice: number | null;
+  categoryId: number | null;
+  conditionId: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +24,10 @@ export interface ProductInboundDto {
   description?: string;
   price?: number;
   imageUrl?: string | null;
+  startingPrice?: number;
+  wishedPrice?: number;
+  categoryId?: number;
+  conditionId?: number;
 }
 
 export interface ProductUpdateInboundDto {
@@ -28,4 +36,8 @@ export interface ProductUpdateInboundDto {
   price?: number;
   imageUrl?: string | null;
   isActive?: boolean;
+  startingPrice?: number;
+  wishedPrice?: number;
+  categoryId?: number | null;
+  conditionId?: number | null;
 }

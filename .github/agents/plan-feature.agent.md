@@ -80,6 +80,8 @@ The plan should reflect:
 
 Save the comprehensive plan document to `/memories/session/plan.md` via #tool:vscode/memory, then show the scannable plan to the user for review. You MUST show plan to the user, as the plan file is for persistence only, not a substitute for showing it to the user.
 
+Create the files for the implementation plan following the features/ARCHITECTURE.md document, but you will NOT write the implementation itself. The user can choose to implement themselves or hand off to another agent.
+
 ## 4. Refinement
 
 On user input after showing the plan:
@@ -87,7 +89,7 @@ On user input after showing the plan:
 - Changes requested → revise and present updated plan. Update `/memories/session/plan.md` to keep the documented plan in sync
 - Questions asked → clarify, or use #tool:vscode/askQuestions for follow-ups
 - Alternatives wanted → loop back to **Discovery** with new subagent
-- Approval given → acknowledge, the user can now use handoff buttons. You will create the files for the implementation plan following the features/ARCHITECTURE.md document, but you will NOT write the implementation itself. The user can choose to implement themselves or hand off to another agent.
+- Approval given → acknowledge, the user can now use handoff buttons.
 
 Keep iterating until explicit approval or handoff.
 </workflow>
@@ -127,4 +129,5 @@ Rules:
 - NO code blocks — describe changes, link to files and specific symbols/functions
 - NO blocking questions at the end — ask during workflow via #tool:vscode/askQuestions
 - The plan MUST be presented to the user, don't just mention the plan file.
+
   </plan_style_guide>

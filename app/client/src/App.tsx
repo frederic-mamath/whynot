@@ -26,6 +26,12 @@ import AccountMergePage from "./pages/AccountMergePage";
 import WelcomePage from "./pages/WelcomePage/WelcomePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage/ResetPasswordPage";
+import SellerLayout from "./pages/SellerLayout";
+import SellerHomePage from "./pages/SellerHomePage";
+import SellerLivesPage from "./pages/SellerLivesPage";
+import SellerGoPage from "./pages/SellerGoPage";
+import SellerExplorerPage from "./pages/SellerExplorerPage";
+import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";
 
 function AppContent() {
   return (
@@ -102,6 +108,28 @@ function AppContent() {
             <Route path="products/create" element={<ProductCreatePage />} />
             <Route
               path="products/:productId/edit"
+              element={<ProductUpdatePage />}
+            />
+          </Route>
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute requireRole="SELLER">
+                <SellerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<SellerHomePage />} />
+            <Route path="lives" element={<SellerLivesPage />} />
+            <Route path="go" element={<SellerGoPage />} />
+            <Route path="explorer" element={<SellerExplorerPage />} />
+            <Route path="shop" element={<SellerShopPage />} />
+            <Route
+              path="shop/products/create"
+              element={<ProductCreatePage />}
+            />
+            <Route
+              path="shop/products/:productId/edit"
               element={<ProductUpdatePage />}
             />
           </Route>

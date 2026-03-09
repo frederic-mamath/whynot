@@ -48,6 +48,10 @@ export const productRouter = router({
         description: z.string().optional(),
         price: z.number().min(0).optional(),
         imageUrl: z.string().url().optional().nullable(),
+        startingPrice: z.number().min(0).optional(),
+        wishedPrice: z.number().min(0).optional(),
+        categoryId: z.number().optional(),
+        conditionId: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -59,6 +63,10 @@ export const productRouter = router({
         description: input.description,
         price: input.price,
         imageUrl: input.imageUrl ?? null,
+        startingPrice: input.startingPrice,
+        wishedPrice: input.wishedPrice,
+        categoryId: input.categoryId,
+        conditionId: input.conditionId,
       });
 
       const product = await productRepository.save(productData);
@@ -109,6 +117,10 @@ export const productRouter = router({
         price: z.number().min(0).optional(),
         imageUrl: z.string().url().optional().nullable(),
         isActive: z.boolean().optional(),
+        startingPrice: z.number().min(0).optional(),
+        wishedPrice: z.number().min(0).optional(),
+        categoryId: z.number().nullable().optional(),
+        conditionId: z.number().nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

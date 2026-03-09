@@ -20,6 +20,8 @@ export interface Database {
   product_images: ProductImagesTable;
   auth_providers: AuthProvidersTable;
   password_reset_tokens: PasswordResetTokensTable;
+  categories: CategoriesTable;
+  conditions: ConditionsTable;
 }
 
 export interface UsersTable {
@@ -94,6 +96,10 @@ export interface ProductsTable {
   price: string | null;
   image_url: string | null;
   is_active: boolean;
+  starting_price: string | null;
+  wished_price: string | null;
+  category_id: number | null;
+  condition_id: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -252,3 +258,21 @@ export interface PasswordResetTokensTable {
 }
 
 export type PasswordResetToken = Selectable<PasswordResetTokensTable>;
+
+export interface CategoriesTable {
+  id: Generated<number>;
+  name: string;
+  emoji: string | null;
+  position: number;
+  created_at: Date;
+}
+
+export interface ConditionsTable {
+  id: Generated<number>;
+  name: string;
+  position: number;
+  created_at: Date;
+}
+
+export type Category = Selectable<CategoriesTable>;
+export type Condition = Selectable<ConditionsTable>;

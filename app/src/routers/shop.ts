@@ -1,9 +1,17 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
-import { shopRepository, userShopRoleRepository, userRepository } from "../repositories";
+import {
+  shopRepository,
+  userShopRoleRepository,
+  userRepository,
+} from "../repositories";
 import { TRPCError } from "@trpc/server";
 import { requireShopOwner, requireShopAccess } from "../middleware/shopOwner";
-import { mapShopToShopOutboundDto, mapShopWithRoleToShopWithRoleOutboundDto, mapCreateShopInboundDtoToShop } from "../mappers";
+import {
+  mapShopToShopOutboundDto,
+  mapShopWithRoleToShopWithRoleOutboundDto,
+  mapCreateShopInboundDtoToShop,
+} from "../mappers";
 
 export const shopRouter = router({
   create: protectedProcedure
@@ -15,12 +23,16 @@ export const shopRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const shopData = mapCreateShopInboundDtoToShop(input, ctx.user.id);
-      
+
       // Create shop using repository
       const shop = await shopRepository.save(shopData);
 
       // Assign owner role using repository
-      await userShopRoleRepository.assignRole(ctx.user.id, shop.id, 'shop-owner');
+      await userShopRoleRepository.assignRole(
+        ctx.user.id,
+        shop.id,
+        "shop-owner",
+      );
 
       return mapShopToShopOutboundDto(shop);
     }),
@@ -29,17 +41,19 @@ export const shopRouter = router({
     // Find shops where user has a role using repository
     const results = await shopRepository.findByUserWithRole(ctx.user.id);
 
-    return results.map(r => mapShopWithRoleToShopWithRoleOutboundDto(
-      {
-        id: r.id,
-        name: r.name,
-        description: r.description,
-        owner_id: r.owner_id,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-      },
-      r.role
-    ));
+    return results.map((r) =>
+      mapShopWithRoleToShopWithRoleOutboundDto(
+        {
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          owner_id: r.owner_id,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+        },
+        r.role,
+      ),
+    );
   }),
 
   get: protectedProcedure
@@ -57,6 +71,17 @@ export const shopRouter = router({
       return mapShopToShopOutboundDto(shop);
     }),
 
+  getMyShop: protectedProcedure.query(async ({ ctx }) => {
+    const shops = await shopRepository.findByOwnerId(ctx.user.id);
+    const shop = shops[0] ?? null;
+
+    if (!shop) {
+      return null;
+    }
+
+    return mapShopToShopOutboundDto(shop);
+  }),
+
   update: protectedProcedure
     .input(
       z.object({
@@ -70,7 +95,8 @@ export const shopRouter = router({
 
       const updateData: any = {};
       if (input.name !== undefined) updateData.name = input.name;
-      if (input.description !== undefined) updateData.description = input.description;
+      if (input.description !== undefined)
+        updateData.description = input.description;
 
       const shop = await shopRepository.updateById(input.shopId, updateData);
 
@@ -115,11 +141,12 @@ export const shopRouter = router({
       }
 
       // Check if user already has vendor role
-      const alreadyVendor = await userShopRoleRepository.existsByUserAndShopAndRole(
-        input.userId,
-        input.shopId,
-        'vendor'
-      );
+      const alreadyVendor =
+        await userShopRoleRepository.existsByUserAndShopAndRole(
+          input.userId,
+          input.shopId,
+          "vendor",
+        );
 
       if (alreadyVendor) {
         throw new TRPCError({
@@ -132,7 +159,7 @@ export const shopRouter = router({
       const role = await userShopRoleRepository.assignRole(
         input.userId,
         input.shopId,
-        'vendor'
+        "vendor",
       );
 
       return role;
@@ -148,7 +175,11 @@ export const shopRouter = router({
     .mutation(async ({ ctx, input }) => {
       await requireShopOwner(ctx, input.shopId);
 
-      await userShopRoleRepository.removeRole(input.userId, input.shopId, 'vendor');
+      await userShopRoleRepository.removeRole(
+        input.userId,
+        input.shopId,
+        "vendor",
+      );
 
       return { success: true };
     }),
@@ -158,7 +189,9 @@ export const shopRouter = router({
     .query(async ({ ctx, input }) => {
       await requireShopAccess(ctx, input.shopId);
 
-      const vendors = await userShopRoleRepository.findVendorsByShop(input.shopId);
+      const vendors = await userShopRoleRepository.findVendorsByShop(
+        input.shopId,
+      );
 
       return vendors;
     }),
