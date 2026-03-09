@@ -13,20 +13,12 @@ router.get(
 );
 
 // Google OAuth - callback
-router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: `${FRONTEND_URL}/login?error=google_auth_failed`,
-    session: true,
-  }),
-  (req, res) => {
-    const user = req.user as any;
-
-    if (!user) {
+router.get("/auth/google/callback", (req, res, next) => {
+  passport.authenticate("google", (err: any, user: any) => {
+    if (err || !user) {
       return res.redirect(`${FRONTEND_URL}/login?error=google_auth_failed`);
     }
 
-    // Check if merge is required
     if (user._mergeRequired) {
       const mergeToken = generateMergeToken({
         userId: user.id,
@@ -36,21 +28,19 @@ router.get(
         firstName: user._firstName,
         lastName: user._lastName,
       });
-
       return res.redirect(
         `${FRONTEND_URL}/account-merge?provider=${user._provider}&token=${encodeURIComponent(mergeToken)}`,
       );
     }
 
-    // Successful login — create session
-    req.logIn(user, (err) => {
-      if (err) {
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
         return res.redirect(`${FRONTEND_URL}/login?error=session_failed`);
       }
       return res.redirect(`${FRONTEND_URL}/dashboard`);
     });
-  },
-);
+  })(req, res, next);
+});
 
 // Apple OAuth - initiate
 router.get(
@@ -59,20 +49,12 @@ router.get(
 );
 
 // Apple OAuth - callback (Apple uses POST)
-router.post(
-  "/auth/apple/callback",
-  passport.authenticate("apple", {
-    failureRedirect: `${FRONTEND_URL}/login?error=apple_auth_failed`,
-    session: true,
-  }),
-  (req, res) => {
-    const user = req.user as any;
-
-    if (!user) {
+router.post("/auth/apple/callback", (req, res, next) => {
+  passport.authenticate("apple", (err: any, user: any) => {
+    if (err || !user) {
       return res.redirect(`${FRONTEND_URL}/login?error=apple_auth_failed`);
     }
 
-    // Check if merge is required
     if (user._mergeRequired) {
       const mergeToken = generateMergeToken({
         userId: user.id,
@@ -82,20 +64,18 @@ router.post(
         firstName: user._firstName,
         lastName: user._lastName,
       });
-
       return res.redirect(
         `${FRONTEND_URL}/account-merge?provider=${user._provider}&token=${encodeURIComponent(mergeToken)}`,
       );
     }
 
-    // Successful login — create session
-    req.logIn(user, (err) => {
-      if (err) {
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
         return res.redirect(`${FRONTEND_URL}/login?error=session_failed`);
       }
       return res.redirect(`${FRONTEND_URL}/dashboard`);
     });
-  },
-);
+  })(req, res, next);
+});
 
 export default router;
