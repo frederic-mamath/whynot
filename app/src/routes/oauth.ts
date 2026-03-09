@@ -4,7 +4,7 @@ import { generateMergeToken } from "../utils/auth";
 
 const router = Router();
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 // Google OAuth - initiate
 router.get(
@@ -16,14 +16,14 @@ router.get(
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/login?error=google_auth_failed",
-    session: false,
+    failureRedirect: `${FRONTEND_URL}/login?error=google_auth_failed`,
+    session: true,
   }),
   (req, res) => {
     const user = req.user as any;
 
     if (!user) {
-      return res.redirect("/login?error=google_auth_failed");
+      return res.redirect(`${FRONTEND_URL}/login?error=google_auth_failed`);
     }
 
     // Check if merge is required
@@ -38,16 +38,16 @@ router.get(
       });
 
       return res.redirect(
-        `/account-merge?provider=${user._provider}&token=${encodeURIComponent(mergeToken)}`,
+        `${FRONTEND_URL}/account-merge?provider=${user._provider}&token=${encodeURIComponent(mergeToken)}`,
       );
     }
 
     // Successful login — create session
     req.logIn(user, (err) => {
       if (err) {
-        return res.redirect("/login?error=session_failed");
+        return res.redirect(`${FRONTEND_URL}/login?error=session_failed`);
       }
-      return res.redirect("/dashboard");
+      return res.redirect(`${FRONTEND_URL}/dashboard`);
     });
   },
 );
@@ -62,14 +62,14 @@ router.get(
 router.post(
   "/auth/apple/callback",
   passport.authenticate("apple", {
-    failureRedirect: "/login?error=apple_auth_failed",
-    session: false,
+    failureRedirect: `${FRONTEND_URL}/login?error=apple_auth_failed`,
+    session: true,
   }),
   (req, res) => {
     const user = req.user as any;
 
     if (!user) {
-      return res.redirect("/login?error=apple_auth_failed");
+      return res.redirect(`${FRONTEND_URL}/login?error=apple_auth_failed`);
     }
 
     // Check if merge is required
@@ -84,16 +84,16 @@ router.post(
       });
 
       return res.redirect(
-        `/account-merge?provider=${user._provider}&token=${encodeURIComponent(mergeToken)}`,
+        `${FRONTEND_URL}/account-merge?provider=${user._provider}&token=${encodeURIComponent(mergeToken)}`,
       );
     }
 
     // Successful login — create session
     req.logIn(user, (err) => {
       if (err) {
-        return res.redirect("/login?error=session_failed");
+        return res.redirect(`${FRONTEND_URL}/login?error=session_failed`);
       }
-      return res.redirect("/dashboard");
+      return res.redirect(`${FRONTEND_URL}/dashboard`);
     });
   },
 );
