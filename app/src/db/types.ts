@@ -28,6 +28,7 @@ export interface UsersTable {
   id: Generated<number>;
   email: string;
   password: string | null;
+  nickname: string;
   firstname: string | null;
   lastname: string | null;
   first_name: string | null;

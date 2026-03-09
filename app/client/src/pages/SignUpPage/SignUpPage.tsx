@@ -10,9 +10,15 @@ import Input from "@/components/ui/Input/Input";
 export default function SignUpPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const isFormValid =
+    nickname.trim().length >= 2 &&
+    email.trim().length > 0 &&
+    password.length >= 6;
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
@@ -28,12 +34,22 @@ export default function SignUpPage() {
     e.preventDefault();
     setError("");
 
+    if (nickname.trim().length < 2) {
+      setError("Le pseudo doit faire au moins 2 caractères");
+      return;
+    }
+
+    if (!email.trim()) {
+      setError(t("common.emailPlaceholder"));
+      return;
+    }
+
     if (password.length < 6) {
       setError(t("register.errorPasswordLength"));
       return;
     }
 
-    registerMutation.mutate({ email, password });
+    registerMutation.mutate({ nickname, email, password });
   };
 
   return (
@@ -56,10 +72,10 @@ export default function SignUpPage() {
           className="mb-4"
           icon={<AtSign />}
           label="Pseudo"
-          type="email"
+          type="text"
           placeholder="tonpseudo"
           hint="C'est ton nom public sur Popup"
-          onChange={(value) => setEmail(value)}
+          onChange={(value) => setNickname(value)}
         />
         <Input
           className="mb-4"
@@ -78,10 +94,14 @@ export default function SignUpPage() {
           placeholder={t("common.passwordPlaceholder")}
           onChange={(value) => setPassword(value)}
         />
+        {error && (
+          <p className="text-destructive text-xs font-outfit mb-3">{error}</p>
+        )}
         <ButtonV2
           className="bg-b-primary text-txt-primary font-semibold w-full"
-          label={t("register.submit")}
+          label={registerMutation.isPending ? "Création..." : t("register.submit")}
           type="submit"
+          disabled={!isFormValid || registerMutation.isPending}
         />
       </form>
       <div className="flex flex-col flex-1 justify-end">

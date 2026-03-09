@@ -20,6 +20,14 @@ export const authRouter = router({
       z.object({
         email: z.string().email(),
         password: z.string().min(6),
+        nickname: z
+          .string()
+          .min(2)
+          .max(50)
+          .regex(
+            /^[a-zA-Z0-9_.-]+$/,
+            "Le pseudo ne peut contenir que des lettres, chiffres, _, . ou -",
+          ),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -49,8 +57,25 @@ export const authRouter = router({
 
       const hashedPassword = await hashPassword(input.password);
 
+      // Check if nickname is already taken
+      const existingNickname = await userRepository.findByNickname(
+        input.nickname,
+      );
+      if (existingNickname) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Pseudo déjà utilisé",
+        });
+      }
+
       // Create user using repository
-      const user = await userRepository.save(input.email, hashedPassword);
+      const user = await userRepository.save(
+        input.email,
+        hashedPassword,
+        undefined,
+        undefined,
+        input.nickname,
+      );
 
       const token = generateToken(user.id);
 

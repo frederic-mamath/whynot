@@ -33,6 +33,14 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
+  async findByNickname(nickname: string): Promise<User | undefined> {
+    return db
+      .selectFrom("users")
+      .selectAll()
+      .where("nickname", "=", nickname)
+      .executeTakeFirst();
+  }
+
   /**
    * Create new user
    * Similar to: INSERT INTO users (email, password, ...) VALUES (?, ?, ...)
@@ -42,12 +50,14 @@ export class UserRepository {
     hashedPassword: string,
     firstName?: string,
     lastName?: string,
+    nickname?: string,
   ): Promise<User> {
     return db
       .insertInto("users")
       .values({
         email,
         password: hashedPassword,
+        nickname: nickname || email.split("@")[0].toLowerCase(),
         firstname: firstName || null,
         lastname: lastName || null,
         is_verified: false,
@@ -198,6 +208,7 @@ export class UserRepository {
       .values({
         email,
         password: null as any,
+        nickname: email.split("@")[0].toLowerCase(),
         firstname: firstName || null,
         lastname: lastName || null,
         first_name: firstName || null,

@@ -20,6 +20,7 @@ export function mapCreateUserInboundDtoToUser(
   return {
     email: dto.email,
     password: hashedPassword,
+    nickname: dto.email.split("@")[0].toLowerCase(),
     firstname: dto.firstName ?? null,
     lastname: dto.lastName ?? null,
     first_name: dto.firstName ?? null,
