@@ -5,7 +5,7 @@ import { useState } from "react";
 import { trpc, wsClient } from "./lib/trpc";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoginPage from "./pages/LoginPage/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import SignUpPage from "./pages/SignUpPage/SignUpPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChannelListPage from "./pages/ChannelListPage";
 import ChannelCreatePage from "./pages/ChannelCreatePage";
@@ -40,7 +40,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<SignUpPage />} />
           <Route path="/account-merge" element={<AccountMergePage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
