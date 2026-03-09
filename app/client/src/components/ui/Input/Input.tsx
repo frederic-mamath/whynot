@@ -3,7 +3,7 @@ import { useId, useRef } from "react";
 
 interface Props {
   className?: string;
-  description?: string;
+  hint?: string;
   icon: React.ReactNode;
   label: string;
   onChange: (value: string) => void;
@@ -13,7 +13,7 @@ interface Props {
 
 const Input = ({
   className,
-  description,
+  hint,
   icon,
   label,
   onChange,
@@ -50,7 +50,7 @@ const Input = ({
           onChange={(e) => onChange?.(e.target.value)}
         />
       </div>
-      {description && <p>{description}</p>}
+      {hint && <p className="text-[10px] text-hint">{hint}</p>}
     </div>
   );
 };
