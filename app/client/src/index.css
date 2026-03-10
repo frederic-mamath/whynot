@@ -73,6 +73,8 @@
   --color-txt-primary: var(--action-txt-primary);
   --color-b-secondary: var(--action-b-secondary);
   --color-txt-secondary: var(--action-txt-secondary);
+  --color-b-third: var(--action-b-third);
+  --color-txt-third: var(--action-txt-third);
   --color-hint: var(--input-hint);
 }
 
@@ -114,8 +116,10 @@
   --border-light: rgb(42, 42, 42);
   --action-txt-primary: rgb(13, 13, 13);
   --action-txt-secondary: rgb(255, 45, 146);
+  --action-txt-third: rgb(255, 255, 255);
   --action-b-primary: rgb(224, 255, 0);
   --action-b-secondary: rgb(255, 45, 146);
+  --action-b-third: rgb(255, 45, 146);
   --input-hint: rgb(68, 68, 68);
   --input: oklch(0.923 0.003 48.717);
   --ring: oklch(0.709 0.01 56.259);

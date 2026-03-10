@@ -1,15 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Package, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Package,
+  ChevronRight,
+  Cog,
+  User,
+  CircleDot,
+} from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { cn } from "@/lib/utils";
 import ProductForm from "./ProductForm";
-
-type Tab = "boutique" | "add-product";
+import ButtonV2 from "@/components/ui/ButtonV2";
+import Tabs from "@/components/ui/Tabs";
 
 export default function SellerShopPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>("boutique");
+  const [activeTabId, setActiveTabId] = useState<string>("boutique");
 
   const { data: shop, isLoading: shopLoading } = trpc.shop.getMyShop.useQuery();
 
@@ -49,62 +56,52 @@ export default function SellerShopPage() {
   return (
     <div className="px-4 pt-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className={cn("flex items-center justify-between", "mb-6")}>
+        <User />
         <h1 className="font-syne font-extrabold text-2xl text-foreground">
-          {shop.name}
+          Ma boutique
         </h1>
-        {shop.description && (
-          <p className="text-muted-foreground text-sm font-outfit mt-1">
-            {shop.description}
-          </p>
-        )}
+        <button>
+          <Cog />
+        </button>
+      </div>
+      <div>
+        <ButtonV2
+          label="Passer en live"
+          className={cn("w-full", "bg-b-third text-txt-third", "mb-4")}
+          icon={<CircleDot />}
+        />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setActiveTab("boutique")}
-          className={cn(
-            "px-4 py-2 rounded-full text-sm font-outfit font-medium transition-colors",
-            activeTab === "boutique"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground",
-          )}
-        >
-          Boutique
-        </button>
-        <button
-          onClick={() => setActiveTab("add-product")}
-          className={cn(
-            "px-4 py-2 rounded-full text-sm font-outfit font-medium transition-colors flex items-center gap-1",
-            activeTab === "add-product"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground",
-          )}
-        >
-          <Plus className="w-4 h-4" />
-          Produit
-        </button>
-      </div>
+      <Tabs
+        className="mb-3"
+        items={[
+          { id: "boutique", label: "Boutique" },
+          { id: "add-product", label: "+Produit" },
+        ]}
+        selectedTabId={activeTabId}
+        onClickItem={(tabId) => setActiveTabId(tabId)}
+      />
 
       {/* Tab content */}
-      {activeTab === "boutique" && (
+      {activeTabId === "boutique" && (
         <BoutiqueTab
           products={products ?? []}
           isLoading={productsLoading}
-          onAddProduct={() => setActiveTab("add-product")}
+          onAddProduct={() => setActiveTabId("add-product")}
           onEditProduct={(productId) =>
             navigate(`/seller/shop/products/${productId}/edit`)
           }
         />
       )}
 
-      {activeTab === "add-product" && (
+      {activeTabId === "add-product" && (
         <ProductForm
           shopId={shop.id}
           onSuccess={() => {
             refetchProducts();
-            setActiveTab("boutique");
+            setActiveTabId("boutique");
           }}
         />
       )}
