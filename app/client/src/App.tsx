@@ -32,6 +32,8 @@ import SellerLivesPage from "./pages/SellerLivesPage";
 import SellerGoPage from "./pages/SellerGoPage";
 import SellerExplorerPage from "./pages/SellerExplorerPage";
 import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";
+import CguPage from "./pages/CguPage";
+import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 
 function AppContent() {
   return (
@@ -44,6 +46,11 @@ function AppContent() {
           <Route path="/account-merge" element={<AccountMergePage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/cgu" element={<CguPage />} />
+          <Route
+            path="/politique-de-confidentialite"
+            element={<PolitiqueConfidentialitePage />}
+          />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route
             path="/profile"

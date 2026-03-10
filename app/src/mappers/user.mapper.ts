@@ -21,6 +21,7 @@ export function mapCreateUserInboundDtoToUser(
     email: dto.email,
     password: hashedPassword,
     nickname: dto.email.split("@")[0].toLowerCase(),
+    accepted_cgu_at: null,
     firstname: dto.firstName ?? null,
     lastname: dto.lastName ?? null,
     first_name: dto.firstName ?? null,

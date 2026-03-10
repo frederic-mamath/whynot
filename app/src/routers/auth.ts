@@ -28,6 +28,7 @@ export const authRouter = router({
             /^[a-zA-Z0-9_.-]+$/,
             "Le pseudo ne peut contenir que des lettres, chiffres, _, . ou -",
           ),
+        acceptedCgu: z.literal(true),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -75,6 +76,7 @@ export const authRouter = router({
         undefined,
         undefined,
         input.nickname,
+        new Date(),
       );
 
       const token = generateToken(user.id);

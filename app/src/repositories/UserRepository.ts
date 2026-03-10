@@ -51,6 +51,7 @@ export class UserRepository {
     firstName?: string,
     lastName?: string,
     nickname?: string,
+    acceptedCguAt?: Date,
   ): Promise<User> {
     return db
       .insertInto("users")
@@ -61,6 +62,7 @@ export class UserRepository {
         firstname: firstName || null,
         lastname: lastName || null,
         is_verified: false,
+        accepted_cgu_at: acceptedCguAt || null,
         stripe_onboarding_complete: false,
         created_at: new Date(),
         updated_at: new Date(),

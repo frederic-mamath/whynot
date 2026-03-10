@@ -6,6 +6,7 @@ import { trpc } from "../../lib/trpc";
 import { setToken } from "../../lib/auth";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import Input from "@/components/ui/Input/Input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SignUpPage() {
   const navigate = useNavigate();
@@ -13,12 +14,14 @@ export default function SignUpPage() {
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedCgu, setAcceptedCgu] = useState(false);
   const [error, setError] = useState("");
 
   const isFormValid =
     nickname.trim().length >= 2 &&
     email.trim().length > 0 &&
-    password.length >= 6;
+    password.length >= 6 &&
+    acceptedCgu;
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
@@ -49,7 +52,7 @@ export default function SignUpPage() {
       return;
     }
 
-    registerMutation.mutate({ nickname, email, password });
+    registerMutation.mutate({ nickname, email, password, acceptedCgu: true });
   };
 
   return (
@@ -94,6 +97,36 @@ export default function SignUpPage() {
           placeholder={t("common.passwordPlaceholder")}
           onChange={(value) => setPassword(value)}
         />
+        <div className="rounded-xl border border-border p-4 mb-4 flex gap-3 items-start">
+          <Checkbox
+            id="cgu"
+            checked={acceptedCgu}
+            onCheckedChange={(checked) => setAcceptedCgu(checked === true)}
+            className="mt-0.5 shrink-0"
+          />
+          <label
+            htmlFor="cgu"
+            className="font-outfit text-foreground text-[13px] leading-[20px] cursor-pointer"
+          >
+            J&apos;accepte les{" "}
+            <Link
+              to="/cgu"
+              className="text-primary underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Conditions Générales d&apos;Utilisation
+            </Link>{" "}
+            et la{" "}
+            <Link
+              to="/politique-de-confidentialite"
+              className="text-primary underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Politique de Confidentialité
+            </Link>{" "}
+            de Popup.
+          </label>
+        </div>
         {error && (
           <p className="text-destructive text-xs font-outfit mb-3">{error}</p>
         )}
