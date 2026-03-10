@@ -38,7 +38,7 @@ import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 function AppContent() {
   return (
     <>
-      <div className="max-w-[460px]">
+      <div className="max-w-[460px] flex-1">
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />

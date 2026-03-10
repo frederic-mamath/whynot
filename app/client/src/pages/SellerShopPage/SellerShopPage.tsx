@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import ProductForm from "./ProductForm";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import Tabs from "@/components/ui/Tabs";
+import MyShopTab from "./MyShopTab/MyShopTab";
 
 export default function SellerShopPage() {
   const navigate = useNavigate();
@@ -85,16 +86,7 @@ export default function SellerShopPage() {
       />
 
       {/* Tab content */}
-      {activeTabId === "boutique" && (
-        <BoutiqueTab
-          products={products ?? []}
-          isLoading={productsLoading}
-          onAddProduct={() => setActiveTabId("add-product")}
-          onEditProduct={(productId) =>
-            navigate(`/seller/shop/products/${productId}/edit`)
-          }
-        />
-      )}
+      {activeTabId === "boutique" && <MyShopTab products={products ?? []} />}
 
       {activeTabId === "add-product" && (
         <ProductForm
