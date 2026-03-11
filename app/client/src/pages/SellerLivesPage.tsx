@@ -37,9 +37,12 @@ export default function SellerLivePage() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
 
-  const { data, isLoading, refetch } = trpc.live.listByHost.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-  });
+  const { data, isLoading, refetch } = trpc.live.listByHost.useQuery(
+    undefined,
+    {
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const scheduleMutation = trpc.live.schedule.useMutation({
     onSuccess: () => {
@@ -73,7 +76,11 @@ export default function SellerLivePage() {
       return;
     }
     const startsAt = new Date(`${date}T${time}:00`).toISOString();
-    scheduleMutation.mutate({ name: name.trim(), description: description.trim() || undefined, startsAt });
+    scheduleMutation.mutate({
+      name: name.trim(),
+      description: description.trim() || undefined,
+      startsAt,
+    });
   }
 
   const tabs = [
@@ -84,8 +91,14 @@ export default function SellerLivePage() {
   return (
     <div className="flex flex-col min-h-screen pb-4">
       <div className="px-4 pt-6 pb-2">
-        <h1 className="font-syne font-extrabold text-xl text-foreground mb-4">Lives</h1>
-        <Tabs selectedTabId={activeTab} items={tabs} onClickItem={setActiveTab} />
+        <h1 className="font-syne font-extrabold text-xl text-foreground mb-4">
+          Lives
+        </h1>
+        <Tabs
+          selectedTabId={activeTab}
+          items={tabs}
+          onClickItem={setActiveTab}
+        />
       </div>
 
       {activeTab === "programme" && (
@@ -127,7 +140,9 @@ export default function SellerLivePage() {
                           label="Démarrer"
                           className="bg-primary text-primary-foreground shrink-0 text-xs px-3"
                           disabled={startMutation.isPending}
-                          onClick={() => startMutation.mutate({ liveId: live.id })}
+                          onClick={() =>
+                            startMutation.mutate({ liveId: live.id })
+                          }
                         />
                       </div>
                     </CardContent>
@@ -166,7 +181,9 @@ export default function SellerLivePage() {
                         </div>
                         <span className="text-xs font-outfit text-muted-foreground shrink-0 flex items-center gap-1">
                           {live.status === "active" ? (
-                            <span className="text-primary font-bold">En cours</span>
+                            <span className="text-primary font-bold">
+                              En cours
+                            </span>
                           ) : (
                             "Terminé"
                           )}
@@ -183,7 +200,10 @@ export default function SellerLivePage() {
       )}
 
       {activeTab === "new" && (
-        <form onSubmit={handleSchedule} className="flex flex-col gap-4 px-4 pt-4">
+        <form
+          onSubmit={handleSchedule}
+          className="flex flex-col gap-4 px-4 pt-4"
+        >
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="live-name">Nom du live *</Label>
             <Input
@@ -243,7 +263,11 @@ export default function SellerLivePage() {
 
           <ButtonV2
             type="submit"
-            label={scheduleMutation.isPending ? "Programmation…" : "Programmer ce live"}
+            label={
+              scheduleMutation.isPending
+                ? "Programmation…"
+                : "Programmer ce live"
+            }
             className="bg-primary text-primary-foreground mt-2"
             disabled={scheduleMutation.isPending}
           />

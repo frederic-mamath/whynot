@@ -61,11 +61,7 @@ export class ProductRepository {
   async findByChannelId(channelId: number): Promise<Product[]> {
     return db
       .selectFrom("products")
-      .innerJoin(
-        "live_products",
-        "live_products.product_id",
-        "products.id",
-      )
+      .innerJoin("live_products", "live_products.product_id", "products.id")
       .selectAll("products")
       .where("live_products.live_id", "=", channelId)
       .where("products.is_active", "=", true)

@@ -1,57 +1,56 @@
-import { db } from '../db';
-import { Selectable } from 'kysely';
-import { LivesTable } from '../db/types';
+import { db } from "../db";
+import { Selectable } from "kysely";
+import { LivesTable } from "../db/types";
 
 export type Live = Selectable<LivesTable>;
 
 export class LiveRepository {
-
   async findById(id: number): Promise<Live | undefined> {
     return db
-      .selectFrom('lives')
+      .selectFrom("lives")
       .selectAll()
-      .where('id', '=', id)
+      .where("id", "=", id)
       .executeTakeFirst();
   }
 
   async findActive(): Promise<Live[]> {
     return db
-      .selectFrom('lives')
+      .selectFrom("lives")
       .selectAll()
-      .where('status', '=', 'active')
-      .orderBy('created_at', 'desc')
+      .where("status", "=", "active")
+      .orderBy("created_at", "desc")
       .execute();
   }
 
   async findByHost(hostId: number): Promise<Live[]> {
     return db
-      .selectFrom('lives')
+      .selectFrom("lives")
       .selectAll()
-      .where('host_id', '=', hostId)
-      .orderBy('starts_at', 'desc')
+      .where("host_id", "=", hostId)
+      .orderBy("starts_at", "desc")
       .execute();
   }
 
   /** Lives scheduled in the future (status = 'scheduled'), ordered ASC */
   async findScheduledByHost(hostId: number): Promise<Live[]> {
     return db
-      .selectFrom('lives')
+      .selectFrom("lives")
       .selectAll()
-      .where('host_id', '=', hostId)
-      .where('status', '=', 'scheduled')
-      .where('starts_at', '>', new Date())
-      .orderBy('starts_at', 'asc')
+      .where("host_id", "=", hostId)
+      .where("status", "=", "scheduled")
+      .where("starts_at", ">", new Date())
+      .orderBy("starts_at", "asc")
       .execute();
   }
 
   /** Lives in the past (starts_at <= now), ordered DESC */
   async findPastByHost(hostId: number): Promise<Live[]> {
     return db
-      .selectFrom('lives')
+      .selectFrom("lives")
       .selectAll()
-      .where('host_id', '=', hostId)
-      .where('starts_at', '<=', new Date())
-      .orderBy('starts_at', 'desc')
+      .where("host_id", "=", hostId)
+      .where("starts_at", "<=", new Date())
+      .orderBy("starts_at", "desc")
       .execute();
   }
 
@@ -66,7 +65,7 @@ export class LiveRepository {
   }): Promise<Live> {
     const now = new Date();
     return db
-      .insertInto('lives')
+      .insertInto("lives")
       .values({
         name: data.name,
         host_id: data.host_id,
@@ -75,7 +74,7 @@ export class LiveRepository {
         starts_at: data.starts_at ?? now,
         ends_at: data.ends_at ?? null,
         description: data.description ?? null,
-        status: 'active',
+        status: "active",
         created_at: now,
       })
       .returningAll()
@@ -90,14 +89,14 @@ export class LiveRepository {
     description?: string | null;
   }): Promise<Live> {
     return db
-      .insertInto('lives')
+      .insertInto("lives")
       .values({
         name: data.name,
         host_id: data.host_id,
         starts_at: data.starts_at,
         ends_at: data.ends_at ?? null,
         description: data.description ?? null,
-        status: 'scheduled',
+        status: "scheduled",
         created_at: new Date(),
       })
       .returningAll()
@@ -106,9 +105,9 @@ export class LiveRepository {
 
   async start(liveId: number): Promise<Live | undefined> {
     return db
-      .updateTable('lives')
-      .set({ status: 'active' })
-      .where('id', '=', liveId)
+      .updateTable("lives")
+      .set({ status: "active" })
+      .where("id", "=", liveId)
       .returningAll()
       .executeTakeFirst();
   }
@@ -119,13 +118,13 @@ export class LiveRepository {
     const isEarly = live?.ends_at ? now < live.ends_at : false;
 
     return db
-      .updateTable('lives')
+      .updateTable("lives")
       .set({
-        status: 'ended',
+        status: "ended",
         ended_at: now,
         ...(isEarly ? { session_stopped_at: now } : {}),
       })
-      .where('id', '=', liveId)
+      .where("id", "=", liveId)
       .returningAll()
       .executeTakeFirst();
   }
@@ -137,39 +136,39 @@ export class LiveRepository {
 
   async isActive(liveId: number): Promise<boolean> {
     const live = await db
-      .selectFrom('lives')
-      .select(['status'])
-      .where('id', '=', liveId)
-      .where('status', '=', 'active')
+      .selectFrom("lives")
+      .select(["status"])
+      .where("id", "=", liveId)
+      .where("status", "=", "active")
       .executeTakeFirst();
     return live !== undefined;
   }
 
   async getStatus(liveId: number): Promise<string | undefined> {
     const result = await db
-      .selectFrom('lives')
-      .select(['status'])
-      .where('id', '=', liveId)
+      .selectFrom("lives")
+      .select(["status"])
+      .where("id", "=", liveId)
       .executeTakeFirst();
     return result?.status;
   }
 
   async isHost(liveId: number, userId: number): Promise<boolean> {
     const live = await db
-      .selectFrom('lives')
-      .select(['id'])
-      .where('id', '=', liveId)
-      .where('host_id', '=', userId)
+      .selectFrom("lives")
+      .select(["id"])
+      .where("id", "=", liveId)
+      .where("host_id", "=", userId)
       .executeTakeFirst();
     return live !== undefined;
   }
 
   async countActiveParticipants(liveId: number): Promise<number> {
     const result = await db
-      .selectFrom('live_participants')
-      .select(db.fn.countAll<number>().as('count'))
-      .where('live_id', '=', liveId)
-      .where('left_at', 'is', null)
+      .selectFrom("live_participants")
+      .select(db.fn.countAll<number>().as("count"))
+      .where("live_id", "=", liveId)
+      .where("left_at", "is", null)
       .executeTakeFirstOrThrow();
     return Number(result.count);
   }

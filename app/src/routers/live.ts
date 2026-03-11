@@ -185,7 +185,11 @@ export const liveRouter = router({
         is_private: input.isPrivate,
       });
 
-      await liveParticipantRepository.addParticipant(live.id, ctx.userId, "host");
+      await liveParticipantRepository.addParticipant(
+        live.id,
+        ctx.userId,
+        "host",
+      );
 
       const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
       const token = generateAgoraToken({
@@ -218,7 +222,10 @@ export const liveRouter = router({
 
       const live = await liveRepository.findById(input.channelId);
       if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Channel not found",
+        });
       }
 
       if (live.status !== "active") {
@@ -228,9 +235,14 @@ export const liveRouter = router({
         });
       }
 
-      const hasReachedCapacity = await liveRepository.hasReachedCapacity(input.channelId);
+      const hasReachedCapacity = await liveRepository.hasReachedCapacity(
+        input.channelId,
+      );
       if (hasReachedCapacity) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Channel is full" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Channel is full",
+        });
       }
 
       const alreadyJoined = await liveParticipantRepository.isActiveParticipant(
@@ -239,7 +251,11 @@ export const liveRouter = router({
       );
 
       if (!alreadyJoined) {
-        await liveParticipantRepository.addParticipant(input.channelId, ctx.userId, "viewer");
+        await liveParticipantRepository.addParticipant(
+          input.channelId,
+          ctx.userId,
+          "viewer",
+        );
       }
 
       const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
@@ -263,9 +279,7 @@ export const liveRouter = router({
    * List all active lives
    */
   list: publicProcedure
-    .input(
-      z.object({ includePrivate: z.boolean().default(false) }).optional(),
-    )
+    .input(z.object({ includePrivate: z.boolean().default(false) }).optional())
     .query(async ({ input }) => {
       let query = db
         .selectFrom("lives")
@@ -301,10 +315,14 @@ export const liveRouter = router({
     .query(async ({ input }) => {
       const live = await liveRepository.findById(input.channelId);
       if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Channel not found",
+        });
       }
 
-      const participants = await liveParticipantRepository.getActiveParticipants(input.channelId);
+      const participants =
+        await liveParticipantRepository.getActiveParticipants(input.channelId);
 
       return { channel: live, participants };
     }),
@@ -316,7 +334,9 @@ export const liveRouter = router({
     .input(z.object({ channelId: z.number() }))
     .query(async ({ input, ctx }) => {
       const participants =
-        await liveParticipantRepository.getActiveParticipantsWithUserInfo(input.channelId);
+        await liveParticipantRepository.getActiveParticipantsWithUserInfo(
+          input.channelId,
+        );
 
       return participants.map((p) => {
         const hasName = p.firstname || p.lastname;
@@ -342,12 +362,18 @@ export const liveRouter = router({
     .input(z.object({ channelId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in" });
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        });
       }
 
       const live = await liveRepository.findById(input.channelId);
       if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Channel not found",
+        });
       }
 
       if (live.host_id !== ctx.userId) {
@@ -370,7 +396,10 @@ export const liveRouter = router({
     .input(z.object({ channelId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in" });
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        });
       }
 
       const isActive = await liveParticipantRepository.isActiveParticipant(
@@ -379,10 +408,16 @@ export const liveRouter = router({
       );
 
       if (!isActive) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "You are not in this channel" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "You are not in this channel",
+        });
       }
 
-      await liveParticipantRepository.removeParticipant(input.channelId, ctx.userId);
+      await liveParticipantRepository.removeParticipant(
+        input.channelId,
+        ctx.userId,
+      );
 
       return { success: true };
     }),
@@ -394,7 +429,10 @@ export const liveRouter = router({
     .input(z.object({ channelId: z.number(), productId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in" });
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        });
       }
 
       const userRoles = await db
@@ -413,7 +451,10 @@ export const liveRouter = router({
 
       const live = await liveRepository.findById(input.channelId);
       if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Channel not found",
+        });
       }
 
       if (!(await isLiveHost(input.channelId, ctx.userId))) {
@@ -444,7 +485,10 @@ export const liveRouter = router({
         .executeTakeFirst();
 
       if (!product) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
       }
 
       const activeAuction = await db
@@ -465,7 +509,10 @@ export const liveRouter = router({
       const highlightedAt = new Date();
       await db
         .updateTable("lives")
-        .set({ highlighted_product_id: input.productId, highlighted_at: highlightedAt })
+        .set({
+          highlighted_product_id: input.productId,
+          highlighted_at: highlightedAt,
+        })
         .where("id", "=", input.channelId)
         .execute();
 
@@ -504,7 +551,10 @@ export const liveRouter = router({
     .input(z.object({ channelId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in" });
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        });
       }
 
       const userRoles = await db
@@ -523,7 +573,10 @@ export const liveRouter = router({
 
       const live = await liveRepository.findById(input.channelId);
       if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Channel not found",
+        });
       }
 
       if (!(await isLiveHost(input.channelId, ctx.userId))) {
@@ -572,7 +625,10 @@ export const liveRouter = router({
     .input(z.object({ channelId: z.number() }))
     .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in" });
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        });
       }
 
       const live = await db
@@ -582,7 +638,10 @@ export const liveRouter = router({
         .executeTakeFirst();
 
       if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Channel not found",
+        });
       }
 
       if (!live.highlighted_product_id) {

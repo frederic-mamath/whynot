@@ -1,7 +1,7 @@
-import { db } from '../db';
-import { sql } from 'kysely';
-import { auctionRepository } from '../repositories';
-import { broadcastToChannel } from '../websocket/broadcast';
+import { db } from "../db";
+import { sql } from "kysely";
+import { auctionRepository } from "../repositories";
+import { broadcastToChannel } from "../websocket/broadcast";
 
 function calculatePlatformFee(finalPrice: number): number {
   return Math.round(finalPrice * 0.07 * 100) / 100;
@@ -11,11 +11,14 @@ function calculateSellerPayout(finalPrice: number): number {
   return Math.round(finalPrice * 0.93 * 100) / 100;
 }
 
-async function isChannelHost(channelId: number, userId: number): Promise<boolean> {
+async function isChannelHost(
+  channelId: number,
+  userId: number,
+): Promise<boolean> {
   const channel = await db
-    .selectFrom('lives')
-    .select('host_id')
-    .where('id', '=', channelId)
+    .selectFrom("lives")
+    .select("host_id")
+    .where("id", "=", channelId)
     .executeTakeFirst();
   return channel?.host_id === userId;
 }
@@ -34,14 +37,16 @@ export async function closeAuction(auctionId: string): Promise<{
 }> {
   // 1. Get auction
   const auction = await auctionRepository.findById(auctionId);
-  
+
   if (!auction) {
     throw new Error(`Auction ${auctionId} not found`);
   }
 
   // 2. If already closed, return early (idempotent)
-  if (auction.status !== 'active') {
-    console.log(`[closeAuction] Auction ${auctionId} already ${auction.status}`);
+  if (auction.status !== "active") {
+    console.log(
+      `[closeAuction] Auction ${auctionId} already ${auction.status}`,
+    );
     return {
       auctionId,
       status: auction.status,
@@ -56,9 +61,9 @@ export async function closeAuction(auctionId: string): Promise<{
   return db.transaction().execute(async (trx) => {
     // Mark auction as completed
     await trx
-      .updateTable('auctions')
-      .set({ status: 'completed' })
-      .where('id', '=', auctionId)
+      .updateTable("auctions")
+      .set({ status: "completed" })
+      .where("id", "=", auctionId)
       .execute();
 
     let orderId = null;
@@ -73,7 +78,7 @@ export async function closeAuction(auctionId: string): Promise<{
       paymentDeadline.setDate(paymentDeadline.getDate() + 7); // +7 days
 
       const order = await trx
-        .insertInto('orders')
+        .insertInto("orders")
         .values({
           id: sql`gen_random_uuid()`,
           auction_id: auctionId,
@@ -83,7 +88,7 @@ export async function closeAuction(auctionId: string): Promise<{
           final_price: finalPrice.toFixed(2),
           platform_fee: platformFee.toFixed(2),
           seller_payout: sellerPayout.toFixed(2),
-          payment_status: 'pending',
+          payment_status: "pending",
           payment_deadline: paymentDeadline,
         })
         .returningAll()
@@ -93,27 +98,28 @@ export async function closeAuction(auctionId: string): Promise<{
 
       // Get winner info
       const winner = await trx
-        .selectFrom('users')
-        .select(['firstname', 'lastname'])
-        .where('id', '=', auction.highest_bidder_id)
+        .selectFrom("users")
+        .select(["firstname", "lastname"])
+        .where("id", "=", auction.highest_bidder_id)
         .executeTakeFirst();
 
-      winnerUsername = winner?.firstname && winner.lastname
-        ? `${winner.firstname} ${winner.lastname}`
-        : 'Anonymous';
+      winnerUsername =
+        winner?.firstname && winner.lastname
+          ? `${winner.firstname} ${winner.lastname}`
+          : "Anonymous";
     }
 
     // Clear highlighted product from channel
     await trx
-      .updateTable('lives')
+      .updateTable("lives")
       .set({ highlighted_product_id: null, highlighted_at: null })
-      .where('id', '=', auction.channel_id)
+      .where("id", "=", auction.channel_id)
       .execute();
 
     // Broadcast events (outside transaction to avoid locks)
     setTimeout(() => {
       broadcastToChannel(auction.channel_id, {
-        type: 'auction:ended',
+        type: "auction:ended",
         auctionId,
         winnerId: auction.highest_bidder_id,
         winnerUsername,
@@ -122,16 +128,18 @@ export async function closeAuction(auctionId: string): Promise<{
       });
 
       broadcastToChannel(auction.channel_id, {
-        type: 'PRODUCT_UNHIGHLIGHTED',
+        type: "PRODUCT_UNHIGHLIGHTED",
         channelId: auction.channel_id,
       });
     }, 0);
 
-    console.log(`[closeAuction] Closed auction ${auctionId}, winner: ${winnerUsername || 'none'}, final price: $${auction.current_bid}`);
+    console.log(
+      `[closeAuction] Closed auction ${auctionId}, winner: ${winnerUsername || "none"}, final price: $${auction.current_bid}`,
+    );
 
     return {
       auctionId,
-      status: 'completed',
+      status: "completed",
       winnerId: auction.highest_bidder_id,
       winnerUsername,
       finalPrice: parseFloat(auction.current_bid),
