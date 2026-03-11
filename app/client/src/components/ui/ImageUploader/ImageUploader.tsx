@@ -1,5 +1,14 @@
-import { useState, useRef } from "react";
-import { Camera, Link as LinkIcon, X, Loader2, Images } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import {
+  Camera,
+  Link as LinkIcon,
+  X,
+  Loader2,
+  Images,
+  FolderOpen,
+  SwitchCamera,
+  Plus,
+} from "lucide-react";
 import { Button } from "../button";
 import { Input } from "../input";
 import { Label } from "../label";
@@ -21,6 +30,7 @@ interface ImageUploaderProps {
 }
 
 type TabMode = "capture" | "url";
+type CaptureSource = "gallery" | "back" | "front" | "file";
 
 export function ImageUploader({
   images,
@@ -30,8 +40,43 @@ export function ImageUploader({
   const [activeTab, setActiveTab] = useState<TabMode>("capture");
   const [urlInput, setUrlInput] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const backCameraInputRef = useRef<HTMLInputElement>(null);
+  const frontCameraInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function onOutsideClick(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", onOutsideClick);
+    }
+    return () => document.removeEventListener("mousedown", onOutsideClick);
+  }, [dropdownOpen]);
+
+  function triggerInput(source: CaptureSource) {
+    setDropdownOpen(false);
+    const map: Record<
+      CaptureSource,
+      React.RefObject<HTMLInputElement | null>
+    > = {
+      gallery: galleryInputRef,
+      back: backCameraInputRef,
+      front: frontCameraInputRef,
+      file: fileInputRef,
+    };
+    map[source].current?.click();
+  }
 
   const uploadMutation = trpc.image.upload.useMutation();
 
@@ -69,13 +114,15 @@ export function ImageUploader({
       toast.error(error.message || "Failed to upload image");
     } finally {
       setIsUploading(false);
-      // Reset both file inputs so the same file can be selected again
-      if (cameraInputRef.current) {
-        cameraInputRef.current.value = "";
-      }
-      if (galleryInputRef.current) {
-        galleryInputRef.current.value = "";
-      }
+      // Reset all file inputs so the same file can be selected again
+      [
+        galleryInputRef,
+        backCameraInputRef,
+        frontCameraInputRef,
+        fileInputRef,
+      ].forEach((ref) => {
+        if (ref.current) ref.current.value = "";
+      });
     }
   };
 
@@ -173,78 +220,108 @@ export function ImageUploader({
           {/* Tab content */}
           {activeTab === "capture" ? (
             <div className="space-y-2">
-              {/* Hidden input for camera (capture attribute forces camera on mobile) */}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="image-camera-input"
-              />
-              {/* Hidden input for gallery (no capture = opens file picker / gallery) */}
+              {/* Hidden inputs — one per source */}
               <input
                 ref={galleryInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleFileSelect}
                 className="hidden"
-                id="image-gallery-input"
               />
-              <div className="flex gap-2">
+              <input
+                ref={backCameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <input
+                ref={frontCameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              {/* Single trigger + dropdown */}
+              <div className="relative" ref={dropdownRef}>
                 <Button
                   type="button"
                   variant="outline"
                   className={cn(
-                    "flex-1 h-24 border-2 border-dashed flex flex-col items-center justify-center gap-1",
+                    "w-full h-20 border-2 border-dashed flex items-center justify-center gap-2",
                     isUploading && "pointer-events-none opacity-60",
                   )}
-                  onClick={() => cameraInputRef.current?.click()}
+                  onClick={() => setDropdownOpen((v) => !v)}
                   disabled={isUploading}
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="size-6 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">
-                        Uploading...
+                      <Loader2 className="size-5 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">
+                        Uploading…
                       </span>
                     </>
                   ) : (
                     <>
-                      <Camera className="size-6 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        Take a photo
+                      <Plus className="size-5 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Ajouter une photo
                       </span>
                     </>
                   )}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "flex-1 h-24 border-2 border-dashed flex flex-col items-center justify-center gap-1",
-                    isUploading && "pointer-events-none opacity-60",
-                  )}
-                  onClick={() => galleryInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="size-6 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">
-                        Uploading...
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Images className="size-6 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        Gallery
-                      </span>
-                    </>
-                  )}
-                </Button>
+
+                {dropdownOpen && (
+                  <div className="absolute bottom-[calc(100%+6px)] left-0 right-0 z-50 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+                    {(
+                      [
+                        {
+                          source: "gallery" as CaptureSource,
+                          icon: Images,
+                          label: "Photo Library",
+                        },
+                        {
+                          source: "back" as CaptureSource,
+                          icon: Camera,
+                          label: "Take Photo",
+                        },
+                        {
+                          source: "front" as CaptureSource,
+                          icon: SwitchCamera,
+                          label: "Front Camera",
+                        },
+                        {
+                          source: "file" as CaptureSource,
+                          icon: FolderOpen,
+                          label: "Choose File",
+                        },
+                      ] as const
+                    ).map(({ source, icon: Icon, label }, i, arr) => (
+                      <button
+                        key={source}
+                        type="button"
+                        onClick={() => triggerInput(source)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-foreground hover:bg-muted transition-colors",
+                          i < arr.length - 1 && "border-b border-border",
+                        )}
+                      >
+                        <span>{label}</span>
+                        <Icon className="size-5 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : (

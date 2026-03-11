@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 function todayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -118,7 +119,7 @@ export default function SellerLivePage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {(data?.upcoming ?? []).map((live) => (
-                  <Card key={live.id}>
+                  <Card className={cn("bg-b-fourth")} key={live.id}>
                     <CardContent className="pt-4 pb-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex flex-col gap-0.5 min-w-0">
@@ -167,7 +168,7 @@ export default function SellerLivePage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {(data?.past ?? []).map((live) => (
-                  <Card key={live.id} className="opacity-80">
+                  <Card key={live.id} className={cn("bg-b-fourth")}>
                     <CardContent className="pt-4 pb-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex flex-col gap-0.5 min-w-0">
