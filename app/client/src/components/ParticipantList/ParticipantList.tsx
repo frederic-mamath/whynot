@@ -23,7 +23,7 @@ export default function ParticipantList({
   onClose,
 }: ParticipantListProps) {
   const { t } = useTranslation();
-  const { data: participants, isLoading } = trpc.channel.participants.useQuery(
+  const { data: participants, isLoading } = trpc.live.participants.useQuery(
     { channelId },
     { enabled: isOpen, refetchInterval: isOpen ? 5000 : false },
   );

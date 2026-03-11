@@ -2,13 +2,13 @@ import { Kysely, Generated, Selectable } from "kysely";
 
 export interface Database {
   users: UsersTable;
-  channels: ChannelsTable;
-  channel_participants: ChannelParticipantsTable;
+  lives: LivesTable;
+  live_participants: LiveParticipantsTable;
+  live_products: LiveProductsTable;
   messages: MessagesTable;
   shops: ShopsTable;
   user_shop_roles: UserShopRolesTable;
   products: ProductsTable;
-  channel_products: ChannelProductsTable;
   vendor_promoted_products: VendorPromotedProductsTable;
   roles: RolesTable;
   user_roles: UserRolesTable;
@@ -42,27 +42,37 @@ export interface UsersTable {
   updated_at: Date;
 }
 
-export interface ChannelsTable {
+export interface LivesTable {
   id: Generated<number>;
   name: string;
   host_id: number;
   status: string;
   max_participants: number | null;
   is_private: boolean | null;
+  starts_at: Date;
+  ends_at: Date | null;
+  session_stopped_at: Date | null;
+  description: string | null;
   created_at: Date;
   ended_at: Date | null;
   highlighted_product_id: number | null;
   highlighted_at: Date | null;
 }
 
-export interface ChannelParticipantsTable {
+// Backward compat alias
+export type ChannelsTable = LivesTable;
+
+export interface LiveParticipantsTable {
   id: Generated<number>;
-  channel_id: number;
+  live_id: number;
   user_id: number;
   joined_at: Date;
   left_at: Date | null;
   role: string;
 }
+
+// Backward compat alias
+export type ChannelParticipantsTable = LiveParticipantsTable;
 
 export interface MessagesTable {
   id: Generated<number>;
@@ -106,12 +116,15 @@ export interface ProductsTable {
   updated_at: Date;
 }
 
-export interface ChannelProductsTable {
+export interface LiveProductsTable {
   id: Generated<number>;
-  channel_id: number;
+  live_id: number;
   product_id: number;
   created_at: Date;
 }
+
+// Backward compat alias
+export type ChannelProductsTable = LiveProductsTable;
 
 export interface VendorPromotedProductsTable {
   id: Generated<number>;
@@ -185,11 +198,15 @@ export interface OrdersTable {
 export type User = Selectable<UsersTable>;
 export type Shop = Selectable<ShopsTable>;
 export type Product = Selectable<ProductsTable>;
-export type Channel = Selectable<ChannelsTable>;
-export type ChannelParticipant = Selectable<ChannelParticipantsTable>;
+export type Live = Selectable<LivesTable>;
+export type LiveParticipant = Selectable<LiveParticipantsTable>;
+export type LiveProduct = Selectable<LiveProductsTable>;
+// Backward compat aliases
+export type Channel = Live;
+export type ChannelParticipant = LiveParticipant;
+export type ChannelProduct = LiveProduct;
 export type Message = Selectable<MessagesTable>;
 export type UserShopRole = Selectable<UserShopRolesTable>;
-export type ChannelProduct = Selectable<ChannelProductsTable>;
 export type VendorPromotedProduct = Selectable<VendorPromotedProductsTable>;
 export type Role = Selectable<RolesTable>;
 export type UserRole = Selectable<UserRolesTable>;

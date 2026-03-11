@@ -8,8 +8,8 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import SignUpPage from "./pages/SignUpPage/SignUpPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChannelListPage from "./pages/ChannelListPage";
-import ChannelCreatePage from "./pages/ChannelCreatePage";
-import ChannelDetailsPage from "./pages/ChannelDetailsPage";
+import LiveListPage from "./pages/LiveListPage";
+import LiveDetailsPage from "./pages/LiveDetailsPage";
 import ShopListPage from "./pages/ShopListPage";
 import ShopCreatePage from "./pages/ShopCreatePage";
 import ShopDetailsPage from "./pages/ShopDetailsPage";
@@ -77,15 +77,10 @@ function AppContent() {
             }
           />
           <Route path="/channels" element={<ChannelListPage />} />
-          <Route
-            path="/create-channel"
-            element={
-              <ProtectedRoute requireRole="SELLER">
-                <ChannelCreatePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/channel/:channelId" element={<ChannelDetailsPage />} />
+          <Route path="/lives" element={<LiveListPage />} />
+          <Route path="/live/:channelId" element={<LiveDetailsPage />} />
+          {/* /channel/:channelId kept for backward compat – will be removed later */}
+          <Route path="/channel/:channelId" element={<LiveDetailsPage />} />
           <Route
             path="/shops"
             element={

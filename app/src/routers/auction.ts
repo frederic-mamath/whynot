@@ -48,7 +48,7 @@ async function isChannelHost(
   userId: number,
 ): Promise<boolean> {
   const channel = await db
-    .selectFrom("channels")
+    .selectFrom("lives")
     .select("host_id")
     .where("id", "=", channelId)
     .executeTakeFirst();
@@ -112,7 +112,7 @@ export const auctionRouter = router({
 
       // Find channel where this product is highlighted
       const channel = await db
-        .selectFrom("channels")
+        .selectFrom("lives")
         .selectAll()
         .where("highlighted_product_id", "=", input.productId)
         .where("status", "=", "active")

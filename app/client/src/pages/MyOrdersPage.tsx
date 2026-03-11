@@ -270,7 +270,7 @@ function EmptyState({ filter }: { filter: FilterType }) {
       <p className="text-muted-foreground mb-6">{getDescription()}</p>
       {filter === "all" && (
         <Button asChild>
-          <Link to="/channels">
+          <Link to="/lives">
             <Package className="size-4 mr-2" />
             {t("orders.browseChannels")}
           </Link>

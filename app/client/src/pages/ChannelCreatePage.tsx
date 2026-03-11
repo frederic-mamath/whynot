@@ -38,9 +38,9 @@ export default function ChannelCreatePage() {
     }
   }, [userShops, isLoadingShops]);
 
-  const createMutation = trpc.channel.create.useMutation({
+  const createMutation = trpc.live.create.useMutation({
     onSuccess: (data) => {
-      navigate(`/channel/${data.channel.id}`);
+      navigate(`/live/${data.channel.id}`);
     },
     onError: (err) => {
       setError(err.message);
@@ -72,7 +72,7 @@ export default function ChannelCreatePage() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <Button variant="ghost" asChild>
-          <Link to="/channels">
+          <Link to="/lives">
             <ArrowLeft className="size-4 mr-2" />
             {t("channels.create.backToChannels")}
           </Link>

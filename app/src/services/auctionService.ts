@@ -13,7 +13,7 @@ function calculateSellerPayout(finalPrice: number): number {
 
 async function isChannelHost(channelId: number, userId: number): Promise<boolean> {
   const channel = await db
-    .selectFrom('channels')
+    .selectFrom('lives')
     .select('host_id')
     .where('id', '=', channelId)
     .executeTakeFirst();
@@ -105,7 +105,7 @@ export async function closeAuction(auctionId: string): Promise<{
 
     // Clear highlighted product from channel
     await trx
-      .updateTable('channels')
+      .updateTable('lives')
       .set({ highlighted_product_id: null, highlighted_at: null })
       .where('id', '=', auction.channel_id)
       .execute();

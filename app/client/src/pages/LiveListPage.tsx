@@ -15,7 +15,7 @@ import {
 import { Skeleton } from "../components/ui/skeleton";
 import { Alert, AlertDescription } from "../components/ui/alert";
 
-export default function ChannelListPage() {
+export default function LiveListPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { data: channels, isLoading } = trpc.live.list.useQuery();

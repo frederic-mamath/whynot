@@ -214,7 +214,7 @@ export function ChatPanel({
   }, [messageHistory]);
 
   // WebSocket event handling for auction events
-  trpc.channel.subscribeToEvents.useSubscription(
+  trpc.live.subscribeToEvents.useSubscription(
     { channelId },
     {
       enabled: true,

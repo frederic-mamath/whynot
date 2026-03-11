@@ -264,7 +264,7 @@ export default function NavBar() {
                         {t("navbar.browse")}
                       </div>
                       <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/channels" onClick={closeSheet}>
+                        <Link to="/lives" onClick={closeSheet}>
                           <Video className="size-4 mr-2" />
                           {t("navbar.channels")}
                         </Link>

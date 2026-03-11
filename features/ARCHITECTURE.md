@@ -50,3 +50,5 @@ The summary file tracks the overall progress of the feature. It must contain a t
 | User Story | Status                               |
 | :--------- | :----------------------------------- |
 | As a...    | [planned \| developing \| completed] |
+
+You will add a section to store the initial prompt that was used for the feature.

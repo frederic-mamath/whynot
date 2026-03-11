@@ -62,12 +62,12 @@ export class ProductRepository {
     return db
       .selectFrom("products")
       .innerJoin(
-        "channel_products",
-        "channel_products.product_id",
+        "live_products",
+        "live_products.product_id",
         "products.id",
       )
       .selectAll("products")
-      .where("channel_products.channel_id", "=", channelId)
+      .where("live_products.live_id", "=", channelId)
       .where("products.is_active", "=", true)
       .execute();
   }

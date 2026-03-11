@@ -222,7 +222,7 @@ export const vendorPromotionRouter = router({
 
       const products = await db
         .selectFrom('products')
-        .innerJoin('channel_products', 'channel_products.product_id', 'products.id')
+        .innerJoin('live_products', 'live_products.product_id', 'products.id')
         .leftJoin(
           (eb) =>
             eb
@@ -253,7 +253,7 @@ export const vendorPromotionRouter = router({
               .end()
               .as('is_promoted'),
         ])
-        .where('channel_products.channel_id', '=', input.channelId)
+        .where('live_products.live_id', '=', input.channelId)
         .where('products.shop_id', 'in', shopIds)
         .where('products.is_active', '=', true)
         .orderBy('products.created_at', 'desc')

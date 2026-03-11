@@ -1,6 +1,6 @@
 import { router } from "../trpc";
 import { authRouter } from "./auth";
-import { channelRouter } from "./channel";
+import { liveRouter } from "./live";
 import { shopRouter } from "./shop";
 import { productRouter } from "./product";
 import { vendorPromotionRouter } from "./vendorPromotion";
@@ -16,7 +16,7 @@ import { catalogRouter } from "./catalog";
 
 export const appRouter = router({
   auth: authRouter,
-  channel: channelRouter,
+  live: liveRouter,
   shop: shopRouter,
   product: productRouter,
   vendorPromotion: vendorPromotionRouter,

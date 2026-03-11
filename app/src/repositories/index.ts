@@ -16,10 +16,15 @@ export { userRepository } from "./UserRepository";
 export { shopRepository } from "./ShopRepository";
 export { userShopRoleRepository } from "./UserShopRoleRepository";
 export { productRepository } from "./ProductRepository";
-export { channelProductRepository } from "./ChannelProductRepository";
-export { channelRepository } from "./ChannelRepository";
+// Live repositories (new names)
+export { liveRepository } from "./LiveRepository";
+export { liveProductRepository } from "./LiveProductRepository";
+export { liveParticipantRepository } from "./LiveParticipantRepository";
+// Backward compat — channel* aliases point to live* implementations
+export { liveRepository as channelRepository } from "./LiveRepository";
+export { liveProductRepository as channelProductRepository } from "./LiveProductRepository";
+export { liveParticipantRepository as channelParticipantRepository } from "./LiveParticipantRepository";
 export { authProviderRepository } from "./AuthProviderRepository";
-export { channelParticipantRepository } from "./ChannelParticipantRepository";
 export { vendorPromotedProductRepository } from "./VendorPromotedProductRepository";
 export { roleRepository } from "./RoleRepository";
 export { userRoleRepository } from "./UserRoleRepository";

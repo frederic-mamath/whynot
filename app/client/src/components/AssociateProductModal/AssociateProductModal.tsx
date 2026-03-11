@@ -23,7 +23,7 @@ export default function AssociateProductModal({
   );
   const utils = trpc.useUtils();
 
-  const { data: channels = [] } = trpc.channel.list.useQuery();
+  const { data: channels = [] } = trpc.live.list.useQuery();
   const { data: associations = [] } =
     trpc.product.listChannelAssociations.useQuery({
       productId,

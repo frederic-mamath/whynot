@@ -41,7 +41,7 @@ export default function PromotedProducts({
   const activeProducts = products.filter((p) => p.isActive);
   const { t } = useTranslation();
 
-  const highlightMutation = trpc.channel.highlightProduct.useMutation({
+  const highlightMutation = trpc.live.highlightProduct.useMutation({
     onSuccess: () => {
       toast.success(t("promotedProducts.highlighted"));
     },
@@ -50,7 +50,7 @@ export default function PromotedProducts({
     },
   });
 
-  const unhighlightMutation = trpc.channel.unhighlightProduct.useMutation({
+  const unhighlightMutation = trpc.live.unhighlightProduct.useMutation({
     onSuccess: () => {
       toast.success(t("promotedProducts.unhighlighted"));
     },

@@ -45,7 +45,7 @@ interface ChannelConfig {
   isHost: boolean;
 }
 
-export default function ChannelDetailsPage() {
+export default function LiveDetailsPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
   const { role } = useUserRole();

@@ -43,7 +43,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null,
     });
-    window.location.href = '/channels';
+    window.location.href = '/lives';
   };
 
   render() {
