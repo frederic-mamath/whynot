@@ -86,7 +86,12 @@ export default function SellerShopPage() {
       />
 
       {/* Tab content */}
-      {activeTabId === "boutique" && <MyShopTab products={products ?? []} />}
+      {activeTabId === "boutique" && (
+        <MyShopTab
+          products={products ?? []}
+          onClickAddProduct={() => setActiveTabId("add-product")}
+        />
+      )}
 
       {activeTabId === "add-product" && (
         <ProductForm
