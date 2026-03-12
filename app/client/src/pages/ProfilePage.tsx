@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
+import { removeToken } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +24,7 @@ import {
   CreditCard,
   CheckCircle2,
   AlertCircle,
+  LogOut,
 } from "lucide-react";
 import {
   Dialog,
@@ -66,6 +69,7 @@ const emptyAddress: AddressFormData = {
 
 export default function ProfilePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -78,6 +82,13 @@ export default function ProfilePage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const utils = trpc.useUtils();
+
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      removeToken();
+      navigate("/");
+    },
+  });
 
   // Load profile
   const { data: profile, isLoading } = trpc.profile.me.useQuery();
@@ -456,6 +467,19 @@ export default function ProfilePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Sign out */}
+      <div className="mt-6 pb-4">
+        <Button
+          variant="outline"
+          className="w-full text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+          onClick={() => logoutMutation.mutate()}
+          disabled={logoutMutation.isPending}
+        >
+          <LogOut className="size-4 mr-2" />
+          {logoutMutation.isPending ? "Déconnexion…" : "Se déconnecter"}
+        </Button>
+      </div>
 
       {/* Address Dialog */}
       <Dialog open={addressDialogOpen} onOpenChange={setAddressDialogOpen}>

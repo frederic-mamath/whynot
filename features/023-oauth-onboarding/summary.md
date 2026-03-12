@@ -6,13 +6,8 @@ Après une connexion OAuth (Apple ou Google), tout nouvel utilisateur est rediri
 
 ## Prompt initial
 
-Okay let's jump back to our issue with Apple authentication.
-
-The problem is that when I try to login with Apple authentication, it loops back to the apple authentication page.
-
-[…fix Apple auth…]
-
-As a user, when I sign in successfully with Apple or Google, I want to see a page to set my mandatory nickname and add an optional avatar.
+Follow instructions in plan.prompt.md.
+As a user, when i sign in successfully with Apple or Google, I want to see a page to set my mandatory nickname and add an optional avatar.
 
 Do you have any questions ?
 

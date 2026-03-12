@@ -36,15 +36,13 @@ import CguPage from "./pages/CguPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import { Navigate } from "react-router-dom";
-import { isAuthenticated } from "./lib/auth";
+import BottomNav from "./components/BottomNav";
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
-  const authenticated = isAuthenticated();
   const { data, isLoading } = trpc.profile.me.useQuery(undefined, {
-    enabled: authenticated,
+    retry: false,
   });
 
-  if (!authenticated) return <>{children}</>;
   if (isLoading) return null;
   if (data && !data.hasCompletedOnboarding) {
     return <Navigate to="/onboarding" replace />;
@@ -53,9 +51,14 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
+  const { data: profile } = trpc.profile.me.useQuery(undefined, {
+    retry: false,
+  });
+  const showBottomNav = profile?.hasCompletedOnboarding === true;
+
   return (
     <>
-      <div className="max-w-[460px] flex-1">
+      <div className={`max-w-[460px] flex-1${showBottomNav ? " pb-20" : ""}`}>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -68,7 +71,14 @@ function AppContent() {
             path="/politique-de-confidentialite"
             element={<PolitiqueConfidentialitePage />}
           />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <OnboardingGuard>
+                <DashboardPage />
+              </OnboardingGuard>
+            }
+          />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route
             path="/profile"
@@ -169,6 +179,7 @@ function AppContent() {
           </Route>
         </Routes>
       </div>
+      {showBottomNav && <BottomNav />}
       <Toaster />
     </>
   );

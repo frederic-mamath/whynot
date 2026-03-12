@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Radio, Compass, Store } from "lucide-react";
+import { Home, Radio, User, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -18,9 +18,9 @@ const navItems: NavItem[] = [
   },
   { icon: null, label: "GO", path: "/seller/go", isCenter: true },
   {
-    icon: <Compass className="w-5 h-5" />,
-    label: "Explorer",
-    path: "/seller/explorer",
+    icon: <User className="w-5 h-5" />,
+    label: "Profil",
+    path: "/profile",
   },
   {
     icon: <Store className="w-5 h-5" />,

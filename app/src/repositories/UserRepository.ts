@@ -217,7 +217,7 @@ export class UserRepository {
       .values({
         email,
         password: null as any,
-        nickname: email.split("@")[0].toLowerCase(),
+        nickname: `user_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         firstname: firstName || null,
         lastname: lastName || null,
         first_name: firstName || null,
