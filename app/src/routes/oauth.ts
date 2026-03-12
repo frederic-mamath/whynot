@@ -51,7 +51,19 @@ router.get(
 // Apple OAuth - callback (Apple uses POST)
 router.post("/auth/apple/callback", (req, res, next) => {
   passport.authenticate("apple", (err: any, user: any) => {
-    if (err || !user) {
+    if (err) {
+      console.error(
+        "[Apple OAuth] Authentication error:",
+        err.message,
+        err.stack,
+      );
+      return res.redirect(`${FRONTEND_URL}/login?error=apple_auth_failed`);
+    }
+    if (!user) {
+      console.error(
+        "[Apple OAuth] No user returned from Apple strategy. req.body keys:",
+        Object.keys(req.body || {}),
+      );
       return res.redirect(`${FRONTEND_URL}/login?error=apple_auth_failed`);
     }
 
