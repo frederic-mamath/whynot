@@ -22,6 +22,9 @@ export const profileRouter = router({
     return {
       id: user.id,
       email: user.email,
+      nickname: user.nickname,
+      avatarUrl: user.avatar_url || null,
+      hasCompletedOnboarding: user.has_completed_onboarding,
       firstName: user.first_name || user.firstname || null,
       lastName: user.last_name || user.lastname || null,
       addresses: addresses.map((addr) => ({
@@ -38,6 +41,45 @@ export const profileRouter = router({
       })),
     };
   }),
+
+  /**
+   * Complete onboarding: set nickname + optional avatar
+   */
+  completeOnboarding: protectedProcedure
+    .input(
+      z.object({
+        nickname: z
+          .string()
+          .min(1)
+          .max(50)
+          .regex(/^[a-zA-Z0-9_.-]+$/, {
+            message: "Nickname can only contain letters, numbers, _ . -",
+          }),
+        avatarUrl: z.string().url().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check nickname uniqueness (exclude current user)
+      const existing = await userRepository.findByNickname(input.nickname);
+      if (existing && existing.id !== ctx.user.id) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Ce pseudo est déjà pris",
+        });
+      }
+
+      const updated = await userRepository.updateProfile(ctx.user.id, {
+        nickname: input.nickname,
+        avatar_url: input.avatarUrl ?? null,
+        has_completed_onboarding: true,
+      });
+
+      if (!updated) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      return { success: true };
+    }),
 
   /**
    * Update user profile (first name, last name)

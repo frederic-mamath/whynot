@@ -34,6 +34,23 @@ import SellerExplorerPage from "./pages/SellerExplorerPage";
 import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";
 import CguPage from "./pages/CguPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
+import OnboardingPage from "./pages/OnboardingPage";
+import { Navigate } from "react-router-dom";
+import { isAuthenticated } from "./lib/auth";
+
+function OnboardingGuard({ children }: { children: React.ReactNode }) {
+  const authenticated = isAuthenticated();
+  const { data, isLoading } = trpc.profile.me.useQuery(undefined, {
+    enabled: authenticated,
+  });
+
+  if (!authenticated) return <>{children}</>;
+  if (isLoading) return null;
+  if (data && !data.hasCompletedOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  return <>{children}</>;
+}
 
 function AppContent() {
   return (
@@ -52,11 +69,14 @@ function AppContent() {
             element={<PolitiqueConfidentialitePage />}
           />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route
             path="/profile"
             element={
               <ProtectedRoute>
-                <ProfilePage />
+                <OnboardingGuard>
+                  <ProfilePage />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           />
@@ -64,7 +84,9 @@ function AppContent() {
             path="/my-orders"
             element={
               <ProtectedRoute>
-                <MyOrdersPage />
+                <OnboardingGuard>
+                  <MyOrdersPage />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           />
@@ -72,7 +94,9 @@ function AppContent() {
             path="/pending-deliveries"
             element={
               <ProtectedRoute requireRole="SELLER">
-                <PendingDeliveriesPage />
+                <OnboardingGuard>
+                  <PendingDeliveriesPage />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           />
@@ -85,7 +109,9 @@ function AppContent() {
             path="/shops"
             element={
               <ProtectedRoute requireRole="SELLER">
-                <ShopListPage />
+                <OnboardingGuard>
+                  <ShopListPage />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           />
@@ -93,7 +119,9 @@ function AppContent() {
             path="/shops/create"
             element={
               <ProtectedRoute requireRole="SELLER">
-                <ShopCreatePage />
+                <OnboardingGuard>
+                  <ShopCreatePage />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           />
@@ -101,7 +129,9 @@ function AppContent() {
             path="/shops/:id"
             element={
               <ProtectedRoute requireRole="SELLER">
-                <ShopLayout />
+                <OnboardingGuard>
+                  <ShopLayout />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           >
@@ -117,7 +147,9 @@ function AppContent() {
             path="/seller"
             element={
               <ProtectedRoute requireRole="SELLER">
-                <SellerLayout />
+                <OnboardingGuard>
+                  <SellerLayout />
+                </OnboardingGuard>
               </ProtectedRoute>
             }
           >

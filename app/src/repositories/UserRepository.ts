@@ -115,6 +115,9 @@ export class UserRepository {
       lastname?: string | null;
       first_name?: string | null;
       last_name?: string | null;
+      nickname?: string;
+      avatar_url?: string | null;
+      has_completed_onboarding?: boolean;
     },
   ): Promise<User | undefined> {
     const updateData: any = {
@@ -126,6 +129,10 @@ export class UserRepository {
     if (data.lastname !== undefined) updateData.lastname = data.lastname;
     if (data.first_name !== undefined) updateData.first_name = data.first_name;
     if (data.last_name !== undefined) updateData.last_name = data.last_name;
+    if (data.nickname !== undefined) updateData.nickname = data.nickname;
+    if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
+    if (data.has_completed_onboarding !== undefined)
+      updateData.has_completed_onboarding = data.has_completed_onboarding;
 
     return db
       .updateTable("users")
@@ -216,6 +223,7 @@ export class UserRepository {
         first_name: firstName || null,
         last_name: lastName || null,
         is_verified: true,
+        has_completed_onboarding: false,
         stripe_onboarding_complete: false,
         created_at: new Date(),
         updated_at: new Date(),
