@@ -37,7 +37,7 @@ router.get("/auth/google/callback", (req, res, next) => {
       if (loginErr) {
         return res.redirect(`${FRONTEND_URL}/login?error=session_failed`);
       }
-      return res.redirect(`${FRONTEND_URL}/dashboard`);
+      return res.redirect(`${FRONTEND_URL}/home`);
     });
   })(req, res, next);
 });
@@ -85,7 +85,7 @@ router.post("/auth/apple/callback", (req, res, next) => {
       if (loginErr) {
         return res.redirect(`${FRONTEND_URL}/login?error=session_failed`);
       }
-      return res.redirect(`${FRONTEND_URL}/dashboard`);
+      return res.redirect(`${FRONTEND_URL}/home`);
     });
   })(req, res, next);
 });

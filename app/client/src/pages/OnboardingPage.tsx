@@ -41,7 +41,7 @@ export default function OnboardingPage() {
         avatarUrl: avatarImages[0]?.url,
       });
       toast.success("Bienvenue !");
-      navigate("/dashboard");
+      navigate("/home");
     } catch (err: any) {
       const message =
         err?.data?.message || err?.message || "Une erreur est survenue";

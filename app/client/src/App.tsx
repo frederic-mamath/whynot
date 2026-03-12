@@ -35,6 +35,7 @@ import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";
 import CguPage from "./pages/CguPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 import OnboardingPage from "./pages/OnboardingPage";
+import HomePage from "./pages/HomePage";
 import { Navigate } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
 
@@ -80,6 +81,16 @@ function AppContent() {
             }
           />
           <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <OnboardingGuard>
+                  <HomePage />
+                </OnboardingGuard>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile"
             element={

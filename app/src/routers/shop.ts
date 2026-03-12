@@ -12,8 +12,63 @@ import {
   mapShopWithRoleToShopWithRoleOutboundDto,
   mapCreateShopInboundDtoToShop,
 } from "../mappers";
+import { db } from "../db";
+import { sql } from "kysely";
 
 export const shopRouter = router({
+  /**
+   * List all sellers (shop owners) with their top 3 product categories
+   */
+  listSellers: protectedProcedure.query(async () => {
+    // Get all shops with their owner info
+    const shops = await db
+      .selectFrom("shops")
+      .innerJoin("users", "users.id", "shops.owner_id")
+      .select([
+        "shops.id as shopId",
+        "shops.name as shopName",
+        "users.id as userId",
+        "users.nickname",
+        "users.avatar_url as avatarUrl",
+      ])
+      .execute();
+
+    // For each shop, fetch top 3 categories by product count
+    const sellers = await Promise.all(
+      shops.map(async (shop) => {
+        const topCategories = await db
+          .selectFrom("products")
+          .innerJoin("categories", "categories.id", "products.category_id")
+          .select([
+            "categories.name",
+            "categories.emoji",
+            db.fn.count("products.id").as("count"),
+          ])
+          .where("products.shop_id", "=", shop.shopId)
+          .where("products.is_active", "=", true)
+          .where("products.category_id", "is not", null)
+          .groupBy(["categories.id", "categories.name", "categories.emoji"])
+          .orderBy("count", "desc")
+          .limit(3)
+          .execute();
+
+        return {
+          userId: shop.userId,
+          nickname: shop.nickname,
+          avatarUrl: shop.avatarUrl,
+          shopId: shop.shopId,
+          shopName: shop.shopName,
+          topCategories: topCategories.map((c) => ({
+            name: c.name,
+            emoji: c.emoji,
+          })),
+        };
+      }),
+    );
+
+    return sellers;
+  }),
+
   create: protectedProcedure
     .input(
       z.object({

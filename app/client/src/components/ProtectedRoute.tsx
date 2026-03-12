@@ -1,25 +1,39 @@
 import { Navigate } from "react-router-dom";
 import { trpc } from "../lib/trpc";
-import { isAuthenticated } from "../lib/auth";
 import Container from "./Container";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireRole?: 'SELLER' | 'BUYER';
+  requireRole?: "SELLER" | "BUYER";
 }
 
-export default function ProtectedRoute({ children, requireRole }: ProtectedRouteProps) {
-  const authenticated = isAuthenticated();
-
-  const { data: userRoles, isLoading } = trpc.role.myRoles.useQuery(undefined, {
-    enabled: authenticated && !!requireRole,
+export default function ProtectedRoute({
+  children,
+  requireRole,
+}: ProtectedRouteProps) {
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error,
+  } = trpc.profile.me.useQuery(undefined, {
+    retry: false,
   });
+
+  const authenticated = !profileLoading && !error && !!profile;
+
+  const { data: userRoles, isLoading: rolesLoading } =
+    trpc.role.myRoles.useQuery(undefined, {
+      enabled: authenticated && !!requireRole,
+    });
+
+  // Still determining auth state
+  if (profileLoading) return null;
 
   if (!authenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requireRole && isLoading) {
+  if (requireRole && rolesLoading) {
     return (
       <Container className="py-8">
         <p>Loading...</p>

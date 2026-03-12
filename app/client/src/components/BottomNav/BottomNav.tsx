@@ -10,7 +10,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: <Home className="w-5 h-5" />, label: "Home", path: "/seller" },
+  { icon: <Home className="w-5 h-5" />, label: "Home", path: "/home" },
   {
     icon: <Radio className="w-5 h-5" />,
     label: "Lives",
