@@ -16,7 +16,15 @@ export function mapUserToUserOutboundDto(user: User): UserOutboundDto {
 export function mapCreateUserInboundDtoToUser(
   dto: UserInboundDto,
   hashedPassword: string,
-): Omit<UsersTable, "id" | "is_verified" | "created_at" | "updated_at"> {
+): Omit<
+  UsersTable,
+  | "id"
+  | "is_verified"
+  | "created_at"
+  | "updated_at"
+  | "avatar_url"
+  | "has_completed_onboarding"
+> {
   return {
     email: dto.email,
     password: hashedPassword,
