@@ -66,6 +66,54 @@ export const liveRouter = router({
     }),
 
   /**
+   * Update a scheduled live's fields
+   */
+  update: publicProcedure
+    .input(
+      z.object({
+        liveId: z.number(),
+        name: z.string().min(3).max(100).optional(),
+        description: z.string().max(500).optional().nullable(),
+        startsAt: z.string().datetime().optional(),
+        endsAt: z.string().datetime().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in",
+        });
+      }
+
+      const host = await isLiveHost(input.liveId, ctx.userId);
+      if (!host) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only the host can update this live",
+        });
+      }
+
+      const live = await liveRepository.update(input.liveId, {
+        name: input.name,
+        description: input.description,
+        startsAt: input.startsAt ? new Date(input.startsAt) : undefined,
+        endsAt:
+          input.endsAt !== undefined
+            ? input.endsAt
+              ? new Date(input.endsAt)
+              : null
+            : undefined,
+      });
+
+      if (!live) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Live not found" });
+      }
+
+      return { live };
+    }),
+
+  /**
    * Start a scheduled live (transition scheduled → active), returns Agora token
    */
   start: publicProcedure

@@ -81,6 +81,30 @@ export class LiveRepository {
       .executeTakeFirstOrThrow();
   }
 
+  async update(
+    liveId: number,
+    data: {
+      name?: string;
+      description?: string | null;
+      startsAt?: Date;
+      endsAt?: Date | null;
+    },
+  ): Promise<Live | undefined> {
+    return db
+      .updateTable("lives")
+      .set({
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.description !== undefined
+          ? { description: data.description }
+          : {}),
+        ...(data.startsAt !== undefined ? { starts_at: data.startsAt } : {}),
+        ...(data.endsAt !== undefined ? { ends_at: data.endsAt } : {}),
+      })
+      .where("id", "=", liveId)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
   async schedule(data: {
     name: string;
     host_id: number;
