@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 import { userRepository } from "../repositories/UserRepository";
 import { addressRepository } from "../repositories/AddressRepository";
+import { cloudinaryService } from "../services/CloudinaryService";
 import { TRPCError } from "@trpc/server";
 
 export const profileRouter = router({
@@ -115,6 +116,41 @@ export const profileRouter = router({
           lastName: updated.last_name || updated.lastname || null,
         },
       };
+    }),
+
+  /**
+   * Update user avatar
+   * Deletes the previous Cloudinary image if one exists, then saves the new URL + publicId
+   */
+  updateAvatar: protectedProcedure
+    .input(
+      z.object({
+        avatarUrl: z.string().url(),
+        avatarPublicId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await userRepository.findById(ctx.user.id);
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      // Delete previous Cloudinary image if it exists
+      if (user.avatar_public_id) {
+        try {
+          await cloudinaryService.deleteImage(user.avatar_public_id);
+        } catch (err) {
+          // Log but don't block — the upload should still proceed
+          console.error("Failed to delete old avatar from Cloudinary:", err);
+        }
+      }
+
+      await userRepository.updateProfile(ctx.user.id, {
+        avatar_url: input.avatarUrl,
+        avatar_public_id: input.avatarPublicId,
+      });
+
+      return { success: true };
     }),
 
   /**

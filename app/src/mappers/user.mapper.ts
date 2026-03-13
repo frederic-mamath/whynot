@@ -23,6 +23,7 @@ export function mapCreateUserInboundDtoToUser(
   | "created_at"
   | "updated_at"
   | "avatar_url"
+  | "avatar_public_id"
   | "has_completed_onboarding"
 > {
   return {

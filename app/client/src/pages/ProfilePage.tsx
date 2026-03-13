@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   AlertCircle,
   LogOut,
+  Camera,
 } from "lucide-react";
 import {
   Dialog,
@@ -73,6 +74,9 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<number | null>(null);
@@ -104,6 +108,52 @@ export default function ProfilePage() {
       setProfileLoaded(true);
     }
   }, [profile, profileLoaded]);
+
+  // Upload avatar mutation (image upload + profile update chained)
+  const imageUpload = trpc.image.upload.useMutation();
+  const updateAvatarMutation = trpc.profile.updateAvatar.useMutation({
+    onSuccess: () => {
+      toast.success("Avatar mis à jour");
+      utils.profile.me.invalidate();
+      setSelectedFile(null);
+      setAvatarPreview(null);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erreur lors de la mise à jour de l'avatar");
+    },
+  });
+
+  const isAvatarUploading =
+    imageUpload.isPending || updateAvatarMutation.isPending;
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAvatarPreview(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAvatarSave = async () => {
+    if (!selectedFile) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      try {
+        const { url, publicId } = await imageUpload.mutateAsync({ base64 });
+        await updateAvatarMutation.mutateAsync({
+          avatarUrl: url,
+          avatarPublicId: publicId,
+        });
+      } catch {
+        // errors handled by mutation callbacks
+      }
+    };
+    reader.readAsDataURL(selectedFile);
+  };
 
   // Update profile mutation
   const updateProfile = trpc.profile.update.useMutation({
@@ -236,6 +286,70 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold">{t("profile.title")}</h1>
         <p className="text-muted-foreground mt-2">{t("profile.subtitle")}</p>
       </div>
+
+      {/* Avatar */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="size-5" />
+            Avatar
+          </CardTitle>
+          <CardDescription>
+            Votre photo de profil visible par les autres utilisateurs
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-6">
+            {/* Preview */}
+            <div className="shrink-0">
+              {avatarPreview || profile?.avatarUrl ? (
+                <img
+                  src={avatarPreview || profile?.avatarUrl || ""}
+                  alt="Avatar"
+                  className="size-20 rounded-full object-cover border border-border"
+                />
+              ) : (
+                <div className="size-20 rounded-full bg-muted flex items-center justify-center text-2xl font-outfit font-black uppercase text-muted-foreground">
+                  {profile?.nickname?.[0] ?? <User className="size-8" />}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isAvatarUploading}
+              >
+                <Camera className="size-4 mr-2" />
+                Changer mon avatar
+              </Button>
+              {selectedFile && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAvatarSave}
+                  disabled={isAvatarUploading}
+                >
+                  {isAvatarUploading
+                    ? "Envoi en cours…"
+                    : "Enregistrer l'avatar"}
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Personal Information */}
       <Card className="mb-6">

@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Radio, User, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { data: profile } = trpc.profile.me.useQuery();
 
   const isActive = (path: string) => {
     if (path === "/seller") return location.pathname === "/seller";
@@ -64,7 +66,15 @@ export default function BottomNav() {
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
-              {item.icon}
+              {item.path === "/profile" && profile?.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt="Avatar"
+                  className="w-5 h-5 rounded-full object-cover"
+                />
+              ) : (
+                item.icon
+              )}
               <span className="text-[10px] font-outfit font-medium">
                 {item.label}
               </span>

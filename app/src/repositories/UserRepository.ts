@@ -117,6 +117,7 @@ export class UserRepository {
       last_name?: string | null;
       nickname?: string;
       avatar_url?: string | null;
+      avatar_public_id?: string | null;
       has_completed_onboarding?: boolean;
     },
   ): Promise<User | undefined> {
@@ -131,6 +132,8 @@ export class UserRepository {
     if (data.last_name !== undefined) updateData.last_name = data.last_name;
     if (data.nickname !== undefined) updateData.nickname = data.nickname;
     if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
+    if (data.avatar_public_id !== undefined)
+      updateData.avatar_public_id = data.avatar_public_id;
     if (data.has_completed_onboarding !== undefined)
       updateData.has_completed_onboarding = data.has_completed_onboarding;
 

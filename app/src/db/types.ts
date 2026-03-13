@@ -39,6 +39,7 @@ export interface UsersTable {
   stripe_onboarding_complete: boolean;
   stripe_customer_id: string | null;
   avatar_url: string | null;
+  avatar_public_id: string | null;
   has_completed_onboarding: Generated<boolean>;
   created_at: Date;
   updated_at: Date;
