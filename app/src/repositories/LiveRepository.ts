@@ -88,6 +88,7 @@ export class LiveRepository {
       description?: string | null;
       startsAt?: Date;
       endsAt?: Date | null;
+      coverUrl?: string | null;
     },
   ): Promise<Live | undefined> {
     return db
@@ -99,6 +100,7 @@ export class LiveRepository {
           : {}),
         ...(data.startsAt !== undefined ? { starts_at: data.startsAt } : {}),
         ...(data.endsAt !== undefined ? { ends_at: data.endsAt } : {}),
+        ...(data.coverUrl !== undefined ? { cover_url: data.coverUrl } : {}),
       })
       .where("id", "=", liveId)
       .returningAll()
@@ -111,6 +113,7 @@ export class LiveRepository {
     starts_at: Date;
     ends_at?: Date | null;
     description?: string | null;
+    cover_url?: string | null;
   }): Promise<Live> {
     return db
       .insertInto("lives")
@@ -120,6 +123,7 @@ export class LiveRepository {
         starts_at: data.starts_at,
         ends_at: data.ends_at ?? null,
         description: data.description ?? null,
+        cover_url: data.cover_url ?? null,
         status: "scheduled",
         created_at: new Date(),
       })
@@ -198,6 +202,7 @@ export class LiveRepository {
         "lives.ends_at",
         "lives.session_stopped_at",
         "lives.description",
+        "lives.cover_url",
         "lives.created_at",
         "lives.ended_at",
         "lives.highlighted_product_id",

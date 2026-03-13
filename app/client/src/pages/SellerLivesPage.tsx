@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Radio,
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ShoppingBag,
   Pencil,
+  ImagePlus,
 } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import Tabs from "@/components/ui/Tabs";
@@ -69,6 +70,9 @@ export default function SellerLivePage() {
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [selectedCoverFile, setSelectedCoverFile] = useState<File | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Edit dialog state
   const [editingLive, setEditingLive] = useState<{
@@ -77,6 +81,7 @@ export default function SellerLivePage() {
     description: string | null;
     starts_at: Date | string;
     ends_at: Date | string | null;
+    cover_url?: string | null;
   } | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -84,6 +89,10 @@ export default function SellerLivePage() {
   const [editTime, setEditTime] = useState("20:00");
   const [editProductIds, setEditProductIds] = useState<number[]>([]);
   const [editError, setEditError] = useState("");
+  const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
+  const [selectedEditCoverFile, setSelectedEditCoverFile] =
+    useState<File | null>(null);
+  const editCoverInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, refetch } = trpc.live.listByHost.useQuery(
     undefined,
@@ -112,6 +121,8 @@ export default function SellerLivePage() {
       setEditDate(toLocalDateStr(editingLive.starts_at));
       setEditTime(toLocalTimeStr(editingLive.starts_at));
       setEditError("");
+      setEditCoverPreview(editingLive.cover_url ?? null);
+      setSelectedEditCoverFile(null);
     }
   }, [editingLive]);
 
@@ -125,6 +136,7 @@ export default function SellerLivePage() {
   const associateMutation = trpc.product.associateToChannel.useMutation();
   const removeMutation = trpc.product.removeFromChannel.useMutation();
   const updateLiveMutation = trpc.live.update.useMutation();
+  const imageUploadMutation = trpc.image.upload.useMutation();
 
   const scheduleMutation = trpc.live.schedule.useMutation({
     onSuccess: async (data) => {
@@ -140,6 +152,8 @@ export default function SellerLivePage() {
       setDescription("");
       setDate(todayDate());
       setTime("20:00");
+      setCoverPreview(null);
+      setSelectedCoverFile(null);
       setFormError("");
       refetch();
       setTimeout(() => {
@@ -165,11 +179,31 @@ export default function SellerLivePage() {
       return;
     }
     const startsAt = new Date(`${date}T${time}:00`).toISOString();
-    scheduleMutation.mutate({
-      name: name.trim(),
-      description: description.trim() || undefined,
-      startsAt,
-    });
+
+    const doSchedule = (coverUrl?: string) => {
+      scheduleMutation.mutate({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        startsAt,
+        coverUrl,
+      });
+    };
+
+    if (selectedCoverFile) {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64 = ev.target?.result as string;
+        try {
+          const { url } = await imageUploadMutation.mutateAsync({ base64 });
+          doSchedule(url);
+        } catch {
+          doSchedule(undefined);
+        }
+      };
+      reader.readAsDataURL(selectedCoverFile);
+    } else {
+      doSchedule(undefined);
+    }
   }
 
   async function handleEditSave() {
@@ -179,12 +213,14 @@ export default function SellerLivePage() {
       setEditError("Le nom doit contenir au moins 3 caractères.");
       return;
     }
-    try {
+
+    const doUpdate = async (coverUrl?: string | null) => {
       await updateLiveMutation.mutateAsync({
         liveId: editingLive.id,
         name: editName.trim(),
         description: editDescription.trim() || null,
         startsAt: new Date(`${editDate}T${editTime}:00`).toISOString(),
+        coverUrl,
       });
 
       // Diff products
@@ -212,6 +248,26 @@ export default function SellerLivePage() {
 
       refetch();
       setEditingLive(null);
+      setSelectedEditCoverFile(null);
+      setEditCoverPreview(null);
+    };
+
+    try {
+      if (selectedEditCoverFile) {
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const base64 = ev.target?.result as string;
+          try {
+            const { url } = await imageUploadMutation.mutateAsync({ base64 });
+            await doUpdate(url);
+          } catch {
+            await doUpdate(undefined);
+          }
+        };
+        reader.readAsDataURL(selectedEditCoverFile);
+      } else {
+        await doUpdate(undefined);
+      }
     } catch (err: unknown) {
       setEditError(
         err instanceof Error ? err.message : "Une erreur est survenue.",
@@ -382,6 +438,54 @@ export default function SellerLivePage() {
             />
           </div>
 
+          {/* Cover image */}
+          <div className="flex flex-col gap-1.5">
+            <Label>Photo de couverture</Label>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setSelectedCoverFile(file);
+                const reader = new FileReader();
+                reader.onload = (ev) =>
+                  setCoverPreview(ev.target?.result as string);
+                reader.readAsDataURL(file);
+              }}
+            />
+            {coverPreview ? (
+              <div className="relative rounded-xl overflow-hidden h-36 w-full">
+                <img
+                  src={coverPreview}
+                  alt="cover"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-outfit"
+                  onClick={() => {
+                    setCoverPreview(null);
+                    setSelectedCoverFile(null);
+                  }}
+                >
+                  Supprimer
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                className="flex items-center justify-center gap-2 border border-dashed border-border rounded-xl h-24 text-muted-foreground text-sm font-outfit hover:border-primary hover:text-primary transition-colors"
+              >
+                <ImagePlus className="w-5 h-5" />
+                Ajouter une photo de couverture
+              </button>
+            )}
+          </div>
+
           <div className="flex gap-3">
             <div className="flex flex-col gap-1.5 flex-1">
               <Label htmlFor="live-date">Date</Label>
@@ -532,6 +636,54 @@ export default function SellerLivePage() {
                 rows={2}
                 className="resize-none"
               />
+            </div>
+
+            {/* Cover image */}
+            <div className="flex flex-col gap-1.5">
+              <Label>Photo de couverture</Label>
+              <input
+                ref={editCoverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setSelectedEditCoverFile(file);
+                  const reader = new FileReader();
+                  reader.onload = (ev) =>
+                    setEditCoverPreview(ev.target?.result as string);
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {editCoverPreview ? (
+                <div className="relative rounded-xl overflow-hidden h-28 w-full">
+                  <img
+                    src={editCoverPreview}
+                    alt="cover"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-outfit"
+                    onClick={() => {
+                      setEditCoverPreview(null);
+                      setSelectedEditCoverFile(null);
+                    }}
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => editCoverInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 border border-dashed border-border rounded-xl h-20 text-muted-foreground text-sm font-outfit hover:border-primary hover:text-primary transition-colors"
+                >
+                  <ImagePlus className="w-5 h-5" />
+                  Ajouter une photo de couverture
+                </button>
+              )}
             </div>
 
             <div className="flex gap-3">

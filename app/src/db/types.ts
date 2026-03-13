@@ -56,6 +56,7 @@ export interface LivesTable {
   ends_at: Date | null;
   session_stopped_at: Date | null;
   description: string | null;
+  cover_url: string | null;
   created_at: Date;
   ended_at: Date | null;
   highlighted_product_id: number | null;

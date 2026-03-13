@@ -36,6 +36,7 @@ export const liveRouter = router({
         description: z.string().max(500).optional(),
         startsAt: z.string().datetime(),
         endsAt: z.string().datetime().optional(),
+        coverUrl: z.string().url().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -60,6 +61,7 @@ export const liveRouter = router({
         description: input.description ?? null,
         starts_at: new Date(input.startsAt),
         ends_at: input.endsAt ? new Date(input.endsAt) : null,
+        cover_url: input.coverUrl ?? null,
       });
 
       return { live };
@@ -76,6 +78,7 @@ export const liveRouter = router({
         description: z.string().max(500).optional().nullable(),
         startsAt: z.string().datetime().optional(),
         endsAt: z.string().datetime().optional().nullable(),
+        coverUrl: z.string().url().optional().nullable(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -104,6 +107,7 @@ export const liveRouter = router({
               ? new Date(input.endsAt)
               : null
             : undefined,
+        coverUrl: input.coverUrl,
       });
 
       if (!live) {
@@ -792,6 +796,7 @@ export const liveRouter = router({
       description: live.description ?? null,
       startsAt: live.starts_at.toISOString(),
       endsAt: live.ends_at ? live.ends_at.toISOString() : null,
+      coverUrl: live.cover_url ?? null,
       host: {
         nickname: live.host_nickname,
         avatarUrl: live.host_avatar_url ?? null,

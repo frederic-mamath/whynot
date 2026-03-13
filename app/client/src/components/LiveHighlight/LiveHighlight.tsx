@@ -9,6 +9,7 @@ interface LiveHighlightData {
   description: string | null;
   startsAt: string;
   endsAt: string | null;
+  coverUrl: string | null;
   host: {
     nickname: string;
     avatarUrl: string | null;
@@ -125,11 +126,11 @@ export function LiveHighlight({ live, isLoading }: LiveHighlightProps) {
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden min-h-[360px] flex flex-col justify-between">
-      {/* Background avatar image */}
-      {live.host.avatarUrl ? (
+      {/* Background: cover image, then host avatar, then gradient fallback */}
+      {live.coverUrl || live.host.avatarUrl ? (
         <img
-          src={live.host.avatarUrl}
-          alt={live.host.nickname}
+          src={live.coverUrl ?? live.host.avatarUrl!}
+          alt={live.name}
           className="absolute inset-0 w-full h-full object-cover"
         />
       ) : (
