@@ -177,6 +177,41 @@ export class LiveRepository {
     return result?.status;
   }
 
+  /**
+   * Find the next globally scheduled live (across all vendors), with host info.
+   */
+  async findNextScheduled(): Promise<
+    | (Live & { host_nickname: string; host_avatar_url: string | null })
+    | undefined
+  > {
+    return db
+      .selectFrom("lives")
+      .innerJoin("users", "users.id", "lives.host_id")
+      .select([
+        "lives.id",
+        "lives.name",
+        "lives.host_id",
+        "lives.status",
+        "lives.max_participants",
+        "lives.is_private",
+        "lives.starts_at",
+        "lives.ends_at",
+        "lives.session_stopped_at",
+        "lives.description",
+        "lives.created_at",
+        "lives.ended_at",
+        "lives.highlighted_product_id",
+        "lives.highlighted_at",
+        "users.nickname as host_nickname",
+        "users.avatar_url as host_avatar_url",
+      ])
+      .where("lives.status", "=", "scheduled")
+      .where("lives.starts_at", ">", new Date())
+      .orderBy("lives.starts_at", "asc")
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   async isHost(liveId: number, userId: number): Promise<boolean> {
     const live = await db
       .selectFrom("lives")

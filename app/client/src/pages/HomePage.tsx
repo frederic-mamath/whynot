@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { LiveHighlight } from "@/components/LiveHighlight";
 
 // Deterministic color from nickname string
 function avatarColor(nickname: string): string {
@@ -25,9 +26,13 @@ function avatarColor(nickname: string): string {
 
 export default function HomePage() {
   const { data: sellers, isLoading } = trpc.shop.listSellers.useQuery();
+  const { data: nextLive, isLoading: isNextLiveLoading } =
+    trpc.live.nextScheduled.useQuery();
 
   return (
     <div className="min-h-screen bg-background px-4 pt-10 pb-6 space-y-6">
+      {/* Next live highlight */}
+      <LiveHighlight live={nextLive} isLoading={isNextLiveLoading} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-xs font-outfit font-black tracking-widest uppercase text-foreground">

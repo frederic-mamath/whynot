@@ -779,6 +779,25 @@ export const liveRouter = router({
         };
       });
     }),
+  /**
+   * Get the next globally scheduled live (for homepage highlight)
+   */
+  nextScheduled: publicProcedure.query(async () => {
+    const live = await liveRepository.findNextScheduled();
+    if (!live) return null;
+
+    return {
+      id: live.id,
+      name: live.name,
+      description: live.description ?? null,
+      startsAt: live.starts_at.toISOString(),
+      endsAt: live.ends_at ? live.ends_at.toISOString() : null,
+      host: {
+        nickname: live.host_nickname,
+        avatarUrl: live.host_avatar_url ?? null,
+      },
+    };
+  }),
 });
 
 // Backward compat alias – channel.ts re-exports this
