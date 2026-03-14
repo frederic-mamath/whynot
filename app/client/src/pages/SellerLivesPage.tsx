@@ -73,6 +73,8 @@ export default function SellerLivePage() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [selectedCoverFile, setSelectedCoverFile] = useState<File | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
 
   // Edit dialog state
   const [editingLive, setEditingLive] = useState<{
@@ -412,35 +414,102 @@ export default function SellerLivePage() {
       {activeTab === "new" && (
         <form
           onSubmit={handleSchedule}
-          className="flex flex-col gap-4 px-4 pt-4"
+          className="flex flex-col gap-6 px-4 pt-4 pb-8"
         >
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="live-name">Nom du live *</Label>
+          {/* Title */}
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="live-name"
+              className="font-syne font-bold text-foreground text-base"
+            >
+              Titre du live
+            </Label>
             <Input
               id="live-name"
               type="text"
-              placeholder="Mon live du soir"
+              placeholder="Ex : Drop vintage #4 — Pièces rares 🔥"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              className="bg-b-fourth border-0 rounded-2xl px-5 py-4 font-outfit text-foreground placeholder:text-muted-foreground h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="live-desc">Description</Label>
+          {/* Date & time — pill buttons */}
+          <div className="flex flex-col gap-2">
+            <Label className="font-syne font-bold text-foreground text-base">
+              Date et heure
+            </Label>
+            <div className="flex gap-3">
+              {/* Hidden real inputs */}
+              <input
+                type="date"
+                ref={dateInputRef}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="sr-only"
+                required
+              />
+              <input
+                type="time"
+                ref={timeInputRef}
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="sr-only"
+                required
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  dateInputRef.current?.showPicker?.() ??
+                  dateInputRef.current?.click()
+                }
+                className="flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+              >
+                📅{" "}
+                {date === todayDate()
+                  ? "Ce soir"
+                  : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  timeInputRef.current?.showPicker?.() ??
+                  timeInputRef.current?.click()
+                }
+                className="flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+              >
+                🕐 {time.replace(":", "h")}
+              </button>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="live-desc"
+              className="font-syne font-bold text-foreground text-base"
+            >
+              Description (optionnel)
+            </Label>
             <Textarea
               id="live-desc"
-              placeholder="Au programme ce soir…"
+              placeholder="Décris ce que tu vas présenter..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="resize-none"
+              rows={4}
+              className="resize-none bg-b-fourth border-0 rounded-2xl px-5 py-4 font-outfit text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 
           {/* Cover image */}
-          <div className="flex flex-col gap-1.5">
-            <Label>Photo de couverture</Label>
+          <div className="flex flex-col gap-2">
+            <Label className="font-syne font-bold text-foreground text-base">
+              Photo de couverture
+            </Label>
             <input
               ref={coverInputRef}
               type="file"
@@ -457,7 +526,7 @@ export default function SellerLivePage() {
               }}
             />
             {coverPreview ? (
-              <div className="relative rounded-xl overflow-hidden h-36 w-full">
+              <div className="relative rounded-2xl overflow-hidden h-40 w-full">
                 <img
                   src={coverPreview}
                   alt="cover"
@@ -465,7 +534,7 @@ export default function SellerLivePage() {
                 />
                 <button
                   type="button"
-                  className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full font-outfit"
+                  className="absolute top-2 right-2 bg-black/60 text-white text-xs px-3 py-1 rounded-full font-outfit"
                   onClick={() => {
                     setCoverPreview(null);
                     setSelectedCoverFile(null);
@@ -478,7 +547,7 @@ export default function SellerLivePage() {
               <button
                 type="button"
                 onClick={() => coverInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 border border-dashed border-border rounded-xl h-24 text-muted-foreground text-sm font-outfit hover:border-primary hover:text-primary transition-colors"
+                className="flex items-center justify-center gap-2 bg-b-fourth rounded-2xl h-28 text-muted-foreground text-sm font-outfit hover:text-primary transition-colors"
               >
                 <ImagePlus className="w-5 h-5" />
                 Ajouter une photo de couverture
@@ -486,34 +555,8 @@ export default function SellerLivePage() {
             )}
           </div>
 
-          <div className="flex gap-3">
-            <div className="flex flex-col gap-1.5 flex-1">
-              <Label htmlFor="live-date">Date</Label>
-              <Input
-                id="live-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 flex-1">
-              <Label htmlFor="live-time">Heure</Label>
-              <Input
-                id="live-time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
           {/* Products section */}
-          <div className="flex flex-col gap-2">
-            <h3 className="font-syne font-bold text-sm text-muted-foreground uppercase tracking-wider">
-              Produits associés
-            </h3>
+          <div className="flex flex-col gap-3">
             {!myShop ? (
               <div className="flex flex-col items-center gap-2 py-4 text-center text-muted-foreground">
                 <ShoppingBag className="w-7 h-7" />
@@ -541,42 +584,74 @@ export default function SellerLivePage() {
                 />
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                {shopProducts.map((product) => (
-                  <label
-                    key={product.id}
-                    className="flex items-center gap-3 p-2 rounded-lg border border-border bg-b-fourth cursor-pointer"
-                  >
-                    <Checkbox
-                      checked={selectedProductIds.includes(product.id)}
-                      onCheckedChange={() =>
-                        toggleProductId(
-                          product.id,
-                          selectedProductIds,
-                          setSelectedProductIds,
-                        )
+              <>
+                {/* Section header */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-outfit font-black tracking-widest uppercase text-muted-foreground">
+                    Associer des produits
+                  </span>
+                  <button
+                    type="button"
+                    className="text-sm font-outfit font-semibold text-primary"
+                    onClick={() => {
+                      if (selectedProductIds.length === shopProducts.length) {
+                        setSelectedProductIds([]);
+                      } else {
+                        setSelectedProductIds(shopProducts.map((p) => p.id));
                       }
-                    />
-                    {product.imageUrl && (
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-8 h-8 rounded object-cover shrink-0"
+                    }}
+                  >
+                    {selectedProductIds.length === shopProducts.length
+                      ? "Tout décocher"
+                      : "Sélectionner"}
+                  </button>
+                </div>
+
+                {/* Product cards */}
+                <div className="flex flex-col gap-3">
+                  {shopProducts.map((product) => (
+                    <label
+                      key={product.id}
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-b-fourth cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedProductIds.includes(product.id)}
+                        onCheckedChange={() =>
+                          toggleProductId(
+                            product.id,
+                            selectedProductIds,
+                            setSelectedProductIds,
+                          )
+                        }
+                        className="size-6 rounded-md border-2 border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0"
                       />
-                    )}
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-outfit font-medium text-foreground truncate">
-                        {product.name}
-                      </span>
-                      {product.startingPrice != null && (
-                        <span className="text-xs text-muted-foreground font-outfit">
-                          {product.startingPrice.toFixed(2)} €
+                      <div className="size-12 rounded-xl bg-muted shrink-0 overflow-hidden">
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            <ShoppingBag className="w-5 h-5" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-syne font-bold text-[15px] text-foreground truncate">
+                          {product.name}
                         </span>
-                      )}
-                    </div>
-                  </label>
-                ))}
-              </div>
+                        {product.startingPrice != null && (
+                          <span className="font-outfit font-bold text-primary text-sm">
+                            Départ : {Math.round(product.startingPrice)}€
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -593,12 +668,14 @@ export default function SellerLivePage() {
           <ButtonV2
             type="submit"
             label={
-              scheduleMutation.isPending
+              scheduleMutation.isPending || imageUploadMutation.isPending
                 ? "Programmation…"
                 : "Programmer ce live"
             }
             className="bg-primary text-primary-foreground mt-2"
-            disabled={scheduleMutation.isPending}
+            disabled={
+              scheduleMutation.isPending || imageUploadMutation.isPending
+            }
           />
         </form>
       )}
