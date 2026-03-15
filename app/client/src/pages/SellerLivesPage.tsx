@@ -6,10 +6,10 @@ import {
   Calendar,
   Clock,
   ChevronRight,
-  ShoppingBag,
   Pencil,
   ImagePlus,
 } from "lucide-react";
+import ProductListSection from "@/components/ProductListSection";
 import { trpc } from "../lib/trpc";
 import Tabs from "@/components/ui/Tabs";
 import ButtonV2 from "@/components/ui/ButtonV2";
@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -590,102 +589,19 @@ export default function SellerLivePage() {
 
           {/* Products section */}
           <div className="flex flex-col gap-3">
-            {!myShop ? (
-              <div className="flex flex-col items-center gap-2 py-4 text-center text-muted-foreground">
-                <ShoppingBag className="w-7 h-7" />
-                <p className="text-sm">
-                  Crée ta boutique avant d'associer des produits.
-                </p>
-                <ButtonV2
-                  type="button"
-                  label="Créer ma boutique"
-                  className="text-xs"
-                  onClick={() => navigate("/seller/shop")}
-                />
-              </div>
-            ) : !shopProducts || shopProducts.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-4 text-center text-muted-foreground">
-                <ShoppingBag className="w-7 h-7" />
-                <p className="text-sm">
-                  Ajoute des produits à ta boutique pour les lier à ce live.
-                </p>
-                <ButtonV2
-                  type="button"
-                  label="Créer un produit"
-                  className="text-xs"
-                  onClick={() => navigate("/seller/shop/products/create")}
-                />
-              </div>
-            ) : (
-              <>
-                {/* Section header */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-outfit font-black tracking-widest uppercase text-muted-foreground">
-                    Associer des produits
-                  </span>
-                  <button
-                    type="button"
-                    className="text-sm font-outfit font-semibold text-primary"
-                    onClick={() => {
-                      if (selectedProductIds.length === shopProducts.length) {
-                        setSelectedProductIds([]);
-                      } else {
-                        setSelectedProductIds(shopProducts.map((p) => p.id));
-                      }
-                    }}
-                  >
-                    {selectedProductIds.length === shopProducts.length
-                      ? "Tout décocher"
-                      : "Sélectionner"}
-                  </button>
-                </div>
-
-                {/* Product cards */}
-                <div className="flex flex-col gap-3">
-                  {shopProducts.map((product) => (
-                    <label
-                      key={product.id}
-                      className="flex items-center gap-4 p-4 rounded-2xl bg-b-fourth cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={selectedProductIds.includes(product.id)}
-                        onCheckedChange={() =>
-                          toggleProductId(
-                            product.id,
-                            selectedProductIds,
-                            setSelectedProductIds,
-                          )
-                        }
-                        className="size-6 rounded-md border-2 border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0"
-                      />
-                      <div className="size-12 rounded-xl bg-muted shrink-0 overflow-hidden">
-                        {product.imageUrl ? (
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                            <ShoppingBag className="w-5 h-5" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="font-syne font-bold text-[15px] text-foreground truncate">
-                          {product.name}
-                        </span>
-                        {product.startingPrice != null && (
-                          <span className="font-outfit font-bold text-primary text-sm">
-                            Départ : {Math.round(product.startingPrice)}€
-                          </span>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </>
-            )}
+            <ProductListSection
+              products={shopProducts ?? []}
+              selectedProductIds={selectedProductIds}
+              onToggleProduct={(id) =>
+                toggleProductId(id, selectedProductIds, setSelectedProductIds)
+              }
+              onSetSelectedProducts={setSelectedProductIds}
+              shopExists={!!myShop}
+              onNavigateToShop={() => navigate("/seller/shop")}
+              onNavigateToCreateProduct={() =>
+                navigate("/seller/shop/products/create")
+              }
+            />
           </div>
 
           {formError && (
@@ -830,44 +746,19 @@ export default function SellerLivePage() {
 
             {/* Products section in dialog */}
             <div className="flex flex-col gap-2">
-              <h3 className="font-syne font-bold text-sm text-muted-foreground uppercase tracking-wider">
-                Produits associés
-              </h3>
-              {!shopProducts || shopProducts.length === 0 ? (
-                <p className="text-sm text-muted-foreground font-outfit">
-                  Aucun produit dans ta boutique.
-                </p>
-              ) : (
-                <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-                  {shopProducts.map((product) => (
-                    <label
-                      key={product.id}
-                      className="flex items-center gap-3 p-2 rounded-lg border border-border bg-b-fourth cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={editProductIds.includes(product.id)}
-                        onCheckedChange={() =>
-                          toggleProductId(
-                            product.id,
-                            editProductIds,
-                            setEditProductIds,
-                          )
-                        }
-                      />
-                      {product.imageUrl && (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="w-8 h-8 rounded object-cover shrink-0"
-                        />
-                      )}
-                      <span className="text-sm font-outfit font-medium text-foreground truncate">
-                        {product.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
+              <ProductListSection
+                products={shopProducts ?? []}
+                selectedProductIds={editProductIds}
+                onToggleProduct={(id) =>
+                  toggleProductId(id, editProductIds, setEditProductIds)
+                }
+                onSetSelectedProducts={setEditProductIds}
+                shopExists={!!myShop}
+                onNavigateToShop={() => navigate("/seller/shop")}
+                onNavigateToCreateProduct={() =>
+                  navigate("/seller/shop/products/create")
+                }
+              />
             </div>
 
             {editError && (

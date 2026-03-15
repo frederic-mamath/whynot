@@ -2,11 +2,7 @@ import { useState } from "react";
 import { trpc } from "../../lib/trpc";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  ImageUploader,
-  ProductImageItem,
-} from "../../components/ui/ImageUploader";
-import { Label } from "../../components/ui/label";
+import { ProductImageItem } from "../../components/ui/ImageUploader";
 import ButtonV2 from "../../components/ui/ButtonV2/ButtonV2";
 import Input from "@/components/ui/Input/Input";
 
@@ -23,9 +19,12 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [conditionId, setConditionId] = useState<number | null>(null);
   const [images, setImages] = useState<ProductImageItem[]>([]);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   const { data: categories } = trpc.catalog.listCategories.useQuery();
   const { data: conditions } = trpc.catalog.listConditions.useQuery();
+
+  const imageUploadMutation = trpc.image.upload.useMutation();
 
   const createProduct = trpc.product.create.useMutation({
     onError: (error) => {
@@ -70,7 +69,10 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
     }
   };
 
-  const isPending = createProduct.isPending || addImageMutation.isPending;
+  const isPending =
+    createProduct.isPending ||
+    addImageMutation.isPending ||
+    imageUploadMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -78,13 +80,24 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
       <Input
         type="image"
         label="Photo du produit"
-        value={images.length > 0 ? images[0].url : ""}
-        onChange={(value) => {
-          if (value) {
-            setImages([{ url: value, cloudinaryPublicId: null }]);
-          } else {
-            setImages([]);
-          }
+        value={imagePreview}
+        onChange={(base64) => {
+          if (!base64) return;
+          setImagePreview(base64);
+          imageUploadMutation.mutate(
+            { base64 },
+            {
+              onSuccess: (result) => {
+                setImages([
+                  { url: result.url, cloudinaryPublicId: result.publicId },
+                ]);
+              },
+              onError: () => {
+                toast.error("Échec de l'upload de l'image");
+                setImagePreview("");
+              },
+            },
+          );
         }}
       />
 

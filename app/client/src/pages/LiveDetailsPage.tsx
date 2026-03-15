@@ -35,6 +35,7 @@ import { useUserRole } from "../hooks/useUserRole";
 import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
 import VerticalControlPanel from "../components/VerticalControlPanel";
+import ShopPanel from "../components/ShopPanel";
 import { toast } from "sonner";
 
 interface ChannelConfig {
@@ -86,6 +87,7 @@ export default function LiveDetailsPage() {
   const [, setScreenTrack] = useState<ICameraVideoTrack | null>(null);
   const [showParticipants, setShowParticipants] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const [showHighlightedProduct, setShowHighlightedProduct] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
   const [channelConfig, setChannelConfig] = useState<ChannelConfig | null>(
@@ -789,6 +791,9 @@ export default function LiveDetailsPage() {
               onToggleVideo={channelConfig?.isHost ? toggleVideo : undefined}
               onShowParticipants={() => setShowParticipants(true)}
               onShowProducts={() => setShowProducts(true)}
+              onShowShop={
+                channelConfig?.isHost ? () => setShowShop(true) : undefined
+              }
               onToggleHighlightedProduct={() =>
                 setShowHighlightedProduct(!showHighlightedProduct)
               }
@@ -846,6 +851,14 @@ export default function LiveDetailsPage() {
         canHighlight={channelConfig?.isHost ?? false}
         highlightedProductId={highlightedProduct?.id}
       />
+
+      {channelConfig?.isHost && (
+        <ShopPanel
+          channelId={Number(channelId)}
+          isOpen={showShop}
+          onClose={() => setShowShop(false)}
+        />
+      )}
 
       {/* Leaving Channel Dialog */}
       <Dialog open={isLeaving} onOpenChange={() => {}}>

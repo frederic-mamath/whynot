@@ -6,6 +6,7 @@ import {
   Users as UsersIcon,
   ShoppingBag,
   Sparkles,
+  Store,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Button from "../ui/button";
@@ -22,6 +23,7 @@ interface VerticalControlPanelProps {
   onShowParticipants: () => void;
   onShowProducts?: () => void;
   onToggleHighlightedProduct?: () => void;
+  onShowShop?: () => void;
 }
 
 export default function VerticalControlPanel({
@@ -36,6 +38,7 @@ export default function VerticalControlPanel({
   onShowParticipants,
   onShowProducts,
   onToggleHighlightedProduct,
+  onShowShop,
 }: VerticalControlPanelProps) {
   const { t } = useTranslation();
   return (
@@ -118,6 +121,18 @@ export default function VerticalControlPanel({
               {highlightedProductCount}
             </span>
           )}
+        </Button>
+      )}
+
+      {showBroadcastControls && onShowShop && (
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={onShowShop}
+          title="Ma boutique"
+          className="shrink-0 shadow-lg"
+        >
+          <Store className="size-5" />
         </Button>
       )}
     </div>
