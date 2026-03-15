@@ -49,7 +49,6 @@ export interface LivesTable {
   id: Generated<number>;
   name: string;
   host_id: number;
-  status: string;
   max_participants: number | null;
   is_private: boolean | null;
   starts_at: Date;

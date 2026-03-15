@@ -68,9 +68,18 @@ export default function LiveDetailsPage() {
   const localVideoTrackRef = useRef<ICameraVideoTrack | null>(null);
   const localAudioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
   const screenTrackRef = useRef<ICameraVideoTrack | null>(null);
+  const clientRef = useRef<IAgoraRTCClient | null>(null);
 
   // UI state
   const [joined, setJoined] = useState(false);
+  const [liveStatus, setLiveStatus] = useState<
+    "upcoming" | "active" | "ended" | null
+  >(null);
+  const [liveMeta, setLiveMeta] = useState<{
+    name: string;
+    startsAt: string;
+    endsAt: string | null;
+  } | null>(null);
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
   const [error, setError] = useState("");
@@ -172,15 +181,30 @@ export default function LiveDetailsPage() {
   // Join channel mutation
   const joinMutation = trpc.live.join.useMutation({
     onSuccess: async (data) => {
-      const config = {
-        appId: data.appId,
-        token: data.token,
-        channelName: data.channel.id.toString(),
-        uid: data.uid,
-        isHost: data.isHost,
-      };
-      setChannelConfig(config);
-      await initializeAgora(config);
+      setLiveStatus(data.liveStatus);
+      setLiveMeta(data.live);
+
+      if (data.liveStatus === "active") {
+        const config = {
+          appId: data.appId!,
+          token: data.token!,
+          channelName: data.channel!.id.toString(),
+          uid: data.uid!,
+          isHost: data.isHost!,
+        };
+        setChannelConfig(config);
+        await initializeAgora(config);
+      } else if (data.liveStatus === "upcoming" && data.live.startsAt) {
+        // Retry at start time (capped at 60 s polling)
+        const msUntilStart =
+          new Date(data.live.startsAt).getTime() - Date.now();
+        setTimeout(
+          () => {
+            joinMutation.mutate({ channelId: Number(channelId) });
+          },
+          Math.max(5000, Math.min(msUntilStart, 60000)),
+        );
+      }
     },
     onError: (err) => {
       setError(err.message);
@@ -626,6 +650,53 @@ export default function LiveDetailsPage() {
   }
 
   if (!joined) {
+    if (liveStatus === "upcoming") {
+      return (
+        <div className="min-h-screen bg-background p-6 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Radio className="size-16 mx-auto text-primary/60" />
+            <h2 className="text-xl font-semibold text-foreground">
+              Ce live n’a pas encore commencé
+            </h2>
+            {liveMeta?.startsAt && (
+              <p className="text-muted-foreground">
+                Début prévu le{" "}
+                {new Date(liveMeta.startsAt).toLocaleString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              La page se rafraîchira automatiquement…
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (liveStatus === "ended") {
+      return (
+        <div className="min-h-screen bg-background p-6 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <WifiOff className="size-16 mx-auto text-muted-foreground" />
+            <h2 className="text-xl font-semibold text-foreground">
+              Ce live est terminé
+            </h2>
+            <button
+              onClick={() => navigate("/lives")}
+              className="text-primary text-sm font-outfit hover:underline"
+            >
+              ← Retour aux lives
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background p-6 flex items-center justify-center">
         <div className="text-center space-y-4">

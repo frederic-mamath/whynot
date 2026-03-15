@@ -111,11 +111,16 @@ export const auctionRouter = router({
       }
 
       // Find channel where this product is highlighted
+      const now = new Date();
       const channel = await db
         .selectFrom("lives")
         .selectAll()
         .where("highlighted_product_id", "=", input.productId)
-        .where("status", "=", "active")
+        .where("starts_at", "<=", now)
+        .where((eb) =>
+          eb.or([eb("ends_at", "is", null), eb("ends_at", ">", now)]),
+        )
+        .where("ended_at", "is", null)
         .executeTakeFirst();
 
       if (!channel) {
@@ -157,8 +162,10 @@ export const auctionRouter = router({
       }
 
       // Create auction
-      const now = new Date();
-      const endsAt = new Date(now.getTime() + input.durationSeconds * 1000);
+      const auctionNow = new Date();
+      const endsAt = new Date(
+        auctionNow.getTime() + input.durationSeconds * 1000,
+      );
 
       const auction = await auctionRepository.create({
         product_id: input.productId,
@@ -168,7 +175,7 @@ export const auctionRouter = router({
         buyout_price: input.buyoutPrice ? input.buyoutPrice.toFixed(2) : null,
         current_bid: startingPrice.toFixed(2),
         duration_seconds: input.durationSeconds,
-        started_at: now,
+        started_at: auctionNow,
         ends_at: endsAt,
       });
 

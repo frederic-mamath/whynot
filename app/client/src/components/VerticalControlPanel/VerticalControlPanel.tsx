@@ -7,6 +7,7 @@ import {
   ShoppingBag,
   Sparkles,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import Button from "../ui/button";
 
 interface VerticalControlPanelProps {

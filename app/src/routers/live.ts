@@ -118,70 +118,6 @@ export const liveRouter = router({
     }),
 
   /**
-   * Start a scheduled live (transition scheduled → active), returns Agora token
-   */
-  start: publicProcedure
-    .input(z.object({ liveId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
-      if (!ctx.userId) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You must be logged in",
-        });
-      }
-
-      const live = await liveRepository.findById(input.liveId);
-      if (!live) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Live not found" });
-      }
-
-      if (live.host_id !== ctx.userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only the host can start this live",
-        });
-      }
-
-      if (live.status === "active") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "This live is already active",
-        });
-      }
-
-      if (live.status === "ended") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "This live has already ended",
-        });
-      }
-
-      const startedLive = await liveRepository.start(input.liveId);
-
-      // Add host as participant
-      await liveParticipantRepository.addParticipant(
-        input.liveId,
-        ctx.userId,
-        "host",
-      );
-
-      const dynamicUid = ctx.userId * 10000 + Math.floor(Math.random() * 9999);
-      const token = generateAgoraToken({
-        channelName: input.liveId.toString(),
-        uid: dynamicUid,
-        role: "host",
-      });
-
-      return {
-        live: startedLive,
-        token,
-        appId: getAgoraAppId(),
-        uid: dynamicUid,
-        isHost: true,
-      };
-    }),
-
-  /**
    * List lives for a host (upcoming scheduled + past)
    */
   listByHost: publicProcedure
@@ -280,11 +216,29 @@ export const liveRouter = router({
         });
       }
 
-      if (live.status !== "active") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "This channel has ended",
-        });
+      const now = new Date();
+      const isEnded =
+        live.ended_at !== null ||
+        (live.ends_at !== null && live.ends_at <= now);
+      const isActive =
+        !isEnded &&
+        live.starts_at <= now &&
+        (live.ends_at === null || live.ends_at > now);
+      const liveStatus: "upcoming" | "active" | "ended" = isEnded
+        ? "ended"
+        : isActive
+          ? "active"
+          : "upcoming";
+
+      const liveMeta = {
+        name: live.name,
+        startsAt: live.starts_at.toISOString(),
+        endsAt: live.ends_at ? live.ends_at.toISOString() : null,
+      };
+
+      // If not active, return status without creating participant or Agora token
+      if (liveStatus !== "active") {
+        return { liveStatus, live: liveMeta };
       }
 
       const hasReachedCapacity = await liveRepository.hasReachedCapacity(
@@ -319,11 +273,13 @@ export const liveRouter = router({
       });
 
       return {
+        liveStatus: "active" as const,
         channel: live,
         token,
         appId: getAgoraAppId(),
         uid: dynamicUid,
         isHost,
+        live: liveMeta,
       };
     }),
 
@@ -335,13 +291,17 @@ export const liveRouter = router({
     .query(async ({ input }) => {
       let query = db
         .selectFrom("lives")
+        .innerJoin("users", "users.id", "lives.host_id")
         .select([
           "lives.id",
           "lives.name",
           "lives.host_id",
+          "lives.cover_url",
           "lives.max_participants",
           "lives.is_private",
           "lives.created_at",
+          "users.nickname as host_nickname",
+          "users.avatar_url as host_avatar_url",
           (eb) =>
             eb
               .selectFrom("live_participants")
@@ -350,7 +310,17 @@ export const liveRouter = router({
               .where("live_participants.left_at", "is", null)
               .as("participantCount"),
         ])
-        .where("lives.status", "=", "active");
+        .where((eb) => {
+          const now = new Date();
+          return eb.and([
+            eb("lives.starts_at", "<=", now),
+            eb.or([
+              eb("lives.ends_at", "is", null),
+              eb("lives.ends_at", ">", now),
+            ]),
+            eb("lives.ended_at", "is", null),
+          ]);
+        });
 
       if (!input?.includePrivate) {
         query = query.where("lives.is_private", "=", false);

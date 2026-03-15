@@ -67,6 +67,7 @@ export default function SellerLivePage() {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(todayDate());
   const [time, setTime] = useState("20:00");
+  const [endTime, setEndTime] = useState("");
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
@@ -75,6 +76,7 @@ export default function SellerLivePage() {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const timeInputRef = useRef<HTMLInputElement>(null);
+  const endTimeInputRef = useRef<HTMLInputElement>(null);
 
   // Edit dialog state
   const [editingLive, setEditingLive] = useState<{
@@ -89,12 +91,14 @@ export default function SellerLivePage() {
   const [editDescription, setEditDescription] = useState("");
   const [editDate, setEditDate] = useState(todayDate());
   const [editTime, setEditTime] = useState("20:00");
+  const [editEndTime, setEditEndTime] = useState("");
   const [editProductIds, setEditProductIds] = useState<number[]>([]);
   const [editError, setEditError] = useState("");
   const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
   const [selectedEditCoverFile, setSelectedEditCoverFile] =
     useState<File | null>(null);
   const editCoverInputRef = useRef<HTMLInputElement>(null);
+  const editEndTimeInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, refetch } = trpc.live.listByHost.useQuery(
     undefined,
@@ -122,6 +126,9 @@ export default function SellerLivePage() {
       setEditDescription(editingLive.description ?? "");
       setEditDate(toLocalDateStr(editingLive.starts_at));
       setEditTime(toLocalTimeStr(editingLive.starts_at));
+      setEditEndTime(
+        editingLive.ends_at ? toLocalTimeStr(editingLive.ends_at) : "",
+      );
       setEditError("");
       setEditCoverPreview(editingLive.cover_url ?? null);
       setSelectedEditCoverFile(null);
@@ -154,6 +161,7 @@ export default function SellerLivePage() {
       setDescription("");
       setDate(todayDate());
       setTime("20:00");
+      setEndTime("");
       setCoverPreview(null);
       setSelectedCoverFile(null);
       setFormError("");
@@ -166,13 +174,6 @@ export default function SellerLivePage() {
     onError: (err) => setFormError(err.message),
   });
 
-  const startMutation = trpc.live.start.useMutation({
-    onSuccess: (data) => {
-      navigate(`/live/${data.live?.id}`);
-    },
-    onError: (err) => alert(err.message),
-  });
-
   function handleSchedule(e: React.FormEvent) {
     e.preventDefault();
     setFormError("");
@@ -181,12 +182,16 @@ export default function SellerLivePage() {
       return;
     }
     const startsAt = new Date(`${date}T${time}:00`).toISOString();
+    const endsAt = endTime
+      ? new Date(`${date}T${endTime}:00`).toISOString()
+      : undefined;
 
     const doSchedule = (coverUrl?: string) => {
       scheduleMutation.mutate({
         name: name.trim(),
         description: description.trim() || undefined,
         startsAt,
+        endsAt,
         coverUrl,
       });
     };
@@ -222,6 +227,9 @@ export default function SellerLivePage() {
         name: editName.trim(),
         description: editDescription.trim() || null,
         startsAt: new Date(`${editDate}T${editTime}:00`).toISOString(),
+        endsAt: editEndTime
+          ? new Date(`${editDate}T${editEndTime}:00`).toISOString()
+          : null,
         coverUrl,
       });
 
@@ -351,10 +359,7 @@ export default function SellerLivePage() {
                           icon={<Play className="w-3 h-3" />}
                           label="Démarrer"
                           className="bg-primary text-primary-foreground shrink-0 text-xs px-3"
-                          disabled={startMutation.isPending}
-                          onClick={() =>
-                            startMutation.mutate({ liveId: live.id })
-                          }
+                          onClick={() => navigate(`/live/${live.id}`)}
                         />
                       </div>
                     </CardContent>
@@ -392,12 +397,14 @@ export default function SellerLivePage() {
                           </span>
                         </div>
                         <span className="text-xs font-outfit text-muted-foreground shrink-0 flex items-center gap-1">
-                          {live.status === "active" ? (
+                          {live.ended_at !== null ||
+                          (live.ends_at !== null &&
+                            new Date(live.ends_at) <= new Date()) ? (
+                            "Terminé"
+                          ) : (
                             <span className="text-primary font-bold">
                               En cours
                             </span>
-                          ) : (
-                            "Terminé"
                           )}
                           <ChevronRight className="w-3 h-3" />
                         </span>
@@ -483,6 +490,32 @@ export default function SellerLivePage() {
                 className="flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
               >
                 🕐 {time.replace(":", "h")}
+              </button>
+            </div>
+            {/* End time row */}
+            <div className="flex gap-3">
+              <input
+                type="time"
+                ref={endTimeInputRef}
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="sr-only"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  endTimeInputRef.current?.showPicker?.() ??
+                  endTimeInputRef.current?.click()
+                }
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-3 font-syne font-bold text-sm",
+                  endTime ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                🏁{" "}
+                {endTime
+                  ? `Fin : ${endTime.replace(":", "h")}`
+                  : "+ Heure de fin (optionnel)"}
               </button>
             </div>
           </div>
@@ -774,7 +807,7 @@ export default function SellerLivePage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5 flex-1">
-                <Label htmlFor="edit-time">Heure</Label>
+                <Label htmlFor="edit-time">Heure de début</Label>
                 <Input
                   id="edit-time"
                   type="time"
@@ -782,6 +815,17 @@ export default function SellerLivePage() {
                   onChange={(e) => setEditTime(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="edit-end-time">Heure de fin (optionnel)</Label>
+              <input
+                ref={editEndTimeInputRef}
+                id="edit-end-time"
+                type="time"
+                value={editEndTime}
+                onChange={(e) => setEditEndTime(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
             </div>
 
             {/* Products section in dialog */}
