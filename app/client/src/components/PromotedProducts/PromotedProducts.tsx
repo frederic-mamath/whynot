@@ -69,7 +69,7 @@ export default function PromotedProducts({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent>
+      <SheetContent className="h-full overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag className="size-5" />

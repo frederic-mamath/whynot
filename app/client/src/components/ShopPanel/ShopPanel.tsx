@@ -105,7 +105,7 @@ export default function ShopPanel({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto mt-6 flex flex-col gap-3">
+        <div className="flex-1 min-h-0 overflow-y-auto mt-6 flex flex-col gap-3">
           <ProductListSection
             products={shopProducts}
             selectedProductIds={selectedProductIds}
