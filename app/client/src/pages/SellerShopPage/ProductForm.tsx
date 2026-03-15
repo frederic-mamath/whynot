@@ -95,56 +95,60 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
       />
 
       {/* Category chips */}
-      {categories && categories.length > 0 && (
-        <div>
-          <Label>Catégorie</Label>
+      <div>
+        <div className={cn("text-muted-foreground text-[11px] font-semibold")}>
+          Catégorie
+        </div>
+        {categories && categories.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-1.5">
             {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
+              <ButtonV2
+                key={`ProductForm-Category-${cat.id}`}
+                className={cn(
+                  "py-2 px-3",
+                  "border-divider border-[2px] border-solid rounded-[10px]",
+                  "bg-b-fourth",
+                  "text-muted",
+                  categoryId === cat.id && "border-primary text-primary",
+                )}
+                label={cat.name}
+                icon={cat.emoji}
                 onClick={() =>
                   setCategoryId(categoryId === cat.id ? null : cat.id)
                 }
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-sm font-outfit transition-colors",
-                  categoryId === cat.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
-                {cat.emoji} {cat.name}
-              </button>
+              />
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Condition chips */}
-      {conditions && conditions.length > 0 && (
-        <div>
-          <Label>État</Label>
+      <div>
+        <div className={cn("text-muted-foreground text-[11px] font-semibold")}>
+          État
+        </div>
+        {conditions && conditions.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-1.5">
             {conditions.map((cond) => (
-              <button
-                key={cond.id}
+              <ButtonV2
+                key={`ProductForm-Condition-${cond.id}`}
                 type="button"
                 onClick={() =>
                   setConditionId(conditionId === cond.id ? null : cond.id)
                 }
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-sm font-outfit transition-colors",
-                  conditionId === cond.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground",
+                  "py-2 px-3",
+                  "border-divider border-[2px] border-solid rounded-[10px]",
+                  "bg-b-fourth",
+                  "text-muted",
+                  conditionId === cond.id && "border-primary text-primary",
                 )}
-              >
-                {cond.name}
-              </button>
+                label={cond.name}
+              />
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Prices */}
       <div className="grid grid-cols-2 gap-3">

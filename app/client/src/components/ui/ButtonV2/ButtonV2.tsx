@@ -20,7 +20,7 @@ const ButtonV2 = ({
   disabled,
 }: Props) => {
   const innerContent = (
-    <span className="py-[14px] w-full text-center flex items-center justify-center gap-2 text-[13px]">
+    <span className="w-full text-center flex items-center justify-center gap-2 text-[13px]">
       {icon && <span>{icon}</span>}
       <span>{label}</span>
     </span>
@@ -35,6 +35,7 @@ const ButtonV2 = ({
         "relative overflow-hidden transition-colors",
         "before:pointer-events-none before:absolute before:inset-0 before:bg-white/10 before:opacity-0 before:transition-opacity hover:before:opacity-100 hover:cursor-pointer",
         "flex items-center justify-center gap-2 rounded-[28px]",
+        "py-[14px]",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         className,
       )}
