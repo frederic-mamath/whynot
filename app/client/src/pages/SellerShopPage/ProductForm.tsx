@@ -75,7 +75,18 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Images */}
-      <ImageUploader images={images} onImagesChange={setImages} />
+      <Input
+        type="image"
+        label="Photo du produit"
+        value={images.length > 0 ? images[0].url : ""}
+        onChange={(value) => {
+          if (value) {
+            setImages([{ url: value, cloudinaryPublicId: null }]);
+          } else {
+            setImages([]);
+          }
+        }}
+      />
 
       {/* Name */}
       <Input
