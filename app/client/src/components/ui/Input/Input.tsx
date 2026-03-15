@@ -4,7 +4,7 @@ import { useId, useRef } from "react";
 interface Props {
   className?: string;
   hint?: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -40,7 +40,7 @@ const Input = ({
           "gap-4 p-3",
         )}
       >
-        <div>{icon}</div>
+        {icon && <div>{icon}</div>}
         <input
           className="focus:outline-none flex-1"
           id={inputId}

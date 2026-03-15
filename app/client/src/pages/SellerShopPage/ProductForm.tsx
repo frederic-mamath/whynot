@@ -6,10 +6,10 @@ import {
   ImageUploader,
   ProductImageItem,
 } from "../../components/ui/ImageUploader";
-import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { Label } from "../../components/ui/label";
 import ButtonV2 from "../../components/ui/ButtonV2/ButtonV2";
+import Input from "@/components/ui/Input/Input";
 
 interface ProductFormProps {
   shopId: number;
@@ -79,31 +79,20 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
       <ImageUploader images={images} onImagesChange={setImages} />
 
       {/* Name */}
-      <div>
-        <Label htmlFor="product-name">Nom du produit</Label>
-        <Input
-          id="product-name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Ex: Air Jordan 1 Retro High"
-          maxLength={255}
-          required
-        />
-      </div>
+      <Input
+        type="text"
+        onChange={(value) => setName(value)}
+        label="Nom du produit"
+        placeholder="Ex: Air Jordan 1 Retro High"
+      />
 
       {/* Description */}
-      <div>
-        <Label htmlFor="product-desc">Description</Label>
-        <Textarea
-          id="product-desc"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Décris ton produit..."
-          rows={3}
-          maxLength={1000}
-        />
-      </div>
+      <Input
+        type="textarea"
+        onChange={(value) => setDescription(value)}
+        label="Description"
+        placeholder="Décris ton produit..."
+      />
 
       {/* Category chips */}
       {categories && categories.length > 0 && (
@@ -159,30 +148,18 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
 
       {/* Prices */}
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="starting-price">Prix de départ (€)</Label>
-          <Input
-            id="starting-price"
-            type="number"
-            step="0.01"
-            min="0"
-            value={startingPrice}
-            onChange={(e) => setStartingPrice(e.target.value)}
-            placeholder="0.00"
-          />
-        </div>
-        <div>
-          <Label htmlFor="wished-price">Prix souhaité (€)</Label>
-          <Input
-            id="wished-price"
-            type="number"
-            step="0.01"
-            min="0"
-            value={wishedPrice}
-            onChange={(e) => setWishedPrice(e.target.value)}
-            placeholder="0.00"
-          />
-        </div>
+        <Input
+          type="number"
+          label="Prix de départ"
+          placeholder="20€"
+          onChange={(value) => setStartingPrice(value)}
+        />
+        <Input
+          type="number"
+          label="Prix souhaité"
+          placeholder="45€"
+          onChange={(value) => setWishedPrice(value)}
+        />
       </div>
 
       {/* Submit */}
