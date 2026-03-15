@@ -8,7 +8,8 @@ interface Props {
   label: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type: React.HTMLInputTypeAttribute;
+  type: React.HTMLInputTypeAttribute | "textarea";
+  rows?: number;
 }
 
 const Input = ({
@@ -19,9 +20,13 @@ const Input = ({
   onChange,
   placeholder,
   type,
+  rows = 4,
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputId = useId();
+
+  const isTextarea = type === "textarea";
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
@@ -32,23 +37,39 @@ const Input = ({
         {label}
       </label>
       <div
-        onClick={() => inputRef.current?.focus()}
+        onClick={() =>
+          isTextarea ? textareaRef.current?.focus() : inputRef.current?.focus()
+        }
         className={cn(
-          "border-2 border-[rgb(51,_51,_51)] rounded-[14px] has-[input:focus]:ring-2 has-[input:focus]:ring-primary",
+          "border-2 border-[rgb(51,_51,_51)] rounded-[14px]",
+          isTextarea
+            ? "has-[textarea:focus]:ring-2 has-[textarea:focus]:ring-primary"
+            : "has-[input:focus]:ring-2 has-[input:focus]:ring-primary",
           "transition-shadow duration-200 ease-in",
           "flex items-center",
           "gap-4 p-3",
         )}
       >
         {icon && <div>{icon}</div>}
-        <input
-          className="focus:outline-none flex-1"
-          id={inputId}
-          ref={inputRef}
-          type={type}
-          placeholder={placeholder}
-          onChange={(e) => onChange?.(e.target.value)}
-        />
+        {isTextarea ? (
+          <textarea
+            className="focus:outline-none flex-1 resize-none bg-transparent align-top"
+            id={inputId}
+            ref={textareaRef}
+            placeholder={placeholder}
+            rows={rows}
+            onChange={(e) => onChange?.(e.target.value)}
+          />
+        ) : (
+          <input
+            className="focus:outline-none flex-1"
+            id={inputId}
+            ref={inputRef}
+            type={type}
+            placeholder={placeholder}
+            onChange={(e) => onChange?.(e.target.value)}
+          />
+        )}
       </div>
       {hint && <p className="text-[10px] text-hint">{hint}</p>}
     </div>

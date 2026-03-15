@@ -6,7 +6,6 @@ import {
   ImageUploader,
   ProductImageItem,
 } from "../../components/ui/ImageUploader";
-import { Textarea } from "../../components/ui/textarea";
 import { Label } from "../../components/ui/label";
 import ButtonV2 from "../../components/ui/ButtonV2/ButtonV2";
 import Input from "@/components/ui/Input/Input";
@@ -89,6 +88,7 @@ export default function ProductForm({ shopId, onSuccess }: ProductFormProps) {
       {/* Description */}
       <Input
         type="textarea"
+        rows={4}
         onChange={(value) => setDescription(value)}
         label="Description"
         placeholder="Décris ton produit..."
