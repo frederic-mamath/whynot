@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Package,
@@ -15,8 +14,7 @@ import ButtonV2 from "@/components/ui/ButtonV2";
 import Tabs from "@/components/ui/Tabs";
 import MyShopTab from "./MyShopTab/MyShopTab";
 
-export default function SellerShopPage() {
-  const navigate = useNavigate();
+const SellerShopPage = () => {
   const [activeTabId, setActiveTabId] = useState<string>("boutique");
 
   const { data: shop, isLoading: shopLoading } = trpc.shop.getMyShop.useQuery();
@@ -104,7 +102,7 @@ export default function SellerShopPage() {
       )}
     </div>
   );
-}
+};
 
 function BoutiqueTab({
   products,
@@ -209,3 +207,5 @@ function BoutiqueTab({
     </div>
   );
 }
+
+export default SellerShopPage;

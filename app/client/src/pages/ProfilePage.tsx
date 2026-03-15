@@ -26,6 +26,7 @@ import {
   AlertCircle,
   LogOut,
   Camera,
+  Save,
 } from "lucide-react";
 import {
   Dialog,
@@ -47,6 +48,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
+import { cn } from "@/lib/utils";
+import ButtonV2 from "@/components/ui/ButtonV2";
 
 interface AddressFormData {
   label: string;
@@ -288,9 +291,9 @@ export default function ProfilePage() {
       </div>
 
       {/* Avatar */}
-      <Card className="mb-6">
+      <Card className={cn("mb-6", "bg-fourth", "border-divider")}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Camera className="size-5" />
             Avatar
           </CardTitle>
@@ -324,27 +327,32 @@ export default function ProfilePage() {
                 className="hidden"
                 onChange={handleFileSelect}
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
+              <ButtonV2
+                className={cn(
+                  "border-2 border-dashed border-primary rounded-[12px]",
+                  "text-primary text-[11px] font-bold",
+                  "px-4",
+                )}
+                icon={<Camera />}
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isAvatarUploading}
-              >
-                <Camera className="size-4 mr-2" />
-                Changer mon avatar
-              </Button>
+                label="Changer mon avatar"
+              />
               {selectedFile && (
-                <Button
-                  type="button"
-                  size="sm"
+                <ButtonV2
+                  className={cn(
+                    "border-2 border-dashed border-primary rounded-[12px]",
+                    "text-primary text-[11px] font-bold",
+                    "bg-primary text-primary-foreground",
+                    "px-4",
+                  )}
+                  icon={<Save />}
                   onClick={handleAvatarSave}
-                  disabled={isAvatarUploading}
-                >
-                  {isAvatarUploading
-                    ? "Envoi en cours…"
-                    : "Enregistrer l'avatar"}
-                </Button>
+                  label={
+                    isAvatarUploading
+                      ? "Envoi en cours…"
+                      : "Enregistrer l'avatar"
+                  }
+                />
               )}
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Radio, User, Store } from "lucide-react";
+import { Home, Radio, User, Store, ShoppingBag, BadgeEuro } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 
@@ -17,7 +17,6 @@ const navItems: NavItem[] = [
     label: "Lives",
     path: "/seller/lives",
   },
-  { icon: null, label: "GO", path: "/seller/go", isCenter: true },
   {
     icon: <User className="w-5 h-5" />,
     label: "Profil",
@@ -28,9 +27,19 @@ const navItems: NavItem[] = [
     label: "Boutique",
     path: "/seller/shop",
   },
+  {
+    icon: <ShoppingBag className="w-5 h-5" />,
+    label: "Achats",
+    path: "/seller/products",
+  },
+  {
+    icon: <BadgeEuro className="w-5 h-5" />,
+    label: "Ventes",
+    path: "/seller/products",
+  },
 ];
 
-export default function BottomNav() {
+const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: profile } = trpc.profile.me.useQuery();
@@ -41,7 +50,15 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-[460px] mx-auto bg-background border-t border-border z-50">
+    <nav
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50",
+        "max-w-[460px]",
+        "mx-auto",
+        "bg-background",
+        "border-t border-border border-divider",
+      )}
+    >
       <div className="flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
           if (item.isCenter) {
@@ -84,4 +101,6 @@ export default function BottomNav() {
       </div>
     </nav>
   );
-}
+};
+
+export default BottomNav;
