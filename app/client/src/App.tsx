@@ -9,7 +9,7 @@ import SignUpPage from "./pages/SignUpPage/SignUpPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChannelListPage from "./pages/ChannelListPage";
 import LiveListPage from "./pages/LiveListPage";
-import LiveDetailsPage from "./pages/LiveDetailsPage";
+import LiveDetailsPage from "./pages/LiveDetailsPage/LiveDetailsPage";
 import ShopListPage from "./pages/ShopListPage";
 import ShopCreatePage from "./pages/ShopCreatePage";
 import ShopDetailsPage from "./pages/ShopDetailsPage";
@@ -38,6 +38,7 @@ import OnboardingPage from "./pages/OnboardingPage";
 import HomePage from "./pages/HomePage";
 import { Navigate } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
+import { cn } from "./lib/utils";
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const { data, isLoading } = trpc.profile.me.useQuery(undefined, {
@@ -59,7 +60,12 @@ function AppContent() {
 
   return (
     <>
-      <div className={`max-w-[460px] flex-1${showBottomNav ? " pb-20" : ""}`}>
+      <div
+        className={cn(
+          `max-w-[460px] flex-1`,
+          // `${showBottomNav ? " pb-20" : ""}`
+        )}
+      >
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />

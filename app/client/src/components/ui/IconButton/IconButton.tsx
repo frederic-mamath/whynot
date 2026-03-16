@@ -11,7 +11,7 @@ const IconButton = ({ onClick, icon, size }: Props) => {
     <button
       className={cn(
         "flex items-center justify-center",
-        `border-1 rounded-[${size / 2}px] border-divider`,
+        `border-1 rounded-[${size / 2}px] border-solid border-divider`,
       )}
       onClick={onClick}
       style={{

@@ -49,6 +49,10 @@ const BottomNav = () => {
     return location.pathname.startsWith(path);
   };
 
+  if (location.pathname.startsWith("/live/")) {
+    return null;
+  }
+
   return (
     <nav
       className={cn(
