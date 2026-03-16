@@ -4,19 +4,24 @@ interface Props {
   onClick: () => void;
   icon: React.ReactNode;
   size: number;
+  className?: string;
 }
 
-const IconButton = ({ onClick, icon, size }: Props) => {
+const IconButton = ({ className, onClick, icon, size }: Props) => {
+  const borderRadius = `${size / 2}px`;
+
   return (
     <button
       className={cn(
         "flex items-center justify-center",
-        `border-1 rounded-[${size / 2}px] border-solid border-divider`,
+        `border-1 border-solid border-divider`,
+        className,
       )}
       onClick={onClick}
       style={{
         height: size,
         width: size,
+        borderRadius,
       }}
     >
       {icon}

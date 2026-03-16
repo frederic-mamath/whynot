@@ -5,7 +5,7 @@ const FadingUnderlay = () => {
     <div
       className={cn(
         "absolute bottom-0 left-0",
-        "h-1/2 w-full",
+        "h-2/3   w-full",
         "bg-gradient-to-t from-black/60 to-transparent",
       )}
     />

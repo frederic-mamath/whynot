@@ -59,7 +59,7 @@ export function HighlightedProduct({
 
   return (
     <>
-      <Card className="border-2 border-primary shadow-lg animate-in slide-in-from-bottom-5">
+      <Card className="border-1 border-white bg-transparent">
         <CardContent className="p-3">
           <div className="flex items-start gap-3">
             {/* Product Image */}
@@ -81,8 +81,7 @@ export function HighlightedProduct({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="size-4 text-primary animate-pulse shrink-0" />
-                  <h3 className="font-semibold text-sm line-clamp-1">
+                  <h3 className="font-semibold text-sm line-clamp-1 text-white">
                     {product.name}
                   </h3>
                 </div>
@@ -98,13 +97,9 @@ export function HighlightedProduct({
                 )}
               </div>
 
-              <p className="text-xs text-muted-foreground mb-2">
-                {t("highlightedProduct.startingPrice", {
-                  price: product.price.toFixed(2),
-                })}
-              </p>
+              <p className="text-xs text-primary mb-2">{product.price}€</p>
 
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+              <p className="text-xs text-white line-clamp-2 mb-2">
                 {product.description}
               </p>
 

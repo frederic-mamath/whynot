@@ -129,7 +129,7 @@ function AppContent() {
           />
           <Route path="/channels" element={<ChannelListPage />} />
           <Route path="/lives" element={<LiveListPage />} />
-          <Route path="/live/:channelId" element={<LiveDetailsPage />} />
+          <Route path="/live/:liveId" element={<LiveDetailsPage />} />
           {/* /channel/:channelId kept for backward compat – will be removed later */}
           <Route path="/channel/:channelId" element={<LiveDetailsPage />} />
           <Route

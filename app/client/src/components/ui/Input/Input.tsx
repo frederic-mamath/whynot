@@ -3,18 +3,21 @@ import { useId, useRef } from "react";
 
 interface Props {
   className?: string;
+  borderClassName?: string;
   hint?: string;
   icon?: React.ReactNode;
-  label: string;
+  label?: string;
   onChange: (value: string) => void;
   placeholder?: string;
   type: React.HTMLInputTypeAttribute | "textarea" | "image";
   rows?: number;
   value?: string;
+  name?: string;
 }
 
 const Input = ({
   className,
+  borderClassName,
   hint,
   icon,
   label,
@@ -23,6 +26,7 @@ const Input = ({
   type,
   rows = 4,
   value,
+  name,
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -48,12 +52,14 @@ const Input = ({
   if (isImage) {
     return (
       <div className={cn("flex flex-col gap-2", className)}>
-        <label
-          className="text-muted-foreground text-[11px] font-semibold"
-          htmlFor={inputId}
-        >
-          {label}
-        </label>
+        {label && (
+          <label
+            className="text-muted-foreground text-[11px] font-semibold"
+            htmlFor={inputId}
+          >
+            {label}
+          </label>
+        )}
         <label
           htmlFor={inputId}
           className={cn(
@@ -107,6 +113,7 @@ const Input = ({
         }
         className={cn(
           "border-2 border-[rgb(51,_51,_51)] rounded-[14px]",
+          borderClassName,
           isTextarea
             ? "has-[textarea:focus]:ring-2 has-[textarea:focus]:ring-primary"
             : "has-[input:focus]:ring-2 has-[input:focus]:ring-primary",
@@ -133,6 +140,7 @@ const Input = ({
             type={type}
             placeholder={placeholder}
             onChange={(e) => onChange?.(e.target.value)}
+            name={name}
           />
         )}
       </div>
