@@ -3,28 +3,19 @@ import IconButton from "@/components/ui/IconButton/IconButton";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, MessageCircle, Search, Share, Store } from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
-import { trpc } from "@/lib/trpc";
 import { Link, useParams } from "react-router-dom";
 import Input from "@/components/ui/Input/Input";
 import { HighlightedProduct } from "@/components/HighlightedProduct";
 import { MessageList } from "@/components/MessageList";
 import ProductList from "./ProductList/ProductList";
 import Tabs from "@/components/ui/Tabs";
-import { useChat } from "./LiveDetailsPage.hooks";
+import { useChat, useShop } from "./LiveDetailsPage.hooks";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
 
   const { messageList, onSubmitMessage } = useChat(liveId);
-
-  const { data: myShop } = trpc.shop.getMyShop.useQuery();
-  const { data: shopProducts = [] } = trpc.product.list.useQuery(
-    { shopId: myShop?.id ?? 0 },
-    { enabled: myShop !== undefined },
-  );
-  const { data: linkedProducts = [] } = trpc.product.listByChannel.useQuery({
-    channelId: Number(liveId),
-  });
+  const { myShop, shopProducts, linkedProducts } = useShop(liveId);
 
   return (
     <div className="h-full">

@@ -3,6 +3,19 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
+export const useShop = (liveId: string | undefined) => {
+  const { data: myShop } = trpc.shop.getMyShop.useQuery();
+  const { data: shopProducts = [] } = trpc.product.list.useQuery(
+    { shopId: myShop?.id ?? 0 },
+    { enabled: myShop !== undefined },
+  );
+  const { data: linkedProducts = [] } = trpc.product.listByChannel.useQuery({
+    channelId: Number(liveId),
+  });
+
+  return { myShop, shopProducts, linkedProducts };
+};
+
 export const useChat = (liveId: string | undefined) => {
   const { t } = useTranslation();
   const [messageList, setMessageList] = useState<
