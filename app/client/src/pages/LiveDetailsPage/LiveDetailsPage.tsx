@@ -1,95 +1,30 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
 import IconButton from "@/components/ui/IconButton/IconButton";
 import { cn } from "@/lib/utils";
-import {
-  ArrowLeft,
-  Icon,
-  MessageCircle,
-  Search,
-  Share,
-  Store,
-} from "lucide-react";
+import { ArrowLeft, MessageCircle, Search, Share, Store } from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
-import ProductListSection from "@/components/ProductListSection";
 import { trpc } from "@/lib/trpc";
 import { Link, useParams } from "react-router-dom";
-import { useState } from "react";
 import Input from "@/components/ui/Input/Input";
 import { HighlightedProduct } from "@/components/HighlightedProduct";
 import { MessageList } from "@/components/MessageList";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import ProductList from "./ProductList/ProductList";
+import Tabs from "@/components/ui/Tabs";
+import { useChat } from "./LiveDetailsPage.hooks";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
-  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
-  const [messageList, setMessageList] = useState<
-    { id: number; userId: number; content: string }[]
-  >([]);
 
-  const { t } = useTranslation();
+  const { messageList, onSubmitMessage } = useChat(liveId);
 
   const { data: myShop } = trpc.shop.getMyShop.useQuery();
-  const { data: shopProducts = [], isLoading: isLoadingProducts } =
-    trpc.product.list.useQuery(
-      { shopId: myShop?.id ?? 0 },
-      { enabled: myShop !== undefined },
-    );
-  const { data: linkedProducts = [], isLoading: isLoadingLinkedProducts } =
-    trpc.product.listByChannel.useQuery({ channelId: Number(liveId) });
-  trpc.message.subscribe.useSubscription(
-    { channelId: liveId ? Number(liveId) : 0 },
-    {
-      onData: (newMessage) => {
-        // Add message if not already in list (avoid duplicates)
-        setMessageList((prev) => {
-          const exists = prev.some((m) => m.id === newMessage.id);
-          if (exists) return prev;
-          return [...prev, newMessage];
-        });
-      },
-      onError: (error) => {
-        console.error("Subscription error:", error);
-        toast.error(t("channels.chat.connectionLost"));
-      },
-    },
+  const { data: shopProducts = [] } = trpc.product.list.useQuery(
+    { shopId: myShop?.id ?? 0 },
+    { enabled: myShop !== undefined },
   );
-
-  const sendMessageMutation = trpc.message.send.useMutation({
-    onSuccess: (data) => {
-      // Optimistically add message (will also come via subscription)
-      setMessages((prev) => {
-        const exists = prev.some((m) => m.id === data.id);
-        if (exists) return prev;
-        return [...prev, data];
-      });
-    },
-    onError: (error) => {
-      toast.error(error.message || t("channels.chat.sendError"));
-    },
+  const { data: linkedProducts = [] } = trpc.product.listByChannel.useQuery({
+    channelId: Number(liveId),
   });
-
-  const toggleProduct = (id: number) => {
-    setSelectedProductIds((prev) =>
-      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id],
-    );
-  };
-
-  const onSubmitMessage = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const content = formData.get("message")?.toString().trim();
-
-    if (liveId && content) {
-      sendMessageMutation.mutate({
-        channelId: liveId ? Number(liveId) : 0,
-        content,
-      });
-    }
-  };
-
-  console.log({ shopProducts });
 
   return (
     <div className="h-full">
@@ -189,6 +124,7 @@ const LiveDetailsPage = () => {
         </div>
       </div>
       <div className={cn("min-h-screen w-full", "bg-b-fourth", "p-6")}>
+        <Tabs />
         <div className={cn("text-black", "text-foreground", "font-bold")}>
           Boutique
         </div>
@@ -207,17 +143,6 @@ const LiveDetailsPage = () => {
             imageUrl: product.imageUrl,
             wishedPrice: product.wishedPrice,
           }))}
-        />
-        <ProductListSection
-          products={shopProducts}
-          selectedProductIds={selectedProductIds}
-          onToggleProduct={toggleProduct}
-          onSetSelectedProducts={setSelectedProductIds}
-          shopExists={!!myShop}
-          onNavigateToShop={() => {
-            console.log("Navigate to shop");
-          }}
-          onNavigateToCreateProduct={() => console.log("Navigate to shop")}
         />
       </div>
     </div>

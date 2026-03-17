@@ -46,6 +46,9 @@ interface ChannelConfig {
   isHost: boolean;
 }
 
+/**
+ * @deprecated This component is being refactored and split into smaller pieces. Please check the /live/:channelId route which uses the new LiveDetailsPage component.
+ */
 const LiveDetailsPage = () => {
   const { channelId } = useParams<{ channelId: string }>();
   const navigate = useNavigate();
