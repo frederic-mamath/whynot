@@ -10,9 +10,11 @@ interface Props {
   wishedPrice: number | null;
   variant?: Variant;
   isHighlighted?: boolean;
+  isAssociated?: boolean;
   onHighlight?: () => void;
   onUnhighlight?: () => void;
   onAssociate?: () => void;
+  onRemove?: () => void;
 }
 
 const ProductCard = ({
@@ -21,9 +23,11 @@ const ProductCard = ({
   wishedPrice,
   variant = "buyer",
   isHighlighted = false,
+  isAssociated = false,
   onHighlight,
   onUnhighlight,
   onAssociate,
+  onRemove,
 }: Props) => {
   return (
     <div
@@ -70,9 +74,13 @@ const ProductCard = ({
         )}
         {variant === "host-inventaire" && (
           <ButtonV2
-            className={cn("bg-primary", "text-primary-foreground", "px-4")}
-            label="Associer au live"
-            onClick={onAssociate}
+            className={cn(
+              isAssociated ? "bg-destructive" : "bg-primary",
+              "text-primary-foreground",
+              "px-4",
+            )}
+            label={isAssociated ? "Retirer du live" : "Associer au live"}
+            onClick={isAssociated ? onRemove : onAssociate}
           />
         )}
       </div>

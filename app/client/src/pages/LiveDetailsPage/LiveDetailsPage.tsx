@@ -32,6 +32,7 @@ const LiveDetailsPage = () => {
     highlightProduct,
     unhighlightProduct,
     associateProduct,
+    removeProduct,
   } = useShop(liveId);
 
   const isHost = channelConfig?.isHost ?? false;
@@ -128,14 +129,14 @@ const LiveDetailsPage = () => {
             </div>
           </div>
           <div>
-            {linkedProducts[0] && (
+            {highlightedProduct && (
               <HighlightedProduct
                 product={{
-                  id: linkedProducts[0].id,
-                  name: linkedProducts[0].name,
-                  imageUrl: linkedProducts[0].imageUrl,
-                  description: linkedProducts[0].description ?? "",
-                  price: linkedProducts[0].price ?? 0,
+                  id: highlightedProduct.id,
+                  name: highlightedProduct.name,
+                  imageUrl: highlightedProduct.imageUrl,
+                  description: highlightedProduct.description,
+                  price: highlightedProduct.price,
                 }}
               />
             )}
@@ -204,7 +205,9 @@ const LiveDetailsPage = () => {
                 wishedPrice: p.wishedPrice,
               }))}
               variant="host-inventaire"
+              associatedProductIds={linkedProducts.map((p) => p.id)}
               onAssociate={associateProduct}
+              onRemove={removeProduct}
             />
           )}
         </MobilePage>

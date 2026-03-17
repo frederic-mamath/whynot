@@ -2,14 +2,16 @@
 
 ## Progress
 
-| User Story                                                                                                                                                                              | Status  |
-| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------ |
-| As a buyer, in the 2nd MobilePage of the LiveDetailsPage, I can see the list of products associated to the live, each shown in a ProductCard with a "Enregistrer et me prévenir" button | planned |
-| As a buyer, in the 2nd MobilePage, I can search products by name                                                                                                                        | planned |
-| As a seller/host, in the 2nd MobilePage, I see two tabs: "Boutique du live" and "Inventaire"                                                                                            | planned |
-| As a seller/host, in the "Boutique du live" tab, I see linked products with a "Mettre en avant" button (toggle to "Retirer de la mise en avant")                                        | planned |
-| As a seller/host, in the "Inventaire" tab, I see all my shop products with an "Associer au live" button                                                                                 | planned |
-| As a user, when I click the Store button in the 1st MobilePage, the page scrolls smoothly to the 2nd MobilePage                                                                         | planned |
+| User Story                                                                                                                                                                              | Status |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----- |
+| As a buyer, in the 2nd MobilePage of the LiveDetailsPage, I can see the list of products associated to the live, each shown in a ProductCard with a "Enregistrer et me prévenir" button | done   |
+| As a buyer, in the 2nd MobilePage, I can search products by name                                                                                                                        | done   |
+| As a seller/host, in the 2nd MobilePage, I see two tabs: "Boutique du live" and "Inventaire"                                                                                            | done   |
+| As a seller/host, in the "Boutique du live" tab, I see linked products with a "Mettre en avant" button (toggle to "Retirer de la mise en avant")                                        | done   |
+| As a seller/host, in the "Inventaire" tab, I see all my shop products with an "Associer au live" button                                                                                 | done   |
+| As a user, when I click the Store button in the 1st MobilePage, the page scrolls smoothly to the 2nd MobilePage                                                                         | done   |
+| As a seller/host, in the "Inventaire" tab, already-associated products show a "Retirer du live" button instead of "Associer au live"                                                    | done   |
+| As a user, when a product is highlighted by the host, it is displayed in the HighlightedProduct overlay                                                                                 | done   |
 
 ## Initial Prompt
 

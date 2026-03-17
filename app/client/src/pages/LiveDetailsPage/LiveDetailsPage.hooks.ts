@@ -414,6 +414,11 @@ export const useShop = (liveId: string | undefined) => {
       utils.product.listByChannel.invalidate({ channelId: Number(liveId) }),
   });
 
+  const removeFromChannelMutation = trpc.product.removeFromChannel.useMutation({
+    onSuccess: () =>
+      utils.product.listByChannel.invalidate({ channelId: Number(liveId) }),
+  });
+
   const highlightProduct = (productId: number) =>
     highlightMutation.mutate({ channelId: Number(liveId), productId });
 
@@ -423,6 +428,9 @@ export const useShop = (liveId: string | undefined) => {
   const associateProduct = (productId: number) =>
     associateMutation.mutate({ channelId: Number(liveId), productId });
 
+  const removeProduct = (productId: number) =>
+    removeFromChannelMutation.mutate({ channelId: Number(liveId), productId });
+
   return {
     myShop,
     shopProducts,
@@ -430,6 +438,7 @@ export const useShop = (liveId: string | undefined) => {
     highlightProduct,
     unhighlightProduct,
     associateProduct,
+    removeProduct,
   };
 };
 
