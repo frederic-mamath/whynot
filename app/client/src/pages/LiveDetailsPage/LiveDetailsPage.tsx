@@ -8,11 +8,18 @@ import Input from "@/components/ui/Input/Input";
 import { HighlightedProduct } from "@/components/HighlightedProduct";
 import { MessageList } from "@/components/MessageList";
 import ProductList from "./ProductList/ProductList";
-import { useAgora, useChat, useShop } from "./LiveDetailsPage.hooks";
+import {
+  useAgora,
+  useAuction,
+  useChat,
+  useShop,
+} from "./LiveDetailsPage.hooks";
 import LivePlaceholders from "./LivePlaceholders";
 import MobilePage from "@/components/ui/MobilePage/MobilePage";
 import Tabs from "@/components/ui/Tabs";
 import { useRef, useState } from "react";
+import AuctionCard from "./AuctionCard/AuctionCard";
+import { AuctionConfigModal } from "@/components/AuctionConfigModal/AuctionConfigModal";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
@@ -34,6 +41,16 @@ const LiveDetailsPage = () => {
     associateProduct,
     removeProduct,
   } = useShop(liveId);
+  const {
+    activeAuction,
+    timeLeftSeconds,
+    isAuctionModalOpen,
+    setIsAuctionModalOpen,
+    startAuction,
+    closeAuction,
+    placeBid,
+    buyout,
+  } = useAuction(liveId);
 
   const isHost = channelConfig?.isHost ?? false;
   const shopPageRef = useRef<HTMLDivElement>(null);
@@ -140,26 +157,139 @@ const LiveDetailsPage = () => {
                 }}
               />
             )}
+            {activeAuction && (
+              <AuctionCard
+                winnerNickname={activeAuction.highestBidderUsername}
+                currentPrice={activeAuction.currentBid}
+                timeLeftSeconds={timeLeftSeconds}
+              />
+            )}
           </div>
-          <div className={cn("flex", "gap-2")}>
-            <ButtonV2
-              className={cn("flex-1", "bg-primary", "text-primary-foreground")}
-              onClick={() => {}}
-              label="Acheter tout de suite"
+          {isHost ? (
+            <div className={cn("flex", "gap-2")}>
+              {!highlightedProduct && (
+                <ButtonV2
+                  className={cn(
+                    "flex-1",
+                    "bg-primary",
+                    "text-primary-foreground",
+                  )}
+                  label="Choisir un produit à mettre en avant"
+                  onClick={() => {
+                    setActiveTab("boutique");
+                    shopPageRef.current?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                />
+              )}
+              {highlightedProduct && !activeAuction && (
+                <ButtonV2
+                  className={cn(
+                    "flex-1",
+                    "bg-primary",
+                    "text-primary-foreground",
+                  )}
+                  label="Commencer les enchères"
+                  onClick={() => setIsAuctionModalOpen(true)}
+                />
+              )}
+              {activeAuction && activeAuction.highestBidderId && (
+                <ButtonV2
+                  className={cn(
+                    "flex-1",
+                    "bg-primary",
+                    "text-primary-foreground",
+                  )}
+                  label={`Vendre à ${activeAuction.highestBidderUsername}`}
+                  onClick={closeAuction}
+                />
+              )}
+              {activeAuction && !activeAuction.highestBidderId && (
+                <ButtonV2
+                  className={cn(
+                    "flex-1",
+                    "bg-destructive",
+                    "text-primary-foreground",
+                  )}
+                  label="Annuler l'enchère"
+                  onClick={closeAuction}
+                />
+              )}
+            </div>
+          ) : (
+            <div className={cn("flex", "gap-2")}>
+              <ButtonV2
+                className={cn(
+                  "flex-1",
+                  "bg-primary",
+                  "text-primary-foreground",
+                )}
+                onClick={buyout}
+                disabled={!activeAuction || !activeAuction.buyoutPrice}
+                label="Acheter tout de suite"
+              />
+              <IconButton
+                className={cn(
+                  "border-primary",
+                  "text-primary",
+                  !activeAuction && "opacity-50 cursor-not-allowed",
+                )}
+                icon={<div>+1€</div>}
+                onClick={
+                  activeAuction
+                    ? () => placeBid(activeAuction.currentBid + 1)
+                    : () => {}
+                }
+                size={50}
+              />
+              <IconButton
+                className={cn(
+                  "border-primary",
+                  "text-primary",
+                  !activeAuction && "opacity-50 cursor-not-allowed",
+                )}
+                icon={<div>+5€</div>}
+                onClick={
+                  activeAuction
+                    ? () => placeBid(activeAuction.currentBid + 5)
+                    : () => {}
+                }
+                size={50}
+              />
+              <IconButton
+                className={cn(
+                  "border-primary",
+                  "text-primary",
+                  !activeAuction && "opacity-50 cursor-not-allowed",
+                )}
+                icon={<div>+10€</div>}
+                onClick={
+                  activeAuction
+                    ? () => placeBid(activeAuction.currentBid + 10)
+                    : () => {}
+                }
+                size={50}
+              />
+            </div>
+          )}
+          {isHost && highlightedProduct && (
+            <AuctionConfigModal
+              productId={highlightedProduct.id}
+              productName={highlightedProduct.name}
+              startingPrice={highlightedProduct.price}
+              isOpen={isAuctionModalOpen}
+              onClose={() => setIsAuctionModalOpen(false)}
+              onStart={async (config) => {
+                await startAuction(highlightedProduct.id, {
+                  durationSeconds: config.durationSeconds as
+                    | 60
+                    | 300
+                    | 600
+                    | 1800,
+                  buyoutPrice: config.buyoutPrice,
+                });
+              }}
             />
-            <IconButton
-              className={cn("border-primary", "text-primary")}
-              icon={<div>+5€</div>}
-              onClick={() => {}}
-              size={50}
-            />
-            <IconButton
-              className={cn("border-primary", "text-primary")}
-              icon={<div>+10€</div>}
-              onClick={() => {}}
-              size={50}
-            />
-          </div>
+          )}
         </div>
       </MobilePage>
       <div ref={shopPageRef}>

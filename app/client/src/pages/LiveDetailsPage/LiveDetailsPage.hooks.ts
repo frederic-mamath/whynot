@@ -442,6 +442,93 @@ export const useShop = (liveId: string | undefined) => {
   };
 };
 
+export const useAuction = (liveId: string | undefined) => {
+  const utils = trpc.useUtils();
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(0);
+  const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
+
+  const { data: activeAuction } = trpc.auction.getActive.useQuery(
+    { channelId: Number(liveId) },
+    { enabled: !!liveId, refetchInterval: 3000 },
+  );
+
+  useEffect(() => {
+    if (!activeAuction?.endsAt) {
+      setTimeLeftSeconds(0);
+      return;
+    }
+    const tick = () => {
+      const remaining = Math.max(
+        0,
+        Math.floor(
+          (new Date(activeAuction.endsAt).getTime() - Date.now()) / 1000,
+        ),
+      );
+      setTimeLeftSeconds(remaining);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [activeAuction?.endsAt]);
+
+  const invalidateAuction = () =>
+    utils.auction.getActive.invalidate({ channelId: Number(liveId) });
+
+  const startMutation = trpc.auction.start.useMutation({
+    onSuccess: () => {
+      setIsAuctionModalOpen(false);
+      invalidateAuction();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const closeMutation = trpc.auction.close.useMutation({
+    onSuccess: invalidateAuction,
+    onError: (err) => toast.error(err.message),
+  });
+
+  const bidMutation = trpc.auction.placeBid.useMutation({
+    onSuccess: invalidateAuction,
+    onError: (err) => toast.error(err.message),
+  });
+
+  const buyoutMutation = trpc.auction.buyout.useMutation({
+    onSuccess: invalidateAuction,
+    onError: (err) => toast.error(err.message),
+  });
+
+  const startAuction = async (
+    productId: number,
+    config: { durationSeconds: 60 | 300 | 600 | 1800; buyoutPrice?: number },
+  ) => {
+    await startMutation.mutateAsync({ productId, ...config });
+  };
+
+  const closeAuction = () => {
+    if (activeAuction) closeMutation.mutate({ auctionId: activeAuction.id });
+  };
+
+  const placeBid = (amount: number) => {
+    if (activeAuction)
+      bidMutation.mutate({ auctionId: activeAuction.id, amount });
+  };
+
+  const buyout = () => {
+    if (activeAuction) buyoutMutation.mutate({ auctionId: activeAuction.id });
+  };
+
+  return {
+    activeAuction,
+    timeLeftSeconds,
+    isAuctionModalOpen,
+    setIsAuctionModalOpen,
+    startAuction,
+    closeAuction,
+    placeBid,
+    buyout,
+  };
+};
+
 export const useChat = (liveId: string | undefined) => {
   const { t } = useTranslation();
   const [messageList, setMessageList] = useState<
