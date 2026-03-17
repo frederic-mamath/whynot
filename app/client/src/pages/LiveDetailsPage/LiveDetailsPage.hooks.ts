@@ -385,6 +385,7 @@ export const useAgora = (liveId: string | undefined) => {
 };
 
 export const useShop = (liveId: string | undefined) => {
+  const utils = trpc.useUtils();
   const { data: myShop } = trpc.shop.getMyShop.useQuery();
   const { data: shopProducts = [] } = trpc.product.list.useQuery(
     { shopId: myShop?.id ?? 0 },
@@ -394,7 +395,42 @@ export const useShop = (liveId: string | undefined) => {
     channelId: Number(liveId),
   });
 
-  return { myShop, shopProducts, linkedProducts };
+  const highlightMutation = trpc.live.highlightProduct.useMutation({
+    onSuccess: () =>
+      utils.live.getHighlightedProduct.invalidate({
+        channelId: Number(liveId),
+      }),
+  });
+
+  const unhighlightMutation = trpc.live.unhighlightProduct.useMutation({
+    onSuccess: () =>
+      utils.live.getHighlightedProduct.invalidate({
+        channelId: Number(liveId),
+      }),
+  });
+
+  const associateMutation = trpc.product.associateToChannel.useMutation({
+    onSuccess: () =>
+      utils.product.listByChannel.invalidate({ channelId: Number(liveId) }),
+  });
+
+  const highlightProduct = (productId: number) =>
+    highlightMutation.mutate({ channelId: Number(liveId), productId });
+
+  const unhighlightProduct = () =>
+    unhighlightMutation.mutate({ channelId: Number(liveId) });
+
+  const associateProduct = (productId: number) =>
+    associateMutation.mutate({ channelId: Number(liveId), productId });
+
+  return {
+    myShop,
+    shopProducts,
+    linkedProducts,
+    highlightProduct,
+    unhighlightProduct,
+    associateProduct,
+  };
 };
 
 export const useChat = (liveId: string | undefined) => {

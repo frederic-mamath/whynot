@@ -1,18 +1,9 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
 import IconButton from "@/components/ui/IconButton/IconButton";
 import { cn } from "@/lib/utils";
-import {
-  ArrowLeft,
-  MessageCircle,
-  Radio,
-  Search,
-  Share,
-  Store,
-  Wifi,
-  WifiOff,
-} from "lucide-react";
+import { ArrowLeft, MessageCircle, Search, Share, Store } from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Input from "@/components/ui/Input/Input";
 import { HighlightedProduct } from "@/components/HighlightedProduct";
 import { MessageList } from "@/components/MessageList";
@@ -20,13 +11,46 @@ import ProductList from "./ProductList/ProductList";
 import { useAgora, useChat, useShop } from "./LiveDetailsPage.hooks";
 import LivePlaceholders from "./LivePlaceholders";
 import MobilePage from "@/components/ui/MobilePage/MobilePage";
+import Tabs from "@/components/ui/Tabs";
+import { useRef, useState } from "react";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
 
-  const { joined, liveStatus, liveMeta, error, isLeaving } = useAgora(liveId);
+  const {
+    joined,
+    liveStatus,
+    liveMeta,
+    error,
+    channelConfig,
+    highlightedProduct,
+  } = useAgora(liveId);
   const { messageList, onSubmitMessage } = useChat(liveId);
-  const { myShop, shopProducts, linkedProducts } = useShop(liveId);
+  const {
+    shopProducts,
+    linkedProducts,
+    highlightProduct,
+    unhighlightProduct,
+    associateProduct,
+  } = useShop(liveId);
+
+  const isHost = channelConfig?.isHost ?? false;
+  const shopPageRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState("boutique");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const shopTabs = [
+    { id: "boutique", label: "Boutique du live" },
+    { id: "inventaire", label: "Inventaire" },
+  ];
+
+  const filteredLinkedProducts = linkedProducts.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const filteredShopProducts = shopProducts.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="h-full">
@@ -96,7 +120,9 @@ const LiveDetailsPage = () => {
               <IconButton
                 className={cn("border-white", "text-white")}
                 icon={<Store size={24} />}
-                onClick={() => {}}
+                onClick={() =>
+                  shopPageRef.current?.scrollIntoView({ behavior: "smooth" })
+                }
                 size={50}
               />
             </div>
@@ -135,27 +161,54 @@ const LiveDetailsPage = () => {
           </div>
         </div>
       </MobilePage>
-      <MobilePage>
-        <div className={cn("text-black", "text-foreground", "font-bold")}>
-          Boutique
-        </div>
-        <Input
-          placeholder="Rechercher un produit"
-          className="mb-4"
-          borderClassName="border-muted"
-          onChange={() => console.log("hey")}
-          type="text"
-          icon={<Search />}
-        />
-        <ProductList
-          products={shopProducts.map((product) => ({
-            id: product.id,
-            name: product.name,
-            imageUrl: product.imageUrl,
-            wishedPrice: product.wishedPrice,
-          }))}
-        />
-      </MobilePage>
+      <div ref={shopPageRef}>
+        <MobilePage>
+          {isHost && (
+            <Tabs
+              selectedTabId={activeTab}
+              items={shopTabs}
+              onClickItem={(id) => {
+                setActiveTab(id);
+                setSearchQuery("");
+              }}
+            />
+          )}
+          <Input
+            placeholder="Rechercher un produit"
+            className="mb-4 mt-4"
+            borderClassName="border-muted"
+            onChange={(value) => setSearchQuery(value)}
+            type="text"
+            icon={<Search />}
+          />
+          {(!isHost || activeTab === "boutique") && (
+            <ProductList
+              products={filteredLinkedProducts.map((p) => ({
+                id: p.id,
+                name: p.name,
+                imageUrl: p.imageUrl,
+                wishedPrice: p.wishedPrice,
+              }))}
+              variant={isHost ? "host-boutique" : "buyer"}
+              highlightedProductId={highlightedProduct?.id}
+              onHighlight={highlightProduct}
+              onUnhighlight={unhighlightProduct}
+            />
+          )}
+          {isHost && activeTab === "inventaire" && (
+            <ProductList
+              products={filteredShopProducts.map((p) => ({
+                id: p.id,
+                name: p.name,
+                imageUrl: p.imageUrl,
+                wishedPrice: p.wishedPrice,
+              }))}
+              variant="host-inventaire"
+              onAssociate={associateProduct}
+            />
+          )}
+        </MobilePage>
+      </div>
     </div>
   );
 };
