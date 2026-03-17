@@ -19,10 +19,10 @@ import { MessageList } from "@/components/MessageList";
 import ProductList from "./ProductList/ProductList";
 import { useAgora, useChat, useShop } from "./LiveDetailsPage.hooks";
 import LivePlaceholders from "./LivePlaceholders";
+import MobilePage from "@/components/ui/MobilePage/MobilePage";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
-  const navigate = useNavigate();
 
   const { joined, liveStatus, liveMeta, error, isLeaving } = useAgora(liveId);
   const { messageList, onSubmitMessage } = useChat(liveId);
@@ -30,7 +30,7 @@ const LiveDetailsPage = () => {
 
   return (
     <div className="h-full">
-      <div
+      <MobilePage
         className={cn(
           "relative",
           "min-h-screen w-full",
@@ -48,7 +48,7 @@ const LiveDetailsPage = () => {
           className={cn("h-full w-full", "bg-blue", "absolute top-0 left-0")}
           id="LiveDetailsPage-video"
         />
-        <div className="absolute p-6">
+        <div className="absolute">
           <Link to="/home">
             <IconButton
               className={cn("border-white", "text-white")}
@@ -62,7 +62,7 @@ const LiveDetailsPage = () => {
         <div
           className={cn(
             "flex flex-col",
-            "absolute bottom-0",
+            "absolute bottom-0 left-0",
             "w-full",
             "p-4 gap-2",
           )}
@@ -134,8 +134,8 @@ const LiveDetailsPage = () => {
             />
           </div>
         </div>
-      </div>
-      <div className={cn("min-h-screen w-full", "bg-b-fourth", "p-6")}>
+      </MobilePage>
+      <MobilePage>
         <div className={cn("text-black", "text-foreground", "font-bold")}>
           Boutique
         </div>
@@ -155,7 +155,7 @@ const LiveDetailsPage = () => {
             wishedPrice: product.wishedPrice,
           }))}
         />
-      </div>
+      </MobilePage>
     </div>
   );
 };
