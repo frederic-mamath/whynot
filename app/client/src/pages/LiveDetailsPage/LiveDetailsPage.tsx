@@ -1,19 +1,30 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
 import IconButton from "@/components/ui/IconButton/IconButton";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, MessageCircle, Search, Share, Store } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageCircle,
+  Radio,
+  Search,
+  Share,
+  Store,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Input from "@/components/ui/Input/Input";
 import { HighlightedProduct } from "@/components/HighlightedProduct";
 import { MessageList } from "@/components/MessageList";
 import ProductList from "./ProductList/ProductList";
-import Tabs from "@/components/ui/Tabs";
-import { useChat, useShop } from "./LiveDetailsPage.hooks";
+import { useAgora, useChat, useShop } from "./LiveDetailsPage.hooks";
+import LivePlaceholders from "./LivePlaceholders";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
+  const navigate = useNavigate();
 
+  const { joined, liveStatus, liveMeta, error, isLeaving } = useAgora(liveId);
   const { messageList, onSubmitMessage } = useChat(liveId);
   const { myShop, shopProducts, linkedProducts } = useShop(liveId);
 
@@ -27,7 +38,17 @@ const LiveDetailsPage = () => {
           "text-black",
         )}
       >
-        <div className="p-6">
+        <LivePlaceholders
+          liveStatus={liveStatus}
+          joined={joined}
+          error={error}
+          liveMeta={liveMeta}
+        />
+        <div
+          className={cn("h-full w-full", "bg-blue", "absolute top-0 left-0")}
+          id="LiveDetailsPage-video"
+        />
+        <div className="absolute p-6">
           <Link to="/home">
             <IconButton
               className={cn("border-white", "text-white")}
@@ -115,7 +136,6 @@ const LiveDetailsPage = () => {
         </div>
       </div>
       <div className={cn("min-h-screen w-full", "bg-b-fourth", "p-6")}>
-        <Tabs />
         <div className={cn("text-black", "text-foreground", "font-bold")}>
           Boutique
         </div>
