@@ -47,7 +47,7 @@ export function MessageList({
 
   return (
     <div className="relative rounded-lg ">
-      <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-black via-black/50 to-transparent" />
+      <div className="absolute inset-0 w-full h-full" />
       <div
         ref={scrollRef}
         className="relative max-h-40 overflow-y-auto pb-2 px-3 pt-2 space-y-2 scroll-smooth"
