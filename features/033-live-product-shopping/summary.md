@@ -15,19 +15,25 @@
 
 ## Initial Prompt
 
-> As a buyer, I see the list of products associated by the host and seller to the live in the second MobilePage of the LiveDetailsPage. Each product will be displayed in a LiveDetailsPage/ProductCard.
->
-> In this MobilePage, users will be able to search through the product name.
->
-> As a seller and host, in the LiveDetailsPage and the 2nd MobilePage, I should see 2 different tabs:
->
-> - "Boutique du live"
-> - "Inventaire"
->
-> In the "Boutique du live" tab, I should see the same base as buyers except that in the ProductCard, instead of seeing a button "Enregistrer et me prévenir", I will see a button "Mettre en avant". When I click on "Mettre en avant", the product will then become highlighted in the live.
->
-> In the first MobilePage, there is a "Store" button. When you click on it, it will scroll smoothly to the 2nd MobilePage at the top.
->
-> In the "Inventaire" tab: all shop products are shown, host can associate them to the live from this tab.
->
-> The "Mettre en avant" button is a toggle: if the product is already highlighted, the button becomes "Retirer de la mise en avant". Search filters within the active tab only.
+Follow instructions in SKILL.md.
+As a buyer, I see the list of products associated by the host and seller to the live in the second MobilePage of the LiveDetailsPage. Each product will be displayed in a LiveDetailsPage/ProductCard.
+
+In this MobilePage, users will be able to search through the product name.
+
+As a seller and host, in the LiveDetailsPage and the 2nd MobilePage, I should see 2 different tabs:
+
+"Boutique du live"
+"Inventaire"
+In the "Boutique du live" tab, I should see the same base as buyers except that in the ProductCard, instead of seeing a button "Enregistrer et me prévenir", I will see a button "Mettre en avant". When I click on "Mettre en avant", the product will then become highlighted in the live.
+
+In the first MobilePage, there is a "Store" button. When you click on it, it will scroll smoothly to the 2nd MobilePage at the top.
+
+As a seller and host, in the live details page and in the "inventaire" tab, I can dissociates product from the live shop. At the moment, when I land on this tab, I see the button "Associer au live", it throws an error "Product is already associated with this channel". If the product is already associated, I expect to see a button "Retirer du live".
+
+As a user, in the live detailed page, when a product is highlighted by the host, it is displayed in HighlightedProduct
+
+When starting the implementation, you will create the documentation based on features/ARCHITECTURE.md.
+
+After the implementation, you will run npm run build to verify that there is no errors. If there are errors, you will fix them and repeat this loop.
+
+Do you have any questions ?
