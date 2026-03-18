@@ -1,57 +1,57 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Radio, User, Store, ShoppingBag, BadgeEuro } from "lucide-react";
+import { Activity, Home, Radio, Store, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
-
-interface NavItem {
-  icon: React.ReactNode;
-  label: string;
-  path: string;
-  isCenter?: boolean;
-}
-
-const navItems: NavItem[] = [
-  { icon: <Home className="w-5 h-5" />, label: "Home", path: "/home" },
-  {
-    icon: <Radio className="w-5 h-5" />,
-    label: "Lives",
-    path: "/seller/lives",
-  },
-  {
-    icon: <User className="w-5 h-5" />,
-    label: "Profil",
-    path: "/profile",
-  },
-  {
-    icon: <Store className="w-5 h-5" />,
-    label: "Boutique",
-    path: "/seller/shop",
-  },
-  {
-    icon: <ShoppingBag className="w-5 h-5" />,
-    label: "Achats",
-    path: "/seller/products",
-  },
-  {
-    icon: <BadgeEuro className="w-5 h-5" />,
-    label: "Ventes",
-    path: "/seller/products",
-  },
-];
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: profile } = trpc.profile.me.useQuery();
+  const { data: userRoles } = trpc.role.myRoles.useQuery(undefined, {
+    enabled: !!profile,
+  });
+  const isSeller = userRoles?.roles.includes("SELLER") ?? false;
 
-  const isActive = (path: string) => {
-    if (path === "/seller") return location.pathname === "/seller";
-    return location.pathname.startsWith(path);
-  };
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   if (location.pathname.startsWith("/live/")) {
     return null;
   }
+
+  const handleVendre = () => {
+    if (isSeller) {
+      navigate("/seller/lives");
+    } else {
+      navigate("/vendre");
+    }
+  };
+
+  const navItems = [
+    {
+      icon: <Home className="w-5 h-5" />,
+      label: "Home",
+      path: "/home",
+      onClick: () => navigate("/home"),
+    },
+    {
+      icon: <Store className="w-5 h-5" />,
+      label: "Vendre",
+      path: isSeller ? "/seller/lives" : "/vendre",
+      onClick: handleVendre,
+    },
+    {
+      icon: <Activity className="w-5 h-5" />,
+      label: "Activité",
+      path: "/my-orders",
+      onClick: () => navigate("/my-orders"),
+    },
+    {
+      icon: <User className="w-5 h-5" />,
+      label: "Profil",
+      path: "/profile",
+      onClick: () => navigate("/profile"),
+    },
+  ];
 
   return (
     <nav
@@ -65,23 +65,11 @@ const BottomNav = () => {
     >
       <div className="flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
-          if (item.isCenter) {
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className="flex items-center justify-center w-12 h-12 -mt-4 rounded-full bg-primary text-primary-foreground font-syne font-extrabold text-sm shadow-lg hover:cursor-pointer"
-              >
-                {item.label}
-              </button>
-            );
-          }
-
           const active = isActive(item.path);
           return (
             <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
+              key={item.label}
+              onClick={item.onClick}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 py-2 hover:cursor-pointer",
                 active ? "text-primary" : "text-muted-foreground",

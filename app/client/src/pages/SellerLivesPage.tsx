@@ -420,7 +420,7 @@ export default function SellerLivePage() {
       {activeTab === "new" && (
         <form
           onSubmit={handleSchedule}
-          className="flex flex-col gap-6 px-4 pt-4 pb-8"
+          className="flex flex-col gap-6 px-4 pt-4 pb-16"
         >
           {/* Title */}
           <div className="flex flex-col gap-2">

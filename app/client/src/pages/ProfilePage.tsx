@@ -93,6 +93,7 @@ export default function ProfilePage() {
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       removeToken();
+      utils.invalidate();
       navigate("/");
     },
   });
