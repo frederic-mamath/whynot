@@ -32,6 +32,7 @@ import SellerLivesPage from "./pages/SellerLivesPage";
 import SellerGoPage from "./pages/SellerGoPage";
 import SellerExplorerPage from "./pages/SellerExplorerPage";
 import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";
+import SellerUpsellPage from "./pages/SellerUpsellPage/SellerUpsellPage";
 import CguPage from "./pages/CguPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -39,6 +40,15 @@ import HomePage from "./pages/HomePage";
 import { Navigate } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
 import { cn } from "./lib/utils";
+
+function AuthRedirect({ children }: { children: React.ReactNode }) {
+  const { data, isLoading } = trpc.profile.me.useQuery(undefined, {
+    retry: false,
+  });
+  if (isLoading) return null;
+  if (data) return <Navigate to="/home" replace />;
+  return <>{children}</>;
+}
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const { data, isLoading } = trpc.profile.me.useQuery(undefined, {
@@ -63,13 +73,34 @@ function AppContent() {
       <div
         className={cn(
           `max-w-[460px] flex-1`,
-          // `${showBottomNav ? " pb-20" : ""}`
+          `${showBottomNav ? " pb-20" : ""}`,
         )}
       >
         <Routes>
-          <Route path="/" element={<WelcomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<SignUpPage />} />
+          <Route
+            path="/"
+            element={
+              <AuthRedirect>
+                <WelcomePage />
+              </AuthRedirect>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <AuthRedirect>
+                <LoginPage />
+              </AuthRedirect>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <AuthRedirect>
+                <SignUpPage />
+              </AuthRedirect>
+            }
+          />
           <Route path="/account-merge" element={<AccountMergePage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -108,6 +139,16 @@ function AppContent() {
             }
           />
           <Route
+            path="/vendre"
+            element={
+              <ProtectedRoute>
+                <OnboardingGuard>
+                  <SellerUpsellPage />
+                </OnboardingGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/my-orders"
             element={
               <ProtectedRoute>
@@ -128,8 +169,7 @@ function AppContent() {
             }
           />
           <Route path="/channels" element={<ChannelListPage />} />
-          <Route path="/lives" element={<LiveListPage />} />
-          <Route path="/live/:liveId" element={<LiveDetailsPage />} />
+          <Route path="/live/:channelId" element={<LiveDetailsPage />} />
           {/* /channel/:channelId kept for backward compat – will be removed later */}
           <Route path="/channel/:channelId" element={<LiveDetailsPage />} />
           <Route

@@ -302,7 +302,7 @@ export default function SellerLivePage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen pb-4">
+    <div className="flex flex-col pb-4">
       <div className="px-4 pt-6 pb-2">
         <h1 className="font-syne font-extrabold text-xl text-foreground mb-4">
           Lives
@@ -420,7 +420,7 @@ export default function SellerLivePage() {
       {activeTab === "new" && (
         <form
           onSubmit={handleSchedule}
-          className="flex flex-col gap-6 px-4 pt-4 pb-16"
+          className="flex flex-col gap-6 px-4 pt-4"
         >
           {/* Title */}
           <div className="flex flex-col gap-2">

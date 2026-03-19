@@ -47,7 +47,7 @@ export default function SellerUpsellPage() {
     <div
       className={cn(
         "flex flex-col items-center",
-        "min-h-screen",
+        "min-h-[calc(100vh - 160px)]",
         "bg-background text-foreground",
         "px-6 py-10",
         "gap-8",
