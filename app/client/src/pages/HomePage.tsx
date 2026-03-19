@@ -35,7 +35,7 @@ export default function HomePage() {
     trpc.live.list.useQuery();
 
   return (
-    <div className="min-h-screen bg-background px-4 pt-10 pb-16 space-y-6">
+    <div className="min-h-screen bg-background px-4 pt-10 pb-20 space-y-6">
       {/* Next live highlight */}
       <LiveHighlight live={nextLive} isLoading={isNextLiveLoading} />
 
