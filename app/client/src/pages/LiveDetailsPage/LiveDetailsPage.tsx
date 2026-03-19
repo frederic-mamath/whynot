@@ -1,7 +1,14 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
 import IconButton from "@/components/ui/IconButton/IconButton";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, MessageCircle, Search, Share, Store } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageCircle,
+  Search,
+  Share,
+  Store,
+  Users,
+} from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
 import { Link, useParams } from "react-router-dom";
 import Input from "@/components/ui/Input/Input";
@@ -31,6 +38,7 @@ const LiveDetailsPage = () => {
     error,
     channelConfig,
     highlightedProduct,
+    viewerCount,
   } = useAgora(liveId);
   const { messageList, onSubmitMessage } = useChat(liveId);
   const {
@@ -90,7 +98,7 @@ const LiveDetailsPage = () => {
           className={cn("h-full w-full", "bg-blue", "absolute top-0 left-0")}
           id="LiveDetailsPage-video"
         />
-        <div className="absolute">
+        <div className="absolute top-0 left-0 right-0 flex justify-between items-start p-4">
           <Link to="/home">
             <IconButton
               className={cn("border-white", "text-white")}
@@ -99,6 +107,10 @@ const LiveDetailsPage = () => {
               onClick={() => {}}
             />
           </Link>
+          <div className={cn("flex items-center gap-1", "text-white")}>
+            <Users size={20} />
+            <span className="text-sm font-semibold">{viewerCount}</span>
+          </div>
         </div>
         <FadingUnderlay />
         <div
