@@ -98,7 +98,7 @@ const LiveDetailsPage = () => {
           className={cn("h-full w-full", "bg-blue", "absolute top-0 left-0")}
           id="LiveDetailsPage-video"
         />
-        <div className="absolute top-0 left-0 right-0 flex justify-between items-start p-4">
+        <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-4">
           <Link to="/home">
             <IconButton
               className={cn("border-white", "text-white")}
@@ -108,7 +108,7 @@ const LiveDetailsPage = () => {
             />
           </Link>
           <div className={cn("flex items-center gap-1", "text-white")}>
-            <Users size={20} />
+            <Users size={24} />
             <span className="text-sm font-semibold">{viewerCount}</span>
           </div>
         </div>

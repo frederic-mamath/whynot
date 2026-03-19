@@ -15,6 +15,7 @@ const IconButton = ({ className, onClick, icon, size }: Props) => {
       className={cn(
         "flex items-center justify-center",
         `border-1 border-solid border-divider`,
+        `cursor-pointer`,
         className,
       )}
       onClick={onClick}

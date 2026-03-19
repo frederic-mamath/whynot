@@ -9,7 +9,6 @@ import AgoraRTC, {
   IMicrophoneAudioTrack,
   IAgoraRTCRemoteUser,
 } from "agora-rtc-sdk-ng";
-import { isAuthenticated } from "@/lib/auth";
 
 export interface ChannelConfig {
   appId: string;
@@ -62,10 +61,6 @@ export const useAgora = (liveId: string | undefined) => {
     imageUrl: string | null;
   } | null>(null);
   const [showHighlightedProduct, setShowHighlightedProduct] = useState(true);
-
-  useEffect(() => {
-    if (!isAuthenticated()) navigate("/login");
-  }, [navigate]);
 
   const { data: participantsData } = trpc.live.participants.useQuery(
     { channelId: Number(liveId) },

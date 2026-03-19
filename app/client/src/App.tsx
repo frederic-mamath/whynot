@@ -169,9 +169,23 @@ function AppContent() {
             }
           />
           <Route path="/channels" element={<ChannelListPage />} />
-          <Route path="/live/:channelId" element={<LiveDetailsPage />} />
+          <Route
+            path="/live/:liveId"
+            element={
+              <ProtectedRoute>
+                <LiveDetailsPage />
+              </ProtectedRoute>
+            }
+          />
           {/* /channel/:channelId kept for backward compat – will be removed later */}
-          <Route path="/channel/:channelId" element={<LiveDetailsPage />} />
+          <Route
+            path="/channel/:liveId"
+            element={
+              <ProtectedRoute>
+                <LiveDetailsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/shops"
             element={
