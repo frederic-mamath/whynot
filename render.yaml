@@ -1,12 +1,12 @@
 databases:
-  - name: whynot-db
+  - name: popup-db
     plan: free
-    databaseName: whynot
-    user: whynot
+    databaseName: popup
+    user: popup
 
 services:
   - type: web
-    name: whynot-app
+    name: popup-app
     runtime: docker
     plan: free
     dockerfilePath: ./app/Dockerfile
@@ -16,7 +16,7 @@ services:
       - key: VITE_STRIPE_PUBLISHABLE_KEY
         value: pk_test_51RX5wpFpXSJuaxQVgRq7ESvBfZuVGMUC50zBcr8lWtlaiSPjd4FShApmDX7BDlY9UYQ2vTrMpLoPvvdgZNvGythr00ge5JIFoi
       - key: VITE_API_URL
-        value: https://whynot-app.onrender.com
+        value: https://popup-app.onrender.com
     envVars:
       - key: NODE_ENV
         value: production
@@ -24,7 +24,7 @@ services:
         value: "3000"
       - key: DATABASE_URL
         fromDatabase:
-          name: whynot-db
+          name: popup-db
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
