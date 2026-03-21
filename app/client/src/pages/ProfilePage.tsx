@@ -292,7 +292,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Avatar */}
-      <Card className={cn("mb-6", "bg-fourth", "border-divider")}>
+      <Card className={cn("mb-6", "bg-card", "border-border")}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Camera className="size-5" />
@@ -409,11 +409,16 @@ export default function ProfilePage() {
                 {t("profile.personalInfo.emailNote")}
               </p>
             </div>
-            <Button type="submit" disabled={updateProfile.isPending}>
-              {updateProfile.isPending
-                ? t("profile.personalInfo.saveLoading")
-                : t("profile.personalInfo.save")}
-            </Button>
+            <ButtonV2
+              type="submit"
+              disabled={updateProfile.isPending}
+              label={
+                updateProfile.isPending
+                  ? t("profile.personalInfo.saveLoading")
+                  : t("profile.personalInfo.save")
+              }
+              className="bg-b-primary text-txt-primary w-fit px-4"
+            />
           </form>
         </CardContent>
       </Card>
