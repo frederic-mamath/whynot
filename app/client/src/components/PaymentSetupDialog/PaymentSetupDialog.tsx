@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import {
   Elements,
+  PaymentElement,
   PaymentRequestButtonElement,
+  useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
 import type { PaymentRequest } from "@stripe/stripe-js";
@@ -15,8 +17,60 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Wallet, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Wallet,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  CreditCard,
+} from "lucide-react";
 import { toast } from "sonner";
+
+// ─── Card setup form (manual card entry via PaymentElement) ──────────
+
+function CardSetupForm({ onSuccess }: { onSuccess: () => void }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setIsSubmitting(true);
+    setError(null);
+
+    const { error: confirmError } = await stripe.confirmSetup({
+      elements,
+      confirmParams: {},
+      redirect: "if_required",
+    });
+
+    if (confirmError) {
+      setError(confirmError.message ?? "Erreur lors de l'enregistrement");
+      setIsSubmitting(false);
+    } else {
+      toast.success("Carte enregistrée !");
+      onSuccess();
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+      <PaymentElement />
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      <Button
+        type="submit"
+        disabled={isSubmitting || !stripe}
+        className="w-full"
+      >
+        {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+        <CreditCard className="h-4 w-4 mr-2" />
+        Enregistrer la carte
+      </Button>
+    </form>
+  );
+}
 
 // ─── Wallet-only setup form (Google Pay / Apple Pay) ────────────────
 
@@ -229,11 +283,22 @@ export function PaymentSetupDialog({
               </Button>
             </div>
           ) : clientSecret && stripePromise ? (
-            <Elements stripe={stripePromise}>
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
               <WalletSetupForm
                 clientSecret={clientSecret}
                 onSuccess={handleSuccess}
               />
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-divider" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-card text-muted-foreground">
+                    ou payer par carte
+                  </span>
+                </div>
+              </div>
+              <CardSetupForm onSuccess={handleSuccess} />
             </Elements>
           ) : (
             <div className="flex items-center justify-center py-8">

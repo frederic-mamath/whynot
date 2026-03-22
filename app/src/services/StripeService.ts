@@ -149,6 +149,15 @@ export class StripeService {
     });
     return result.data.length > 0;
   }
+
+  /**
+   * Detach (remove) a payment method from a Stripe Customer
+   */
+  async detachPaymentMethod(
+    paymentMethodId: string,
+  ): Promise<Stripe.PaymentMethod> {
+    return stripe.paymentMethods.detach(paymentMethodId);
+  }
 }
 
 export const stripeService = new StripeService();

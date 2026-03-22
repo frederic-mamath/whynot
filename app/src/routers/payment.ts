@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { router, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { userRepository } from "../repositories/UserRepository";
@@ -76,4 +77,39 @@ export const paymentRouter = router({
 
     return { clientSecret: setupIntent.client_secret! };
   }),
+
+  /**
+   * Detach (delete) a saved payment method from the current user's Stripe Customer.
+   * Verifies ownership before detaching to prevent cross-user attacks.
+   */
+  deletePaymentMethod: protectedProcedure
+    .input(z.object({ paymentMethodId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await userRepository.findById(ctx.user.id);
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      if (!user.stripe_customer_id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No Stripe customer found for this user",
+        });
+      }
+
+      // Security: verify the payment method belongs to this user's customer
+      const methods = await stripeService.listPaymentMethods({
+        customerId: user.stripe_customer_id,
+      });
+      const owns = methods.some((pm) => pm.id === input.paymentMethodId);
+      if (!owns) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Payment method does not belong to this user",
+        });
+      }
+
+      await stripeService.detachPaymentMethod(input.paymentMethodId);
+      return { success: true };
+    }),
 });

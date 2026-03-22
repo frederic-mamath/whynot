@@ -104,6 +104,17 @@ export default function ProfilePage() {
   // Load payment status
   const { data: paymentStatus } = trpc.payment.getPaymentStatus.useQuery();
 
+  // Delete a saved payment method
+  const deletePaymentMethod = trpc.payment.deletePaymentMethod.useMutation({
+    onSuccess: () => {
+      utils.payment.getPaymentStatus.invalidate();
+      toast.success("Moyen de paiement supprimé");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erreur lors de la suppression");
+    },
+  });
+
   // Populate form state from DB data (only on initial load)
   useEffect(() => {
     if (profile && !profileLoaded) {
@@ -472,6 +483,17 @@ export default function ProfilePage() {
                   <Badge variant="secondary">
                     {t("profile.payment.active")}
                   </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                    disabled={deletePaymentMethod.isPending}
+                    onClick={() =>
+                      deletePaymentMethod.mutate({ paymentMethodId: pm.id })
+                    }
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
                 </div>
               ))}
             </div>
