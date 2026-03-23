@@ -137,6 +137,25 @@ export const shopRouter = router({
     return mapShopToShopOutboundDto(shop);
   }),
 
+  getOrCreateMyShop: protectedProcedure.query(async ({ ctx }) => {
+    const shops = await shopRepository.findByOwnerId(ctx.user.id);
+    const existing = shops[0] ?? null;
+
+    if (existing) {
+      return mapShopToShopOutboundDto(existing);
+    }
+
+    const shopData = mapCreateShopInboundDtoToShop(
+      { name: "Ma boutique" },
+      ctx.user.id,
+    );
+    const shop = await shopRepository.save(shopData);
+
+    await userShopRoleRepository.assignRole(ctx.user.id, shop.id, "shop-owner");
+
+    return mapShopToShopOutboundDto(shop);
+  }),
+
   update: protectedProcedure
     .input(
       z.object({

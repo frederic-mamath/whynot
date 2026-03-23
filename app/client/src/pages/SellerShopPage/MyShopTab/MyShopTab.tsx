@@ -1,7 +1,5 @@
 import ShopProductItem from "@/components/ShopProductItem/ShopProductItem";
-import ButtonV2 from "@/components/ui/ButtonV2";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
 
 interface Props {
   products: Array<{
@@ -13,10 +11,9 @@ interface Props {
     startingPrice: number | null;
     wishedPrice: number | null;
   }>;
-  onClickAddProduct: () => void;
 }
 
-const MyShopTab = ({ products, onClickAddProduct }: Props) => {
+const MyShopTab = ({ products }: Props) => {
   return (
     <div>
       <div className={cn("flex items-center justify-between", "mb-4")}>
@@ -37,15 +34,6 @@ const MyShopTab = ({ products, onClickAddProduct }: Props) => {
             isAssociatedToALive={false}
           />
         ))}
-        <ButtonV2
-          className={cn(
-            "border-2 border-dashed border-primary rounded-[12px]",
-            "text-primary text-[11px] font-bold",
-          )}
-          icon={<Plus size={12} />}
-          label="Ajouter un produit"
-          onClick={onClickAddProduct}
-        />
       </div>
     </div>
   );
