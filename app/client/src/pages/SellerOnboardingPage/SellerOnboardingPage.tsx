@@ -470,27 +470,16 @@ export default function SellerOnboardingPage() {
           {sellerStatus === "none" && currentStepIndex === 10 && (
             <>
               <div className="p-4 rounded-xl bg-card border border-border text-sm text-muted-foreground">
-                Votre profil vendeur est prêt. Soumettez votre demande — notre
-                équipe l'examinera sous 48 h.
+                Votre profil vendeur est complet. Cliquez pour activer votre
+                compte vendeur.
               </div>
               <ButtonV2
                 className="w-full bg-primary text-primary-foreground"
-                label="Envoyer ma demande"
+                label="Devenir vendeur"
                 disabled={isPending}
                 onClick={handleSubmitApplication}
               />
             </>
-          )}
-
-          {sellerStatus === "pending" && (
-            <div className="flex flex-col items-center gap-3 py-6 text-center">
-              <span className="text-4xl">⏳</span>
-              <p className="font-syne font-extrabold text-lg">Demande envoyée</p>
-              <p className="text-sm text-muted-foreground">
-                Notre équipe examine votre profil. Vous serez notifié dès la
-                validation.
-              </p>
-            </div>
           )}
 
           {sellerStatus === "active" && (
@@ -505,7 +494,7 @@ export default function SellerOnboardingPage() {
               <ButtonV2
                 className="w-full bg-primary text-primary-foreground mt-2"
                 label="Accéder à mon espace vendeur"
-                onClick={() => navigate("/seller")}
+                onClick={() => navigate("/seller/shop")}
               />
             </div>
           )}

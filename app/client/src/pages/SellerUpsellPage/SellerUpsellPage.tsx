@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Clock, Receipt, Users } from "lucide-react";
 import ButtonV2 from "@/components/ui/ButtonV2";
+import { trpc } from "@/lib/trpc";
 
 const BENEFITS = [
   {
@@ -26,6 +27,10 @@ const BENEFITS = [
 
 export default function SellerUpsellPage() {
   const navigate = useNavigate();
+  const { data: userRoles } = trpc.role.myRoles.useQuery();
+  const isSeller = userRoles?.roles.includes("SELLER") ?? false;
+
+  if (isSeller) return <Navigate to="/seller/shop" replace />;
 
   return (
     <div

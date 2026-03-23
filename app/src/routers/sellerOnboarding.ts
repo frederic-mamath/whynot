@@ -265,6 +265,8 @@ export const sellerOnboardingRouter = router({
     await userRoleRepository.createUserRole({
       userId: ctx.userId!,
       roleId: sellerRole.id,
+      activatedBy: ctx.userId!,
+      activatedAt: new Date(),
     });
     await userRepository.updateSellerOnboardingStep(ctx.userId!, 11);
 

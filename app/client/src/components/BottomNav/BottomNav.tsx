@@ -20,7 +20,7 @@ const BottomNav = () => {
 
   const handleVendre = () => {
     if (isSeller) {
-      navigate("/seller/lives");
+      navigate("/seller/shop");
     } else {
       navigate("/vendre");
     }
@@ -36,7 +36,7 @@ const BottomNav = () => {
     {
       icon: <Store className="w-5 h-5" />,
       label: "Vendre",
-      path: isSeller ? "/seller/lives" : "/vendre",
+      path: isSeller ? "/seller/shop" : "/vendre",
       onClick: handleVendre,
     },
     {
