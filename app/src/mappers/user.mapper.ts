@@ -25,6 +25,8 @@ export function mapCreateUserInboundDtoToUser(
   | "avatar_url"
   | "avatar_public_id"
   | "has_completed_onboarding"
+  | "seller_onboarding_step"
+  | "accepted_seller_rules_at"
 > {
   return {
     email: dto.email,

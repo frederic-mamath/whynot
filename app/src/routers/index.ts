@@ -13,6 +13,7 @@ import { profileRouter } from "./profile";
 import { imageRouter } from "./image";
 import { paymentRouter } from "./payment";
 import { catalogRouter } from "./catalog";
+import { sellerOnboardingRouter } from "./sellerOnboarding";
 
 export const appRouter = router({
   auth: authRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   image: imageRouter,
   payment: paymentRouter,
   catalog: catalogRouter,
+  sellerOnboarding: sellerOnboardingRouter,
 });
 
 export type AppRouter = typeof appRouter;

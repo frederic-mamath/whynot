@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
-import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { Clock, Receipt, Users } from "lucide-react";
 import ButtonV2 from "@/components/ui/ButtonV2";
 
@@ -26,22 +25,7 @@ const BENEFITS = [
 ];
 
 export default function SellerUpsellPage() {
-  const utils = trpc.useUtils();
-
-  const requestSellerRole = trpc.role.requestSellerRole.useMutation({
-    onSuccess: () => {
-      toast.success("Demande envoyée !", {
-        description:
-          "Votre demande est en cours de validation par notre équipe.",
-      });
-      utils.role.myRoles.invalidate();
-    },
-    onError: (error) => {
-      toast.error("Erreur", { description: error.message });
-    },
-  });
-
-  const hasPendingRequest = requestSellerRole.isSuccess;
+  const navigate = useNavigate();
 
   return (
     <div
@@ -102,19 +86,9 @@ export default function SellerUpsellPage() {
       {/* CTA */}
       <div className={cn("w-full mt-auto pt-6")}>
         <ButtonV2
-          className={cn(
-            "w-full",
-            hasPendingRequest
-              ? "bg-muted text-muted-foreground"
-              : "bg-primary text-primary-foreground",
-          )}
-          label={
-            hasPendingRequest
-              ? "Demande envoyée — en attente de validation"
-              : "Commencer à vendre"
-          }
-          disabled={requestSellerRole.isPending || hasPendingRequest}
-          onClick={() => requestSellerRole.mutate()}
+          className="w-full bg-primary text-primary-foreground"
+          label="Commencer à vendre"
+          onClick={() => navigate("/seller-onboarding")}
         />
       </div>
     </div>

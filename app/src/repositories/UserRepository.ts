@@ -145,6 +145,25 @@ export class UserRepository {
       .executeTakeFirst();
   }
 
+  async updateSellerOnboardingStep(
+    userId: number,
+    step: number,
+    extra?: { accepted_seller_rules_at?: Date },
+  ): Promise<User | undefined> {
+    return db
+      .updateTable("users")
+      .set({
+        seller_onboarding_step: step,
+        ...(extra?.accepted_seller_rules_at !== undefined
+          ? { accepted_seller_rules_at: extra.accepted_seller_rules_at }
+          : {}),
+        updated_at: new Date(),
+      })
+      .where("id", "=", userId)
+      .returningAll()
+      .executeTakeFirst();
+  }
+
   /**
    * Delete user
    * Similar to: DELETE FROM users WHERE id = ?

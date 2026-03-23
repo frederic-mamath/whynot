@@ -2,6 +2,7 @@ import { Kysely, Generated, Selectable } from "kysely";
 
 export interface Database {
   users: UsersTable;
+  seller_onboarding_data: SellerOnboardingDataTable;
   lives: LivesTable;
   live_participants: LiveParticipantsTable;
   live_products: LiveProductsTable;
@@ -41,6 +42,8 @@ export interface UsersTable {
   avatar_url: string | null;
   avatar_public_id: string | null;
   has_completed_onboarding: Generated<boolean>;
+  seller_onboarding_step: Generated<number>;
+  accepted_seller_rules_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -298,3 +301,24 @@ export interface ConditionsTable {
 
 export type Category = Selectable<CategoriesTable>;
 export type Condition = Selectable<ConditionsTable>;
+
+export interface SellerOnboardingDataTable {
+  id: Generated<number>;
+  user_id: number;
+  category: string | null;
+  sub_category: string | null;
+  seller_type: string | null;
+  selling_channels: string[] | null;
+  monthly_revenue_range: string | null;
+  item_count_range: string | null;
+  team_size_range: string | null;
+  live_hours_range: string | null;
+  return_street: string | null;
+  return_city: string | null;
+  return_zip_code: string | null;
+  return_country: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export type SellerOnboardingData = Selectable<SellerOnboardingDataTable>;

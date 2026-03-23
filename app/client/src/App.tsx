@@ -33,6 +33,7 @@ import SellerGoPage from "./pages/SellerGoPage";
 import SellerExplorerPage from "./pages/SellerExplorerPage";
 import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";
 import SellerUpsellPage from "./pages/SellerUpsellPage/SellerUpsellPage";
+import SellerOnboardingPage from "./pages/SellerOnboardingPage/SellerOnboardingPage";
 import CguPage from "./pages/CguPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -144,6 +145,16 @@ function AppContent() {
               <ProtectedRoute>
                 <OnboardingGuard>
                   <SellerUpsellPage />
+                </OnboardingGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/seller-onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingGuard>
+                  <SellerOnboardingPage />
                 </OnboardingGuard>
               </ProtectedRoute>
             }

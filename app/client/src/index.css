@@ -80,6 +80,16 @@
   --color-b-fourth: var(--b-secondary);
   --color-txt-third: var(--action-txt-third);
   --color-hint: var(--input-hint);
+
+  --animate-popup-bounce: popup-bounce 0.5s ease-out;
+}
+
+@keyframes popup-bounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.08); }
+  60%  { transform: scale(0.96); }
+  80%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
 :root {
