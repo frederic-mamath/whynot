@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import Input from '@/components/ui/Input/Input';
 import { Textarea } from '@/components/ui/textarea';
 import { Package, User, DollarSign, Calendar, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
@@ -83,11 +83,11 @@ function PayoutRequestDialog({ order }: { order: any }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="paymentMethod">Payment Method *</Label>
+            <Label>Payment Method *</Label>
             <Input
-              id="paymentMethod"
+              type="text"
               value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
+              onChange={(v) => setPaymentMethod(v)}
               placeholder="e.g., PayPal, Bank Transfer, Venmo"
               required
             />

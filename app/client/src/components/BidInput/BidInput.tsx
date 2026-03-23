@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TrendingUp, AlertCircle } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import Input from "../ui/Input/Input";
 import { Label } from "../ui/label";
 import { cn } from "../../lib/utils";
 
@@ -83,14 +83,14 @@ export function BidInput({
             $
           </span>
           <Input
-            id="bid-amount"
             type="number"
             step="0.01"
             min={minBid}
             value={bidAmount}
-            onChange={(e) => setBidAmount(e.target.value)}
+            onChange={(v) => setBidAmount(v)}
             placeholder={minBid.toFixed(2)}
-            className={cn("pl-6", error && "border-destructive")}
+            inputClassName="pl-6"
+            borderClassName={error ? "border-destructive" : undefined}
             disabled={disabled || isSubmitting}
           />
         </div>

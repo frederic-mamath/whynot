@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
 import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Package } from "lucide-react";
@@ -118,14 +118,13 @@ export default function ShopDetailsPage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="edit-name">
+                  <Label>
                     {t("shops.details.nameLabel")}
                   </Label>
                   <Input
-                    id="edit-name"
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(v) => setName(v)}
                     placeholder={t("shops.details.namePlaceholder")}
                     required
                   />

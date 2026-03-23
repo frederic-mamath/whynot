@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
 import { ArrowLeft } from "lucide-react";
@@ -59,12 +59,11 @@ export default function ShopCreatePage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="name">{t("shops.create.nameLabel")}</Label>
+            <Label>{t("shops.create.nameLabel")}</Label>
             <Input
-              id="name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(v) => setName(v)}
               placeholder={t("shops.create.namePlaceholder")}
               required
               maxLength={255}

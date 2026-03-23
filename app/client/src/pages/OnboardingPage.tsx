@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import Input from "@/components/ui/Input/Input";
 import { Label } from "@/components/ui/label";
 import {
   ImageUploader,
@@ -89,15 +89,14 @@ export default function OnboardingPage() {
               Pseudo <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="nickname"
               type="text"
               value={nickname}
-              onChange={(e) => handleNicknameChange(e.target.value)}
+              onChange={(v) => handleNicknameChange(v)}
               placeholder="votre_pseudo"
               maxLength={50}
               autoComplete="off"
               autoCapitalize="none"
-              className={nicknameError ? "border-destructive" : ""}
+              borderClassName={nicknameError ? "border-destructive" : undefined}
             />
             {nicknameError && (
               <p className="text-xs text-destructive">{nicknameError}</p>

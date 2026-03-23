@@ -4,6 +4,7 @@ import { useId, useRef } from "react";
 interface Props {
   className?: string;
   borderClassName?: string;
+  inputClassName?: string;
   hint?: string;
   icon?: React.ReactNode;
   label?: string;
@@ -13,11 +14,20 @@ interface Props {
   rows?: number;
   value?: string;
   name?: string;
+  disabled?: boolean;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  maxLength?: number;
+  step?: string | number;
+  min?: string | number;
+  autoComplete?: string;
+  autoCapitalize?: string;
+  required?: boolean;
 }
 
 const Input = ({
   className,
   borderClassName,
+  inputClassName,
   hint,
   icon,
   label,
@@ -27,6 +37,14 @@ const Input = ({
   rows = 4,
   value,
   name,
+  disabled,
+  onKeyDown,
+  maxLength,
+  step,
+  min,
+  autoComplete,
+  autoCapitalize,
+  required,
 }: Props) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -120,27 +138,44 @@ const Input = ({
           "transition-shadow duration-200 ease-in",
           "flex items-center",
           "gap-4 p-3",
+          disabled && "opacity-50 cursor-not-allowed",
         )}
       >
         {icon && <div>{icon}</div>}
         {isTextarea ? (
           <textarea
-            className="focus:outline-none flex-1 resize-none bg-transparent align-top"
+            className={cn(
+              "focus:outline-none flex-1 resize-none bg-transparent align-top",
+              inputClassName,
+            )}
             id={inputId}
             ref={textareaRef}
             placeholder={placeholder}
             rows={rows}
+            value={value}
+            disabled={disabled}
+            onKeyDown={onKeyDown as React.KeyboardEventHandler<HTMLTextAreaElement>}
+            maxLength={maxLength}
             onChange={(e) => onChange?.(e.target.value)}
           />
         ) : (
           <input
-            className="focus:outline-none flex-1"
+            className={cn("focus:outline-none flex-1", inputClassName)}
             id={inputId}
             ref={inputRef}
             type={type}
             placeholder={placeholder}
-            onChange={(e) => onChange?.(e.target.value)}
+            value={value}
             name={name}
+            disabled={disabled}
+            onKeyDown={onKeyDown as React.KeyboardEventHandler<HTMLInputElement>}
+            maxLength={maxLength}
+            step={step}
+            min={min}
+            autoComplete={autoComplete}
+            autoCapitalize={autoCapitalize}
+            required={required}
+            onChange={(e) => onChange?.(e.target.value)}
           />
         )}
       </div>

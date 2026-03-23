@@ -1,6 +1,6 @@
-import { useState, KeyboardEvent } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Input } from "../ui/input";
+import Input from "../ui/Input/Input";
 import Button from "../ui/button";
 import { Send } from "lucide-react";
 
@@ -21,7 +21,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
     }
   };
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -31,13 +31,15 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
+        type="text"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onChange={(v) => setMessage(v)}
+        onKeyDown={handleKeyDown}
         placeholder={t("messages.placeholder")}
         maxLength={500}
         disabled={disabled}
-        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20"
+        borderClassName="flex-1 bg-white/10 border-white/20"
+        inputClassName="text-white placeholder:text-white/50"
       />
       <Button
         type="submit"

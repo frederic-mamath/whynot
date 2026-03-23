@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import Input from "@/components/ui/Input/Input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
@@ -386,35 +386,36 @@ export default function ProfilePage() {
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">
+                <Label>
                   {t("profile.personalInfo.firstName")}
                 </Label>
                 <Input
-                  id="firstName"
+                  type="text"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(v) => setFirstName(v)}
                   placeholder={t("profile.personalInfo.firstNamePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">
+                <Label>
                   {t("profile.personalInfo.lastName")}
                 </Label>
                 <Input
-                  id="lastName"
+                  type="text"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(v) => setLastName(v)}
                   placeholder={t("profile.personalInfo.lastNamePlaceholder")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">{t("common.email")}</Label>
+              <Label>{t("common.email")}</Label>
               <Input
-                id="email"
+                type="text"
                 value={profile?.email || ""}
+                onChange={() => {}}
                 disabled
-                className="bg-muted"
+                borderClassName="bg-muted"
               />
               <p className="text-xs text-muted-foreground">
                 {t("profile.personalInfo.emailNote")}
@@ -646,60 +647,60 @@ export default function ProfilePage() {
           </DialogHeader>
           <form onSubmit={handleSubmitAddress} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="label">{t("profile.addresses.label")}</Label>
+              <Label>{t("profile.addresses.label")}</Label>
               <Input
-                id="label"
+                type="text"
                 value={addressForm.label}
-                onChange={(e) =>
-                  setAddressForm({ ...addressForm, label: e.target.value })
+                onChange={(v) =>
+                  setAddressForm({ ...addressForm, label: v })
                 }
                 placeholder={t("profile.addresses.labelPlaceholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="street">{t("profile.addresses.street")}</Label>
+              <Label>{t("profile.addresses.street")}</Label>
               <Input
-                id="street"
+                type="text"
                 value={addressForm.street}
-                onChange={(e) =>
-                  setAddressForm({ ...addressForm, street: e.target.value })
+                onChange={(v) =>
+                  setAddressForm({ ...addressForm, street: v })
                 }
                 placeholder={t("profile.addresses.streetPlaceholder")}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="street2">{t("profile.addresses.street2")}</Label>
+              <Label>{t("profile.addresses.street2")}</Label>
               <Input
-                id="street2"
+                type="text"
                 value={addressForm.street2}
-                onChange={(e) =>
-                  setAddressForm({ ...addressForm, street2: e.target.value })
+                onChange={(v) =>
+                  setAddressForm({ ...addressForm, street2: v })
                 }
                 placeholder={t("profile.addresses.street2Placeholder")}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">{t("profile.addresses.city")}</Label>
+                <Label>{t("profile.addresses.city")}</Label>
                 <Input
-                  id="city"
+                  type="text"
                   value={addressForm.city}
-                  onChange={(e) =>
-                    setAddressForm({ ...addressForm, city: e.target.value })
+                  onChange={(v) =>
+                    setAddressForm({ ...addressForm, city: v })
                   }
                   placeholder={t("profile.addresses.cityPlaceholder")}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="state">{t("profile.addresses.state")}</Label>
+                <Label>{t("profile.addresses.state")}</Label>
                 <Input
-                  id="state"
+                  type="text"
                   value={addressForm.state}
-                  onChange={(e) =>
-                    setAddressForm({ ...addressForm, state: e.target.value })
+                  onChange={(v) =>
+                    setAddressForm({ ...addressForm, state: v })
                   }
                   placeholder={t("profile.addresses.statePlaceholder")}
                   required
@@ -708,28 +709,28 @@ export default function ProfilePage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="zipCode">
+                <Label>
                   {t("profile.addresses.zipCode")}
                 </Label>
                 <Input
-                  id="zipCode"
+                  type="text"
                   value={addressForm.zipCode}
-                  onChange={(e) =>
-                    setAddressForm({ ...addressForm, zipCode: e.target.value })
+                  onChange={(v) =>
+                    setAddressForm({ ...addressForm, zipCode: v })
                   }
                   placeholder={t("profile.addresses.zipCodePlaceholder")}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="country">
+                <Label>
                   {t("profile.addresses.country")}
                 </Label>
                 <Input
-                  id="country"
+                  type="text"
                   value={addressForm.country}
-                  onChange={(e) =>
-                    setAddressForm({ ...addressForm, country: e.target.value })
+                  onChange={(v) =>
+                    setAddressForm({ ...addressForm, country: v })
                   }
                   placeholder={t("profile.addresses.countryPlaceholder")}
                   maxLength={2}

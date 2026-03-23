@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, Package, Trash2, Link as LinkIcon } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
 import { Badge } from "../components/ui/badge";
@@ -200,12 +200,11 @@ export default function ProductUpdatePage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name">{t("products.update.nameLabel")}</Label>
+              <Label>{t("products.update.nameLabel")}</Label>
               <Input
-                id="name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(v) => setName(v)}
                 placeholder={t("products.update.namePlaceholder")}
                 maxLength={255}
                 required
@@ -227,14 +226,13 @@ export default function ProductUpdatePage() {
             </div>
 
             <div>
-              <Label htmlFor="price">{t("products.update.priceLabel")}</Label>
+              <Label>{t("products.update.priceLabel")}</Label>
               <Input
-                id="price"
                 type="number"
                 step="0.01"
-                min="0"
+                min={0}
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(v) => setPrice(v)}
                 placeholder="0.00"
               />
             </div>

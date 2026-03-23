@@ -4,8 +4,7 @@ import { Lock, Link2, AlertCircle } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { setToken } from "../lib/auth";
 import Button from "../components/ui/button";
-import Input from "../components/ui/input";
-import Label from "../components/ui/label";
+import Input from "../components/ui/Input/Input";
 import {
   Card,
   CardHeader,
@@ -90,20 +89,16 @@ export default function AccountMergePage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe actuel</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                type="password"
+                label="Mot de passe actuel"
+                value={password}
+                onChange={(v) => setPassword(v)}
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                icon={<Lock className="size-4 text-muted-foreground" />}
+              />
             </div>
 
             <Button

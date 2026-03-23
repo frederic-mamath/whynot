@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../../lib/trpc";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import Input from "../ui/Input/Input";
 import { Label } from "../ui/label";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -58,15 +58,14 @@ export default function AddVendorModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="userId">{t("addVendor.userIdLabel")}</Label>
+            <Label>{t("addVendor.userIdLabel")}</Label>
             <Input
-              id="userId"
               type="number"
               value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              onChange={(v) => setUserId(v)}
               placeholder={t("addVendor.userIdPlaceholder")}
               required
-              min="1"
+              min={1}
             />
             <p className="text-sm text-gray-500 mt-1">
               {t("addVendor.userIdHint")}

@@ -5,7 +5,7 @@ import { Plus, Video, Lock, Users, ArrowLeft, Store } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
 import Button from "../components/ui/button";
-import Input from "../components/ui/input";
+import Input from "../components/ui/Input/Input";
 import Label from "../components/ui/label";
 import {
   Card,
@@ -106,15 +106,13 @@ export default function ChannelCreatePage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{t("channels.create.channelName")}</Label>
+                <Label>{t("channels.create.channelName")}</Label>
                 <Input
                   type="text"
-                  id="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(v) => setName(v)}
                   placeholder={t("channels.create.channelNamePlaceholder")}
                   required
-                  minLength={3}
                   maxLength={100}
                 />
                 <p className="text-xs text-muted-foreground">
@@ -123,20 +121,15 @@ export default function ChannelCreatePage() {
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="maxParticipants"
-                  className="flex items-center gap-2"
-                >
+                <Label className="flex items-center gap-2">
                   <Users className="size-4" />
                   {t("channels.create.maxParticipants")}
                 </Label>
                 <Input
                   type="number"
-                  id="maxParticipants"
-                  value={maxParticipants}
-                  onChange={(e) => setMaxParticipants(Number(e.target.value))}
+                  value={String(maxParticipants)}
+                  onChange={(v) => setMaxParticipants(Number(v))}
                   min={2}
-                  max={50}
                 />
                 <p className="text-xs text-muted-foreground">
                   {t("channels.create.maxParticipantsHint")}

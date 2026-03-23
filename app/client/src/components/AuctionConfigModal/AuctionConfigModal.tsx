@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Clock, Zap } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import Input from "../ui/Input/Input";
 import { Label } from "../ui/label";
 import {
   Dialog,
@@ -135,14 +135,13 @@ export function AuctionConfigModal({
                 $
               </span>
               <Input
-                id="buyout-price"
                 type="number"
                 step="0.01"
                 min={startingPrice + 0.01}
                 value={buyoutPrice}
-                onChange={(e) => setBuyoutPrice(e.target.value)}
+                onChange={(v) => setBuyoutPrice(v)}
                 placeholder={(startingPrice + 10).toFixed(2)}
-                className="pl-6"
+                inputClassName="pl-6"
                 disabled={isSubmitting}
               />
             </div>

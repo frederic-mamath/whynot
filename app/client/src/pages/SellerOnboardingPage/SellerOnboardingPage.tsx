@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Check, Lock, Building2, User } from "lucide-react";
 import ButtonV2 from "@/components/ui/ButtonV2";
-import Input from "@/components/ui/Input";
+import Input from "@/components/ui/Input/Input";
 import { useSellerOnboarding } from "./SellerOnboardingPage.hooks";
 
 const STEPS = [

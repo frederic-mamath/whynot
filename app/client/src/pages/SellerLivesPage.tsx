@@ -13,7 +13,7 @@ import ProductListSection from "@/components/ProductListSection";
 import { trpc } from "../lib/trpc";
 import Tabs from "@/components/ui/Tabs";
 import ButtonV2 from "@/components/ui/ButtonV2";
-import { Input } from "@/components/ui/input";
+import Input from "@/components/ui/Input/Input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -431,13 +431,13 @@ export default function SellerLivePage() {
               Titre du live
             </Label>
             <Input
-              id="live-name"
               type="text"
               placeholder="Ex : Drop vintage #4 — Pièces rares 🔥"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(v) => setName(v)}
               required
-              className="bg-b-fourth border-0 rounded-2xl px-5 py-4 font-outfit text-foreground placeholder:text-muted-foreground h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
+              borderClassName="bg-b-fourth border-0 rounded-2xl px-5 py-4 has-[input:focus]:ring-0"
+              inputClassName="font-outfit text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
@@ -645,11 +645,11 @@ export default function SellerLivePage() {
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-name">Nom *</Label>
+              <Label>Nom *</Label>
               <Input
-                id="edit-name"
+                type="text"
                 value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                onChange={(v) => setEditName(v)}
               />
             </div>
 
@@ -714,21 +714,19 @@ export default function SellerLivePage() {
 
             <div className="flex gap-3">
               <div className="flex flex-col gap-1.5 flex-1">
-                <Label htmlFor="edit-date">Date</Label>
+                <Label>Date</Label>
                 <Input
-                  id="edit-date"
                   type="date"
                   value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
+                  onChange={(v) => setEditDate(v)}
                 />
               </div>
               <div className="flex flex-col gap-1.5 flex-1">
-                <Label htmlFor="edit-time">Heure de début</Label>
+                <Label>Heure de début</Label>
                 <Input
-                  id="edit-time"
                   type="time"
                   value={editTime}
-                  onChange={(e) => setEditTime(e.target.value)}
+                  onChange={(v) => setEditTime(v)}
                 />
               </div>
             </div>
