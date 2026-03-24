@@ -33,6 +33,7 @@ export { productImageRepository } from "./ProductImageRepository";
 export { passwordResetTokenRepository } from "./PasswordResetTokenRepository";
 export { categoryRepository } from "./CategoryRepository";
 export { conditionRepository } from "./ConditionRepository";
+export { waitlistRepository } from "./WaitlistRepository";
 
 // Auction-related repositories
 import { AuctionRepository } from "./AuctionRepository";

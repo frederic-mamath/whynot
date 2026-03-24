@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
 import { trpc, wsClient } from "./lib/trpc";
 import ErrorBoundary from "./components/ErrorBoundary";
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import SignUpPage from "./pages/SignUpPage/SignUpPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -23,7 +24,6 @@ import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountMergePage from "./pages/AccountMergePage";
-import WelcomePage from "./pages/WelcomePage/WelcomePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage/ResetPasswordPage";
 import SellerLayout from "./pages/SellerLayout";
@@ -64,10 +64,30 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
+  const { pathname } = useLocation();
   const { data: profile } = trpc.profile.me.useQuery(undefined, {
     retry: false,
   });
   const showBottomNav = profile?.hasCompletedOnboarding === true;
+
+  // Landing page is full-width — render outside the app shell
+  if (pathname === "/") {
+    return (
+      <>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <AuthRedirect>
+                <LandingPage />
+              </AuthRedirect>
+            }
+          />
+        </Routes>
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <>
@@ -78,14 +98,7 @@ function AppContent() {
         )}
       >
         <Routes>
-          <Route
-            path="/"
-            element={
-              <AuthRedirect>
-                <WelcomePage />
-              </AuthRedirect>
-            }
-          />
+          <Route path="/" element={null} />
           <Route
             path="/login"
             element={

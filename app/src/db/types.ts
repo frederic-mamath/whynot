@@ -23,6 +23,7 @@ export interface Database {
   password_reset_tokens: PasswordResetTokensTable;
   categories: CategoriesTable;
   conditions: ConditionsTable;
+  waitlist: WaitlistTable;
 }
 
 export interface UsersTable {
@@ -322,3 +323,12 @@ export interface SellerOnboardingDataTable {
 }
 
 export type SellerOnboardingData = Selectable<SellerOnboardingDataTable>;
+
+export interface WaitlistTable {
+  id: Generated<number>;
+  email: string;
+  role: "buyer" | "seller";
+  created_at: Generated<Date>;
+}
+
+export type Waitlist = Selectable<WaitlistTable>;
