@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
-import Button from '@/components/ui/button';
+import ButtonV2 from '@/components/ui/ButtonV2/ButtonV2';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import Input from '@/components/ui/Input/Input';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,13 +51,14 @@ function PayoutRequestDialog({ order }: { order: any }) {
   const sellerPayout = order.finalPrice * 0.93;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full md:w-auto">
-          <Wallet className="h-4 w-4 mr-2" />
-          Request Payout
-        </Button>
-      </DialogTrigger>
+    <>
+      <ButtonV2
+        icon={<Wallet className="size-4" />}
+        label="Request Payout"
+        onClick={() => setOpen(true)}
+        className="border border-border bg-background text-foreground w-full md:w-auto"
+      />
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Request Payout</DialogTitle>
@@ -109,16 +110,23 @@ function PayoutRequestDialog({ order }: { order: any }) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="submit" disabled={createPayout.isPending} className="flex-1">
-              {createPayout.isPending ? 'Submitting...' : 'Submit Request'}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
+            <ButtonV2
+              type="submit"
+              disabled={createPayout.isPending}
+              className="flex-1 bg-primary text-primary-foreground"
+              label={createPayout.isPending ? 'Submitting...' : 'Submit Request'}
+            />
+            <ButtonV2
+              type="button"
+              className="border border-border bg-background text-foreground"
+              onClick={() => setOpen(false)}
+              label="Cancel"
+            />
           </div>
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 
@@ -224,13 +232,12 @@ export function PendingDeliveriesPage() {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-2 w-full md:w-auto">
-                      <Button
+                      <ButtonV2
                         onClick={() => markAsShipped.mutate({ orderId: order.id })}
                         disabled={markAsShipped.isPending}
-                        className="w-full md:w-auto"
-                      >
-                        Mark as Shipped
-                      </Button>
+                        className="w-full md:w-auto bg-primary text-primary-foreground"
+                        label="Mark as Shipped"
+                      />
                       <PayoutRequestDialog order={order} />
                     </div>
                   </div>

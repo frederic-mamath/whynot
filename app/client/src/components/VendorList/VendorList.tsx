@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { trpc } from "../../lib/trpc";
-import { Button } from "../ui/button";
 import { Users, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -75,14 +74,13 @@ export default function VendorList({ shopId, isOwner }: VendorListProps) {
               </p>
             </div>
             {isOwner && (
-              <Button
-                variant="destructive"
-                size="sm"
+              <button
+                className="text-destructive hover:text-destructive/80 disabled:opacity-50 p-1"
                 onClick={() => handleRemove(vendor.id, displayName)}
                 disabled={removeVendorMutation.isPending}
               >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+                <Trash2 className="size-4" />
+              </button>
             )}
           </div>
         );

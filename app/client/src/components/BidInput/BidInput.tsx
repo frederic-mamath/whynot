@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TrendingUp, AlertCircle } from "lucide-react";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import Input from "../ui/Input/Input";
 import { Label } from "../ui/label";
 import { cn } from "../../lib/utils";
@@ -94,20 +94,13 @@ export function BidInput({
             disabled={disabled || isSubmitting}
           />
         </div>
-        <Button
+        <ButtonV2
           type="submit"
           disabled={disabled || isSubmitting || !bidAmount}
-          className="shrink-0"
-        >
-          {isSubmitting ? (
-            t("auction.bid.placing")
-          ) : (
-            <>
-              <TrendingUp className="size-4 mr-2" />
-              {t("auction.bid.placeBid")}
-            </>
-          )}
-        </Button>
+          className="shrink-0 bg-primary text-primary-foreground"
+          icon={<TrendingUp className="size-4" />}
+          label={isSubmitting ? t("auction.bid.placing") : t("auction.bid.placeBid")}
+        />
       </div>
 
       {error && (

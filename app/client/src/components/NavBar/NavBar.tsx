@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { removeToken } from "../../lib/auth";
-import Button from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import {
   Sheet,
   SheetClose,
@@ -162,24 +162,20 @@ export default function NavBar() {
 
                 {/* Actions */}
                 {!isSeller ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <ButtonV2
+                    icon={<BadgeCheck className="size-4" />}
+                    label={hasPendingRequest ? t("navbar.requestPending") : t("navbar.becomeSeller")}
                     onClick={handleRequestSellerRole}
                     disabled={hasPendingRequest || requestSellerRole.isPending}
-                  >
-                    <BadgeCheck className="size-4 mr-2" />
-                    {hasPendingRequest
-                      ? t("navbar.requestPending")
-                      : t("navbar.becomeSeller")}
-                  </Button>
+                    className="border border-border bg-background text-foreground"
+                  />
                 ) : (
-                  <Button variant="default" size="sm" asChild>
-                    <Link to="/create-channel">
-                      <Plus className="size-4 mr-2" />
-                      {t("navbar.create")}
-                    </Link>
-                  </Button>
+                  <ButtonV2
+                    icon={<Plus className="size-4" />}
+                    label={t("navbar.create")}
+                    onClick={() => navigate("/create-channel")}
+                    className="bg-primary text-primary-foreground"
+                  />
                 )}
 
                 {/* Separator */}
@@ -199,27 +195,29 @@ export default function NavBar() {
                   </div>
                 )}
 
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="size-4 mr-2" />
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:text-primary rounded-md"
+                >
+                  <LogOut className="size-4" />
                   <span className="hidden lg:inline">{t("navbar.logout")}</span>
                   <span className="lg:hidden">{t("navbar.exit")}</span>
-                </Button>
+                </button>
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/login">
-                    <LogIn className="size-4 mr-2" />
-                    {t("navbar.login")}
-                  </Link>
-                </Button>
-
-                <Button variant="default" size="sm" asChild>
-                  <Link to="/register">
-                    <UserPlus className="size-4 mr-2" />
-                    {t("navbar.signUp")}
-                  </Link>
-                </Button>
+                <ButtonV2
+                  icon={<LogIn className="size-4" />}
+                  label={t("navbar.login")}
+                  onClick={() => navigate("/login")}
+                  className="bg-transparent text-foreground"
+                />
+                <ButtonV2
+                  icon={<UserPlus className="size-4" />}
+                  label={t("navbar.signUp")}
+                  onClick={() => navigate("/register")}
+                  className="bg-primary text-primary-foreground"
+                />
               </>
             )}
           </div>
@@ -227,14 +225,12 @@ export default function NavBar() {
           {/* Mobile Menu Sheet */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="xl:hidden"
+              <button
+                className="xl:hidden p-2 text-foreground hover:text-primary rounded-md"
                 aria-label="Toggle menu"
               >
                 <Menu className="size-5" />
-              </Button>
+              </button>
             </SheetTrigger>
             <SheetContent className="w-[75%] sm:max-w-[320px]">
               <SheetHeader>
@@ -263,37 +259,35 @@ export default function NavBar() {
                       <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         {t("navbar.browse")}
                       </div>
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/lives" onClick={closeSheet}>
-                          <Video className="size-4 mr-2" />
-                          {t("navbar.channels")}
-                        </Link>
-                      </Button>
+                      <ButtonV2
+                        icon={<Video className="size-4" />}
+                        label={t("navbar.channels")}
+                        onClick={() => { navigate("/lives"); closeSheet(); }}
+                        className="bg-transparent text-foreground justify-start w-full"
+                      />
 
                       {/* My Activity Section */}
                       <div className="px-2 py-1 mt-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         {t("navbar.myActivity")}
                       </div>
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/dashboard" onClick={closeSheet}>
-                          <Home className="size-4 mr-2" />
-                          {t("navbar.dashboard")}
-                        </Link>
-                      </Button>
-
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/profile" onClick={closeSheet}>
-                          <UserCircle className="size-4 mr-2" />
-                          {t("navbar.profile")}
-                        </Link>
-                      </Button>
-
-                      <Button variant="ghost" className="justify-start" asChild>
-                        <Link to="/my-orders" onClick={closeSheet}>
-                          <ShoppingBag className="size-4 mr-2" />
-                          {t("navbar.myOrders")}
-                        </Link>
-                      </Button>
+                      <ButtonV2
+                        icon={<Home className="size-4" />}
+                        label={t("navbar.dashboard")}
+                        onClick={() => { navigate("/dashboard"); closeSheet(); }}
+                        className="bg-transparent text-foreground justify-start w-full"
+                      />
+                      <ButtonV2
+                        icon={<UserCircle className="size-4" />}
+                        label={t("navbar.profile")}
+                        onClick={() => { navigate("/profile"); closeSheet(); }}
+                        className="bg-transparent text-foreground justify-start w-full"
+                      />
+                      <ButtonV2
+                        icon={<ShoppingBag className="size-4" />}
+                        label={t("navbar.myOrders")}
+                        onClick={() => { navigate("/my-orders"); closeSheet(); }}
+                        className="bg-transparent text-foreground justify-start w-full"
+                      />
 
                       {/* Sell Section - Sellers only */}
                       {isSeller && (
@@ -301,90 +295,65 @@ export default function NavBar() {
                           <div className="px-2 py-1 mt-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {t("navbar.sell")}
                           </div>
-                          <Button
-                            variant="ghost"
-                            className="justify-start"
-                            asChild
-                          >
-                            <Link to="/shops" onClick={closeSheet}>
-                              <Store className="size-4 mr-2" />
-                              {t("navbar.shops")}
-                            </Link>
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            className="justify-start"
-                            asChild
-                          >
-                            <Link to="/pending-deliveries" onClick={closeSheet}>
-                              <Package className="size-4 mr-2" />
-                              {t("navbar.pendingDeliveries")}
-                            </Link>
-                          </Button>
+                          <ButtonV2
+                            icon={<Store className="size-4" />}
+                            label={t("navbar.shops")}
+                            onClick={() => { navigate("/shops"); closeSheet(); }}
+                            className="bg-transparent text-foreground justify-start w-full"
+                          />
+                          <ButtonV2
+                            icon={<Package className="size-4" />}
+                            label={t("navbar.pendingDeliveries")}
+                            onClick={() => { navigate("/pending-deliveries"); closeSheet(); }}
+                            className="bg-transparent text-foreground justify-start w-full"
+                          />
                         </>
                       )}
 
                       {/* Actions Section */}
                       <div className="h-px bg-border my-4" />
                       {!isSeller ? (
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => {
-                            handleRequestSellerRole();
-                            closeSheet();
-                          }}
-                          disabled={
-                            hasPendingRequest || requestSellerRole.isPending
-                          }
-                        >
-                          <BadgeCheck className="size-4 mr-2" />
-                          {hasPendingRequest
-                            ? t("navbar.requestPending")
-                            : t("navbar.becomeSeller")}
-                        </Button>
+                        <ButtonV2
+                          icon={<BadgeCheck className="size-4" />}
+                          label={hasPendingRequest ? t("navbar.requestPending") : t("navbar.becomeSeller")}
+                          onClick={() => { handleRequestSellerRole(); closeSheet(); }}
+                          disabled={hasPendingRequest || requestSellerRole.isPending}
+                          className="border border-border bg-background text-foreground justify-start w-full"
+                        />
                       ) : (
-                        <Button
-                          variant="default"
-                          className="justify-start"
-                          asChild
-                        >
-                          <Link to="/create-channel" onClick={closeSheet}>
-                            <Plus className="size-4 mr-2" />
-                            {t("navbar.createChannel")}
-                          </Link>
-                        </Button>
+                        <ButtonV2
+                          icon={<Plus className="size-4" />}
+                          label={t("navbar.createChannel")}
+                          onClick={() => { navigate("/create-channel"); closeSheet(); }}
+                          className="bg-primary text-primary-foreground justify-start w-full"
+                        />
                       )}
                     </nav>
 
                     {/* Logout at bottom */}
                     <div className="border-t border-border pt-4">
-                      <Button
-                        variant="ghost"
-                        className="justify-start w-full text-destructive hover:text-destructive"
+                      <ButtonV2
+                        icon={<LogOut className="size-4" />}
+                        label={t("navbar.logout")}
                         onClick={handleLogout}
-                      >
-                        <LogOut className="size-4 mr-2" />
-                        {t("navbar.logout")}
-                      </Button>
+                        className="bg-transparent text-destructive justify-start w-full"
+                      />
                     </div>
                   </>
                 ) : (
                   <nav className="flex flex-col gap-1">
-                    <Button variant="ghost" className="justify-start" asChild>
-                      <Link to="/login" onClick={closeSheet}>
-                        <LogIn className="size-4 mr-2" />
-                        {t("navbar.login")}
-                      </Link>
-                    </Button>
-
-                    <Button variant="default" className="justify-start" asChild>
-                      <Link to="/register" onClick={closeSheet}>
-                        <UserPlus className="size-4 mr-2" />
-                        {t("navbar.signUp")}
-                      </Link>
-                    </Button>
+                    <ButtonV2
+                      icon={<LogIn className="size-4" />}
+                      label={t("navbar.login")}
+                      onClick={() => { navigate("/login"); closeSheet(); }}
+                      className="bg-transparent text-foreground justify-start w-full"
+                    />
+                    <ButtonV2
+                      icon={<UserPlus className="size-4" />}
+                      label={t("navbar.signUp")}
+                      onClick={() => { navigate("/register"); closeSheet(); }}
+                      className="bg-primary text-primary-foreground justify-start w-full"
+                    />
                   </nav>
                 )}
               </div>

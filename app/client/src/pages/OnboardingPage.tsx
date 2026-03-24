@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import ButtonV2 from "@/components/ui/ButtonV2/ButtonV2";
 import Input from "@/components/ui/Input/Input";
 import { Label } from "@/components/ui/label";
 import {
@@ -106,20 +106,13 @@ export default function OnboardingPage() {
             </p>
           </div>
 
-          <Button
+          <ButtonV2
             type="submit"
-            className="w-full"
+            className="w-full bg-primary text-primary-foreground"
             disabled={isSubmitting || !nickname.trim()}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="size-4 mr-2 animate-spin" />
-                Enregistrement…
-              </>
-            ) : (
-              "Continuer"
-            )}
-          </Button>
+            icon={isSubmitting ? <Loader2 className="size-4 animate-spin" /> : undefined}
+            label={isSubmitting ? "Enregistrement…" : "Continuer"}
+          />
         </form>
       </div>
     </div>

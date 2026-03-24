@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import Button from "@/components/ui/button";
 import {
   Mic,
   MicOff,
@@ -9,6 +8,7 @@ import {
   PhoneOff,
   Users,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ChannelControlsProps {
   audioMuted: boolean;
@@ -36,67 +36,61 @@ export default function ChannelControls({
   const { t } = useTranslation();
   return (
     <div className="flex items-center justify-center gap-2 p-4 bg-background border-t">
-      {/* Audio Control */}
-      <Button
-        variant={audioMuted ? "destructive" : "secondary"}
-        size="icon"
+      <button
         onClick={onToggleAudio}
         title={audioMuted ? t("controls.unmuteMic") : t("controls.muteMic")}
-      >
-        {audioMuted ? (
-          <MicOff className="size-4" />
-        ) : (
-          <Mic className="size-4" />
+        className={cn(
+          "size-9 flex items-center justify-center rounded-md text-sm transition-colors",
+          audioMuted
+            ? "bg-destructive text-white"
+            : "bg-secondary text-secondary-foreground",
         )}
-      </Button>
+      >
+        {audioMuted ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+      </button>
 
-      {/* Video Control */}
-      <Button
-        variant={videoMuted ? "destructive" : "secondary"}
-        size="icon"
+      <button
         onClick={onToggleVideo}
         title={videoMuted ? t("controls.cameraOn") : t("controls.cameraOff")}
-      >
-        {videoMuted ? (
-          <VideoOff className="size-4" />
-        ) : (
-          <Video className="size-4" />
+        className={cn(
+          "size-9 flex items-center justify-center rounded-md text-sm transition-colors",
+          videoMuted
+            ? "bg-destructive text-white"
+            : "bg-secondary text-secondary-foreground",
         )}
-      </Button>
+      >
+        {videoMuted ? <VideoOff className="size-4" /> : <Video className="size-4" />}
+      </button>
 
-      {/* Screen Share */}
-      <Button
-        variant={isScreenSharing ? "default" : "outline"}
-        size="icon"
+      <button
         onClick={onToggleScreenShare}
-        title={
+        title={isScreenSharing ? t("controls.stopSharing") : t("controls.shareScreen")}
+        className={cn(
+          "size-9 flex items-center justify-center rounded-md text-sm transition-colors",
           isScreenSharing
-            ? t("controls.stopSharing")
-            : t("controls.shareScreen")
-        }
+            ? "bg-primary text-primary-foreground"
+            : "border border-border bg-background text-foreground",
+        )}
       >
         <Share2 className="size-4" />
-      </Button>
+      </button>
 
-      {/* Participants */}
-      <Button
-        variant="outline"
+      <button
         onClick={onShowParticipants}
         title={t("controls.showParticipants")}
+        className="h-9 px-3 flex items-center gap-2 rounded-md text-sm border border-border bg-background text-foreground transition-colors"
       >
         <Users className="size-4" />
-        <span className="ml-2">{participantCount}</span>
-      </Button>
+        <span>{participantCount}</span>
+      </button>
 
-      {/* Leave Call */}
-      <Button
-        variant="destructive"
-        size="icon"
+      <button
         onClick={onLeave}
         title={t("controls.leaveChannel")}
+        className="size-9 flex items-center justify-center rounded-md text-sm bg-destructive text-white transition-colors"
       >
         <PhoneOff className="size-4" />
-      </Button>
+      </button>
     </div>
   );
 }

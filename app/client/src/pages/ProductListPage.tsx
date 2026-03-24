@@ -1,14 +1,15 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, ArrowLeft, Package } from "lucide-react";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import ProductCard from "../components/ProductCard";
 import Container from "../components/Container";
 
 export default function ProductListPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const shopIdNum = id ? parseInt(id, 10) : 0;
 
   const { data: shop, isLoading: shopLoading } = trpc.shop.get.useQuery(
@@ -38,9 +39,11 @@ export default function ProductListPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive">{t("products.list.notFound")}</p>
-          <Button className="mt-4" asChild>
-            <Link to="/shops">{t("products.list.backToShops")}</Link>
-          </Button>
+          <ButtonV2
+            className="mt-4 bg-primary text-primary-foreground"
+            onClick={() => navigate("/shops")}
+            label={t("products.list.backToShops")}
+          />
         </div>
       </div>
     );
@@ -50,12 +53,12 @@ export default function ProductListPage() {
     <Container className="py-8" size="lg">
       {/* Header */}
       <div className="mb-8">
-        <Button variant="ghost" className="mb-4" asChild>
-          <Link to={`/shops/${shopIdNum}`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("products.list.backToShop")}
-          </Link>
-        </Button>
+        <ButtonV2
+          icon={<ArrowLeft className="size-4" />}
+          label={t("products.list.backToShop")}
+          onClick={() => navigate(`/shops/${shopIdNum}`)}
+          className="bg-transparent text-foreground mb-4"
+        />
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -65,12 +68,12 @@ export default function ProductListPage() {
             <p className="text-muted-foreground mt-1">{shop.name}</p>
           </div>
 
-          <Button asChild>
-            <Link to={`/shops/${shopIdNum}/products/create`}>
-              <Plus className="w-4 h-4 mr-2" />
-              {t("products.list.createProduct")}
-            </Link>
-          </Button>
+          <ButtonV2
+            icon={<Plus className="size-4" />}
+            label={t("products.list.createProduct")}
+            onClick={() => navigate(`/shops/${shopIdNum}/products/create`)}
+            className="bg-primary text-primary-foreground"
+          />
         </div>
       </div>
 
@@ -95,12 +98,12 @@ export default function ProductListPage() {
           <p className="text-muted-foreground mb-6">
             {t("products.list.noProductsDesc")}
           </p>
-          <Button asChild>
-            <Link to={`/shops/${shopIdNum}/products/create`}>
-              <Plus className="w-4 h-4 mr-2" />
-              {t("products.list.createProduct")}
-            </Link>
-          </Button>
+          <ButtonV2
+            icon={<Plus className="size-4" />}
+            label={t("products.list.createProduct")}
+            onClick={() => navigate(`/shops/${shopIdNum}/products/create`)}
+            className="bg-primary text-primary-foreground"
+          />
         </div>
       )}
     </Container>

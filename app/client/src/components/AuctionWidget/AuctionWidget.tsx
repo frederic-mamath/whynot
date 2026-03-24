@@ -1,6 +1,6 @@
 import { Zap, Sparkles } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import { Skeleton } from "../ui/skeleton";
 import { AuctionCountdown } from "../AuctionCountdown";
 import { BidInput } from "../BidInput";
@@ -215,7 +215,7 @@ export function AuctionWidget({
 
           {/* Buyout Button (if available and active) */}
           {auction.buyoutPrice && isActive && !isSeller && (
-            <Button
+            <ButtonV2
               onClick={() => {
                 if (!hasPaymentMethod) {
                   onPaymentRequired?.();
@@ -223,15 +223,12 @@ export function AuctionWidget({
                 }
                 onBuyout();
               }}
-              className="w-full mt-4"
-              variant="default"
-              size="lg"
-            >
-              <Zap className="size-4 mr-2" />
-              {t("auction.widget.buyNow", {
+              className="w-full mt-4 bg-primary text-primary-foreground"
+              icon={<Zap className="size-4" />}
+              label={t("auction.widget.buyNow", {
                 price: auction.buyoutPrice.toFixed(2),
               })}
-            </Button>
+            />
           )}
 
           {/* Bid Input (buyers only, when active) */}
@@ -268,17 +265,12 @@ export function AuctionWidget({
           {/* Manual Close Button (Host/Seller only) */}
           {isActive && isHostOrSeller && onManualClose && (
             <div className="mt-4 pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                size="sm"
+              <ButtonV2
                 onClick={onManualClose}
                 disabled={isClosing}
-                className="w-full text-destructive hover:bg-destructive/10"
-              >
-                {isClosing
-                  ? t("auction.widget.endingAuction")
-                  : t("auction.widget.endAuctionEarly")}
-              </Button>
+                className="w-full border border-border bg-background text-destructive hover:bg-destructive/10"
+                label={isClosing ? t("auction.widget.endingAuction") : t("auction.widget.endAuctionEarly")}
+              />
             </div>
           )}
         </CardContent>

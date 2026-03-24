@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Input from "../ui/Input/Input";
-import Button from "../ui/button";
 import { Send } from "lucide-react";
 
 interface MessageInputProps {
@@ -41,14 +40,13 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
         borderClassName="flex-1 bg-white/10 border-white/20"
         inputClassName="text-white placeholder:text-white/50"
       />
-      <Button
+      <button
         type="submit"
         disabled={!message.trim() || disabled}
-        size="icon"
-        variant="default"
+        className="size-10 rounded-md flex items-center justify-center bg-primary text-primary-foreground disabled:opacity-50 shrink-0"
       >
-        <Send className="w-4 h-4" />
-      </Button>
+        <Send className="size-4" />
+      </button>
     </form>
   );
 }

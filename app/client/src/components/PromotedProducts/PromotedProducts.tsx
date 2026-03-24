@@ -7,7 +7,7 @@ import {
 } from "../ui/sheet";
 import { Badge } from "../ui/badge";
 import { Package, ShoppingBag, Sparkles, X } from "lucide-react";
-import Button from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -140,27 +140,21 @@ export default function PromotedProducts({
                     {canHighlight && (
                       <div className="flex items-center gap-2 mt-2">
                         {highlightedProductId === product.id ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <ButtonV2
+                            icon={<X className="size-3" />}
+                            label={t("promotedProducts.unhighlight")}
                             onClick={handleUnhighlight}
                             disabled={unhighlightMutation.isPending}
-                            className="w-full h-7 text-xs"
-                          >
-                            <X className="size-3 mr-1" />
-                            {t("promotedProducts.unhighlight")}
-                          </Button>
+                            className="w-full h-7 text-xs border border-border bg-background text-foreground"
+                          />
                         ) : (
-                          <Button
-                            variant="default"
-                            size="sm"
+                          <ButtonV2
+                            icon={<Sparkles className="size-3" />}
+                            label={t("promotedProducts.highlight")}
                             onClick={() => handleHighlight(product.id)}
                             disabled={highlightMutation.isPending}
-                            className="w-full h-7 text-xs"
-                          >
-                            <Sparkles className="size-3 mr-1" />
-                            {t("promotedProducts.highlight")}
-                          </Button>
+                            className="w-full h-7 text-xs bg-primary text-primary-foreground"
+                          />
                         )}
                       </div>
                     )}

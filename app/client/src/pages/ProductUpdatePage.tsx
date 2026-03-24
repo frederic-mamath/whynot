@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Package, Trash2, Link as LinkIcon } from "lucide-react";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
@@ -169,12 +169,12 @@ export default function ProductUpdatePage() {
   return (
     <div className="min-h-screen bg-background py-8">
       <Container size="md">
-        <Button variant="ghost" className="mb-6" asChild>
-          <Link to={`/shops/${shopIdNum}/products`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("products.update.backToProducts")}
-          </Link>
-        </Button>
+        <ButtonV2
+          icon={<ArrowLeft className="size-4" />}
+          label={t("products.update.backToProducts")}
+          onClick={() => navigate(`/shops/${shopIdNum}/products`)}
+          className="bg-transparent text-foreground mb-6"
+        />
 
         <div className="bg-card rounded-lg border border-border shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
@@ -187,15 +187,13 @@ export default function ProductUpdatePage() {
                 <p className="text-sm text-muted-foreground">{shop.name}</p>
               </div>
             </div>
-            <Button
-              variant="destructive"
-              size="sm"
+            <ButtonV2
+              icon={<Trash2 className="size-4" />}
+              label={t("products.update.delete")}
               onClick={handleDelete}
               disabled={deleteProduct.isPending}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {t("products.update.delete")}
-            </Button>
+              className="bg-destructive text-white"
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -243,38 +241,37 @@ export default function ProductUpdatePage() {
               <Label htmlFor="isActive">
                 {t("products.update.statusLabel")}
               </Label>
-              <Button
+              <ButtonV2
                 type="button"
-                variant={isActive ? "default" : "secondary"}
-                size="sm"
+                className={isActive ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}
                 onClick={() => setIsActive(!isActive)}
-              >
-                {isActive
-                  ? t("products.update.active")
-                  : t("products.update.inactive")}
-              </Button>
+                label={isActive ? t("products.update.active") : t("products.update.inactive")}
+              />
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button
+              <ButtonV2
                 type="submit"
                 disabled={
                   updateProduct.isPending ||
                   addImageMutation.isPending ||
                   removeImageMutation.isPending
                 }
-              >
-                {updateProduct.isPending ||
-                addImageMutation.isPending ||
-                removeImageMutation.isPending
-                  ? t("products.update.saving")
-                  : t("products.update.submit")}
-              </Button>
-              <Button type="button" variant="outline" asChild>
-                <Link to={`/shops/${shopIdNum}/products`}>
-                  {t("products.update.cancel")}
-                </Link>
-              </Button>
+                className="bg-primary text-primary-foreground"
+                label={
+                  updateProduct.isPending ||
+                  addImageMutation.isPending ||
+                  removeImageMutation.isPending
+                    ? t("products.update.saving")
+                    : t("products.update.submit")
+                }
+              />
+              <ButtonV2
+                type="button"
+                className="border border-border bg-background text-foreground"
+                onClick={() => navigate(`/shops/${shopIdNum}/products`)}
+                label={t("products.update.cancel")}
+              />
             </div>
           </form>
         </div>
@@ -290,10 +287,12 @@ export default function ProductUpdatePage() {
           <p className="text-sm text-muted-foreground mb-4">
             {t("products.update.channelAssociationsDesc")}
           </p>
-          <Button variant="outline" onClick={() => setShowAssociateModal(true)}>
-            <LinkIcon className="w-4 h-4 mr-2" />
-            {t("products.update.manageAssociations")}
-          </Button>
+          <ButtonV2
+            icon={<LinkIcon className="size-4" />}
+            label={t("products.update.manageAssociations")}
+            onClick={() => setShowAssociateModal(true)}
+            className="border border-border bg-background text-foreground"
+          />
         </div>
       </Container>
 

@@ -1,10 +1,10 @@
 import { trpc } from "../lib/trpc";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Video, Users, Lock, Plus, Store } from "lucide-react";
 import { isAuthenticated } from "../lib/auth";
-import Button from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import {
   Card,
   CardHeader,
@@ -73,12 +73,12 @@ export default function LiveListPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">{t("channels.list.title")}</h1>
           {canCreateChannel ? (
-            <Button asChild>
-              <Link to="/create-channel">
-                <Plus className="size-4 mr-2" />
-                {t("channels.list.createChannel")}
-              </Link>
-            </Button>
+            <ButtonV2
+              icon={<Plus className="size-4" />}
+              label={t("channels.list.createChannel")}
+              onClick={() => navigate("/create-channel")}
+              className="bg-primary text-primary-foreground"
+            />
           ) : (
             <Alert className="max-w-md">
               <Store className="size-4" />
@@ -102,12 +102,12 @@ export default function LiveListPage() {
                 <p className="text-muted-foreground mb-4">
                   {t("channels.list.firstCreate")}
                 </p>
-                <Button asChild>
-                  <Link to="/create-channel">
-                    <Plus className="size-4 mr-2" />
-                    {t("channels.list.createChannel")}
-                  </Link>
-                </Button>
+                <ButtonV2
+                  icon={<Plus className="size-4" />}
+                  label={t("channels.list.createChannel")}
+                  onClick={() => navigate("/create-channel")}
+                  className="bg-primary text-primary-foreground"
+                />
               </>
             ) : (
               <p className="text-muted-foreground">
@@ -143,32 +143,27 @@ export default function LiveListPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
-                  <Button
-                    className="w-full"
-                    asChild={
-                      channel.participantCount <
-                      (channel.max_participants || 10)
+                  <ButtonV2
+                    className={
+                      channel.participantCount >= (channel.max_participants || 10)
+                        ? "w-full bg-secondary text-secondary-foreground"
+                        : "w-full bg-primary text-primary-foreground"
                     }
                     disabled={
                       channel.participantCount >=
                       (channel.max_participants || 10)
                     }
-                    variant={
-                      channel.participantCount >=
-                      (channel.max_participants || 10)
-                        ? "secondary"
-                        : "default"
+                    label={
+                      channel.participantCount >= (channel.max_participants || 10)
+                        ? t("channels.list.full")
+                        : t("channels.list.join")
                     }
-                  >
-                    {channel.participantCount >=
-                    (channel.max_participants || 10) ? (
-                      <span>{t("channels.list.full")}</span>
-                    ) : (
-                      <Link to={`/channel/${channel.id}`}>
-                        {t("channels.list.join")}
-                      </Link>
-                    )}
-                  </Button>
+                    onClick={
+                      channel.participantCount < (channel.max_participants || 10)
+                        ? () => navigate(`/channel/${channel.id}`)
+                        : undefined
+                    }
+                  />
                 </CardFooter>
               </Card>
             ))}

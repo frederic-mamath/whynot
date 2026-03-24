@@ -9,7 +9,6 @@ import {
   Store,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import Button from "../ui/button";
 
 interface VerticalControlPanelProps {
   audioMuted?: boolean;
@@ -44,43 +43,37 @@ export default function VerticalControlPanel({
   return (
     <div className="flex flex-col gap-3">
       {showBroadcastControls && onToggleAudio && (
-        <Button
-          variant={audioMuted ? "destructive" : "secondary"}
-          size="icon"
+        <button
           onClick={onToggleAudio}
           title={audioMuted ? t("controls.unmuteMic") : t("controls.muteMic")}
-          className="shrink-0 shadow-lg"
+          className={`shrink-0 shadow-lg size-10 rounded-md flex items-center justify-center ${audioMuted ? "bg-destructive text-white" : "bg-secondary text-secondary-foreground"}`}
         >
           {audioMuted ? (
             <MicOff className="size-5" />
           ) : (
             <Mic className="size-5" />
           )}
-        </Button>
+        </button>
       )}
 
       {showBroadcastControls && onToggleVideo && (
-        <Button
-          variant={videoMuted ? "destructive" : "secondary"}
-          size="icon"
+        <button
           onClick={onToggleVideo}
           title={videoMuted ? t("controls.cameraOn") : t("controls.cameraOff")}
-          className="shrink-0 shadow-lg"
+          className={`shrink-0 shadow-lg size-10 rounded-md flex items-center justify-center ${videoMuted ? "bg-destructive text-white" : "bg-secondary text-secondary-foreground"}`}
         >
           {videoMuted ? (
             <VideoOff className="size-5" />
           ) : (
             <Video className="size-5" />
           )}
-        </Button>
+        </button>
       )}
 
-      <Button
-        variant="secondary"
-        size="icon"
+      <button
         onClick={onShowParticipants}
         title={t("controls.showParticipants")}
-        className="shrink-0 relative shadow-lg"
+        className="shrink-0 relative shadow-lg size-10 rounded-md flex items-center justify-center bg-secondary text-secondary-foreground"
       >
         <UsersIcon className="size-5" />
         {viewerCount > 0 && (
@@ -88,15 +81,13 @@ export default function VerticalControlPanel({
             {viewerCount}
           </span>
         )}
-      </Button>
+      </button>
 
       {onShowProducts && (
-        <Button
-          variant="secondary"
-          size="icon"
+        <button
           onClick={onShowProducts}
           title={t("controls.showProducts")}
-          className="shrink-0 relative shadow-lg"
+          className="shrink-0 relative shadow-lg size-10 rounded-md flex items-center justify-center bg-secondary text-secondary-foreground"
         >
           <ShoppingBag className="size-5" />
           {productCount > 0 && (
@@ -104,16 +95,14 @@ export default function VerticalControlPanel({
               {productCount}
             </span>
           )}
-        </Button>
+        </button>
       )}
 
       {onToggleHighlightedProduct && (
-        <Button
-          variant="secondary"
-          size="icon"
+        <button
           onClick={onToggleHighlightedProduct}
           title={t("controls.toggleHighlighted")}
-          className="shrink-0 relative shadow-lg"
+          className="shrink-0 relative shadow-lg size-10 rounded-md flex items-center justify-center bg-secondary text-secondary-foreground"
         >
           <Sparkles className="size-5" />
           {highlightedProductCount > 0 && (
@@ -121,19 +110,17 @@ export default function VerticalControlPanel({
               {highlightedProductCount}
             </span>
           )}
-        </Button>
+        </button>
       )}
 
       {showBroadcastControls && onShowShop && (
-        <Button
-          variant="secondary"
-          size="icon"
+        <button
           onClick={onShowShop}
           title="Ma boutique"
-          className="shrink-0 shadow-lg"
+          className="shrink-0 shadow-lg size-10 rounded-md flex items-center justify-center bg-secondary text-secondary-foreground"
         >
           <Store className="size-5" />
-        </Button>
+        </button>
       )}
     </div>
   );

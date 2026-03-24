@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import { Plus, Store, Users } from "lucide-react";
 import Container from "../components/Container";
 
 export default function ShopListPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { data: shops, isLoading } = trpc.shop.list.useQuery();
 
   if (isLoading) {
@@ -24,12 +25,12 @@ export default function ShopListPage() {
           <h1 className="text-3xl font-bold mb-2">{t("shops.list.title")}</h1>
           <p className="text-muted-foreground">{t("shops.list.subtitle")}</p>
         </div>
-        <Link to="/shops/create">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("shops.list.createShop")}
-          </Button>
-        </Link>
+        <ButtonV2
+          icon={<Plus className="size-4" />}
+          label={t("shops.list.createShop")}
+          onClick={() => navigate("/shops/create")}
+          className="bg-primary text-primary-foreground"
+        />
       </div>
 
       {!shops || shops.length === 0 ? (
@@ -41,12 +42,12 @@ export default function ShopListPage() {
           <p className="text-muted-foreground mb-6">
             {t("shops.list.noShopsDesc")}
           </p>
-          <Link to="/shops/create">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("shops.list.createShop")}
-            </Button>
-          </Link>
+          <ButtonV2
+            icon={<Plus className="size-4" />}
+            label={t("shops.list.createShop")}
+            onClick={() => navigate("/shops/create")}
+            className="bg-primary text-primary-foreground"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { removeToken } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -449,12 +448,11 @@ export default function ProfilePage() {
               </CardDescription>
             </div>
             {paymentStatus?.hasPaymentMethod && (
-              <Button
-                variant="outline"
+              <ButtonV2
+                className="border border-border bg-background text-foreground"
                 onClick={() => setPaymentDialogOpen(true)}
-              >
-                {t("profile.payment.change")}
-              </Button>
+                label={t("profile.payment.change")}
+              />
             )}
           </div>
         </CardHeader>
@@ -484,17 +482,15 @@ export default function ProfilePage() {
                   <Badge variant="secondary">
                     {t("profile.payment.active")}
                   </Badge>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 text-muted-foreground hover:text-destructive"
+                  <button
+                    className="shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-50"
                     disabled={deletePaymentMethod.isPending}
                     onClick={() =>
                       deletePaymentMethod.mutate({ paymentMethodId: pm.id })
                     }
                   >
                     <Trash2 className="size-4" />
-                  </Button>
+                  </button>
                 </div>
               ))}
             </div>
@@ -507,10 +503,12 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground mt-1 mb-4">
                 {t("profile.payment.noMethodHint")}
               </p>
-              <Button onClick={() => setPaymentDialogOpen(true)}>
-                <CreditCard className="size-4 mr-2" />
-                {t("profile.payment.addMethod")}
-              </Button>
+              <ButtonV2
+                icon={<CreditCard className="size-4" />}
+                label={t("profile.payment.addMethod")}
+                onClick={() => setPaymentDialogOpen(true)}
+                className="bg-primary text-primary-foreground"
+              />
             </div>
           )}
         </CardContent>
@@ -537,10 +535,12 @@ export default function ProfilePage() {
                 {t("profile.addresses.description")}
               </CardDescription>
             </div>
-            <Button onClick={handleAddAddress}>
-              <Plus className="size-4 mr-2" />
-              {t("profile.addresses.add")}
-            </Button>
+            <ButtonV2
+              icon={<Plus className="size-4" />}
+              label={t("profile.addresses.add")}
+              onClick={handleAddAddress}
+              className="bg-primary text-primary-foreground"
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -584,32 +584,28 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex gap-2">
                       {!address.isDefault && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <button
+                          className="text-muted-foreground hover:text-foreground disabled:opacity-50 p-1"
                           onClick={() =>
                             setDefaultAddress.mutate({ id: address.id })
                           }
                           disabled={setDefaultAddress.isPending}
                         >
                           <Star className="size-4" />
-                        </Button>
+                        </button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
+                        className="text-muted-foreground hover:text-foreground p-1"
                         onClick={() => handleEditAddress(address)}
                       >
                         <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      </button>
+                      <button
+                        className="text-destructive hover:text-destructive p-1"
                         onClick={() => handleDeleteAddress(address.id)}
-                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -621,15 +617,13 @@ export default function ProfilePage() {
 
       {/* Sign out */}
       <div className="mt-6 pb-4">
-        <Button
-          variant="outline"
-          className="w-full text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+        <ButtonV2
+          icon={<LogOut className="size-4" />}
+          label={logoutMutation.isPending ? "Déconnexion…" : "Se déconnecter"}
           onClick={() => logoutMutation.mutate()}
           disabled={logoutMutation.isPending}
-        >
-          <LogOut className="size-4 mr-2" />
-          {logoutMutation.isPending ? "Déconnexion…" : "Se déconnecter"}
-        </Button>
+          className="w-full border border-destructive bg-background text-destructive hover:bg-destructive hover:text-destructive-foreground"
+        />
       </div>
 
       {/* Address Dialog */}
@@ -739,29 +733,30 @@ export default function ProfilePage() {
               </div>
             </div>
             <DialogFooter>
-              <Button
+              <ButtonV2
                 type="button"
-                variant="outline"
+                className="border border-border bg-background text-foreground"
                 onClick={() => {
                   setAddressDialogOpen(false);
                   setEditingAddress(null);
                   setAddressForm(emptyAddress);
                 }}
-              >
-                {t("profile.addresses.cancel")}
-              </Button>
-              <Button
+                label={t("profile.addresses.cancel")}
+              />
+              <ButtonV2
                 type="submit"
                 disabled={createAddress.isPending || updateAddress.isPending}
-              >
-                {editingAddress
-                  ? updateAddress.isPending
-                    ? t("profile.addresses.saveLoading")
-                    : t("profile.addresses.saveChanges")
-                  : createAddress.isPending
-                    ? t("profile.addresses.addLoading")
-                    : t("profile.addresses.addSubmit")}
-              </Button>
+                className="bg-primary text-primary-foreground"
+                label={
+                  editingAddress
+                    ? updateAddress.isPending
+                      ? t("profile.addresses.saveLoading")
+                      : t("profile.addresses.saveChanges")
+                    : createAddress.isPending
+                      ? t("profile.addresses.addLoading")
+                      : t("profile.addresses.addSubmit")
+                }
+              />
             </DialogFooter>
           </form>
         </DialogContent>

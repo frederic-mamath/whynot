@@ -1,6 +1,6 @@
 import { Package, User, Calendar, CreditCard } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import { Badge } from "../ui/badge";
 import { PaymentDeadlineCountdown } from "../PaymentDeadlineCountdown";
 import { cn } from "../../lib/utils";
@@ -145,13 +145,12 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
             {/* Actions */}
             <div className="flex gap-2 pt-2">
               {isPending && !isExpired && (
-                <Button
+                <ButtonV2
+                  icon={<CreditCard className="size-4" />}
+                  label={t("orderCard.payNow")}
                   onClick={() => onPayNow(order.id)}
-                  className="w-full md:w-auto"
-                >
-                  <CreditCard className="size-4 mr-2" />
-                  {t("orderCard.payNow")}
-                </Button>
+                  className="w-full md:w-auto bg-primary text-primary-foreground"
+                />
               )}
               {isPaid && (
                 <div className="text-sm text-muted-foreground">

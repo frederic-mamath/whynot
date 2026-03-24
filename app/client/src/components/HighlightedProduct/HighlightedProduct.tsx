@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Sparkles, ExternalLink, Gavel } from "lucide-react";
-import Button from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import { Card, CardContent } from "../ui/card";
 import { AuctionConfigModal } from "../AuctionConfigModal";
 import { trpc } from "../../lib/trpc";
@@ -86,14 +86,12 @@ export function HighlightedProduct({
                   </h3>
                 </div>
                 {showCloseButton && onClose && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                  <button
                     onClick={onClose}
-                    className="size-6 shrink-0"
+                    className="size-6 shrink-0 flex items-center justify-center text-white hover:text-white/70"
                   >
                     <X className="size-3" />
-                  </Button>
+                  </button>
                 )}
               </div>
 
@@ -106,27 +104,21 @@ export function HighlightedProduct({
               {/* Auction & View Details */}
               <div className="flex gap-2 mt-2">
                 {isHost && (
-                  <Button
-                    variant="default"
-                    size="sm"
+                  <ButtonV2
+                    icon={<Gavel className="size-3" />}
+                    label={t("highlightedProduct.startAuction")}
                     onClick={() => setShowAuctionModal(true)}
-                    className="h-6 text-xs"
+                    className="h-6 text-xs bg-primary text-primary-foreground"
                     disabled={startAuctionMutation.isPending}
-                  >
-                    <Gavel className="size-3 mr-1" />
-                    {t("highlightedProduct.startAuction")}
-                  </Button>
+                  />
                 )}
                 {onClick && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <ButtonV2
+                    icon={<ExternalLink className="size-3" />}
+                    label={t("highlightedProduct.viewDetails")}
                     onClick={onClick}
-                    className="h-6 text-xs"
-                  >
-                    <ExternalLink className="size-3 mr-1" />
-                    {t("highlightedProduct.viewDetails")}
-                  </Button>
+                    className="h-6 text-xs border border-border bg-background text-foreground"
+                  />
                 )}
               </div>
             </div>

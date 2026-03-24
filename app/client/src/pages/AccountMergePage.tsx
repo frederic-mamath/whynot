@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Lock, Link2, AlertCircle } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { setToken } from "../lib/auth";
-import Button from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import Input from "../components/ui/Input/Input";
 import {
   Card,
@@ -56,9 +56,11 @@ export default function AccountMergePage() {
                 Lien de fusion invalide ou expiré. Veuillez réessayer depuis la
                 page de connexion.
               </p>
-              <Button onClick={() => navigate("/login")}>
-                Retour à la connexion
-              </Button>
+              <ButtonV2
+                label="Retour à la connexion"
+                onClick={() => navigate("/login")}
+                className="bg-primary text-primary-foreground"
+              />
             </div>
           </CardContent>
         </Card>
@@ -101,16 +103,17 @@ export default function AccountMergePage() {
               />
             </div>
 
-            <Button
+            <ButtonV2
               type="submit"
               disabled={mergeMutation.isLoading}
-              className="w-full"
-            >
-              <Link2 className="size-4 mr-2" />
-              {mergeMutation.isLoading
-                ? "Fusion en cours..."
-                : `Lier mon compte ${providerLabel}`}
-            </Button>
+              icon={<Link2 className="size-4" />}
+              label={
+                mergeMutation.isLoading
+                  ? "Fusion en cours..."
+                  : `Lier mon compte ${providerLabel}`
+              }
+              className="w-full bg-primary text-primary-foreground"
+            />
           </form>
         </CardContent>
       </Card>

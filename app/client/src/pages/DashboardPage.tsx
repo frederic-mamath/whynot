@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
 import { removeToken } from "../lib/auth";
 import { useEffect } from "react";
-import Button from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import {
   Card,
   CardHeader,
@@ -91,9 +91,11 @@ export default function Dashboard() {
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
               <div className="text-destructive">{error.message}</div>
-              <Button asChild>
-                <Link to="/login">{t("dashboard.goToLogin")}</Link>
-              </Button>
+              <ButtonV2
+                label={t("dashboard.goToLogin")}
+                onClick={() => navigate("/login")}
+                className="bg-primary text-primary-foreground"
+              />
             </div>
           </CardContent>
         </Card>
@@ -106,10 +108,12 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">{t("dashboard.title")}</h1>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="size-4 mr-2" />
-            {t("dashboard.logout")}
-          </Button>
+          <ButtonV2
+            icon={<LogOut className="size-4" />}
+            label={t("dashboard.logout")}
+            onClick={handleLogout}
+            className="border border-border bg-background text-foreground"
+          />
         </div>
 
         <Card>

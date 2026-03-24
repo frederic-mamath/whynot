@@ -8,7 +8,7 @@ import {
   SheetDescription,
 } from "../ui/sheet";
 import { Store } from "lucide-react";
-import Button from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import ProductListSection from "@/components/ProductListSection";
@@ -120,14 +120,12 @@ export default function ShopPanel({
         </div>
 
         <div className="pt-4 border-t border-border">
-          <Button
-            variant="default"
-            className="w-full"
+          <ButtonV2
+            className="w-full bg-primary text-primary-foreground"
             onClick={handleConfirm}
             disabled={!hasChanges || isPending}
-          >
-            {isPending ? "Enregistrement…" : "Confirmer"}
-          </Button>
+            label={isPending ? "Enregistrement…" : "Confirmer"}
+          />
         </div>
       </SheetContent>
     </Sheet>

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Plus, Video, Lock, Users, ArrowLeft, Store } from "lucide-react";
 import { trpc } from "../lib/trpc";
 import { isAuthenticated } from "../lib/auth";
-import Button from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import Input from "../components/ui/Input/Input";
 import Label from "../components/ui/label";
 import {
@@ -71,12 +71,12 @@ export default function ChannelCreatePage() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        <Button variant="ghost" asChild>
-          <Link to="/lives">
-            <ArrowLeft className="size-4 mr-2" />
-            {t("channels.create.backToChannels")}
-          </Link>
-        </Button>
+        <ButtonV2
+          icon={<ArrowLeft className="size-4" />}
+          label={t("channels.create.backToChannels")}
+          onClick={() => navigate("/lives")}
+          className="bg-transparent text-foreground"
+        />
 
         <Card>
           <CardHeader>
@@ -153,20 +153,13 @@ export default function ChannelCreatePage() {
                 </Label>
               </div>
 
-              <Button
+              <ButtonV2
                 type="submit"
-                disabled={
-                  createMutation.isPending ||
-                  !userShops ||
-                  userShops.length === 0
-                }
-                className="w-full"
-              >
-                <Plus className="size-4 mr-2" />
-                {createMutation.isPending
-                  ? t("channels.create.creating")
-                  : t("channels.create.submit")}
-              </Button>
+                disabled={createMutation.isPending || !userShops || userShops.length === 0}
+                icon={<Plus className="size-4" />}
+                label={createMutation.isPending ? t("channels.create.creating") : t("channels.create.submit")}
+                className="w-full bg-primary text-primary-foreground"
+              />
             </form>
           </CardContent>
         </Card>

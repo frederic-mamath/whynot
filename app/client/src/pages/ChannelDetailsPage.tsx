@@ -21,7 +21,7 @@ import { isAuthenticated } from "../lib/auth";
 import ParticipantList from "../components/ParticipantList";
 import PromotedProducts from "../components/PromotedProducts";
 import NetworkQuality from "../components/NetworkQuality";
-import Button from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import { Card, CardContent } from "../components/ui/card";
 import {
   Dialog,
@@ -612,12 +612,12 @@ export default function ChannelDetailsPage() {
                 {t("channels.details.connectionError")}
               </h2>
               <div className="text-destructive">{error}</div>
-              <Button asChild>
-                <Link to="/lives">
-                  <ArrowLeft className="size-4 mr-2" />
-                  {t("channels.details.backToChannels")}
-                </Link>
-              </Button>
+              <ButtonV2
+                icon={<ArrowLeft className="size-4" />}
+                label={t("channels.details.backToChannels")}
+                onClick={() => navigate("/lives")}
+                className="bg-primary text-primary-foreground"
+              />
             </div>
           </CardContent>
         </Card>
@@ -743,14 +743,12 @@ export default function ChannelDetailsPage() {
           {/* Minimal Header Overlay */}
           <div className="absolute top-0 left-0 right-0 z-30 p-4 bg-gradient-to-b from-black/60 to-transparent">
             <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={handleLeave}
-                className="text-white hover:bg-white/20"
+                className="size-9 flex items-center justify-center rounded-md text-white hover:bg-white/20"
               >
                 <ArrowLeft className="size-5" />
-              </Button>
+              </button>
 
               <div className="flex items-center gap-2">
                 <RoleBadge role={role} />
@@ -789,9 +787,11 @@ export default function ChannelDetailsPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={forceLeave}>
-              {t("channels.details.doNotWait")}
-            </Button>
+            <ButtonV2
+              label={t("channels.details.doNotWait")}
+              onClick={forceLeave}
+              className="border border-border bg-background text-foreground"
+            />
           </DialogFooter>
         </DialogContent>
       </Dialog>

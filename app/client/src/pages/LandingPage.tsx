@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,7 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { isAuthenticated } from "../lib/auth";
-import Button from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -52,20 +52,17 @@ export default function Landing() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-4">
-              <Button size="lg" className="w-full sm:w-auto text-base" asChild>
-                <Link to="/register">
-                  {t("landing.hero.ctaStart")}
-                  <ArrowRight className="size-5 ml-2" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto text-base"
-                asChild
-              >
-                <Link to="/login">{t("landing.hero.ctaSignIn")}</Link>
-              </Button>
+              <ButtonV2
+                label={t("landing.hero.ctaStart")}
+                icon={<ArrowRight className="size-5" />}
+                onClick={() => navigate("/register")}
+                className="w-full sm:w-auto text-base bg-primary text-primary-foreground"
+              />
+              <ButtonV2
+                label={t("landing.hero.ctaSignIn")}
+                onClick={() => navigate("/login")}
+                className="w-full sm:w-auto text-base border border-border bg-background text-foreground"
+              />
             </div>
 
             <div className="pt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
@@ -362,20 +359,17 @@ export default function Landing() {
             {t("landing.cta.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="w-full sm:w-auto text-base" asChild>
-              <Link to="/register">
-                {t("landing.cta.startShopping")}
-                <ArrowRight className="size-5 ml-2" />
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto text-base"
-              asChild
-            >
-              <Link to="/register">{t("landing.cta.becomeSeller")}</Link>
-            </Button>
+            <ButtonV2
+              label={t("landing.cta.startShopping")}
+              icon={<ArrowRight className="size-5" />}
+              onClick={() => navigate("/register")}
+              className="w-full sm:w-auto text-base bg-primary text-primary-foreground"
+            />
+            <ButtonV2
+              label={t("landing.cta.becomeSeller")}
+              onClick={() => navigate("/register")}
+              className="w-full sm:w-auto text-base border border-border bg-background text-foreground"
+            />
           </div>
         </div>
       </div>

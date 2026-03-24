@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Clock, Zap } from "lucide-react";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import Input from "../ui/Input/Input";
 import { Label } from "../ui/label";
 import {
@@ -158,19 +158,19 @@ export function AuctionConfigModal({
           )}
 
           <DialogFooter>
-            <Button
+            <ButtonV2
               type="button"
-              variant="outline"
+              className="border border-border bg-background text-foreground"
               onClick={onClose}
               disabled={isSubmitting}
-            >
-              {t("auction.config.cancel")}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? t("auction.config.starting")
-                : t("auction.config.start")}
-            </Button>
+              label={t("auction.config.cancel")}
+            />
+            <ButtonV2
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-primary text-primary-foreground"
+              label={isSubmitting ? t("auction.config.starting") : t("auction.config.start")}
+            />
           </DialogFooter>
         </form>
       </DialogContent>

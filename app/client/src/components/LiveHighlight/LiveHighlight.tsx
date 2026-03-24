@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import ButtonV2 from "@/components/ui/ButtonV2/ButtonV2";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface LiveHighlightData {
@@ -211,21 +211,18 @@ export function LiveHighlight({ live, isLoading }: LiveHighlightProps) {
 
         {/* Action buttons */}
         <div className="flex gap-3">
-          <Button
+          <ButtonV2
+            label="Me rappeler"
+            icon={<Bell className="size-4" />}
             className="flex-1 bg-primary text-primary-foreground rounded-full font-outfit font-bold text-sm"
             onClick={handleReminder}
-          >
-            <Bell className="size-4 mr-2" />
-            Me rappeler
-          </Button>
-          <Button
-            variant="outline"
-            className="rounded-full border-white text-white bg-transparent hover:bg-white/10 font-outfit font-bold text-sm px-6"
+          />
+          <ButtonV2
+            label="Partager"
+            icon={<Share2 className="size-4" />}
+            className="rounded-full border border-white text-white bg-transparent font-outfit font-bold text-sm px-6"
             onClick={handleShare}
-          >
-            <Share2 className="size-4 mr-2" />
-            Partager
-          </Button>
+          />
         </div>
       </div>
     </div>

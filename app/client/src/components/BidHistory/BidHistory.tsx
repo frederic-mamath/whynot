@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TrendingUp, ChevronDown, ChevronUp, Trophy, User } from "lucide-react";
-import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
 
 interface Bid {
@@ -56,10 +55,9 @@ export function BidHistory({
 
   return (
     <div className="mt-4">
-      <Button
-        variant="ghost"
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between p-2"
+        className="w-full flex items-center justify-between p-2 text-foreground hover:bg-accent rounded-md"
       >
         <div className="flex items-center gap-2">
           <TrendingUp className="size-4" />
@@ -72,7 +70,7 @@ export function BidHistory({
         ) : (
           <ChevronDown className="size-4" />
         )}
-      </Button>
+      </button>
 
       {isOpen && (
         <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">

@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import ButtonV2 from "@/components/ui/ButtonV2/ButtonV2";
 import { Trophy, DollarSign, Users, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -128,21 +128,23 @@ export function AuctionEndModal({
         <DialogFooter className="flex-col sm:flex-row gap-2">
           {isWinner ? (
             <>
-              <Button onClick={handleViewOrders} className="w-full sm:w-auto">
-                {t("auction.end.viewOrders")}
-              </Button>
-              <Button
-                variant="outline"
+              <ButtonV2
+                label={t("auction.end.viewOrders")}
+                onClick={handleViewOrders}
+                className="bg-primary text-primary-foreground w-full sm:w-auto"
+              />
+              <ButtonV2
+                label={t("auction.end.close", { s: countdown })}
                 onClick={handleClose}
-                className="w-full sm:w-auto"
-              >
-                {t("auction.end.close", { s: countdown })}
-              </Button>
+                className="border border-border bg-background text-foreground w-full sm:w-auto"
+              />
             </>
           ) : (
-            <Button variant="outline" onClick={handleClose} className="w-full">
-              {t("auction.end.close", { s: countdown })}
-            </Button>
+            <ButtonV2
+              label={t("auction.end.close", { s: countdown })}
+              onClick={handleClose}
+              className="border border-border bg-background text-foreground w-full"
+            />
           )}
         </DialogFooter>
       </DialogContent>

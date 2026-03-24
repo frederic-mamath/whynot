@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
+import ButtonV2 from "@/components/ui/ButtonV2/ButtonV2";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { LiveHighlight } from "@/components/LiveHighlight";
@@ -167,13 +167,10 @@ export default function HomePage() {
                 </div>
 
                 {/* Follow button (placeholder) */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full shrink-0 text-xs font-outfit font-semibold border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                >
-                  Suivre
-                </Button>
+                <ButtonV2
+                  label="Suivre"
+                  className="rounded-full shrink-0 text-xs font-outfit font-semibold border border-primary text-primary"
+                />
               </div>
             ))}
 

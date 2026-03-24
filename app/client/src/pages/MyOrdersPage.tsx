@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { ShoppingBag, Package } from "lucide-react";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import { Skeleton } from "../components/ui/skeleton";
 import { OrderCard } from "../components/OrderCard";
 import { toast } from "sonner";
@@ -61,9 +61,12 @@ function CheckoutForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement />
       <div className="flex gap-2">
-        <Button type="submit" disabled={!stripe || loading} className="flex-1">
-          {loading ? t("orders.processing") : t("orders.payNow")}
-        </Button>
+        <ButtonV2
+          type="submit"
+          disabled={!stripe || loading}
+          className="flex-1 bg-primary text-primary-foreground"
+          label={loading ? t("orders.processing") : t("orders.payNow")}
+        />
       </div>
     </form>
   );
@@ -138,34 +141,26 @@ export default function MyOrdersPage() {
 
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
+          <ButtonV2
             onClick={() => setFilter("all")}
-            className={cn(filter !== "all" && "bg-background")}
-          >
-            {t("orders.allOrders")}
-          </Button>
-          <Button
-            variant={filter === "pending" ? "default" : "outline"}
+            className={filter === "all" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            label={t("orders.allOrders")}
+          />
+          <ButtonV2
             onClick={() => setFilter("pending")}
-            className={cn(filter !== "pending" && "bg-background")}
-          >
-            {t("orders.pendingPayment")}
-          </Button>
-          <Button
-            variant={filter === "paid" ? "default" : "outline"}
+            className={filter === "pending" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            label={t("orders.pendingPayment")}
+          />
+          <ButtonV2
             onClick={() => setFilter("paid")}
-            className={cn(filter !== "paid" && "bg-background")}
-          >
-            {t("orders.paid")}
-          </Button>
-          <Button
-            variant={filter === "shipped" ? "default" : "outline"}
+            className={filter === "paid" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            label={t("orders.paid")}
+          />
+          <ButtonV2
             onClick={() => setFilter("shipped")}
-            className={cn(filter !== "shipped" && "bg-background")}
-          >
-            {t("orders.shipped")}
-          </Button>
+            className={filter === "shipped" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            label={t("orders.shipped")}
+          />
         </div>
 
         {/* Orders List */}
@@ -200,16 +195,14 @@ export default function MyOrdersPage() {
                           onSuccess={handlePaymentSuccess}
                         />
                       </Elements>
-                      <Button
-                        variant="ghost"
+                      <ButtonV2
                         onClick={() => {
                           setPayingOrderId(null);
                           setClientSecret(null);
                         }}
-                        className="mt-4 w-full"
-                      >
-                        {t("orders.cancel")}
-                      </Button>
+                        className="mt-4 w-full bg-transparent text-foreground"
+                        label={t("orders.cancel")}
+                      />
                     </div>
                   )}
               </div>
@@ -269,17 +262,19 @@ function EmptyState({ filter }: { filter: FilterType }) {
       <h2 className="text-xl font-semibold mb-2">{getMessage()}</h2>
       <p className="text-muted-foreground mb-6">{getDescription()}</p>
       {filter === "all" && (
-        <Button asChild>
-          <Link to="/lives">
-            <Package className="size-4 mr-2" />
-            {t("orders.browseChannels")}
-          </Link>
-        </Button>
+        <ButtonV2
+          icon={<Package className="size-4" />}
+          label={t("orders.browseChannels")}
+          onClick={() => window.location.assign("/lives")}
+          className="bg-primary text-primary-foreground"
+        />
       )}
       {filter !== "all" && (
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          {t("orders.viewAllOrders")}
-        </Button>
+        <ButtonV2
+          className="border border-border bg-background text-foreground"
+          onClick={() => window.location.reload()}
+          label={t("orders.viewAllOrders")}
+        />
       )}
     </div>
   );

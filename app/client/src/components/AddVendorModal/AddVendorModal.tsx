@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../../lib/trpc";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import Input from "../ui/Input/Input";
 import { Label } from "../ui/label";
 import { X } from "lucide-react";
@@ -51,9 +51,9 @@ export default function AddVendorModal({
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">{t("addVendor.title")}</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <button className="text-muted-foreground hover:text-foreground p-1" onClick={onClose}>
+            <X className="size-4" />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,18 +73,22 @@ export default function AddVendorModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button
+            <ButtonV2
               type="submit"
               disabled={addVendorMutation.isPending}
-              className="flex-1"
-            >
-              {addVendorMutation.isPending
-                ? t("addVendor.adding")
-                : t("addVendor.submit")}
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
-              {t("addVendor.cancel")}
-            </Button>
+              className="flex-1 bg-primary text-primary-foreground"
+              label={
+                addVendorMutation.isPending
+                  ? t("addVendor.adding")
+                  : t("addVendor.submit")
+              }
+            />
+            <ButtonV2
+              type="button"
+              className="border border-border bg-background text-foreground"
+              onClick={onClose}
+              label={t("addVendor.cancel")}
+            />
           </div>
         </form>
       </div>

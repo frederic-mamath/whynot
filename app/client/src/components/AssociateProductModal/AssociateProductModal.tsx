@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Link as LinkIcon, Unlink } from "lucide-react";
 import { trpc } from "../../lib/trpc";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 
@@ -86,9 +86,9 @@ export default function AssociateProductModal({
               {t("associateProduct.title")}
             </h2>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="w-5 h-5" />
-          </Button>
+          <button className="text-muted-foreground hover:text-foreground p-1" onClick={onClose}>
+            <X className="size-5" />
+          </button>
         </div>
 
         <div className="p-6 space-y-6">
@@ -113,13 +113,13 @@ export default function AssociateProductModal({
                   </option>
                 ))}
               </select>
-              <Button
+              <ButtonV2
+                icon={<LinkIcon className="size-4" />}
+                label={t("associateProduct.associate")}
                 onClick={handleAssociate}
                 disabled={!selectedChannelId || associateMutation.isPending}
-              >
-                <LinkIcon className="w-4 h-4 mr-2" />
-                {t("associateProduct.associate")}
-              </Button>
+                className="bg-primary text-primary-foreground"
+              />
             </div>
             {availableChannels.length === 0 && associations.length > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -166,15 +166,13 @@ export default function AssociateProductModal({
                           })}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <ButtonV2
+                        icon={<Unlink className="size-4" />}
+                        label={t("associateProduct.remove")}
                         onClick={() => handleRemove(assoc.channelId)}
                         disabled={removeMutation.isPending}
-                      >
-                        <Unlink className="w-4 h-4 mr-2" />
-                        {t("associateProduct.remove")}
-                      </Button>
+                        className="bg-transparent text-foreground"
+                      />
                     </div>
                   );
                 })}
@@ -184,9 +182,11 @@ export default function AssociateProductModal({
         </div>
 
         <div className="sticky bottom-0 bg-muted border-t border-border p-6">
-          <Button variant="outline" onClick={onClose} className="w-full">
-            {t("associateProduct.close")}
-          </Button>
+          <ButtonV2
+            className="w-full border border-border bg-background text-foreground"
+            onClick={onClose}
+            label={t("associateProduct.close")}
+          />
         </div>
       </div>
     </div>

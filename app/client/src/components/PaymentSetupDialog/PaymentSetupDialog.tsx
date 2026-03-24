@@ -9,7 +9,7 @@ import {
 import type { PaymentRequest } from "@stripe/stripe-js";
 import { stripePromise } from "../../lib/stripe";
 import { trpc } from "../../lib/trpc";
-import { Button } from "../ui/button";
+import ButtonV2 from "../ui/ButtonV2/ButtonV2";
 import {
   Dialog,
   DialogContent,
@@ -59,15 +59,13 @@ function CardSetupForm({ onSuccess }: { onSuccess: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-4 mt-2">
       <PaymentElement />
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button
+      <ButtonV2
         type="submit"
         disabled={isSubmitting || !stripe}
-        className="w-full"
-      >
-        {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-        <CreditCard className="h-4 w-4 mr-2" />
-        Enregistrer la carte
-      </Button>
+        className="w-full bg-primary text-primary-foreground"
+        icon={isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
+        label="Enregistrer la carte"
+      />
     </form>
   );
 }
@@ -271,16 +269,15 @@ export function PaymentSetupDialog({
                 {setupError ??
                   "Stripe is not configured. Make sure VITE_STRIPE_PUBLISHABLE_KEY is set in the build environment."}
               </p>
-              <Button
-                variant="outline"
+              <ButtonV2
+                className="border border-border bg-background text-foreground"
                 disabled={isPending}
                 onClick={() => {
                   setSetupError(null);
                   createSetupIntent();
                 }}
-              >
-                Réessayer
-              </Button>
+                label="Réessayer"
+              />
             </div>
           ) : clientSecret && stripePromise ? (
             <Elements stripe={stripePromise} options={{ clientSecret }}>

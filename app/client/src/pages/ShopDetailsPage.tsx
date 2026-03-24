@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
@@ -105,12 +105,12 @@ export default function ShopDetailsPage() {
 
   return (
     <Container className="py-8" size="lg">
-      <Button variant="ghost" className="mb-6" asChild>
-        <Link to="/shops">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("shops.details.backToShops")}
-        </Link>
-      </Button>
+      <ButtonV2
+        icon={<ArrowLeft className="size-4" />}
+        label={t("shops.details.backToShops")}
+        onClick={() => navigate("/shops")}
+        className="bg-transparent text-foreground mb-6"
+      />
 
       <div className="bg-card rounded-lg border border-border p-8 mb-6">
         <div className="flex justify-between items-start mb-6">
@@ -168,49 +168,47 @@ export default function ShopDetailsPage() {
             <div className="flex gap-2">
               {isEditing ? (
                 <>
-                  <Button
+                  <ButtonV2
+                    icon={<Save className="size-4" />}
+                    label={t("shops.details.save")}
                     onClick={handleSave}
                     disabled={updateShopMutation.isPending}
-                    size="sm"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    {t("shops.details.save")}
-                  </Button>
-                  <Button variant="outline" onClick={handleCancel} size="sm">
-                    <X className="mr-2 h-4 w-4" />
-                    {t("shops.details.cancel")}
-                  </Button>
+                    className="bg-primary text-primary-foreground"
+                  />
+                  <ButtonV2
+                    icon={<X className="size-4" />}
+                    label={t("shops.details.cancel")}
+                    onClick={handleCancel}
+                    className="border border-border bg-background text-foreground"
+                  />
                 </>
               ) : (
-                <Button
-                  variant="outline"
+                <ButtonV2
+                  icon={<Edit2 className="size-4" />}
+                  label={t("shops.details.edit")}
                   onClick={() => setIsEditing(true)}
-                  size="sm"
-                >
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  {t("shops.details.edit")}
-                </Button>
+                  className="border border-border bg-background text-foreground"
+                />
               )}
             </div>
           )}
         </div>
 
         <div className="flex gap-4 pt-6 border-t">
-          <Link to={`/shops/${shopId}/products`}>
-            <Button variant="outline">
-              <Package className="mr-2 h-4 w-4" />
-              {t("shops.details.manageProducts")}
-            </Button>
-          </Link>
+          <ButtonV2
+            icon={<Package className="size-4" />}
+            label={t("shops.details.manageProducts")}
+            onClick={() => navigate(`/shops/${shopId}/products`)}
+            className="border border-border bg-background text-foreground"
+          />
           {isOwner && (
-            <Button
-              variant="destructive"
+            <ButtonV2
+              icon={<Trash2 className="size-4" />}
+              label={t("shops.details.deleteShop")}
               onClick={handleDelete}
               disabled={deleteShopMutation.isPending}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {t("shops.details.deleteShop")}
-            </Button>
+              className="bg-destructive text-white"
+            />
           )}
         </div>
       </div>
@@ -219,10 +217,12 @@ export default function ShopDetailsPage() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">{t("shops.details.vendors")}</h2>
           {isOwner && (
-            <Button onClick={() => setShowAddVendor(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("shops.details.addVendor")}
-            </Button>
+            <ButtonV2
+              icon={<Plus className="size-4" />}
+              label={t("shops.details.addVendor")}
+              onClick={() => setShowAddVendor(true)}
+              className="bg-primary text-primary-foreground"
+            />
           )}
         </div>
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
@@ -42,12 +42,12 @@ export default function ShopCreatePage() {
 
   return (
     <Container className="py-8" size="md">
-      <Button variant="ghost" className="mb-6" asChild>
-        <Link to="/shops">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("shops.create.backToShops")}
-        </Link>
-      </Button>
+      <ButtonV2
+        icon={<ArrowLeft className="size-4" />}
+        label={t("shops.create.backToShops")}
+        onClick={() => navigate("/shops")}
+        className="bg-transparent text-foreground mb-6"
+      />
 
       <div className="bg-card rounded-lg border border-border p-8 shadow-sm">
         <h1 className="text-3xl font-bold mb-2 text-foreground">
@@ -82,18 +82,22 @@ export default function ShopCreatePage() {
           </div>
 
           <div className="flex gap-4">
-            <Button
+            <ButtonV2
               type="submit"
               disabled={createShopMutation.isPending}
-              className="flex-1"
-            >
-              {createShopMutation.isPending
-                ? t("shops.create.creating")
-                : t("shops.create.submit")}
-            </Button>
-            <Button type="button" variant="outline" asChild>
-              <Link to="/shops">{t("shops.create.cancel")}</Link>
-            </Button>
+              className="flex-1 bg-primary text-primary-foreground"
+              label={
+                createShopMutation.isPending
+                  ? t("shops.create.creating")
+                  : t("shops.create.submit")
+              }
+            />
+            <ButtonV2
+              type="button"
+              className="border border-border bg-background text-foreground"
+              onClick={() => navigate("/shops")}
+              label={t("shops.create.cancel")}
+            />
           </div>
         </form>
       </div>

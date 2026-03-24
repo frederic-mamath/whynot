@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Package } from "lucide-react";
 import { trpc } from "../lib/trpc";
-import { Button } from "../components/ui/button";
+import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import Input from "../components/ui/Input/Input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
@@ -84,12 +84,12 @@ export default function ProductCreatePage() {
   return (
     <div className="min-h-screen bg-background py-8">
       <Container size="md">
-        <Button variant="ghost" className="mb-6" asChild>
-          <Link to={`/shops/${shopIdNum}/products`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("products.create.backToProducts")}
-          </Link>
-        </Button>
+        <ButtonV2
+          icon={<ArrowLeft className="size-4" />}
+          label={t("products.create.backToProducts")}
+          onClick={() => navigate(`/shops/${shopIdNum}/products`)}
+          className="bg-transparent text-foreground mb-6"
+        />
 
         <div className="bg-card rounded-lg shadow-sm border border-border p-6">
           <div className="flex items-center gap-3 mb-6">
@@ -144,19 +144,22 @@ export default function ProductCreatePage() {
             <ImageUploader images={images} onImagesChange={setImages} />
 
             <div className="flex gap-3 pt-4">
-              <Button
+              <ButtonV2
                 type="submit"
                 disabled={createProduct.isPending || addImageMutation.isPending}
-              >
-                {createProduct.isPending || addImageMutation.isPending
-                  ? t("products.create.creating")
-                  : t("products.create.submit")}
-              </Button>
-              <Button type="button" variant="outline" asChild>
-                <Link to={`/shops/${shopIdNum}/products`}>
-                  {t("products.create.cancel")}
-                </Link>
-              </Button>
+                className="bg-primary text-primary-foreground"
+                label={
+                  createProduct.isPending || addImageMutation.isPending
+                    ? t("products.create.creating")
+                    : t("products.create.submit")
+                }
+              />
+              <ButtonV2
+                type="button"
+                className="border border-border bg-background text-foreground"
+                onClick={() => navigate(`/shops/${shopIdNum}/products`)}
+                label={t("products.create.cancel")}
+              />
             </div>
           </form>
         </div>

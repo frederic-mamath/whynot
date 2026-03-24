@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from '../ui/button';
+import ButtonV2 from '../ui/ButtonV2/ButtonV2';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -91,21 +91,18 @@ export default class ErrorBoundary extends Component<Props, State> {
             </CardContent>
 
             <CardFooter className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                onClick={() => window.location.reload()} 
-                variant="outline" 
-                className="w-full sm:w-auto"
-              >
-                <RefreshCw className="size-4 mr-2" />
-                Reload Page
-              </Button>
-              <Button 
+              <ButtonV2
+                icon={<RefreshCw className="size-4" />}
+                label="Reload Page"
+                onClick={() => window.location.reload()}
+                className="w-full sm:w-auto border border-border bg-background text-foreground"
+              />
+              <ButtonV2
+                icon={<Home className="size-4" />}
+                label="Go to Channels"
                 onClick={this.handleReset}
-                className="w-full sm:w-auto"
-              >
-                <Home className="size-4 mr-2" />
-                Go to Channels
-              </Button>
+                className="w-full sm:w-auto bg-primary text-primary-foreground"
+              />
             </CardFooter>
           </Card>
         </div>
