@@ -1,11 +1,66 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import posthog from "posthog-js";
-import { TrendingDown, Zap, Users, ChevronDown, CheckCircle } from "lucide-react";
+import { TrendingDown, Zap, Users, ChevronDown, CheckCircle, Radio, Gavel, Eye, Trophy } from "lucide-react";
 import { Accordion } from "radix-ui";
 import { cn } from "../lib/utils";
 import { trpc } from "../lib/trpc";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
+import IPhoneMockup from "../components/ui/IPhoneMockup/IPhoneMockup";
+
+// ─── Floating badge components (landing-page-specific) ───────────────────────
+
+function FloatingBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn(
+      "bg-card/90 backdrop-blur-sm border border-border rounded-2xl",
+      "px-3 py-2 flex items-center gap-2",
+      "text-xs font-outfit whitespace-nowrap shadow-lg",
+      className,
+    )}>
+      {children}
+    </div>
+  );
+}
+
+function LiveBadge() {
+  return (
+    <FloatingBadge>
+      <Radio className="w-3 h-3 text-red-500 animate-pulse" />
+      <span className="text-foreground font-semibold">EN DIRECT</span>
+    </FloatingBadge>
+  );
+}
+
+function BidBadge() {
+  return (
+    <FloatingBadge>
+      <Gavel className="w-3 h-3 text-primary" />
+      <span className="text-foreground">Nouvelle enchère</span>
+      <span className="text-primary font-bold">+€12</span>
+    </FloatingBadge>
+  );
+}
+
+function ViewerBadge() {
+  return (
+    <FloatingBadge>
+      <Eye className="w-3 h-3 text-muted" />
+      <span className="text-foreground font-semibold">127</span>
+      <span className="text-muted">spectateurs</span>
+    </FloatingBadge>
+  );
+}
+
+function WinnerBadge() {
+  return (
+    <FloatingBadge>
+      <Trophy className="w-3 h-3 text-primary" />
+      <span className="text-foreground">Vendu ·</span>
+      <span className="text-primary font-bold">€89</span>
+    </FloatingBadge>
+  );
+}
 
 // ─── Section tracking hook ────────────────────────────────────────────────────
 
@@ -182,19 +237,16 @@ export default function LandingPage() {
             />
           </div>
 
-          {/* App preview placeholder */}
-          <div className="flex-shrink-0 lg:w-64">
-            <div
-              className={cn(
-                "w-48 h-80 lg:w-64 lg:h-[480px] mx-auto",
-                "bg-card border border-border rounded-[32px]",
-                "flex items-center justify-center",
-              )}
-            >
-              <span className="text-muted text-sm text-center px-4">
-                Aperçu de l'app
-              </span>
-            </div>
+          {/* App preview — animated iPhone mockup */}
+          <div className="flex-shrink-0 flex justify-center">
+            <IPhoneMockup
+              floatingElements={[
+                <LiveBadge />,
+                <BidBadge />,
+                <ViewerBadge />,
+                <WinnerBadge />,
+              ]}
+            />
           </div>
         </div>
       </section>

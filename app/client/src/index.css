@@ -164,3 +164,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ORBITAL ANIMATION — IPhoneMockup component
+   Elements orbit around a center point using pure CSS.
+   Running on the GPU compositor thread (transform only — no layout reflow).
+
+   Usage: position element at center of orbit container (top:50% left:50%),
+   set --orbit-x (radius), --orbit-duration, --orbit-delay, then apply
+   the `animate-orbit` class.
+
+   The double-rotate trick (rotate N° → translateX → rotate -N°) keeps the
+   element face-up as it orbits (counter-rotates to cancel orbital rotation).
+
+   The parent container uses scaleY(1.6) + child counter-scale scaleY(0.625)
+   to turn the circular path into an ellipse matching the phone's aspect ratio.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg) translateX(var(--orbit-x)) rotate(0deg) scaleY(0.625);
+  }
+  to {
+    transform: rotate(360deg) translateX(var(--orbit-x)) rotate(-360deg) scaleY(0.625);
+  }
+}
+
+/* Reduced-motion: pause the orbit entirely */
+@media (prefers-reduced-motion: reduce) {
+  .animate-orbit {
+    animation-play-state: paused !important;
+  }
+}
