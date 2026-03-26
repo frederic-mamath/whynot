@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Cog, User, CircleDot } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, ChevronLeft, CircleDot } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { cn } from "@/lib/utils";
 import ButtonV2 from "@/components/ui/ButtonV2";
@@ -7,6 +8,7 @@ import MyShopTab from "./MyShopTab/MyShopTab";
 import CreateProductDialog from "./CreateProductDialog";
 
 const SellerShopPage = () => {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: shop, isLoading } = trpc.shop.getOrCreateMyShop.useQuery();
@@ -32,14 +34,16 @@ const SellerShopPage = () => {
   return (
     <div className="px-4 pt-6">
       {/* Header */}
-      <div className={cn("flex items-center justify-between", "mb-6")}>
-        <User />
-        <h1 className="font-syne font-extrabold text-2xl text-foreground">
-          Ma boutique
-        </h1>
-        <button>
-          <Cog />
+      <div className={cn("flex items-center gap-3", "mb-6")}>
+        <button
+          onClick={() => navigate("/seller")}
+          className="text-muted hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
         </button>
+        <h1 className="font-syne font-extrabold text-2xl text-foreground">
+          Inventaire
+        </h1>
       </div>
       <div>
         <ButtonV2

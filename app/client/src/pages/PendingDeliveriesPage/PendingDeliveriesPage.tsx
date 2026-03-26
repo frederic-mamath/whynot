@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { trpc } from '@/lib/trpc';
 import ButtonV2 from '@/components/ui/ButtonV2/ButtonV2';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label';
 import Input from '@/components/ui/Input/Input';
 import { Textarea } from '@/components/ui/textarea';
-import { Package, User, DollarSign, Calendar, Wallet } from 'lucide-react';
+import { Package, User, DollarSign, Calendar, Wallet, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -131,6 +132,7 @@ function PayoutRequestDialog({ order }: { order: any }) {
 }
 
 export function PendingDeliveriesPage() {
+  const navigate = useNavigate();
   const utils = trpc.useUtils();
 
   const { data: orders, isLoading } = trpc.order.getPendingDeliveries.useQuery();
@@ -160,6 +162,15 @@ export function PendingDeliveriesPage() {
   if (!orders?.length) {
     return (
       <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => navigate("/seller")}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h1 className="font-syne font-extrabold text-xl">Livraisons</h1>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -182,6 +193,15 @@ export function PendingDeliveriesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={() => navigate("/seller")}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <h1 className="font-syne font-extrabold text-xl">Livraisons</h1>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

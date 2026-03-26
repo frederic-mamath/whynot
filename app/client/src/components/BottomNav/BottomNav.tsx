@@ -20,11 +20,16 @@ const BottomNav = () => {
 
   const handleVendre = () => {
     if (isSeller) {
-      navigate("/seller/shop");
+      navigate("/seller");
     } else {
       navigate("/vendre");
     }
   };
+
+  const isVendreActive = isSeller
+    ? location.pathname.startsWith("/seller") ||
+      location.pathname.startsWith("/pending-deliveries")
+    : location.pathname.startsWith("/vendre");
 
   const navItems = [
     {
@@ -32,24 +37,28 @@ const BottomNav = () => {
       label: "Home",
       path: "/home",
       onClick: () => navigate("/home"),
+      active: isActive("/home"),
     },
     {
       icon: <Store className="w-5 h-5" />,
       label: "Vendre",
-      path: isSeller ? "/seller/shop" : "/vendre",
+      path: isSeller ? "/seller" : "/vendre",
       onClick: handleVendre,
+      active: isVendreActive,
     },
     {
       icon: <Activity className="w-5 h-5" />,
       label: "Activité",
       path: "/my-orders",
       onClick: () => navigate("/my-orders"),
+      active: isActive("/my-orders"),
     },
     {
       icon: <User className="w-5 h-5" />,
       label: "Profil",
       path: "/profile",
       onClick: () => navigate("/profile"),
+      active: isActive("/profile"),
     },
   ];
 
@@ -64,16 +73,14 @@ const BottomNav = () => {
       )}
     >
       <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map((item) => {
-          const active = isActive(item.path);
-          return (
-            <button
-              key={item.label}
-              onClick={item.onClick}
-              className={cn(
-                "flex flex-col items-center justify-center gap-0.5 flex-1 py-2 hover:cursor-pointer",
-                active ? "text-primary" : "text-muted-foreground",
-              )}
+        {navItems.map((item) => (
+          <button
+            key={item.label}
+            onClick={item.onClick}
+            className={cn(
+              "flex flex-col items-center justify-center gap-0.5 flex-1 py-2 hover:cursor-pointer",
+              item.active ? "text-primary" : "text-muted-foreground",
+            )}
             >
               {item.path === "/profile" && profile?.avatarUrl ? (
                 <img
@@ -88,8 +95,7 @@ const BottomNav = () => {
                 {item.label}
               </span>
             </button>
-          );
-        })}
+          ))}
       </div>
     </nav>
   );

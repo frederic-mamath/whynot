@@ -5,6 +5,7 @@ import {
   Play,
   Calendar,
   Clock,
+  ChevronLeft,
   ChevronRight,
   Pencil,
   ImagePlus,
@@ -304,9 +305,17 @@ export default function SellerLivePage() {
   return (
     <div className="flex flex-col pb-4">
       <div className="px-4 pt-6 pb-2">
-        <h1 className="font-syne font-extrabold text-xl text-foreground mb-4">
-          Lives
-        </h1>
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => navigate("/seller")}
+            className="text-muted hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <h1 className="font-syne font-extrabold text-xl text-foreground">
+            Lives
+          </h1>
+        </div>
         <Tabs
           selectedTabId={activeTab}
           items={tabs}
