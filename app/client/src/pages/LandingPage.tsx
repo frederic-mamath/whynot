@@ -1,23 +1,42 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import posthog from "posthog-js";
-import { TrendingDown, Zap, Users, ChevronDown, CheckCircle, Radio, Gavel, Eye, Trophy } from "lucide-react";
+import {
+  TrendingDown,
+  Zap,
+  Users,
+  ChevronDown,
+  CheckCircle,
+  Radio,
+  Gavel,
+  Eye,
+  Trophy,
+} from "lucide-react";
 import { Accordion } from "radix-ui";
 import { cn } from "../lib/utils";
 import { trpc } from "../lib/trpc";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import IPhoneMockup from "../components/ui/IPhoneMockup/IPhoneMockup";
+import coinImg from "../assets/images/optimized-mario-galaxy-coin.png";
 
 // ─── Floating badge components (landing-page-specific) ───────────────────────
 
-function FloatingBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+function FloatingBadge({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={cn(
-      "bg-card/90 backdrop-blur-sm border border-border rounded-2xl",
-      "px-3 py-2 flex items-center gap-2",
-      "text-xs font-outfit whitespace-nowrap shadow-lg",
-      className,
-    )}>
+    <div
+      className={cn(
+        "bg-card/90 backdrop-blur-sm border border-border rounded-2xl",
+        "px-3 py-2 flex items-center gap-2",
+        "text-xs font-outfit whitespace-nowrap shadow-lg",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -59,6 +78,18 @@ function WinnerBadge() {
       <span className="text-foreground">Vendu ·</span>
       <span className="text-primary font-bold">€89</span>
     </FloatingBadge>
+  );
+}
+
+function CoinBadge() {
+  return (
+    <img
+      src={coinImg}
+      alt="Pièce collector"
+      loading="lazy"
+      decoding="async"
+      className="w-30 h-30 object-contain drop-shadow-lg"
+    />
   );
 }
 
@@ -243,6 +274,7 @@ export default function LandingPage() {
               floatingElements={[
                 <LiveBadge />,
                 <BidBadge />,
+                <CoinBadge />,
                 <ViewerBadge />,
                 <WinnerBadge />,
               ]}
@@ -355,7 +387,9 @@ export default function LandingPage() {
               <span className="font-outfit font-bold text-5xl text-primary leading-none">
                 {step}
               </span>
-              <p className="font-outfit font-semibold text-foreground">{title}</p>
+              <p className="font-outfit font-semibold text-foreground">
+                {title}
+              </p>
               <p className="text-muted text-sm leading-relaxed">{desc}</p>
             </div>
           ))}
@@ -373,7 +407,11 @@ export default function LandingPage() {
         <h2 className="font-outfit font-bold text-2xl sm:text-3xl text-center mb-10">
           Questions fréquentes
         </h2>
-        <Accordion.Root type="single" collapsible className="flex flex-col gap-2">
+        <Accordion.Root
+          type="single"
+          collapsible
+          className="flex flex-col gap-2"
+        >
           {FAQ_ITEMS.map(({ q, a }) => (
             <Accordion.Item
               key={q}
@@ -394,7 +432,9 @@ export default function LandingPage() {
                 <ChevronDown className="w-4 h-4 shrink-0 text-muted transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </Accordion.Trigger>
               <Accordion.Content className="overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
-                <p className="text-muted text-sm leading-relaxed px-5 pb-4">{a}</p>
+                <p className="text-muted text-sm leading-relaxed px-5 pb-4">
+                  {a}
+                </p>
               </Accordion.Content>
             </Accordion.Item>
           ))}
@@ -408,10 +448,7 @@ export default function LandingPage() {
             popup
           </span>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted">
-            <Link
-              to="/cgu"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link to="/cgu" className="hover:text-foreground transition-colors">
               CGU
             </Link>
             <Link

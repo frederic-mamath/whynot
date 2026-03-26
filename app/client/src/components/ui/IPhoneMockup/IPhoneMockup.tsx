@@ -39,13 +39,19 @@ const ORBIT_RADIUS_Y = 265;
 // Duration per full orbit (ms). Varied per slot for an organic feel.
 const ORBIT_DURATIONS_MS = [10000, 13000, 11000, 14000, 10500, 12500];
 
+// Pop animation timing.
+// Each element: pops in → stays visible → pops out → waits → repeats.
+const POP_VISIBLE_S = 4;  // how long the element stays visible
+const POP_HIDDEN_S = 2.5; // gap between cycles (repeatDelay)
+
 interface OrbitalElementProps {
   children: React.ReactNode;
   initialAngle: number; // radians — starting position on the ellipse
   durationMs: number;
+  popDelay: number;     // seconds — stagger offset so elements don't all pop together
 }
 
-function OrbitalElement({ children, initialAngle, durationMs }: OrbitalElementProps) {
+function OrbitalElement({ children, initialAngle, durationMs, popDelay }: OrbitalElementProps) {
   const shouldReduceMotion = useReducedMotion();
 
   // Start at the correct ellipse position so there's no jump on first frame.
@@ -76,7 +82,38 @@ function OrbitalElement({ children, initialAngle, durationMs }: OrbitalElementPr
         zIndex: 20,
       }}
     >
-      {children}
+      {/* Pop-in / pop-out wrapper — scale + opacity keyframes */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={
+          shouldReduceMotion
+            ? { scale: 1, opacity: 1 }
+            : {
+                // Keyframe sequence:
+                //  0%→8%   : scale 0 → 1.2  (fast pop-in overshoot)
+                //  8%→14%  : scale 1.2 → 0.9 (elastic rebound)
+                //  14%→20% : scale 0.9 → 1   (settle)
+                //  20%→80% : hold at 1        (visible)
+                //  80%→100%: scale 1 → 0      (pop-out, fade)
+                scale:   [0, 1.2, 0.9, 1, 1, 0],
+                opacity: [0, 1,   1,   1, 1, 0],
+              }
+        }
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : {
+                duration: POP_VISIBLE_S,
+                times: [0, 0.08, 0.14, 0.20, 0.80, 1],
+                ease: ["easeOut", "easeOut", "easeOut", "linear", "easeIn"],
+                repeat: Infinity,
+                repeatDelay: POP_HIDDEN_S,
+                delay: popDelay,
+              }
+        }
+      >
+        {children}
+      </motion.div>
     </motion.div>
   );
 }
@@ -144,6 +181,9 @@ export function IPhoneMockup({
           // Distribute elements evenly around the ellipse.
           initialAngle={(i / floatingElements.length) * Math.PI * 2}
           durationMs={ORBIT_DURATIONS_MS[i % ORBIT_DURATIONS_MS.length]}
+          // Stagger pop-ins so elements never appear/disappear simultaneously.
+          // Spread across one full pop cycle (visible + hidden duration).
+          popDelay={(i * (POP_VISIBLE_S + POP_HIDDEN_S)) / floatingElements.length}
         >
           {el}
         </OrbitalElement>
