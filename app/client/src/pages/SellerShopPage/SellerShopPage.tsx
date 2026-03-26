@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, ChevronLeft, CircleDot } from "lucide-react";
+import { Plus, ChevronLeft } from "lucide-react";
 import { trpc } from "../../lib/trpc";
 import { cn } from "@/lib/utils";
-import ButtonV2 from "@/components/ui/ButtonV2";
 import MyShopTab from "./MyShopTab/MyShopTab";
 import CreateProductDialog from "./CreateProductDialog";
 
@@ -13,13 +12,11 @@ const SellerShopPage = () => {
 
   const { data: shop, isLoading } = trpc.shop.getOrCreateMyShop.useQuery();
 
-  const {
-    data: products,
-    refetch: refetchProducts,
-  } = trpc.product.list.useQuery(
-    { shopId: shop?.id ?? 0 },
-    { enabled: !!shop?.id },
-  );
+  const { data: products, refetch: refetchProducts } =
+    trpc.product.list.useQuery(
+      { shopId: shop?.id ?? 0 },
+      { enabled: !!shop?.id },
+    );
 
   if (isLoading || !shop) {
     return (
@@ -32,9 +29,9 @@ const SellerShopPage = () => {
   }
 
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-6 pb-24">
       {/* Header */}
-      <div className={cn("flex items-center gap-3", "mb-6")}>
+      <div className={cn("flex items-center gap-3", "mb-2")}>
         <button
           onClick={() => navigate("/seller")}
           className="text-muted hover:text-foreground transition-colors"
@@ -45,29 +42,29 @@ const SellerShopPage = () => {
           Inventaire
         </h1>
       </div>
-      <div>
-        <ButtonV2
-          label="Passer en live"
-          className={cn("w-full", "bg-b-third text-txt-third", "mb-4")}
-          icon={<CircleDot />}
-        />
-      </div>
 
-      <MyShopTab products={products ?? []} />
+      {/* Subtitle */}
+      <p className="text-sm text-muted mb-5 leading-relaxed">
+        Gérez votre liste de produits, des stocks et préparez la prochaine
+        collection pour votre prochain live
+      </p>
 
-      {/* FAB */}
+      {/* Inline add button */}
       <button
         onClick={() => setDialogOpen(true)}
         className={cn(
-          "fixed bottom-24 right-4 z-40",
-          "w-14 h-14 rounded-full",
-          "bg-primary text-primary-foreground",
-          "flex items-center justify-center",
-          "shadow-lg",
+          "w-full flex items-center justify-center gap-2",
+          "border border-border rounded-2xl py-3",
+          "text-sm font-outfit font-medium text-foreground",
+          "hover:border-primary/50 hover:text-primary transition-colors",
+          "mb-2",
         )}
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-4 h-4" />
+        ajouter un nouveau produit
       </button>
+
+      <MyShopTab products={products ?? []} />
 
       <CreateProductDialog
         shopId={shop.id}
