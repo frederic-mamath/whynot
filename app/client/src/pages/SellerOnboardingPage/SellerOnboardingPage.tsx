@@ -467,7 +467,7 @@ export default function SellerOnboardingPage() {
       {/* Step 10 — Submit / status */}
       {currentStepIndex >= 10 && (
         <div className="flex flex-col gap-4 mt-2">
-          {sellerStatus === "none" && currentStepIndex === 10 && (
+          {(sellerStatus === "none" || sellerStatus === "pending") && currentStepIndex >= 10 && (
             <>
               <div className="p-4 rounded-xl bg-card border border-border text-sm text-muted-foreground">
                 Votre profil vendeur est complet. Cliquez pour activer votre

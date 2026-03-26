@@ -246,12 +246,18 @@ export const sellerOnboardingRouter = router({
       "SELLER",
     );
     if (existingRole) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: existingRole.activated_at
-          ? "You are already a seller"
-          : "Your seller request is already pending",
-      });
+      if (existingRole.activated_at) {
+        // Already a fully activated seller — nothing to do
+        return { success: true };
+      }
+      // Pending role exists (activated_at is null) — activate it now
+      await db
+        .updateTable("user_roles")
+        .set({ activated_at: new Date(), activated_by: ctx.userId! })
+        .where("id", "=", existingRole.id)
+        .execute();
+      await userRepository.updateSellerOnboardingStep(ctx.userId!, 11);
+      return { success: true };
     }
 
     const sellerRole = await roleRepository.findByName("SELLER");

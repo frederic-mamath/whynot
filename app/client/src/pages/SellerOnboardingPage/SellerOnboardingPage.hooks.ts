@@ -62,7 +62,10 @@ export const useSellerOnboarding = () => {
 
   const submitApplicationMutation =
     trpc.sellerOnboarding.submitApplication.useMutation({
-      onSuccess: () => utils.sellerOnboarding.getProgress.invalidate(),
+      onSuccess: () => {
+        utils.sellerOnboarding.getProgress.invalidate();
+        utils.role.myRoles.invalidate();
+      },
     });
 
   return {
