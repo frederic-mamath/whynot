@@ -20,3 +20,7 @@
 | As a seller, each sub-page has a back arrow returning me to the hub | completed |
 | As a seller, the BottomNav "Vendre" tab stays active across all seller sub-pages | completed |
 | As a seller, the Analytics card shows a coming-soon page until the feature is built | completed |
+| As a seller, in the Inventaire page, I should see products as vertical cards with a large image | completed |
+| As a seller, in the Inventaire page, I can edit a product (navigates to edit page) | completed |
+| As a seller, in the Inventaire page, I can delete a product with a confirmation dialog | completed |
+| As a seller, in the Inventaire page, I should see an inline add button instead of a FAB | completed |

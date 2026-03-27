@@ -35,7 +35,7 @@ const ButtonV2 = ({
         "relative overflow-hidden transition-colors",
         "before:pointer-events-none before:absolute before:inset-0 before:bg-white/10 before:opacity-0 before:transition-opacity hover:before:opacity-100 hover:cursor-pointer",
         "flex items-center justify-center gap-2 rounded-[28px]",
-        "py-[14px]",
+        "py-[14px] px-2",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         className,
       )}

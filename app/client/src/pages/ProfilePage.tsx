@@ -11,6 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Input from "@/components/ui/Input/Input";
+import AddressAutocomplete, {
+  BanSuggestion,
+} from "@/components/AddressAutocomplete";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
@@ -67,7 +70,7 @@ const emptyAddress: AddressFormData = {
   city: "",
   state: "",
   zipCode: "",
-  country: "US",
+  country: "FR",
 };
 
 export default function ProfilePage() {
@@ -640,6 +643,22 @@ export default function ProfilePage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitAddress} className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t("profile.addresses.autocomplete")}</Label>
+              <AddressAutocomplete
+                placeholder={t("profile.addresses.autocompletePlaceholder")}
+                onSelect={(s: BanSuggestion) =>
+                  setAddressForm((prev) => ({
+                    ...prev,
+                    street: s.street,
+                    city: s.city,
+                    zipCode: s.zipCode,
+                    state: s.state,
+                    country: s.country,
+                  }))
+                }
+              />
+            </div>
             <div className="space-y-2">
               <Label>{t("profile.addresses.label")}</Label>
               <Input

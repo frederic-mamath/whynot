@@ -174,7 +174,9 @@
       "toastDeleted": "Adresse supprimée avec succès",
       "toastDeleteFailed": "Échec de la suppression de l'adresse",
       "toastDefaultSet": "Adresse par défaut mise à jour",
-      "toastDefaultFailed": "Échec de la mise à jour de l'adresse par défaut"
+      "toastDefaultFailed": "Échec de la mise à jour de l'adresse par défaut",
+      "autocomplete": "Recherche rapide d'adresse",
+      "autocompletePlaceholder": "Commencez à taper votre adresse…"
     }
   },
   "navbar": {
