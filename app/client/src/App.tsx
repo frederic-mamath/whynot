@@ -28,7 +28,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage/ResetPasswordPage";
 import SellerLayout from "./pages/SellerLayout";
 import SellerHomePage from "./pages/SellerHomePage";
-import SellerLivesPage from "./pages/SellerLivesPage";
+import SellerLivesPage from "./pages/SellerLivesPage/SellerLivesPage";
 import SellerGoPage from "./pages/SellerGoPage";
 import SellerExplorerPage from "./pages/SellerExplorerPage";
 import SellerShopPage from "./pages/SellerShopPage/SellerShopPage";

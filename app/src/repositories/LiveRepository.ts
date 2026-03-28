@@ -36,7 +36,7 @@ export class LiveRepository {
       .execute();
   }
 
-  /** Lives scheduled in the future (starts_at > now), ordered ASC */
+  /** Lives scheduled in the future (starts_at > now), ordered DESC */
   async findScheduledByHost(hostId: number): Promise<Live[]> {
     return db
       .selectFrom("lives")
@@ -44,8 +44,16 @@ export class LiveRepository {
       .where("host_id", "=", hostId)
       .where("starts_at", ">", new Date())
       .where("ended_at", "is", null)
-      .orderBy("starts_at", "asc")
+      .orderBy("starts_at", "desc")
       .execute();
+  }
+
+  async deleteById(liveId: number): Promise<void> {
+    await db
+      .deleteFrom("live_products")
+      .where("live_id", "=", liveId)
+      .execute();
+    await db.deleteFrom("lives").where("id", "=", liveId).execute();
   }
 
   /** Lives in the past (starts_at <= now), ordered DESC */

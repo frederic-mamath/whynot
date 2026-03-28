@@ -118,7 +118,7 @@ export const liveRouter = router({
     }),
 
   /**
-   * List lives for a host (upcoming scheduled + past)
+   * List lives for a host (upcoming scheduled + past), enriched with category names
    */
   listByHost: publicProcedure
     .input(z.object({ hostId: z.number().optional() }).optional())
@@ -136,7 +136,60 @@ export const liveRouter = router({
         liveRepository.findPastByHost(hostId),
       ]);
 
-      return { upcoming, past };
+      const allIds = [...upcoming, ...past].map((l) => l.id);
+      const categoryRows =
+        allIds.length > 0
+          ? await db
+              .selectFrom("live_products as lp")
+              .innerJoin("products as p", "p.id", "lp.product_id")
+              .innerJoin("categories as c", "c.id", "p.category_id")
+              .select(["lp.live_id", "c.name"])
+              .where("lp.live_id", "in", allIds)
+              .execute()
+          : [];
+
+      const catMap = new Map<number, string[]>();
+      for (const row of categoryRows) {
+        const arr = catMap.get(row.live_id) ?? [];
+        if (!arr.includes(row.name)) arr.push(row.name);
+        catMap.set(row.live_id, arr);
+      }
+
+      const enrich = (lives: typeof upcoming) =>
+        lives.map((l) => ({ ...l, categoryNames: catMap.get(l.id) ?? [] }));
+
+      return { upcoming: enrich(upcoming), past: enrich(past) };
+    }),
+
+  /**
+   * Delete an upcoming live (host only)
+   */
+  delete: publicProcedure
+    .input(z.object({ liveId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      const live = await liveRepository.findById(input.liveId);
+      if (!live) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const isHost = await liveRepository.isHost(input.liveId, ctx.userId);
+      if (!isHost) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      if (live.starts_at <= new Date()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot delete a started live",
+        });
+      }
+
+      await liveRepository.deleteById(input.liveId);
+      return { success: true };
     }),
 
   /**

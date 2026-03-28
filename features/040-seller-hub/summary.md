@@ -24,3 +24,7 @@
 | As a seller, in the Inventaire page, I can edit a product (navigates to edit page) | completed |
 | As a seller, in the Inventaire page, I can delete a product with a confirmation dialog | completed |
 | As a seller, in the Inventaire page, I should see an inline add button instead of a FAB | completed |
+| As a seller, in the lives page, I should see a flat layout with "À venir" and "Passés" sections | completed |
+| As a seller, in the lives page, each live card shows cover, status badge, category chips, and actions | completed |
+| As a seller, in the lives page, I can schedule a new live via a dialog | completed |
+| As a seller, in the lives page, I can edit any live and delete upcoming lives | completed |
