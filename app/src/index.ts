@@ -106,14 +106,48 @@ app.post(
           const orderId = paymentIntent.metadata?.orderId;
 
           if (orderId) {
-            await db
+            const updatedOrder = await db
               .updateTable("orders")
               .set({
                 payment_status: "paid",
                 paid_at: new Date(),
               })
               .where("id", "=", orderId)
-              .execute();
+              .returning(["buyer_id", "seller_id", "auction_id"])
+              .executeTakeFirst();
+
+            if (updatedOrder) {
+              try {
+                const auction = await db
+                  .selectFrom("auctions")
+                  .select("channel_id")
+                  .where("id", "=", updatedOrder.auction_id)
+                  .executeTakeFirst();
+
+                if (auction) {
+                  const { packageRepository } = await import(
+                    "./repositories/PackageRepository"
+                  );
+                  const packageId = await packageRepository.findOrCreate(
+                    updatedOrder.buyer_id,
+                    updatedOrder.seller_id,
+                    auction.channel_id,
+                  );
+                  await packageRepository.assignOrderToPackage(
+                    orderId,
+                    packageId,
+                  );
+                  console.log(
+                    `📦 Order ${orderId} assigned to package ${packageId}`,
+                  );
+                }
+              } catch (err) {
+                console.error(
+                  `⚠️ Failed to create/assign package for order ${orderId}:`,
+                  err,
+                );
+              }
+            }
 
             console.log(`✅ Order ${orderId} marked as paid`);
           }

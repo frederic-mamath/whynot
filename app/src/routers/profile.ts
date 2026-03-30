@@ -3,7 +3,9 @@ import { protectedProcedure, router } from "../trpc";
 import { userRepository } from "../repositories/UserRepository";
 import { addressRepository } from "../repositories/AddressRepository";
 import { cloudinaryService } from "../services/CloudinaryService";
+import { mondialRelayService } from "../services/MondialRelayService";
 import { TRPCError } from "@trpc/server";
+import { db } from "../db";
 
 export const profileRouter = router({
   /**
@@ -38,6 +40,7 @@ export const profileRouter = router({
         zipCode: addr.zip_code,
         country: addr.country,
         isDefault: addr.is_default,
+        mondialRelayPointId: addr.mondial_relay_point_id ?? null,
         createdAt: addr.created_at,
       })),
     };
@@ -298,6 +301,75 @@ export const profileRouter = router({
         await addressRepository.delete(input.id);
 
         return { success: true };
+      }),
+
+    /**
+     * Search Mondial Relay points near a postcode
+     */
+    searchRelayPoints: protectedProcedure
+      .input(
+        z.object({
+          postcode: z.string().min(4).max(10),
+          country: z.string().length(2).default("FR"),
+        }),
+      )
+      .query(async ({ input }) => {
+        const points = await mondialRelayService.searchRelayPoints(
+          input.postcode,
+          input.country,
+        );
+        return points;
+      }),
+
+    /**
+     * Save a Mondial Relay point as the user's delivery relay address.
+     * Replaces any previously saved relay point address.
+     */
+    saveRelayPoint: protectedProcedure
+      .input(
+        z.object({
+          relayPointId: z.string().min(1),
+          name: z.string().min(1),
+          street: z.string().min(1),
+          city: z.string().min(1),
+          zipCode: z.string().min(1),
+          country: z.string().length(2).default("FR"),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        // Remove existing relay point address
+        await db
+          .deleteFrom("user_addresses")
+          .where("user_id", "=", ctx.user.id)
+          .where("mondial_relay_point_id", "is not", null)
+          .execute();
+
+        // Unset default on all other addresses
+        await db
+          .updateTable("user_addresses")
+          .set({ is_default: false })
+          .where("user_id", "=", ctx.user.id)
+          .execute();
+
+        // Insert new relay point
+        const address = await db
+          .insertInto("user_addresses")
+          .values({
+            user_id: ctx.user.id,
+            label: `Point Relais — ${input.name}`,
+            street: input.street,
+            street2: null,
+            city: input.city,
+            state: input.city,
+            zip_code: input.zipCode,
+            country: input.country,
+            is_default: true,
+            mondial_relay_point_id: input.relayPointId,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+
+        return { success: true, addressId: address.id };
       }),
 
     /**

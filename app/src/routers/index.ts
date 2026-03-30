@@ -15,6 +15,7 @@ import { paymentRouter } from "./payment";
 import { catalogRouter } from "./catalog";
 import { sellerOnboardingRouter } from "./sellerOnboarding";
 import { waitlistRouter } from "./waitlist";
+import { packageRouter } from "./package";
 
 export const appRouter = router({
   auth: authRouter,
@@ -33,6 +34,7 @@ export const appRouter = router({
   catalog: catalogRouter,
   sellerOnboarding: sellerOnboardingRouter,
   waitlist: waitlistRouter,
+  package: packageRouter,
 });
 
 export type AppRouter = typeof appRouter;

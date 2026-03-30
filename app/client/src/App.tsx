@@ -18,7 +18,7 @@ import ProductListPage from "./pages/ProductListPage";
 import ProductCreatePage from "./pages/ProductCreatePage";
 import ProductUpdatePage from "./pages/ProductUpdatePage";
 import MyOrdersPage from "./pages/MyOrdersPage";
-import { PendingDeliveriesPage } from "./pages/PendingDeliveriesPage";
+import SellerDeliveriesPage from "./pages/SellerDeliveriesPage/SellerDeliveriesPage";
 import ProfilePage from "./pages/ProfilePage";
 import ShopLayout from "./pages/ShopLayout";
 import { Toaster } from "./components/ui/sonner";
@@ -182,16 +182,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/pending-deliveries"
-            element={
-              <ProtectedRoute requireRole="SELLER">
-                <OnboardingGuard>
-                  <PendingDeliveriesPage />
-                </OnboardingGuard>
-              </ProtectedRoute>
-            }
-          />
           <Route path="/channels" element={<ChannelListPage />} />
           <Route
             path="/live/:liveId"
@@ -263,6 +253,7 @@ function AppContent() {
             <Route path="go" element={<SellerGoPage />} />
             <Route path="explorer" element={<SellerExplorerPage />} />
             <Route path="shop" element={<SellerShopPage />} />
+            <Route path="livraisons" element={<SellerDeliveriesPage />} />
             <Route
               path="shop/products/create"
               element={<ProductCreatePage />}

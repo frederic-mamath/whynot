@@ -16,6 +16,7 @@ export interface Database {
   auctions: AuctionsTable;
   bids: BidsTable;
   orders: OrdersTable;
+  packages: PackagesTable;
   payout_requests: PayoutRequestsTable;
   user_addresses: UserAddressesTable;
   product_images: ProductImagesTable;
@@ -198,6 +199,22 @@ export interface OrdersTable {
   stripe_payment_intent_id: string | null;
   paid_at: Date | null;
   shipped_at: Date | null;
+  package_id: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface PackagesTable {
+  id: Generated<string>;
+  buyer_id: number;
+  seller_id: number;
+  live_id: number;
+  tracking_number: string | null;
+  label_url: string | null;
+  weight_grams: number | null;
+  mondial_relay_point_id: string | null;
+  status: "pending" | "label_generated" | "shipped" | "delivered" | "incident";
+  delivered_at: Date | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
@@ -220,6 +237,7 @@ export type UserRole = Selectable<UserRolesTable>;
 export type Auction = Selectable<AuctionsTable>;
 export type Bid = Selectable<BidsTable>;
 export type Order = Selectable<OrdersTable>;
+export type Package = Selectable<PackagesTable>;
 export type PayoutRequest = Selectable<PayoutRequestsTable>;
 export type UserAddress = Selectable<UserAddressesTable>;
 export type ProductImage = Selectable<ProductImagesTable>;
@@ -250,6 +268,7 @@ export interface UserAddressesTable {
   zip_code: string;
   country: string;
   is_default: boolean;
+  mondial_relay_point_id: string | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }

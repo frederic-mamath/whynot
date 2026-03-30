@@ -51,7 +51,7 @@ export default function SellerHomePage() {
       subtitle:
         "Suivez les commandes de vos clients et ajoutez les liens de suivi",
       icon: <Truck className="w-8 h-8 text-primary" />,
-      route: "/pending-deliveries",
+      route: "/seller/livraisons",
       count:
         deliveryCount !== undefined
           ? `${deliveryCount} commande${deliveryCount !== 1 ? "s" : ""}`

@@ -90,6 +90,10 @@ export default function ProfilePage() {
   const [addressToDelete, setAddressToDelete] = useState<number | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
+  // Relay point picker state
+  const [relayPostcode, setRelayPostcode] = useState("");
+  const [relaySearchEnabled, setRelaySearchEnabled] = useState(false);
+
   const utils = trpc.useUtils();
 
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -221,6 +225,22 @@ export default function ProfilePage() {
     onError: (error) => {
       toast.error(error.message || t("profile.addresses.toastDeleteFailed"));
     },
+  });
+
+  // Relay point search + save
+  const searchRelayPoints = trpc.profile.addresses.searchRelayPoints.useQuery(
+    { postcode: relayPostcode, country: "FR" },
+    { enabled: relaySearchEnabled && relayPostcode.length >= 4 },
+  );
+
+  const saveRelayPoint = trpc.profile.addresses.saveRelayPoint.useMutation({
+    onSuccess: () => {
+      toast.success("Point relais enregistré");
+      utils.profile.me.invalidate();
+      setRelaySearchEnabled(false);
+      setRelayPostcode("");
+    },
+    onError: (err) => toast.error(err.message || "Erreur lors de l'enregistrement"),
   });
 
   // Set default address mutation
@@ -611,6 +631,102 @@ export default function ProfilePage() {
                       </button>
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Point Relais Mondial Relay */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="size-5" />
+            Point Relais Mondial Relay
+          </CardTitle>
+          <CardDescription>
+            Choisissez le point relais où vous souhaitez recevoir vos commandes.
+            La livraison domicile sera disponible prochainement.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Current relay point */}
+          {profile?.addresses.find((a) => a.mondialRelayPointId) && (
+            <div className="border border-primary/30 bg-primary/5 rounded-xl p-3">
+              <p className="text-xs text-muted-foreground mb-0.5">
+                Point relais actuel
+              </p>
+              <p className="text-sm font-semibold text-foreground">
+                {profile.addresses.find((a) => a.mondialRelayPointId)?.label}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {profile.addresses.find((a) => a.mondialRelayPointId)?.street},{" "}
+                {profile.addresses.find((a) => a.mondialRelayPointId)?.zipCode}{" "}
+                {profile.addresses.find((a) => a.mondialRelayPointId)?.city}
+              </p>
+            </div>
+          )}
+
+          {/* Search */}
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Code postal (ex: 75001)"
+              value={relayPostcode}
+              onChange={(v) => {
+                setRelayPostcode(v);
+                setRelaySearchEnabled(false);
+              }}
+            />
+            <ButtonV2
+              label="Rechercher"
+              onClick={() => setRelaySearchEnabled(true)}
+              disabled={relayPostcode.length < 4}
+              className="bg-primary text-primary-foreground shrink-0"
+            />
+          </div>
+
+          {searchRelayPoints.isLoading && (
+            <p className="text-sm text-muted-foreground">Recherche en cours…</p>
+          )}
+
+          {searchRelayPoints.data && searchRelayPoints.data.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Aucun point relais trouvé pour ce code postal.
+            </p>
+          )}
+
+          {searchRelayPoints.data && searchRelayPoints.data.length > 0 && (
+            <div className="space-y-2">
+              {searchRelayPoints.data.map((point) => (
+                <div
+                  key={point.id}
+                  className="border border-border rounded-xl p-3 flex items-start justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {point.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {point.address}, {point.zipCode} {point.city}
+                    </p>
+                  </div>
+                  <ButtonV2
+                    label={saveRelayPoint.isPending ? "…" : "Choisir"}
+                    onClick={() =>
+                      saveRelayPoint.mutate({
+                        relayPointId: point.id,
+                        name: point.name,
+                        street: point.address,
+                        city: point.city,
+                        zipCode: point.zipCode,
+                        country: point.country,
+                      })
+                    }
+                    disabled={saveRelayPoint.isPending}
+                    className="border border-border bg-background text-foreground shrink-0"
+                  />
                 </div>
               ))}
             </div>
