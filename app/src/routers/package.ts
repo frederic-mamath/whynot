@@ -131,10 +131,22 @@ export const packageRouter = router({
         .where("id", "=", ctx.user.id)
         .executeTakeFirstOrThrow();
 
+      // Find a collection relay near the seller's zip code
+      const sellerRelays = await mondialRelayService.searchRelayPoints(
+        sellerData.return_zip_code!,
+      );
+      if (!sellerRelays.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Aucun point relais trouvé près de votre adresse",
+        });
+      }
+
       const { trackingNumber, labelUrl } = await mondialRelayService.createLabel({
         packageId: pkg.id,
         weightGrams: input.weightGrams,
-        relayPointId: relayAddr.mondial_relay_point_id,
+        deliveryRelayId: relayAddr.mondial_relay_point_id,
+        collectionRelayId: sellerRelays[0].id,
         seller: {
           name:
             [seller.firstname, seller.lastname].filter(Boolean).join(" ") ||
@@ -147,9 +159,6 @@ export const packageRouter = router({
         buyer: {
           firstname: buyer.firstname || buyer.nickname,
           lastname: buyer.lastname || "",
-        },
-        relay: {
-          streetName: relayAddr.street,
           city: relayAddr.city,
           zipCode: relayAddr.zip_code,
           country: relayAddr.country,

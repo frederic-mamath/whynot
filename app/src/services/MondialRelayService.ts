@@ -22,7 +22,10 @@ export interface RelayPoint {
 export interface CreateLabelParams {
   packageId: string;
   weightGrams: number;
-  relayPointId: string;
+  /** Buyer's delivery relay point ID */
+  deliveryRelayId: string;
+  /** Seller's collection relay point ID (nearest relay to seller's address) */
+  collectionRelayId: string;
   seller: {
     name: string;
     street: string;
@@ -33,9 +36,6 @@ export interface CreateLabelParams {
   buyer: {
     firstname: string;
     lastname: string;
-  };
-  relay: {
-    streetName: string;
     city: string;
     zipCode: string;
     country: string;
@@ -146,17 +146,129 @@ export class MondialRelayService {
   }
 
   async createLabel(params: CreateLabelParams): Promise<CreateLabelResult> {
-    // TODO: implement via WSI2_CreationEtiquette when ready to test
-    throw new Error(
-      "Label creation via Mondial Relay SOAP is not yet implemented",
-    );
+    const p = params;
+    // Hash = fields 1-45 in WSDL order (excluding Texte) + private key
+    // Fields: Enseigne, ModeCol, ModeLiv, NDossier, NClient,
+    //   Expe_Langage, Expe_Ad1..Ad4, Expe_Ville, Expe_CP, Expe_Pays, Expe_Tel1, Expe_Tel2, Expe_Mail,
+    //   Dest_Langage, Dest_Ad1..Ad4, Dest_Ville, Dest_CP, Dest_Pays, Dest_Tel1, Dest_Tel2, Dest_Mail,
+    //   Poids, Longueur, Taille, NbColis, CRT_Valeur, CRT_Devise, Exp_Valeur, Exp_Devise,
+    //   COL_Rel_Pays, COL_Rel, LIV_Rel_Pays, LIV_Rel,
+    //   TAvisage, TReprise, Montage, TRDV, Assurance, Instructions
+    const hashFields = [
+      this.customerId, "REL", "24R",
+      `WN-${p.packageId.substring(0, 8).toUpperCase()}`, "",
+      "FR", p.seller.name, "", p.seller.street, "",
+      p.seller.city, p.seller.zipCode, p.seller.country || "FR", "", "", "",
+      "FR", `${p.buyer.firstname} ${p.buyer.lastname}`.trim(), "", "", "",
+      p.buyer.city, p.buyer.zipCode, p.buyer.country || "FR", "", "", "",
+      String(p.weightGrams), "", "", "1", "0", "", "0", "",
+      "FR", p.collectionRelayId, "FR", p.deliveryRelayId,
+      "", "", "", "", "", "",
+    ];
+    const security = computeHash(hashFields, this.privateKey);
+
+    const client = await this.getClient();
+    const [result] = await client.WSI2_CreationEtiquetteAsync({
+      Enseigne: this.customerId,
+      ModeCol: "REL",
+      ModeLiv: "24R",
+      NDossier: `WN-${p.packageId.substring(0, 8).toUpperCase()}`,
+      NClient: "",
+      Expe_Langage: "FR",
+      Expe_Ad1: p.seller.name,
+      Expe_Ad2: "",
+      Expe_Ad3: p.seller.street,
+      Expe_Ad4: "",
+      Expe_Ville: p.seller.city,
+      Expe_CP: p.seller.zipCode,
+      Expe_Pays: p.seller.country || "FR",
+      Expe_Tel1: "",
+      Expe_Tel2: "",
+      Expe_Mail: "",
+      Dest_Langage: "FR",
+      Dest_Ad1: `${p.buyer.firstname} ${p.buyer.lastname}`.trim(),
+      Dest_Ad2: "",
+      Dest_Ad3: "",
+      Dest_Ad4: "",
+      Dest_Ville: p.buyer.city,
+      Dest_CP: p.buyer.zipCode,
+      Dest_Pays: p.buyer.country || "FR",
+      Dest_Tel1: "",
+      Dest_Tel2: "",
+      Dest_Mail: "",
+      Poids: String(p.weightGrams),
+      Longueur: "",
+      Taille: "",
+      NbColis: "1",
+      CRT_Valeur: "0",
+      CRT_Devise: "",
+      Exp_Valeur: "0",
+      Exp_Devise: "",
+      COL_Rel_Pays: "FR",
+      COL_Rel: p.collectionRelayId,
+      LIV_Rel_Pays: "FR",
+      LIV_Rel: p.deliveryRelayId,
+      TAvisage: "",
+      TReprise: "",
+      Montage: "",
+      TRDV: "",
+      Assurance: "",
+      Instructions: "",
+      Security: security,
+      Texte: "",
+    });
+
+    const data = result?.WSI2_CreationEtiquetteResult;
+    const stat: string = data?.STAT ?? "";
+    if (stat !== "0") {
+      throw new Error(`Mondial Relay label creation failed (STAT=${stat})`);
+    }
+
+    const trackingNumber: string = data?.ExpeditionNum ?? "";
+    const labelUrl: string = data?.URL_Etiquette ?? "";
+
+    if (!trackingNumber) {
+      throw new Error("Mondial Relay did not return a tracking number");
+    }
+
+    return { trackingNumber, labelUrl };
   }
 
   async getTracking(trackingNumber: string): Promise<TrackingResult> {
-    // TODO: implement via WSI2_TracingColisDetaille when ready to test
-    throw new Error(
-      "Tracking via Mondial Relay SOAP is not yet implemented",
+    // Hash = Enseigne + Expedition + PrivateKey
+    const security = computeHash(
+      [this.customerId, trackingNumber],
+      this.privateKey,
     );
+
+    const client = await this.getClient();
+    const [result] = await client.WSI2_TracingColisDetailleAsync({
+      Enseigne: this.customerId,
+      Expedition: trackingNumber,
+      Langue: "FR",
+      Security: security,
+    });
+
+    const data = result?.WSI2_TracingColisDetailleResult;
+    const stat: string = data?.STAT ?? "";
+    if (stat !== "0") {
+      throw new Error(`Mondial Relay tracking failed (STAT=${stat})`);
+    }
+
+    const events: any[] = data?.ListEvenements?.Evenement ?? [];
+    const list = Array.isArray(events) ? events : [events];
+    const lastEvent = list[list.length - 1];
+    const code: string = lastEvent?.Code ?? "";
+
+    let status: PackageStatus = "shipped";
+    if (code === "80" || code === "81") status = "delivered";
+    if (code === "97" || code === "24") status = "incident";
+
+    return {
+      status,
+      lastEvent: lastEvent?.Libelle ?? null,
+      lastEventAt: lastEvent?.Date ? new Date(lastEvent.Date) : null,
+    };
   }
 }
 
