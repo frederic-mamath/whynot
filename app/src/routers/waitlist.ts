@@ -2,6 +2,7 @@ import { z } from "zod";
 import { router, publicProcedure } from "../trpc";
 import { waitlistRepository } from "../repositories/WaitlistRepository";
 import { TRPCError } from "@trpc/server";
+import { sendWaitlistConfirmation } from "../services/AwsSesService";
 
 export const waitlistRouter = router({
   join: publicProcedure
@@ -23,6 +24,12 @@ export const waitlistRouter = router({
         });
       }
       await waitlistRepository.save(input.email, input.role);
+
+      // Fire-and-forget — email failure must not break the signup
+      sendWaitlistConfirmation(input.email, input.role).catch((err) =>
+        console.error("[waitlist] email send failed:", err.message),
+      );
+
       return { success: true };
     }),
 });
