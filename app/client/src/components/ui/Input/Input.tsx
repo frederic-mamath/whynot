@@ -145,7 +145,7 @@ const Input = ({
         {isTextarea ? (
           <textarea
             className={cn(
-              "focus:outline-none flex-1 resize-none bg-transparent align-top",
+              "focus:outline-none flex-1 resize-none bg-transparent align-top text-base",
               inputClassName,
             )}
             id={inputId}
@@ -160,7 +160,7 @@ const Input = ({
           />
         ) : (
           <input
-            className={cn("focus:outline-none flex-1", inputClassName)}
+            className={cn("focus:outline-none flex-1 text-base", inputClassName)}
             id={inputId}
             ref={inputRef}
             type={type}
