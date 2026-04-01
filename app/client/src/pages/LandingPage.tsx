@@ -177,7 +177,7 @@ function WaitlistForm({
           required
           className={cn(
             "flex-1 bg-card border border-border rounded-[28px] px-5 py-3",
-            "text-foreground placeholder:text-muted text-sm outline-none",
+            "text-foreground placeholder:text-muted text-base outline-none",
             "focus:border-primary transition-colors",
           )}
         />
