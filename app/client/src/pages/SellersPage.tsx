@@ -1,8 +1,26 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useSellersPage } from "./SellersPage.hooks";
 
 export default function SellersPage() {
-  const { sellers, isLoading } = useSellersPage();
+  const {
+    sellers,
+    isLoading,
+    followSeller,
+    unfollowSeller,
+    pendingUnfollowId,
+    setPendingUnfollowId,
+  } = useSellersPage();
 
   return (
     <div className="min-h-screen bg-background px-4 pt-10 space-y-6">
@@ -45,17 +63,23 @@ export default function SellersPage() {
                   </span>
                 </div>
 
-                <div className="relative group">
-                  <button
-                    disabled
-                    className="text-xs font-outfit font-semibold border border-border text-muted-foreground rounded-full px-4 py-2 cursor-not-allowed"
-                  >
-                    Suivre
-                  </button>
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-outfit bg-card text-foreground border border-border rounded-lg whitespace-nowrap invisible group-hover:visible transition-all">
-                    Bientôt disponible...
-                  </span>
-                </div>
+                <button
+                  onClick={() => {
+                    if (seller.isFollowed) {
+                      setPendingUnfollowId(seller.userId);
+                    } else {
+                      followSeller(seller.userId);
+                    }
+                  }}
+                  className={cn(
+                    "shrink-0 text-xs font-outfit font-semibold rounded-full px-4 py-2 border transition-colors",
+                    seller.isFollowed
+                      ? "bg-b-primary text-txt-primary border-b-primary"
+                      : "bg-transparent text-primary border-primary",
+                  )}
+                >
+                  {seller.isFollowed ? "Suivi" : "Suivre"}
+                </button>
               </div>
             ))}
 
@@ -65,6 +89,32 @@ export default function SellersPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={pendingUnfollowId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingUnfollowId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Arrêter de suivre</AlertDialogTitle>
+            <AlertDialogDescription>
+              Voulez-vous arrêter de suivre ce vendeur ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                pendingUnfollowId !== null && unfollowSeller(pendingUnfollowId)
+              }
+            >
+              Arrêter de suivre
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

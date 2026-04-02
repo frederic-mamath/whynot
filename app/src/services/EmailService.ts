@@ -71,6 +71,73 @@ export class EmailService {
       throw err;
     }
   }
+  async sendLiveScheduledEmail(
+    toEmail: string,
+    payload: {
+      sellerNickname: string;
+      liveName: string;
+      liveDescription: string;
+      startsAt: Date;
+      liveId: number;
+    },
+  ): Promise<void> {
+    const apiKey = process.env.MAILJET_API_KEY;
+    const apiSecret = process.env.MAILJET_SECRET_KEY;
+
+    if (!apiKey || !apiSecret) {
+      console.error(
+        "[EmailService] Missing Mailjet credentials — live scheduled email NOT sent",
+      );
+      return;
+    }
+
+    const mailjet = new Mailjet({ apiKey, apiSecret });
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const joinLink = `${frontendUrl}/live/${payload.liveId}`;
+
+    const formattedDate = payload.startsAt.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    try {
+      await mailjet.post("send", { version: "v3.1" }).request({
+        Messages: [
+          {
+            From: { Email: FROM_EMAIL, Name: FROM_NAME },
+            To: [{ Email: toEmail }],
+            Subject: `🎥 ${payload.sellerNickname} est sur le point de lancer un live !`,
+            HTMLPart: `
+            <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0d0d0d; color: #f0f0e8;">
+              <h2 style="color: #f0f0e8; margin-bottom: 8px;">${payload.sellerNickname} lance un live !</h2>
+              <h3 style="color: #e0ff00; margin-top: 0; margin-bottom: 16px;">${payload.liveName}</h3>
+              ${
+                payload.liveDescription
+                  ? `<p style="color: #999; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">${payload.liveDescription}</p>`
+                  : ""
+              }
+              <p style="color: #777; font-size: 14px; margin-bottom: 24px;">
+                📅 <strong style="color: #f0f0e8;">${formattedDate}</strong>
+              </p>
+              <a href="${joinLink}" style="display: inline-block; background: rgb(224, 255, 0); color: #000; padding: 14px 32px; border-radius: 28px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                Rejoindre le live
+              </a>
+            </div>
+          `,
+          },
+        ],
+      });
+    } catch (err: any) {
+      console.error("[EmailService] sendLiveScheduledEmail error", {
+        message: err?.message,
+        statusCode: err?.statusCode,
+      });
+    }
+  }
 }
 
 export const emailService = new EmailService();

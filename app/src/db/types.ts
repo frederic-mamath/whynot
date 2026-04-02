@@ -2,6 +2,7 @@ import { Kysely, Generated, Selectable } from "kysely";
 
 export interface Database {
   users: UsersTable;
+  seller_followers: SellerFollowerTable;
   seller_onboarding_data: SellerOnboardingDataTable;
   lives: LivesTable;
   live_participants: LiveParticipantsTable;
@@ -351,3 +352,11 @@ export interface WaitlistTable {
 }
 
 export type Waitlist = Selectable<WaitlistTable>;
+
+export interface SellerFollowerTable {
+  follower_id: number;
+  seller_id: number;
+  created_at: Generated<Date>;
+}
+
+export type SellerFollower = Selectable<SellerFollowerTable>;

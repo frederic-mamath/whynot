@@ -4,6 +4,7 @@ import {
   shopRepository,
   userShopRoleRepository,
   userRepository,
+  sellerFollowerRepository,
 } from "../repositories";
 import { TRPCError } from "@trpc/server";
 import { requireShopOwner, requireShopAccess } from "../middleware/shopOwner";
@@ -22,7 +23,7 @@ export const shopRouter = router({
    */
   listSellers: protectedProcedure
     .input(z.object({ limit: z.number().optional() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { limit } = input;
 
       // Get shops with their owner info (fetch limit+1 to detect hasMore)
@@ -44,6 +45,14 @@ export const shopRouter = router({
 
       const hasMore = limit !== undefined && shops.length > limit;
       const paginatedShops = hasMore ? shops.slice(0, limit) : shops;
+
+      // Batch-fetch follow state for the current user
+      const followedRows = await db
+        .selectFrom("seller_followers")
+        .select("seller_id")
+        .where("follower_id", "=", ctx.user.id)
+        .execute();
+      const followedIds = new Set(followedRows.map((r) => r.seller_id));
 
       // For each shop, fetch top 3 categories by product count
       const sellers = await Promise.all(
@@ -74,6 +83,7 @@ export const shopRouter = router({
               name: c.name,
               emoji: c.emoji,
             })),
+            isFollowed: followedIds.has(shop.userId),
           };
         }),
       );
@@ -84,7 +94,7 @@ export const shopRouter = router({
   /**
    * List all sellers ordered by nickname ASC. Used by the /sellers discovery page.
    */
-  listAllSellers: protectedProcedure.query(async () => {
+  listAllSellers: protectedProcedure.query(async ({ ctx }) => {
     const sellers = await db
       .selectFrom("shops")
       .innerJoin("users", "users.id", "shops.owner_id")
@@ -92,8 +102,29 @@ export const shopRouter = router({
       .orderBy("users.nickname", "asc")
       .execute();
 
-    return sellers;
+    const followedRows = await db
+      .selectFrom("seller_followers")
+      .select("seller_id")
+      .where("follower_id", "=", ctx.user.id)
+      .execute();
+    const followedIds = new Set(followedRows.map((r) => r.seller_id));
+
+    return sellers.map((s) => ({ ...s, isFollowed: followedIds.has(s.userId) }));
   }),
+
+  followSeller: protectedProcedure
+    .input(z.object({ sellerId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await sellerFollowerRepository.follow(ctx.user.id, input.sellerId);
+      return { success: true };
+    }),
+
+  unfollowSeller: protectedProcedure
+    .input(z.object({ sellerId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await sellerFollowerRepository.unfollow(ctx.user.id, input.sellerId);
+      return { success: true };
+    }),
 
   create: protectedProcedure
     .input(

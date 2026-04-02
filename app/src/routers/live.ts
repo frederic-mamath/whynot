@@ -4,7 +4,10 @@ import {
   liveRepository,
   liveParticipantRepository,
   shopRepository,
+  sellerFollowerRepository,
+  userRepository,
 } from "../repositories";
+import { emailService } from "../services/EmailService";
 import { TRPCError } from "@trpc/server";
 import { generateAgoraToken, getAgoraAppId } from "../utils/agora";
 import { sql } from "kysely";
@@ -63,6 +66,35 @@ export const liveRouter = router({
         ends_at: input.endsAt ? new Date(input.endsAt) : null,
         cover_url: input.coverUrl ?? null,
       });
+
+      // Fire-and-forget: notify followers by email
+      const hostId = ctx.userId;
+      (async () => {
+        try {
+          const [followerEmails, seller] = await Promise.all([
+            sellerFollowerRepository.findFollowerEmails(hostId),
+            userRepository.findById(hostId),
+          ]);
+          if (followerEmails.length > 0 && seller) {
+            await Promise.all(
+              followerEmails.map((email) =>
+                emailService.sendLiveScheduledEmail(email, {
+                  sellerNickname: seller.nickname,
+                  liveName: live.name,
+                  liveDescription: live.description ?? "",
+                  startsAt: live.starts_at,
+                  liveId: live.id,
+                }),
+              ),
+            );
+          }
+        } catch (err) {
+          console.error(
+            "[live.schedule] Failed to send follower notifications:",
+            err,
+          );
+        }
+      })();
 
       return { live };
     }),

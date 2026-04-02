@@ -35,6 +35,7 @@ export { categoryRepository } from "./CategoryRepository";
 export { conditionRepository } from "./ConditionRepository";
 export { waitlistRepository } from "./WaitlistRepository";
 export { payoutRequestRepository } from "./PayoutRequestRepository";
+export { sellerFollowerRepository } from "./SellerFollowerRepository";
 
 // Auction-related repositories
 import { AuctionRepository } from "./AuctionRepository";

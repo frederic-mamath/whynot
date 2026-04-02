@@ -1,9 +1,18 @@
 import { Link } from "react-router-dom";
-import ButtonV2 from "@/components/ui/ButtonV2/ButtonV2";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { LiveHighlight } from "@/components/LiveHighlight";
 import { Users } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useHomePage } from "./HomePage.hooks";
 
 // Deterministic color from nickname string
@@ -36,6 +45,10 @@ export default function HomePage() {
     activeLives,
     hasMoreLives,
     isActiveLivesLoading,
+    followSeller,
+    unfollowSeller,
+    pendingUnfollowId,
+    setPendingUnfollowId,
   } = useHomePage();
 
   return (
@@ -183,11 +196,24 @@ export default function HomePage() {
                   )}
                 </div>
 
-                {/* Follow button (placeholder) */}
-                <ButtonV2
-                  label="Suivre"
-                  className="rounded-full shrink-0 text-xs font-outfit font-semibold border border-primary text-primary"
-                />
+                {/* Follow / unfollow button */}
+                <button
+                  onClick={() => {
+                    if (seller.isFollowed) {
+                      setPendingUnfollowId(seller.userId);
+                    } else {
+                      followSeller(seller.userId);
+                    }
+                  }}
+                  className={cn(
+                    "shrink-0 text-xs font-outfit font-semibold rounded-full px-4 py-2 border transition-colors",
+                    seller.isFollowed
+                      ? "bg-b-primary text-txt-primary border-b-primary"
+                      : "bg-transparent text-primary border-primary",
+                  )}
+                >
+                  {seller.isFollowed ? "Suivi" : "Suivre"}
+                </button>
               </div>
             ))}
 
@@ -197,6 +223,32 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      <AlertDialog
+        open={pendingUnfollowId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingUnfollowId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Arrêter de suivre</AlertDialogTitle>
+            <AlertDialogDescription>
+              Voulez-vous arrêter de suivre ce vendeur ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                pendingUnfollowId !== null && unfollowSeller(pendingUnfollowId)
+              }
+            >
+              Arrêter de suivre
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
