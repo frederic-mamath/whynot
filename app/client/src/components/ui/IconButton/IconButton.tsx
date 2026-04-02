@@ -5,9 +5,11 @@ interface Props {
   icon: React.ReactNode;
   size: number;
   className?: string;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
-const IconButton = ({ className, onClick, icon, size }: Props) => {
+const IconButton = ({ className, onClick, icon, size, type = "button", disabled }: Props) => {
   const borderRadius = `${size / 2}px`;
 
   return (
@@ -19,6 +21,8 @@ const IconButton = ({ className, onClick, icon, size }: Props) => {
         className,
       )}
       onClick={onClick}
+      type={type}
+      disabled={disabled}
       style={{
         height: size,
         width: size,

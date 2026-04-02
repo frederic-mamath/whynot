@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   MessageCircle,
   Search,
+  Send,
   Share,
   Store,
   Users,
@@ -40,7 +41,8 @@ const LiveDetailsPage = () => {
     highlightedProduct,
     viewerCount,
   } = useAgora(liveId);
-  const { messageList, onSubmitMessage } = useChat(liveId);
+  const { messageList, messageInput, setMessageInput, onSubmitMessage } =
+    useChat(liveId);
   const {
     shopProducts,
     linkedProducts,
@@ -129,15 +131,30 @@ const LiveDetailsPage = () => {
                 currentUserId={0}
                 isLoading={false}
               />
-              <form onSubmit={onSubmitMessage}>
+              <form
+                onSubmit={onSubmitMessage}
+                className="flex gap-2 items-center items-end"
+              >
                 <Input
                   borderClassName={cn("border-white border-1")}
-                  className={cn("text-white")}
+                  className={cn("text-white flex-1")}
                   type="text"
                   icon={<MessageCircle />}
-                  onChange={() => {}}
+                  value={messageInput}
+                  onChange={setMessageInput}
                   placeholder="Ajouter un commentaire..."
                   name="message"
+                />
+                <IconButton
+                  className={cn(
+                    "border-white text-white shrink-0",
+                    !messageInput.trim() && "opacity-40",
+                  )}
+                  icon={<Send size={20} />}
+                  size={50}
+                  onClick={() => {}}
+                  type="submit"
+                  disabled={!messageInput.trim()}
                 />
               </form>
             </div>

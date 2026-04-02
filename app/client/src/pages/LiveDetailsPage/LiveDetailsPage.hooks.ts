@@ -529,6 +529,7 @@ export const useChat = (liveId: string | undefined) => {
   const [messageList, setMessageList] = useState<
     { id: number; userId: number; content: string }[]
   >([]);
+  const [messageInput, setMessageInput] = useState("");
 
   trpc.message.subscribe.useSubscription(
     { channelId: liveId ? Number(liveId) : 0 },
@@ -562,16 +563,15 @@ export const useChat = (liveId: string | undefined) => {
 
   const onSubmitMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const content = formData.get("message")?.toString().trim();
-
+    const content = messageInput.trim();
     if (liveId && content) {
       sendMessageMutation.mutate({
         channelId: Number(liveId),
         content,
       });
+      setMessageInput("");
     }
   };
 
-  return { messageList, onSubmitMessage };
+  return { messageList, messageInput, setMessageInput, onSubmitMessage };
 };
