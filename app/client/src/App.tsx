@@ -37,6 +37,8 @@ import CguPage from "./pages/CguPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 import OnboardingPage from "./pages/OnboardingPage";
 import HomePage from "./pages/HomePage";
+import SellersPage from "./pages/SellersPage";
+import LivesPage from "./pages/LivesPage/LivesPage";
 import { Navigate } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
 import { cn } from "./lib/utils";
@@ -177,6 +179,26 @@ function AppContent() {
               <ProtectedRoute>
                 <OnboardingGuard>
                   <MyOrdersPage />
+                </OnboardingGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/lives"
+            element={
+              <ProtectedRoute>
+                <OnboardingGuard>
+                  <LivesPage />
+                </OnboardingGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sellers"
+            element={
+              <ProtectedRoute>
+                <OnboardingGuard>
+                  <SellersPage />
                 </OnboardingGuard>
               </ProtectedRoute>
             }

@@ -337,11 +337,21 @@ export const liveRouter = router({
     }),
 
   /**
-   * List all active lives
+   * List active lives for the home page.
+   * Applies a 3-hour staleness filter and supports an optional limit for hasMore detection.
    */
   list: publicProcedure
-    .input(z.object({ includePrivate: z.boolean().default(false) }).optional())
+    .input(
+      z
+        .object({
+          includePrivate: z.boolean().default(false),
+          limit: z.number().optional(),
+        })
+        .optional(),
+    )
     .query(async ({ input }) => {
+      const { limit } = input ?? {};
+
       let query = db
         .selectFrom("lives")
         .innerJoin("users", "users.id", "lives.host_id")
@@ -365,8 +375,10 @@ export const liveRouter = router({
         ])
         .where((eb) => {
           const now = new Date();
+          const staleThreshold = new Date(now.getTime() - 3 * 60 * 60 * 1000);
           return eb.and([
             eb("lives.starts_at", "<=", now),
+            eb("lives.starts_at", ">=", staleThreshold),
             eb.or([
               eb("lives.ends_at", "is", null),
               eb("lives.ends_at", ">", now),
@@ -379,7 +391,17 @@ export const liveRouter = router({
         query = query.where("lives.is_private", "=", false);
       }
 
-      return query.orderBy("lives.created_at", "desc").execute();
+      query = query.orderBy("lives.starts_at", "desc");
+
+      if (limit !== undefined) {
+        query = query.limit(limit + 1);
+      }
+
+      const rows = await query.execute();
+      const hasMore = limit !== undefined && rows.length > limit;
+      const lives = hasMore ? rows.slice(0, limit) : rows;
+
+      return { lives, hasMore };
     }),
 
   /**
@@ -806,6 +828,91 @@ export const liveRouter = router({
         };
       });
     }),
+  /**
+   * List all active and upcoming lives for the /lives discovery page.
+   * Active: started, not ended. Upcoming: not yet started, not ended.
+   * Each live includes its product categories for client-side filtering.
+   */
+  listDiscovery: publicProcedure.query(async () => {
+    const now = new Date();
+
+    const lives = await db
+      .selectFrom("lives")
+      .innerJoin("users", "users.id", "lives.host_id")
+      .select([
+        "lives.id",
+        "lives.name",
+        "lives.starts_at",
+        "lives.ends_at",
+        "lives.ended_at",
+        "lives.cover_url",
+        "users.nickname as host_nickname",
+        "users.avatar_url as host_avatar_url",
+        (eb) =>
+          eb
+            .selectFrom("live_participants")
+            .select(({ fn }) => fn.count<number>("id").as("count"))
+            .whereRef("live_participants.live_id", "=", "lives.id")
+            .where("live_participants.left_at", "is", null)
+            .as("participantCount"),
+      ])
+      .where((eb) =>
+        eb.and([
+          eb("lives.ended_at", "is", null),
+          eb("lives.is_private", "=", false),
+          eb.or([
+            // Active: started + not ended
+            eb.and([
+              eb("lives.starts_at", "<=", now),
+              eb.or([
+                eb("lives.ends_at", "is", null),
+                eb("lives.ends_at", ">", now),
+              ]),
+            ]),
+            // Upcoming: not yet started
+            eb("lives.starts_at", ">", now),
+          ]),
+        ]),
+      )
+      .orderBy("lives.starts_at", "asc")
+      .execute();
+
+    // Fetch categories for all lives in a single query
+    const liveIds = lives.map((l) => l.id);
+    const categoryRows =
+      liveIds.length > 0
+        ? await db
+            .selectFrom("live_products as lp")
+            .innerJoin("products as p", "p.id", "lp.product_id")
+            .innerJoin("categories as c", "c.id", "p.category_id")
+            .select(["lp.live_id", "c.name"])
+            .where("lp.live_id", "in", liveIds)
+            .execute()
+        : [];
+
+    const catMap = new Map<number, string[]>();
+    for (const row of categoryRows) {
+      const arr = catMap.get(row.live_id) ?? [];
+      if (!arr.includes(row.name)) arr.push(row.name);
+      catMap.set(row.live_id, arr);
+    }
+
+    return lives.map((live) => ({
+      id: live.id,
+      name: live.name,
+      starts_at: live.starts_at,
+      cover_url: live.cover_url,
+      host_nickname: live.host_nickname,
+      host_avatar_url: live.host_avatar_url,
+      participantCount: live.participantCount,
+      isActive:
+        live.starts_at <= now &&
+        (live.ends_at === null || live.ends_at > now) &&
+        live.ended_at === null,
+      categories: catMap.get(live.id) ?? [],
+    }));
+  }),
+
   /**
    * Get the next globally scheduled live (for homepage highlight)
    */

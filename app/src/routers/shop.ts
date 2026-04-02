@@ -17,54 +17,80 @@ import { sql } from "kysely";
 
 export const shopRouter = router({
   /**
-   * List all sellers (shop owners) with their top 3 product categories
+   * List sellers (shop owners) with their top 3 product categories.
+   * Accepts an optional limit; returns hasMore: true when more sellers exist beyond the limit.
    */
-  listSellers: protectedProcedure.query(async () => {
-    // Get all shops with their owner info
-    const shops = await db
+  listSellers: protectedProcedure
+    .input(z.object({ limit: z.number().optional() }))
+    .query(async ({ input }) => {
+      const { limit } = input;
+
+      // Get shops with their owner info (fetch limit+1 to detect hasMore)
+      const baseQuery = db
+        .selectFrom("shops")
+        .innerJoin("users", "users.id", "shops.owner_id")
+        .select([
+          "shops.id as shopId",
+          "shops.name as shopName",
+          "users.id as userId",
+          "users.nickname",
+          "users.avatar_url as avatarUrl",
+        ]);
+
+      const shops = await (limit !== undefined
+        ? baseQuery.limit(limit + 1)
+        : baseQuery
+      ).execute();
+
+      const hasMore = limit !== undefined && shops.length > limit;
+      const paginatedShops = hasMore ? shops.slice(0, limit) : shops;
+
+      // For each shop, fetch top 3 categories by product count
+      const sellers = await Promise.all(
+        paginatedShops.map(async (shop) => {
+          const topCategories = await db
+            .selectFrom("products")
+            .innerJoin("categories", "categories.id", "products.category_id")
+            .select([
+              "categories.name",
+              "categories.emoji",
+              db.fn.count("products.id").as("count"),
+            ])
+            .where("products.shop_id", "=", shop.shopId)
+            .where("products.is_active", "=", true)
+            .where("products.category_id", "is not", null)
+            .groupBy(["categories.id", "categories.name", "categories.emoji"])
+            .orderBy("count", "desc")
+            .limit(3)
+            .execute();
+
+          return {
+            userId: shop.userId,
+            nickname: shop.nickname,
+            avatarUrl: shop.avatarUrl,
+            shopId: shop.shopId,
+            shopName: shop.shopName,
+            topCategories: topCategories.map((c) => ({
+              name: c.name,
+              emoji: c.emoji,
+            })),
+          };
+        }),
+      );
+
+      return { sellers, hasMore };
+    }),
+
+  /**
+   * List all sellers ordered by nickname ASC. Used by the /sellers discovery page.
+   */
+  listAllSellers: protectedProcedure.query(async () => {
+    const sellers = await db
       .selectFrom("shops")
       .innerJoin("users", "users.id", "shops.owner_id")
-      .select([
-        "shops.id as shopId",
-        "shops.name as shopName",
-        "users.id as userId",
-        "users.nickname",
-        "users.avatar_url as avatarUrl",
-      ])
+      .select(["users.id as userId", "users.nickname"])
+      .orderBy("users.nickname", "asc")
       .execute();
-
-    // For each shop, fetch top 3 categories by product count
-    const sellers = await Promise.all(
-      shops.map(async (shop) => {
-        const topCategories = await db
-          .selectFrom("products")
-          .innerJoin("categories", "categories.id", "products.category_id")
-          .select([
-            "categories.name",
-            "categories.emoji",
-            db.fn.count("products.id").as("count"),
-          ])
-          .where("products.shop_id", "=", shop.shopId)
-          .where("products.is_active", "=", true)
-          .where("products.category_id", "is not", null)
-          .groupBy(["categories.id", "categories.name", "categories.emoji"])
-          .orderBy("count", "desc")
-          .limit(3)
-          .execute();
-
-        return {
-          userId: shop.userId,
-          nickname: shop.nickname,
-          avatarUrl: shop.avatarUrl,
-          shopId: shop.shopId,
-          shopName: shop.shopName,
-          topCategories: topCategories.map((c) => ({
-            name: c.name,
-            emoji: c.emoji,
-          })),
-        };
-      }),
-    );
 
     return sellers;
   }),

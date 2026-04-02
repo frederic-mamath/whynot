@@ -29,10 +29,12 @@ function avatarColor(nickname: string): string {
 export default function HomePage() {
   const {
     sellers,
+    hasMoreSellers,
     isLoading,
     nextLive,
     isNextLiveLoading,
     activeLives,
+    hasMoreLives,
     isActiveLivesLoading,
   } = useHomePage();
 
@@ -48,6 +50,14 @@ export default function HomePage() {
             <span className="text-xs font-outfit font-black tracking-widest uppercase text-foreground">
               En direct maintenant
             </span>
+            {hasMoreLives && (
+              <Link
+                to="/lives"
+                className="text-xs font-outfit text-primary hover:underline"
+              >
+                Voir tout →
+              </Link>
+            )}
           </div>
           <div className="flex flex-col gap-3">
             {isActiveLivesLoading
@@ -112,9 +122,14 @@ export default function HomePage() {
         <span className="text-xs font-outfit font-black tracking-widest uppercase text-foreground">
           Premiers vendeurs
         </span>
-        <button className="text-xs font-outfit text-primary hover:underline">
-          Voir tout →
-        </button>
+        {hasMoreSellers && (
+          <Link
+            to="/sellers"
+            className="text-xs font-outfit text-primary hover:underline"
+          >
+            Voir tout →
+          </Link>
+        )}
       </div>
 
       {/* List */}
