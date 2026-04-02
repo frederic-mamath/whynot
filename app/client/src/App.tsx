@@ -9,7 +9,6 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import SignUpPage from "./pages/SignUpPage/SignUpPage";
 import DashboardPage from "./pages/DashboardPage";
 import ChannelListPage from "./pages/ChannelListPage";
-import LiveListPage from "./pages/LiveListPage";
 import LiveDetailsPage from "./pages/LiveDetailsPage/LiveDetailsPage";
 import ShopListPage from "./pages/ShopListPage";
 import ShopCreatePage from "./pages/ShopCreatePage";

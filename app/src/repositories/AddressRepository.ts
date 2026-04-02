@@ -1,5 +1,7 @@
 import { db } from "../db";
 import { UserAddress } from "../db/types";
+import { Updateable } from "kysely";
+import { UserAddressesTable } from "../db/types";
 
 export class AddressRepository {
   /**
@@ -96,7 +98,7 @@ export class AddressRepository {
       country?: string;
     },
   ): Promise<UserAddress> {
-    const updateData: any = {};
+    const updateData: Updateable<UserAddressesTable> = {};
 
     if (data.label !== undefined) updateData.label = data.label;
     if (data.street !== undefined) updateData.street = data.street;

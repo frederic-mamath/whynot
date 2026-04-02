@@ -106,6 +106,7 @@ app.post(
           const orderId = paymentIntent.metadata?.orderId;
 
           if (orderId) {
+            // Idempotent: only update if not already paid (prevents duplicate processing)
             const updatedOrder = await db
               .updateTable("orders")
               .set({
@@ -113,6 +114,7 @@ app.post(
                 paid_at: new Date(),
               })
               .where("id", "=", orderId)
+              .where("payment_status", "=", "pending")
               .returning(["buyer_id", "seller_id", "auction_id"])
               .executeTakeFirst();
 

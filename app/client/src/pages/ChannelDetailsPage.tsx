@@ -690,7 +690,7 @@ export default function ChannelDetailsPage() {
           {/* LIVE Badge - Only for the host */}
           {channelConfig?.isHost && joined && (
             <div className="absolute top-16 left-4 z-30 flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-md shadow-lg">
+              <div className="flex items-center gap-1.5 bg-destructive px-2.5 py-1 rounded-md shadow-lg">
                 <Radio className="size-3.5 text-white animate-pulse" />
                 <span className="text-xs font-bold text-white uppercase tracking-wide">
                   Live

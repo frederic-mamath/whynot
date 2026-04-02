@@ -1,9 +1,6 @@
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LogOut, User, Mail, Calendar, CheckCircle, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { trpc } from "../lib/trpc";
-import { removeToken } from "../lib/auth";
-import { useEffect } from "react";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import {
   Card,
@@ -12,28 +9,10 @@ import {
   CardContent,
 } from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
+import { useDashboard } from "./DashboardPage.hooks";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const { data: user, isLoading, error } = trpc.auth.me.useQuery();
-
-  const logoutMutation = trpc.auth.logout.useMutation({
-    onSuccess: () => {
-      removeToken();
-      navigate("/");
-    },
-  });
-
-  useEffect(() => {
-    if (error) {
-      navigate("/login");
-    }
-  }, [error, navigate]);
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
+  const { t, user, isLoading, error, navigate, handleLogout } = useDashboard();
 
   if (isLoading) {
     return (

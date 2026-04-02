@@ -1,10 +1,7 @@
 import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { PayoutRequestRepository } from '../repositories/PayoutRequestRepository';
-import { db } from '../db';
-
-const payoutRequestRepository = new PayoutRequestRepository();
+import { payoutRequestRepository, orderRepository, userRoleRepository } from '../repositories';
 
 export const payoutRouter = router({
   /**
@@ -29,17 +26,7 @@ export const payoutRouter = router({
       const { orderId, paymentMethod, paymentDetails } = input;
 
       // Get order with details
-      const order = await db
-        .selectFrom('orders')
-        .select([
-          'id',
-          'seller_id',
-          'seller_payout',
-          'payment_status',
-          'shipped_at',
-        ])
-        .where('id', '=', orderId)
-        .executeTakeFirst();
+      const order = await orderRepository.findById(orderId);
 
       if (!order) {
         throw new TRPCError({
@@ -132,15 +119,7 @@ export const payoutRouter = router({
       });
     }
 
-    // Check if user is admin
-    const userRoles = await db
-      .selectFrom('user_roles')
-      .innerJoin('roles', 'roles.id', 'user_roles.role_id')
-      .select(['roles.name'])
-      .where('user_roles.user_id', '=', ctx.user.id)
-      .execute();
-
-    const isAdmin = userRoles.some((r) => r.name === 'admin');
+    const isAdmin = await userRoleRepository.hasActiveRole(ctx.user.id, 'admin');
     if (!isAdmin) {
       throw new TRPCError({
         code: 'FORBIDDEN',
@@ -180,15 +159,7 @@ export const payoutRouter = router({
         });
       }
 
-      // Check if user is admin
-      const userRoles = await db
-        .selectFrom('user_roles')
-        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
-        .select(['roles.name'])
-        .where('user_roles.user_id', '=', ctx.user.id)
-        .execute();
-
-      const isAdmin = userRoles.some((r) => r.name === 'admin');
+      const isAdmin = await userRoleRepository.hasActiveRole(ctx.user.id, 'admin');
       if (!isAdmin) {
         throw new TRPCError({
           code: 'FORBIDDEN',
@@ -222,15 +193,7 @@ export const payoutRouter = router({
         });
       }
 
-      // Check if user is admin
-      const userRoles = await db
-        .selectFrom('user_roles')
-        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
-        .select(['roles.name'])
-        .where('user_roles.user_id', '=', ctx.user.id)
-        .execute();
-
-      const isAdmin = userRoles.some((r) => r.name === 'admin');
+      const isAdmin = await userRoleRepository.hasActiveRole(ctx.user.id, 'admin');
       if (!isAdmin) {
         throw new TRPCError({
           code: 'FORBIDDEN',
@@ -269,15 +232,7 @@ export const payoutRouter = router({
         });
       }
 
-      // Check if user is admin
-      const userRoles = await db
-        .selectFrom('user_roles')
-        .innerJoin('roles', 'roles.id', 'user_roles.role_id')
-        .select(['roles.name'])
-        .where('user_roles.user_id', '=', ctx.user.id)
-        .execute();
-
-      const isAdmin = userRoles.some((r) => r.name === 'admin');
+      const isAdmin = await userRoleRepository.hasActiveRole(ctx.user.id, 'admin');
       if (!isAdmin) {
         throw new TRPCError({
           code: 'FORBIDDEN',

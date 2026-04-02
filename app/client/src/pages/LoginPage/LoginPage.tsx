@@ -1,36 +1,15 @@
-import { useState, FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { trpc } from "../../lib/trpc";
-import { setToken } from "../../lib/auth";
 import OAuthButtons from "@/components/OAuthButtons";
 import OrDivider from "@/components/OrDivider/OrDivider";
 import Input from "@/components/ui/Input/Input";
 import ButtonV2 from "@/components/ui/ButtonV2";
+import { useLoginPage } from "./LoginPage.hooks";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: (data) => {
-      setToken(data.token);
-      navigate("/dashboard");
-    },
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    loginMutation.mutate({ email, password });
-  };
+  const { t, email, setEmail, password, setPassword, error, handleSubmit } =
+    useLoginPage();
 
   return (
     <div className="min-h-screen px-6 py-10 flex flex-col">

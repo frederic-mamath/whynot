@@ -1,14 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { trpc } from "../lib/trpc";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import { Plus, Store, Users } from "lucide-react";
 import Container from "../components/Container";
+import { useShopListPage } from "./ShopListPage.hooks";
 
 export default function ShopListPage() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { data: shops, isLoading } = trpc.shop.list.useQuery();
+  const { t, navigate, shops, isLoading } = useShopListPage();
 
   if (isLoading) {
     return (
@@ -55,7 +53,7 @@ export default function ShopListPage() {
             <Link
               key={shop.id}
               to={`/shops/${shop.id}`}
-              className="block p-6 bg-card rounded-lg border border-border hover:border-indigo-500 hover:shadow-md transition-all"
+              className="block p-6 bg-card rounded-lg border border-border hover:border-primary hover:shadow-md transition-all"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
@@ -63,12 +61,12 @@ export default function ShopListPage() {
                   <h3 className="text-xl font-semibold">{shop.name}</h3>
                 </div>
                 {shop.role === "shop-owner" && (
-                  <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded">
+                  <span className="px-2 py-1 bg-primary/20 text-primary text-xs font-medium rounded">
                     {t("shops.list.owner")}
                   </span>
                 )}
                 {shop.role === "vendor" && (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                  <span className="px-2 py-1 bg-success/20 text-success text-xs font-medium rounded">
                     {t("shops.list.vendor")}
                   </span>
                 )}

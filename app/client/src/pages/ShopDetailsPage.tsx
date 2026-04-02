@@ -147,12 +147,12 @@ export default function ShopDetailsPage() {
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-3xl font-bold">{shop.name}</h1>
                   {shop.role === "shop-owner" && (
-                    <span className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded">
+                    <span className="px-2 py-1 bg-primary/20 text-primary text-xs font-medium rounded">
                       {t("shops.details.owner")}
                     </span>
                   )}
                   {shop.role === "vendor" && (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                    <span className="px-2 py-1 bg-success/20 text-success text-xs font-medium rounded">
                       {t("shops.details.vendor")}
                     </span>
                   )}

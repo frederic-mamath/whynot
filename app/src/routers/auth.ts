@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { userRepository, authProviderRepository } from "../repositories";
 import {
@@ -143,16 +143,8 @@ export const authRouter = router({
       };
     }),
 
-  me: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.userId) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Not authenticated",
-      });
-    }
-
-    // Find user by ID using repository
-    const user = await userRepository.findById(ctx.userId);
+  me: protectedProcedure.query(async ({ ctx }) => {
+    const user = await userRepository.findById(ctx.user.id);
 
     if (!user) {
       throw new TRPCError({

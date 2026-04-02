@@ -167,7 +167,7 @@ export const shopRouter = router({
     .mutation(async ({ ctx, input }) => {
       await requireShopOwner(ctx, input.shopId);
 
-      const updateData: any = {};
+      const updateData: { name?: string; description?: string } = {};
       if (input.name !== undefined) updateData.name = input.name;
       if (input.description !== undefined)
         updateData.description = input.description;

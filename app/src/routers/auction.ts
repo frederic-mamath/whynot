@@ -1,6 +1,7 @@
 import { router, protectedProcedure, publicProcedure } from "../trpc";
 import { z } from "zod";
 import { sql } from "kysely";
+import { calculatePlatformFee, calculateSellerPayout } from "../utils/fees";
 import {
   auctionRepository,
   bidRepository,
@@ -43,7 +44,7 @@ async function requirePaymentMethod(userId: number): Promise<void> {
   }
 }
 
-async function isChannelHost(
+async function isLiveHost(
   channelId: number,
   userId: number,
 ): Promise<boolean> {
@@ -54,14 +55,6 @@ async function isChannelHost(
     .executeTakeFirst();
 
   return channel?.host_id === userId;
-}
-
-function calculatePlatformFee(finalPrice: number): number {
-  return Math.round(finalPrice * 0.07 * 100) / 100;
-}
-
-function calculateSellerPayout(finalPrice: number): number {
-  return Math.round(finalPrice * 0.93 * 100) / 100;
 }
 
 export const auctionRouter = router({
@@ -132,7 +125,7 @@ export const auctionRouter = router({
       }
 
       // Verify user is channel host
-      if (!(await isChannelHost(channel.id, ctx.user.id))) {
+      if (!(await isLiveHost(channel.id, ctx.user.id))) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Only the channel host can start auctions",
@@ -591,7 +584,7 @@ export const auctionRouter = router({
 
       // Only check permissions if auction is still active
       if (auction.status === "active") {
-        const isHost = await isChannelHost(auction.channel_id, ctx.user.id);
+        const isHost = await isLiveHost(auction.channel_id, ctx.user.id);
         if (!isHost && auction.seller_id !== ctx.user.id) {
           throw new TRPCError({
             code: "FORBIDDEN",

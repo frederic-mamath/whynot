@@ -1,7 +1,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
@@ -26,7 +29,7 @@ export function verifyToken(token: string): { userId: number } | null {
   }
 }
 
-const MERGE_SECRET = process.env.MERGE_TOKEN_SECRET || JWT_SECRET;
+const MERGE_SECRET = process.env.MERGE_TOKEN_SECRET ?? JWT_SECRET;
 
 export interface MergeTokenPayload {
   userId: number;

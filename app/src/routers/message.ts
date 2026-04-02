@@ -138,10 +138,10 @@ export const messageRouter = router({
   /**
    * Subscribe to new messages in a channel (real-time)
    */
-  subscribe: publicProcedure
+  subscribe: protectedProcedure
     .input(z.object({ channelId: z.number().int().positive() }))
     .subscription(({ input, ctx }) => {
-      console.log(`📡 User ${ctx.userId || 'anonymous'} subscribed to channel:${input.channelId}`);
+      console.log(`📡 User ${ctx.user.id} subscribed to channel:${input.channelId}`);
       
       return observable<any>((emit) => {
         const eventName = `channel:${input.channelId}`;

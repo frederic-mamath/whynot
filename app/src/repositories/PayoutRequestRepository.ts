@@ -163,3 +163,5 @@ export class PayoutRequestRepository {
       .executeTakeFirstOrThrow();
   }
 }
+
+export const payoutRequestRepository = new PayoutRequestRepository();

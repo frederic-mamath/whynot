@@ -53,10 +53,10 @@ function StatusBadge({ status }: { status: PackageStatus }) {
       label: "Étiquette créée",
       className: "bg-primary/20 text-primary",
     },
-    shipped: { label: "Expédié", className: "bg-blue-500/20 text-blue-600" },
+    shipped: { label: "Expédié", className: "bg-info/20 text-info" },
     delivered: {
       label: "Livré",
-      className: "bg-green-500/20 text-green-600",
+      className: "bg-success/20 text-success",
     },
     incident: {
       label: "Incident",

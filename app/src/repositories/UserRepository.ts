@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { Selectable } from "kysely";
+import { Selectable, Updateable } from "kysely";
 import { UsersTable } from "../db/types";
 
 type User = Selectable<UsersTable>;
@@ -121,7 +121,7 @@ export class UserRepository {
       has_completed_onboarding?: boolean;
     },
   ): Promise<User | undefined> {
-    const updateData: any = {
+    const updateData: Updateable<UsersTable> = {
       updated_at: new Date(),
     };
 

@@ -101,14 +101,17 @@ export class OrderRepository {
     >;
   }
 
-  async findBySellerId(sellerId: number, status?: string): Promise<Order[]> {
+  async findBySellerId(
+    sellerId: number,
+    status?: "pending" | "paid" | "failed" | "refunded",
+  ): Promise<Order[]> {
     let query = db
       .selectFrom("orders")
       .selectAll()
       .where("seller_id", "=", sellerId);
 
     if (status) {
-      query = query.where("payment_status", "=", status as any);
+      query = query.where("payment_status", "=", status);
     }
 
     return query.orderBy("created_at", "desc").execute();

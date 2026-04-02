@@ -1,10 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
-import { trpc } from "@/lib/trpc";
+import { Link } from "react-router-dom";
 import ButtonV2 from "@/components/ui/ButtonV2/ButtonV2";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { LiveHighlight } from "@/components/LiveHighlight";
 import { Users } from "lucide-react";
+import { useHomePage } from "./HomePage.hooks";
 
 // Deterministic color from nickname string
 function avatarColor(nickname: string): string {
@@ -27,12 +27,14 @@ function avatarColor(nickname: string): string {
 }
 
 export default function HomePage() {
-  const navigate = useNavigate();
-  const { data: sellers, isLoading } = trpc.shop.listSellers.useQuery();
-  const { data: nextLive, isLoading: isNextLiveLoading } =
-    trpc.live.nextScheduled.useQuery();
-  const { data: activeLives, isLoading: isActiveLivesLoading } =
-    trpc.live.list.useQuery();
+  const {
+    sellers,
+    isLoading,
+    nextLive,
+    isNextLiveLoading,
+    activeLives,
+    isActiveLivesLoading,
+  } = useHomePage();
 
   return (
     <div className="min-h-screen bg-background px-4 pt-10 space-y-6">

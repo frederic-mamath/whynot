@@ -1,11 +1,8 @@
 import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { OrderRepository } from '../repositories/OrderRepository';
+import { orderRepository } from '../repositories';
 import { stripeService } from '../services/StripeService';
-import { db } from '../db';
-
-const orderRepository = new OrderRepository();
 
 export const orderRouter = router({
   /**
@@ -30,7 +27,7 @@ export const orderRouter = router({
         input?.status
       );
 
-      return orders.map((order: any) => {
+      return orders.map((order) => {
         // Determine display status based on payment_status and shipped_at
         let displayStatus: 'pending' | 'paid' | 'shipped' | 'failed' | 'refunded' = order.payment_status;
         if (order.payment_status === 'paid' && order.shipped_at) {
@@ -71,13 +68,13 @@ export const orderRouter = router({
 
       const orders = await orderRepository.findPendingDeliveriesBySellerId(ctx.user.id);
 
-      return orders.map((order: any) => ({
+      return orders.map((order) => ({
         id: order.id,
         productName: order.product_name,
         productImageUrl: order.product_image_url,
-        buyerUsername: order.buyer_username,
+        buyerName: order.buyer_name,
         finalPrice: parseFloat(order.final_price),
-        paidAt: order.paid_at.toISOString(),
+        paidAt: order.paid_at?.toISOString() ?? null,
         createdAt: order.created_at.toISOString(),
       }));
     }),
@@ -98,17 +95,7 @@ export const orderRouter = router({
       const { orderId } = input;
 
       // Get order
-      const order = await db
-        .selectFrom('orders')
-        .select([
-          'id',
-          'buyer_id',
-          'final_price',
-          'payment_status',
-          'stripe_payment_intent_id',
-        ])
-        .where('id', '=', orderId)
-        .executeTakeFirst();
+      const order = await orderRepository.findById(orderId);
 
       if (!order) {
         throw new TRPCError({
@@ -148,11 +135,7 @@ export const orderRouter = router({
       });
 
       // Save payment intent ID
-      await db
-        .updateTable('orders')
-        .set({ stripe_payment_intent_id: paymentIntent.id })
-        .where('id', '=', order.id)
-        .execute();
+      await orderRepository.updateStripePaymentIntent(order.id, paymentIntent.id);
 
       return { clientSecret: paymentIntent.client_secret };
     }),

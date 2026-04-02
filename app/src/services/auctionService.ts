@@ -2,26 +2,7 @@ import { db } from "../db";
 import { sql } from "kysely";
 import { auctionRepository } from "../repositories";
 import { broadcastToChannel } from "../websocket/broadcast";
-
-function calculatePlatformFee(finalPrice: number): number {
-  return Math.round(finalPrice * 0.07 * 100) / 100;
-}
-
-function calculateSellerPayout(finalPrice: number): number {
-  return Math.round(finalPrice * 0.93 * 100) / 100;
-}
-
-async function isChannelHost(
-  channelId: number,
-  userId: number,
-): Promise<boolean> {
-  const channel = await db
-    .selectFrom("lives")
-    .select("host_id")
-    .where("id", "=", channelId)
-    .executeTakeFirst();
-  return channel?.host_id === userId;
-}
+import { calculatePlatformFee, calculateSellerPayout } from "../utils/fees";
 
 /**
  * Close an auction and handle all side effects

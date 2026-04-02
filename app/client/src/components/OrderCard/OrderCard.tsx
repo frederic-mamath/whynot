@@ -88,8 +88,8 @@ export function OrderCard({ order, onPayNow }: OrderCardProps) {
               <Badge
                 variant={getStatusBadgeVariant()}
                 className={cn(
-                  isPaid && "bg-green-500 hover:bg-green-600",
-                  isShipped && "bg-blue-500 hover:bg-blue-600",
+                  isPaid && "bg-success hover:bg-success/80 text-success-foreground",
+                  isShipped && "bg-info hover:bg-info/80 text-info-foreground",
                 )}
               >
                 {getStatusText()}

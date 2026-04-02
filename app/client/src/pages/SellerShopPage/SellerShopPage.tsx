@@ -1,22 +1,19 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Plus, ChevronLeft } from "lucide-react";
-import { trpc } from "../../lib/trpc";
 import { cn } from "@/lib/utils";
 import MyShopTab from "./MyShopTab/MyShopTab";
 import CreateProductDialog from "./CreateProductDialog";
+import { useSellerShopPage } from "./SellerShopPage.hooks";
 
 const SellerShopPage = () => {
-  const navigate = useNavigate();
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  const { data: shop, isLoading } = trpc.shop.getOrCreateMyShop.useQuery();
-
-  const { data: products, refetch: refetchProducts } =
-    trpc.product.list.useQuery(
-      { shopId: shop?.id ?? 0 },
-      { enabled: !!shop?.id },
-    );
+  const {
+    navigate,
+    dialogOpen,
+    setDialogOpen,
+    shop,
+    isLoading,
+    products,
+    refetchProducts,
+  } = useSellerShopPage();
 
   if (isLoading || !shop) {
     return (

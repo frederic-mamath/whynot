@@ -1,27 +1,21 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, ArrowLeft, Package } from "lucide-react";
-import { trpc } from "../lib/trpc";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import ProductCard from "../components/ProductCard";
 import Container from "../components/Container";
+import { useProductListPage } from "./ProductListPage.hooks";
 
 export default function ProductListPage() {
-  const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const shopIdNum = id ? parseInt(id, 10) : 0;
-
-  const { data: shop, isLoading: shopLoading } = trpc.shop.get.useQuery(
-    { shopId: shopIdNum },
-    { enabled: shopIdNum > 0 },
-  );
-
-  const { data: products, isLoading: productsLoading } =
-    trpc.product.list.useQuery(
-      { shopId: shopIdNum },
-      { enabled: shopIdNum > 0 },
-    );
+  const {
+    t,
+    navigate,
+    shopIdNum,
+    shop,
+    shopLoading,
+    products,
+    productsLoading,
+  } = useProductListPage();
 
   if (shopLoading || productsLoading) {
     return (

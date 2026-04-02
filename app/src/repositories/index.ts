@@ -34,6 +34,7 @@ export { passwordResetTokenRepository } from "./PasswordResetTokenRepository";
 export { categoryRepository } from "./CategoryRepository";
 export { conditionRepository } from "./ConditionRepository";
 export { waitlistRepository } from "./WaitlistRepository";
+export { payoutRequestRepository } from "./PayoutRequestRepository";
 
 // Auction-related repositories
 import { AuctionRepository } from "./AuctionRepository";

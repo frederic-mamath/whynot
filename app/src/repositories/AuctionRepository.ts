@@ -12,16 +12,19 @@ export class AuctionRepository {
       .executeTakeFirst();
   }
 
-  async findByChannelId(channelId: number, status?: string): Promise<Auction | undefined> {
+  async findByChannelId(
+    channelId: number,
+    status?: "active" | "completed" | "cancelled",
+  ): Promise<Auction | undefined> {
     let query = db
       .selectFrom('auctions')
       .selectAll()
       .where('channel_id', '=', channelId);
-    
+
     if (status) {
-      query = query.where('status', '=', status as any);
+      query = query.where('status', '=', status);
     }
-    
+
     return query
       .orderBy('created_at', 'desc')
       .executeTakeFirst();
