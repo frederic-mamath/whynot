@@ -73,9 +73,7 @@ export default function NavBar() {
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       removeToken();
-      setSheetOpen(false);
-      utils.auth.me.invalidate();
-      navigate("/");
+      window.location.href = "/";
     },
   });
 

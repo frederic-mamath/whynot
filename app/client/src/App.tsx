@@ -47,7 +47,7 @@ function AuthRedirect({ children }: { children: React.ReactNode }) {
   const { data, isLoading } = trpc.profile.me.useQuery(undefined, {
     retry: false,
   });
-  if (isLoading) return null;
+  if (isLoading) return <>{children}</>;
   if (data) return <Navigate to="/home" replace />;
   return <>{children}</>;
 }

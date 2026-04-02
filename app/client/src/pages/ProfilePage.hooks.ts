@@ -76,8 +76,7 @@ export function useProfile() {
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
       removeToken();
-      utils.invalidate();
-      navigate("/");
+      window.location.href = "/";
     },
   });
 
