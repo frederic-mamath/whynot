@@ -27,7 +27,8 @@ export const authRouter = router({
           .regex(
             /^[a-zA-Z0-9_.-]+$/,
             "Le pseudo ne peut contenir que des lettres, chiffres, _, . ou -",
-          ),
+          )
+          .optional(),
         acceptedCgu: z.literal(true),
       }),
     )
@@ -58,15 +59,17 @@ export const authRouter = router({
 
       const hashedPassword = await hashPassword(input.password);
 
-      // Check if nickname is already taken
-      const existingNickname = await userRepository.findByNickname(
-        input.nickname,
-      );
-      if (existingNickname) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Pseudo déjà utilisé",
-        });
+      // Check if nickname is already taken (only when provided)
+      if (input.nickname) {
+        const existingNickname = await userRepository.findByNickname(
+          input.nickname,
+        );
+        if (existingNickname) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Pseudo déjà utilisé",
+          });
+        }
       }
 
       // Create user using repository

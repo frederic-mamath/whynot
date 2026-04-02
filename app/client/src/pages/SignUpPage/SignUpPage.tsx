@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, ArrowLeft, AtSign } from "lucide-react";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "../../lib/trpc";
 import { setToken } from "../../lib/auth";
@@ -11,14 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function SignUpPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptedCgu, setAcceptedCgu] = useState(false);
   const [error, setError] = useState("");
 
   const isFormValid =
-    nickname.trim().length >= 2 &&
     email.trim().length > 0 &&
     password.length >= 6 &&
     acceptedCgu;
@@ -26,7 +24,7 @@ export default function SignUpPage() {
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
       setToken(data.token);
-      navigate("/dashboard");
+      window.location.href = "/onboarding";
     },
     onError: (err) => {
       setError(err.message);
@@ -36,11 +34,6 @@ export default function SignUpPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (nickname.trim().length < 2) {
-      setError("Le pseudo doit faire au moins 2 caractères");
-      return;
-    }
 
     if (!email.trim()) {
       setError(t("common.emailPlaceholder"));
@@ -52,7 +45,7 @@ export default function SignUpPage() {
       return;
     }
 
-    registerMutation.mutate({ nickname, email, password, acceptedCgu: true });
+    registerMutation.mutate({ email, password, acceptedCgu: true });
   };
 
   return (
@@ -71,15 +64,6 @@ export default function SignUpPage() {
         Rejoins Popup en quelques secondes
       </div>
       <form onSubmit={handleSubmit}>
-        <Input
-          className="mb-4"
-          icon={<AtSign />}
-          label="Pseudo"
-          type="text"
-          placeholder="tonpseudo"
-          hint="C'est ton nom public sur Popup"
-          onChange={(value) => setNickname(value)}
-        />
         <Input
           className="mb-4"
           icon={<Mail />}
@@ -139,8 +123,8 @@ export default function SignUpPage() {
       </form>
       <div className="flex flex-col flex-1 justify-end">
         <div className="font-outfit text-muted-foreground text-[13px] leading-[18px] flex gap-1 justify-center">
-          <div>Pas encore de compte ?</div>
-          <Link to="/" className="text-primary">
+          <div>Déjà un compte ?</div>
+          <Link to="/login" className="text-primary">
             Se connecter
           </Link>
         </div>

@@ -34,7 +34,7 @@ export function useOnboardingPage() {
         avatarUrl: avatarImages[0]?.url,
       });
       toast.success("Bienvenue !");
-      navigate("/home");
+      window.location.href = "/home";
     } catch (err: any) {
       const message =
         err?.data?.message || err?.message || "Une erreur est survenue";

@@ -65,7 +65,7 @@ export default function Login() {
       <div className="flex flex-col flex-1 justify-end">
         <div className="font-outfit text-muted-foreground text-[13px] leading-[18px] flex gap-1 justify-center">
           <div>Pas encore de compte ?</div>
-          <Link to="/" className="text-primary">
+          <Link to="/register" className="text-primary">
             S'inscrire
           </Link>
         </div>
