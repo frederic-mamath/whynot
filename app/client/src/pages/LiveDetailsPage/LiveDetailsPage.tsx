@@ -86,6 +86,7 @@ const LiveDetailsPage = () => {
           "min-h-screen w-full",
           "bg-white",
           "text-black",
+          "p-0",
         )}
       >
         <LivePlaceholders
