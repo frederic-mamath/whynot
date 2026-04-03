@@ -1,6 +1,6 @@
 import { ShoppingBag } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import ButtonV2 from "@/components/ui/ButtonV2";
+import Placeholder from "@/components/ui/Placeholder/Placeholder";
 
 interface Product {
   id: number;
@@ -30,35 +30,21 @@ export default function ProductListSection({
 }: ProductListSectionProps) {
   if (!shopExists) {
     return (
-      <div className="flex flex-col items-center gap-2 py-4 text-center text-muted-foreground">
-        <ShoppingBag className="w-7 h-7" />
-        <p className="text-sm">
-          Crée ta boutique avant d'associer des produits.
-        </p>
-        <ButtonV2
-          type="button"
-          label="Créer ma boutique"
-          className="text-xs"
-          onClick={onNavigateToShop}
-        />
-      </div>
+      <Placeholder
+        Icon={<ShoppingBag className="size-7" />}
+        title="Crée ta boutique avant d'associer des produits."
+        ButtonListProps={[{ label: "Créer ma boutique", className: "text-xs", onClick: onNavigateToShop }]}
+      />
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 py-4 text-center text-muted-foreground">
-        <ShoppingBag className="w-7 h-7" />
-        <p className="text-sm">
-          Ajoute des produits à ta boutique pour les lier à ce live.
-        </p>
-        <ButtonV2
-          type="button"
-          label="Créer un produit"
-          className="text-xs"
-          onClick={onNavigateToCreateProduct}
-        />
-      </div>
+      <Placeholder
+        Icon={<ShoppingBag className="size-7" />}
+        title="Ajoute des produits à ta boutique pour les lier à ce live."
+        ButtonListProps={[{ label: "Créer un produit", className: "text-xs", onClick: onNavigateToCreateProduct }]}
+      />
     );
   }
 

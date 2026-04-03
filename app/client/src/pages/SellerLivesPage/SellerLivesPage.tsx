@@ -1,4 +1,5 @@
 import { Plus, Calendar, Radio, ImagePlus } from "lucide-react";
+import Placeholder from "@/components/ui/Placeholder/Placeholder";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSellerLives } from "./SellerLivesPage.hooks";
@@ -113,9 +114,8 @@ export default function SellerLivesPage() {
           Chargement…
         </p>
       ) : upcoming.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground mb-6">
-          <Calendar className="w-8 h-8" />
-          <p className="text-sm font-outfit">Aucun live programmé</p>
+        <div className="mb-6">
+          <Placeholder Icon={<Calendar className="size-8" />} title="Aucun live programmé" />
         </div>
       ) : (
         <div className="flex flex-col gap-3 mb-6">
@@ -145,10 +145,7 @@ export default function SellerLivesPage() {
           Chargement…
         </p>
       ) : past.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground">
-          <Radio className="w-8 h-8" />
-          <p className="text-sm font-outfit">Aucun live passé</p>
-        </div>
+        <Placeholder Icon={<Radio className="size-8" />} title="Aucun live passé" />
       ) : (
         <div className="flex flex-col gap-3">
           {past.map((live) => (

@@ -9,6 +9,7 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Crown, Users, Loader2 } from "lucide-react";
+import Placeholder from "../ui/Placeholder/Placeholder";
 import { trpc } from "../../lib/trpc";
 
 interface ParticipantListProps {
@@ -108,15 +109,7 @@ export default function ParticipantList({
 
           {/* Empty State */}
           {!isLoading && totalParticipants === 0 && (
-            <div className="text-center py-8 px-4 rounded-lg bg-accent/30 border border-dashed border-border">
-              <Users className="size-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="font-medium text-sm mb-1">
-                {t("participants.noOthers")}
-              </p>
-              <span className="text-xs text-muted-foreground">
-                {t("participants.shareLink")}
-              </span>
-            </div>
+            <Placeholder Icon={<Users className="size-12" />} title={t("participants.noOthers")} />
           )}
         </div>
       </SheetContent>

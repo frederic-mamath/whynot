@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
+import Placeholder from "../components/ui/Placeholder/Placeholder";
 import { Plus, Store, Users } from "lucide-react";
 import Container from "../components/Container";
 import { useShopListPage } from "./ShopListPage.hooks";
@@ -32,21 +33,16 @@ export default function ShopListPage() {
       </div>
 
       {!shops || shops.length === 0 ? (
-        <div className="text-center py-12">
-          <Store className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            {t("shops.list.noShops")}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {t("shops.list.noShopsDesc")}
-          </p>
-          <ButtonV2
-            icon={<Plus className="size-4" />}
-            label={t("shops.list.createShop")}
-            onClick={() => navigate("/shops/create")}
-            className="bg-primary text-primary-foreground"
-          />
-        </div>
+        <Placeholder
+          Icon={<Store className="size-12" />}
+          title={t("shops.list.noShops")}
+          ButtonListProps={[{
+            icon: <Plus className="size-4" />,
+            label: t("shops.list.createShop"),
+            onClick: () => navigate("/shops/create"),
+            className: "bg-primary text-primary-foreground",
+          }]}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {shops.map((shop) => (

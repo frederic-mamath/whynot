@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Message } from "../Message";
 import { Loader2, MessageCircle } from "lucide-react";
+import Placeholder from "../ui/Placeholder/Placeholder";
 
 interface MessageListProps {
   messages: any[];
@@ -34,13 +35,8 @@ export function MessageList({
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-white/60 p-4">
-        <MessageCircle className="w-12 h-12 mb-2 opacity-50" />
-        <p className="text-sm text-center">
-          {t("messages.empty")}
-          <br />
-          {t("messages.startConversation")}
-        </p>
+      <div className="text-white/60">
+        <Placeholder Icon={<MessageCircle className="size-12 opacity-50" />} title={t("messages.empty")} />
       </div>
     );
   }

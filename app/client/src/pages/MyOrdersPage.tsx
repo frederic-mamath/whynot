@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ShoppingBag, Package } from "lucide-react";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
+import Placeholder from "../components/ui/Placeholder/Placeholder";
 import { Skeleton } from "../components/ui/skeleton";
 import { OrderCard } from "../components/OrderCard";
 import { cn } from "../lib/utils";
@@ -183,46 +184,37 @@ function EmptyState({ filter }: { filter: FilterType }) {
 
   const getMessage = () => {
     switch (filter) {
-      case "pending":
-        return t("orders.noPendingOrders");
-      case "paid":
-        return t("orders.noPaidOrders");
-      case "shipped":
-        return t("orders.noShippedOrders");
-      default:
-        return t("orders.noOrders");
+      case "pending": return t("orders.noPendingOrders");
+      case "paid": return t("orders.noPaidOrders");
+      case "shipped": return t("orders.noShippedOrders");
+      default: return t("orders.noOrders");
     }
   };
 
-  const getDescription = () => {
-    if (filter === "all") {
-      return t("orders.winToSeeOrders");
-    }
-    return t("orders.ordersWithStatusWillAppear");
-  };
+  if (filter === "all") {
+    return (
+      <Placeholder
+        Icon={<ShoppingBag className="size-8" />}
+        title={t("orders.noOrders")}
+        ButtonListProps={[{
+          icon: <Package className="size-4" />,
+          label: t("orders.browseChannels"),
+          onClick: () => window.location.assign("/lives"),
+          className: "bg-primary text-primary-foreground",
+        }]}
+      />
+    );
+  }
 
   return (
-    <div className="text-center py-12 md:py-16">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-        <ShoppingBag className="size-8 text-muted-foreground" />
-      </div>
-      <h2 className="text-xl font-semibold mb-2">{getMessage()}</h2>
-      <p className="text-muted-foreground mb-6">{getDescription()}</p>
-      {filter === "all" && (
-        <ButtonV2
-          icon={<Package className="size-4" />}
-          label={t("orders.browseChannels")}
-          onClick={() => window.location.assign("/lives")}
-          className="bg-primary text-primary-foreground"
-        />
-      )}
-      {filter !== "all" && (
-        <ButtonV2
-          className="border border-border bg-background text-foreground"
-          onClick={() => window.location.reload()}
-          label={t("orders.viewAllOrders")}
-        />
-      )}
-    </div>
+    <Placeholder
+      Icon={<ShoppingBag className="size-8" />}
+      title={getMessage()}
+      ButtonListProps={[{
+        label: t("orders.viewAllOrders"),
+        onClick: () => window.location.reload(),
+        className: "border border-border bg-background text-foreground",
+      }]}
+    />
   );
 }

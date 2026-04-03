@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { trpc } from "../../lib/trpc";
 import { Users, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import Placeholder from "../ui/Placeholder/Placeholder";
 
 interface VendorListProps {
   shopId: number;
@@ -39,17 +40,7 @@ export default function VendorList({ shopId, isOwner }: VendorListProps) {
   }
 
   if (!vendors || vendors.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <Users className="mx-auto h-10 w-10 text-gray-400 mb-3" />
-        <p className="text-gray-500">{t("vendors.noVendors")}</p>
-        {isOwner && (
-          <p className="text-sm text-gray-400 mt-2">
-            {t("vendors.addVendorsHint")}
-          </p>
-        )}
-      </div>
-    );
+    return <Placeholder Icon={<Users className="size-10" />} title={t("vendors.noVendors")} />;
   }
 
   return (

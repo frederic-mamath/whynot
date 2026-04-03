@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Video, Users, Lock, Plus, Store } from "lucide-react";
+import Placeholder from "../components/ui/Placeholder/Placeholder";
 import { isAuthenticated } from "../lib/auth";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
 import {
@@ -92,31 +93,16 @@ export default function ChannelListPage() {
         </div>
 
         {channels?.length === 0 ? (
-          <div className="text-center py-12">
-            <Video className="size-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
-              {t("channels.list.noChannels")}
-            </h3>
-            {canCreateChannel ? (
-              <>
-                <p className="text-muted-foreground mb-4">
-                  {t("channels.list.firstCreate")}
-                </p>
-                <ButtonV2
-                  icon={<Plus className="size-4" />}
-                  label={t("channels.list.createChannel")}
-                  onClick={() => navigate("/create-channel")}
-                  className="bg-primary text-primary-foreground"
-                />
-              </>
-            ) : (
-              <p className="text-muted-foreground">
-                {!isSeller
-                  ? t("channels.list.onlySellersCanCreate")
-                  : t("channels.list.needShop")}
-              </p>
-            )}
-          </div>
+          <Placeholder
+            Icon={<Video className="size-16" />}
+            title={t("channels.list.noChannels")}
+            ButtonListProps={canCreateChannel ? [{
+              icon: <Plus className="size-4" />,
+              label: t("channels.list.createChannel"),
+              onClick: () => navigate("/create-channel"),
+              className: "bg-primary text-primary-foreground",
+            }] : undefined}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {channels?.map((channel) => (

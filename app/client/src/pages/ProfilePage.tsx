@@ -47,6 +47,7 @@ import { Badge } from "@/components/ui/badge";
 import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
 import { cn } from "@/lib/utils";
 import ButtonV2 from "@/components/ui/ButtonV2";
+import Placeholder from "@/components/ui/Placeholder/Placeholder";
 import { useProfile, emptyAddress } from "./ProfilePage.hooks";
 
 export default function ProfilePage() {
@@ -299,21 +300,16 @@ export default function ProfilePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-6">
-              <AlertCircle className="size-10 mx-auto mb-3 text-warning opacity-70" />
-              <p className="text-sm font-medium">
-                {t("profile.payment.noMethod")}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">
-                {t("profile.payment.noMethodHint")}
-              </p>
-              <ButtonV2
-                icon={<CreditCard className="size-4" />}
-                label={t("profile.payment.addMethod")}
-                onClick={() => setPaymentDialogOpen(true)}
-                className="bg-primary text-primary-foreground"
-              />
-            </div>
+            <Placeholder
+              Icon={<AlertCircle className="size-10" />}
+              title={t("profile.payment.noMethod")}
+              ButtonListProps={[{
+                icon: <CreditCard className="size-4" />,
+                label: t("profile.payment.addMethod"),
+                onClick: () => setPaymentDialogOpen(true),
+                className: "bg-primary text-primary-foreground",
+              }]}
+            />
           )}
         </CardContent>
       </Card>
@@ -349,11 +345,10 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           {profile?.addresses.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <MapPin className="size-12 mx-auto mb-3 opacity-50" />
-              <p>{t("profile.addresses.empty")}</p>
-              <p className="text-sm mt-1">{t("profile.addresses.emptyHint")}</p>
-            </div>
+            <Placeholder
+              Icon={<MapPin className="size-12" />}
+              title={t("profile.addresses.empty")}
+            />
           ) : (
             <div className="space-y-4">
               {profile?.addresses.map((address) => (

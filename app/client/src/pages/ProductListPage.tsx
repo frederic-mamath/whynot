@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, ArrowLeft, Package } from "lucide-react";
 import ButtonV2 from "../components/ui/ButtonV2/ButtonV2";
+import Placeholder from "../components/ui/Placeholder/Placeholder";
 import ProductCard from "../components/ProductCard";
 import Container from "../components/Container";
 import { useProductListPage } from "./ProductListPage.hooks";
@@ -84,21 +85,16 @@ export default function ProductListPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-foreground mb-2">
-            {t("products.list.noProducts")}
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            {t("products.list.noProductsDesc")}
-          </p>
-          <ButtonV2
-            icon={<Plus className="size-4" />}
-            label={t("products.list.createProduct")}
-            onClick={() => navigate(`/shops/${shopIdNum}/products/create`)}
-            className="bg-primary text-primary-foreground"
-          />
-        </div>
+        <Placeholder
+          Icon={<Package className="size-20" />}
+          title={t("products.list.noProducts")}
+          ButtonListProps={[{
+            icon: <Plus className="size-4" />,
+            label: t("products.list.createProduct"),
+            onClick: () => navigate(`/shops/${shopIdNum}/products/create`),
+            className: "bg-primary text-primary-foreground",
+          }]}
+        />
       )}
     </Container>
   );

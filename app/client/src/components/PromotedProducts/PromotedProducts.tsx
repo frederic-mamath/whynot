@@ -8,6 +8,7 @@ import {
 import { Badge } from "../ui/badge";
 import { Package, ShoppingBag, Sparkles, X } from "lucide-react";
 import ButtonV2 from "../ui/ButtonV2/ButtonV2";
+import Placeholder from "../ui/Placeholder/Placeholder";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -86,15 +87,7 @@ export default function PromotedProducts({
 
         <div className="mt-6 space-y-4">
           {activeProducts.length === 0 ? (
-            <div className="text-center py-8 px-4 rounded-lg bg-accent/30 border border-dashed border-border">
-              <ShoppingBag className="size-12 mx-auto mb-3 text-muted-foreground" />
-              <p className="font-medium text-sm mb-1">
-                {t("promotedProducts.emptyState")}
-              </p>
-              <span className="text-xs text-muted-foreground">
-                {t("promotedProducts.emptyStateDesc")}
-              </span>
-            </div>
+            <Placeholder Icon={<ShoppingBag className="size-12" />} title={t("promotedProducts.emptyState")} />
           ) : (
             activeProducts.map((product) => {
               const formattedPrice = product.price

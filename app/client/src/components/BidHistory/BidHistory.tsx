@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TrendingUp, ChevronDown, ChevronUp, Trophy, User } from "lucide-react";
+import { TrendingUp, ChevronDown, ChevronUp, Trophy, User, Gavel } from "lucide-react";
 import { cn } from "../../lib/utils";
+import Placeholder from "../ui/Placeholder/Placeholder";
 
 interface Bid {
   id: string;
@@ -46,11 +47,7 @@ export function BidHistory({
   const isCurrentUserBid = (bidderId: number) => bidderId === currentUserId;
 
   if (bids.length === 0) {
-    return (
-      <div className="mt-4 text-sm text-muted-foreground text-center py-2">
-        {t("auction.history.noBids")}
-      </div>
-    );
+    return <Placeholder Icon={<Gavel className="size-8" />} title={t("auction.history.noBids")} />;
   }
 
   return (

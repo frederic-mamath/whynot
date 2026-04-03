@@ -4,15 +4,7 @@ import Input from "@/components/ui/Input/Input";
 import { useSellerDeliveries } from "./SellerDeliveriesPage.hooks";
 import PackageCard, { PackageItem } from "./PackageCard";
 import GenerateLabelDialog from "./GenerateLabelDialog";
-
-function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground">
-      <Icon className="w-8 h-8" />
-      <p className="text-sm font-outfit">{message}</p>
-    </div>
-  );
-}
+import Placeholder from "@/components/ui/Placeholder/Placeholder";
 
 export default function SellerDeliveriesPage() {
   const {
@@ -80,7 +72,7 @@ export default function SellerDeliveriesPage() {
         </p>
       ) : pending.length === 0 ? (
         <div className="mb-6">
-          <EmptyState icon={Package} message="Aucune commande en attente d'expédition" />
+          <Placeholder Icon={<Package className="size-8" />} title="Aucune commande en attente d'expédition" />
         </div>
       ) : (
         <div className="flex flex-col gap-3 mb-6">
@@ -113,7 +105,7 @@ export default function SellerDeliveriesPage() {
           Chargement…
         </p>
       ) : shipped.length === 0 ? (
-        <EmptyState icon={Truck} message="Aucun colis expédié" />
+        <Placeholder Icon={<Truck className="size-8" />} title="Aucun colis expédié" />
       ) : (
         <div className="flex flex-col gap-3">
           {shipped.map((pkg: PackageItem) => (
