@@ -48,6 +48,7 @@ import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
 import { cn } from "@/lib/utils";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import Placeholder from "@/components/ui/Placeholder/Placeholder";
+import EntityConfigurationCard from "@/components/ui/EntityConfigurationCard/EntityConfigurationCard";
 import { useProfile, emptyAddress } from "./ProfilePage.hooks";
 
 export default function ProfilePage() {
@@ -240,79 +241,65 @@ export default function ProfilePage() {
       </Card>
 
       {/* Payment Method */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="size-5" />
-                {t("profile.payment.title")}
-              </CardTitle>
-              <CardDescription>
-                {t("profile.payment.description")}
-              </CardDescription>
-            </div>
-            {paymentStatus?.hasPaymentMethod && (
-              <ButtonV2
-                className="border border-border bg-background text-foreground"
-                onClick={() => setPaymentDialogOpen(true)}
-                label={t("profile.payment.change")}
-              />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {paymentStatus?.hasPaymentMethod ? (
-            <div className="space-y-3">
-              {paymentStatus.paymentMethods.map((pm) => (
-                <div
-                  key={pm.id}
-                  className="flex items-center gap-3 border rounded-lg p-3"
-                >
-                  <CheckCircle2 className="size-5 text-success shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-medium capitalize">
-                      {pm.wallet
-                        ? pm.wallet.replace("_", " ")
-                        : pm.card
-                          ? `${pm.card.brand} •••• ${pm.card.last4}`
-                          : pm.type}
+      <EntityConfigurationCard
+        Icon={<CreditCard className="size-5" />}
+        title={t("profile.payment.title")}
+        description={t("profile.payment.description")}
+        PlaceholderProps={{
+          Icon: <AlertCircle className="size-10" />,
+          title: t("profile.payment.noMethod"),
+          ButtonListProps: [{
+            icon: <CreditCard className="size-4" />,
+            label: t("profile.payment.addMethod"),
+            onClick: () => setPaymentDialogOpen(true),
+            className: "bg-primary text-primary-foreground",
+          }],
+        }}
+      >
+        {paymentStatus?.hasPaymentMethod ? (
+          <div className="space-y-3">
+            {paymentStatus.paymentMethods.map((pm) => (
+              <div
+                key={pm.id}
+                className="flex items-center gap-3 border rounded-lg p-3"
+              >
+                <CheckCircle2 className="size-5 text-success shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium capitalize">
+                    {pm.wallet
+                      ? pm.wallet.replace("_", " ")
+                      : pm.card
+                        ? `${pm.card.brand} •••• ${pm.card.last4}`
+                        : pm.type}
+                  </p>
+                  {pm.card && !pm.wallet && (
+                    <p className="text-xs text-muted-foreground">
+                      Expires {pm.card.expMonth}/{pm.card.expYear}
                     </p>
-                    {pm.card && !pm.wallet && (
-                      <p className="text-xs text-muted-foreground">
-                        Expires {pm.card.expMonth}/{pm.card.expYear}
-                      </p>
-                    )}
-                  </div>
-                  <Badge variant="secondary">
-                    {t("profile.payment.active")}
-                  </Badge>
-                  <button
-                    className="shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-50"
-                    disabled={deletePaymentMethod.isPending}
-                    onClick={() =>
-                      deletePaymentMethod.mutate({ paymentMethodId: pm.id })
-                    }
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <Placeholder
-              Icon={<AlertCircle className="size-10" />}
-              title={t("profile.payment.noMethod")}
-              ButtonListProps={[{
-                icon: <CreditCard className="size-4" />,
-                label: t("profile.payment.addMethod"),
-                onClick: () => setPaymentDialogOpen(true),
-                className: "bg-primary text-primary-foreground",
-              }]}
+                <Badge variant="secondary">
+                  {t("profile.payment.active")}
+                </Badge>
+                <button
+                  className="shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-50"
+                  disabled={deletePaymentMethod.isPending}
+                  onClick={() =>
+                    deletePaymentMethod.mutate({ paymentMethodId: pm.id })
+                  }
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ))}
+            <ButtonV2
+              className="border border-border bg-background text-foreground w-full mt-2"
+              onClick={() => setPaymentDialogOpen(true)}
+              label={t("profile.payment.change")}
             />
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        ) : undefined}
+      </EntityConfigurationCard>
 
       <PaymentSetupDialog
         open={paymentDialogOpen}
@@ -323,96 +310,90 @@ export default function ProfilePage() {
       />
 
       {/* Delivery Addresses */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="size-5" />
-                {t("profile.addresses.title")}
-              </CardTitle>
-              <CardDescription>
-                {t("profile.addresses.description")}
-              </CardDescription>
-            </div>
+      <EntityConfigurationCard
+        Icon={<MapPin className="size-5" />}
+        title={t("profile.addresses.title")}
+        description={t("profile.addresses.description")}
+        PlaceholderProps={{
+          Icon: <MapPin className="size-12" />,
+          title: t("profile.addresses.empty"),
+          ButtonListProps: [{
+            icon: <Plus className="size-4" />,
+            label: t("profile.addresses.add"),
+            onClick: handleAddAddress,
+            className: "bg-primary text-primary-foreground",
+          }],
+        }}
+      >
+        {(profile?.addresses.length ?? 0) > 0 ? (
+          <div className="space-y-4">
+            {profile?.addresses.map((address) => (
+              <div
+                key={address.id}
+                className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold">{address.label}</h4>
+                      {address.isDefault && (
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          <Star className="size-3 fill-current" />
+                          {t("profile.addresses.default")}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {address.street}
+                      {address.street2 && `, ${address.street2}`}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {address.city}, {address.state} {address.zipCode}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {address.country}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {!address.isDefault && (
+                      <button
+                        className="text-muted-foreground hover:text-foreground disabled:opacity-50 p-1"
+                        onClick={() =>
+                          setDefaultAddress.mutate({ id: address.id })
+                        }
+                        disabled={setDefaultAddress.isPending}
+                      >
+                        <Star className="size-4" />
+                      </button>
+                    )}
+                    <button
+                      className="text-muted-foreground hover:text-foreground p-1"
+                      onClick={() => handleEditAddress(address)}
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                    <button
+                      className="text-destructive hover:text-destructive p-1"
+                      onClick={() => handleDeleteAddress(address.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
             <ButtonV2
               icon={<Plus className="size-4" />}
               label={t("profile.addresses.add")}
               onClick={handleAddAddress}
-              className="bg-primary text-primary-foreground"
+              className="bg-primary text-primary-foreground w-full mt-2"
             />
           </div>
-        </CardHeader>
-        <CardContent>
-          {profile?.addresses.length === 0 ? (
-            <Placeholder
-              Icon={<MapPin className="size-12" />}
-              title={t("profile.addresses.empty")}
-            />
-          ) : (
-            <div className="space-y-4">
-              {profile?.addresses.map((address) => (
-                <div
-                  key={address.id}
-                  className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold">{address.label}</h4>
-                        {address.isDefault && (
-                          <Badge
-                            variant="secondary"
-                            className="flex items-center gap-1"
-                          >
-                            <Star className="size-3 fill-current" />
-                            {t("profile.addresses.default")}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {address.street}
-                        {address.street2 && `, ${address.street2}`}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {address.city}, {address.state} {address.zipCode}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {address.country}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {!address.isDefault && (
-                        <button
-                          className="text-muted-foreground hover:text-foreground disabled:opacity-50 p-1"
-                          onClick={() =>
-                            setDefaultAddress.mutate({ id: address.id })
-                          }
-                          disabled={setDefaultAddress.isPending}
-                        >
-                          <Star className="size-4" />
-                        </button>
-                      )}
-                      <button
-                        className="text-muted-foreground hover:text-foreground p-1"
-                        onClick={() => handleEditAddress(address)}
-                      >
-                        <Pencil className="size-4" />
-                      </button>
-                      <button
-                        className="text-destructive hover:text-destructive p-1"
-                        onClick={() => handleDeleteAddress(address.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        ) : undefined}
+      </EntityConfigurationCard>
 
       {/* Point Relais Mondial Relay */}
       <Card className="mt-6">

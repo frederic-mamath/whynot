@@ -10,7 +10,7 @@
 
 | User Story | Status |
 | :--- | :--- |
-| As a developer, the `EntityConfigurationCard` component exists and is usable | planned |
-| As a buyer, the Profile > Payment card uses `EntityConfigurationCard` | planned |
-| As a buyer, the Profile > Addresses card uses `EntityConfigurationCard` | planned |
-| As a buyer, header action buttons are removed — actions live inside Placeholder or children | planned |
+| As a developer, the `EntityConfigurationCard` component exists and is usable | completed |
+| As a buyer, the Profile > Payment card uses `EntityConfigurationCard` | completed |
+| As a buyer, the Profile > Addresses card uses `EntityConfigurationCard` | completed |
+| As a buyer, header action buttons are removed — actions live inside Placeholder or children | completed |
