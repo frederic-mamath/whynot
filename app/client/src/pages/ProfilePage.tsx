@@ -15,15 +15,14 @@ import {
   User,
   MapPin,
   Plus,
-  Pencil,
   Trash2,
-  Star,
   CreditCard,
   CheckCircle2,
   AlertCircle,
   LogOut,
   Camera,
   Save,
+  Package,
 } from "lucide-react";
 import {
   Dialog,
@@ -49,6 +48,7 @@ import { cn } from "@/lib/utils";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import Placeholder from "@/components/ui/Placeholder/Placeholder";
 import EntityConfigurationCard from "@/components/ui/EntityConfigurationCard/EntityConfigurationCard";
+import MondialRelayMapDialog from "@/components/MondialRelayMapDialog/MondialRelayMapDialog";
 import { useProfile, emptyAddress } from "./ProfilePage.hooks";
 
 export default function ProfilePage() {
@@ -71,13 +71,11 @@ export default function ProfilePage() {
     setDeleteDialogOpen,
     paymentDialogOpen,
     setPaymentDialogOpen,
-    relayPostcode,
-    setRelayPostcode,
-    setRelaySearchEnabled,
+    relayDialogOpen,
+    setRelayDialogOpen,
     profile,
     isLoading,
     paymentStatus,
-    searchRelayPoints,
     logoutMutation,
     updateProfile,
     createAddress,
@@ -85,16 +83,15 @@ export default function ProfilePage() {
     deleteAddress,
     deletePaymentMethod,
     saveRelayPoint,
-    setDefaultAddress,
     isAvatarUploading,
     handleFileSelect,
     handleAvatarSave,
     handleUpdateProfile,
     handleAddAddress,
-    handleEditAddress,
     handleDeleteAddress,
     handleSubmitAddress,
     confirmDelete,
+    handleReplaceWithManual,
     utils,
   } = useProfile();
 
@@ -309,181 +306,76 @@ export default function ProfilePage() {
         }}
       />
 
-      {/* Delivery Addresses */}
+      {/* Delivery Address */}
       <EntityConfigurationCard
         Icon={<MapPin className="size-5" />}
-        title={t("profile.addresses.title")}
-        description={t("profile.addresses.description")}
+        title="Adresse de livraison"
+        description="Choisissez comment vous souhaitez recevoir vos commandes"
         PlaceholderProps={{
-          Icon: <MapPin className="size-12" />,
+          Icon: <MapPin className="size-10" />,
           title: t("profile.addresses.empty"),
-          ButtonListProps: [{
-            icon: <Plus className="size-4" />,
-            label: t("profile.addresses.add"),
-            onClick: handleAddAddress,
-            className: "bg-primary text-primary-foreground",
-          }],
+          ButtonListProps: [
+            {
+              icon: <MapPin className="size-4" />,
+              label: "Ajouter une adresse à la main",
+              onClick: handleAddAddress,
+              className: "border border-border bg-background text-foreground",
+            },
+            {
+              icon: <Package className="size-4" />,
+              label: "Choisir avec Mondial Relay",
+              onClick: () => setRelayDialogOpen(true),
+              className: "border border-border bg-background text-foreground",
+            },
+          ],
         }}
       >
-        {(profile?.addresses.length ?? 0) > 0 ? (
-          <div className="space-y-4">
-            {profile?.addresses.map((address) => (
-              <div
-                key={address.id}
-                className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold">{address.label}</h4>
-                      {address.isDefault && (
-                        <Badge
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          <Star className="size-3 fill-current" />
-                          {t("profile.addresses.default")}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {address.street}
-                      {address.street2 && `, ${address.street2}`}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {address.city}, {address.state} {address.zipCode}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {address.country}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    {!address.isDefault && (
-                      <button
-                        className="text-muted-foreground hover:text-foreground disabled:opacity-50 p-1"
-                        onClick={() =>
-                          setDefaultAddress.mutate({ id: address.id })
-                        }
-                        disabled={setDefaultAddress.isPending}
-                      >
-                        <Star className="size-4" />
-                      </button>
-                    )}
-                    <button
-                      className="text-muted-foreground hover:text-foreground p-1"
-                      onClick={() => handleEditAddress(address)}
-                    >
-                      <Pencil className="size-4" />
-                    </button>
-                    <button
-                      className="text-destructive hover:text-destructive p-1"
-                      onClick={() => handleDeleteAddress(address.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </div>
-                </div>
+        {(profile?.addresses.length ?? 0) > 0 ? (() => {
+          const address = profile!.addresses[0];
+          return (
+            <div className="space-y-3">
+              <div className="border rounded-lg p-4">
+                <p className="font-semibold">{address.label}</p>
+                <p className="text-sm text-muted-foreground">{address.street}</p>
+                <p className="text-sm text-muted-foreground">{address.city}, {address.zipCode}</p>
               </div>
-            ))}
-            <ButtonV2
-              icon={<Plus className="size-4" />}
-              label={t("profile.addresses.add")}
-              onClick={handleAddAddress}
-              className="bg-primary text-primary-foreground w-full mt-2"
-            />
-          </div>
-        ) : undefined}
+              <ButtonV2
+                icon={<MapPin className="size-4" />}
+                label="Ajouter une adresse à la main"
+                onClick={handleReplaceWithManual}
+                className="border border-border bg-background text-foreground w-full"
+              />
+              <ButtonV2
+                icon={<Package className="size-4" />}
+                label="Choisir avec Mondial Relay"
+                onClick={() => setRelayDialogOpen(true)}
+                className="border border-border bg-background text-foreground w-full"
+              />
+              <button
+                onClick={() => handleDeleteAddress(address.id)}
+                className="text-destructive text-sm flex items-center gap-1 mx-auto"
+              >
+                <Trash2 className="size-3" /> Supprimer l'adresse
+              </button>
+            </div>
+          );
+        })() : undefined}
       </EntityConfigurationCard>
 
-      {/* Point Relais Mondial Relay */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="size-5" />
-            Point Relais Mondial Relay
-          </CardTitle>
-          <CardDescription>
-            Choisissez le point relais où vous souhaitez recevoir vos commandes.
-            La livraison domicile sera disponible prochainement.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {profile?.addresses.find((a) => a.mondialRelayPointId) && (
-            <div className="border border-primary/30 bg-primary/5 rounded-xl p-3">
-              <p className="text-xs text-muted-foreground mb-0.5">
-                Point relais actuel
-              </p>
-              <p className="text-sm font-semibold text-foreground">
-                {profile.addresses.find((a) => a.mondialRelayPointId)?.label}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {profile.addresses.find((a) => a.mondialRelayPointId)?.street},{" "}
-                {profile.addresses.find((a) => a.mondialRelayPointId)?.zipCode}{" "}
-                {profile.addresses.find((a) => a.mondialRelayPointId)?.city}
-              </p>
-            </div>
-          )}
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              placeholder="Code postal (ex: 75001)"
-              value={relayPostcode}
-              onChange={(v) => {
-                setRelayPostcode(v);
-                setRelaySearchEnabled(false);
-              }}
-            />
-            <ButtonV2
-              label="Rechercher"
-              onClick={() => setRelaySearchEnabled(true)}
-              disabled={relayPostcode.length < 4}
-              className="bg-primary text-primary-foreground shrink-0"
-            />
-          </div>
-          {searchRelayPoints.isLoading && (
-            <p className="text-sm text-muted-foreground">Recherche en cours…</p>
-          )}
-          {searchRelayPoints.data && searchRelayPoints.data.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Aucun point relais trouvé pour ce code postal.
-            </p>
-          )}
-          {searchRelayPoints.data && searchRelayPoints.data.length > 0 && (
-            <div className="space-y-2">
-              {searchRelayPoints.data.map((point) => (
-                <div
-                  key={point.id}
-                  className="border border-border rounded-xl p-3 flex items-start justify-between gap-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {point.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {point.address}, {point.zipCode} {point.city}
-                    </p>
-                  </div>
-                  <ButtonV2
-                    label={saveRelayPoint.isPending ? "…" : "Choisir"}
-                    onClick={() =>
-                      saveRelayPoint.mutate({
-                        relayPointId: point.id,
-                        name: point.name,
-                        street: point.address,
-                        city: point.city,
-                        zipCode: point.zipCode,
-                        country: point.country,
-                      })
-                    }
-                    disabled={saveRelayPoint.isPending}
-                    className="border border-border bg-background text-foreground shrink-0"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <MondialRelayMapDialog
+        open={relayDialogOpen}
+        onOpenChange={setRelayDialogOpen}
+        onSave={(point) =>
+          saveRelayPoint.mutate({
+            relayPointId: point.id,
+            name: point.name,
+            street: point.address,
+            city: point.city,
+            zipCode: point.zipCode,
+            country: point.country,
+          })
+        }
+      />
 
       {/* Sign out */}
       <div className="mt-6 pb-4">

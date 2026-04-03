@@ -10,10 +10,10 @@
 
 | User Story | Status |
 | :--- | :--- |
-| As a buyer, I see a single "Adresse de livraison" card instead of two | planned |
-| As a buyer, the empty state has two buttons: manual and Mondial Relay | planned |
-| As a buyer, "Ajouter à la main" opens the address form dialog | planned |
-| As a buyer, "Choisir avec Mondial Relay" opens a map dialog (Leaflet + OSM) | planned |
-| As a buyer, I can search by postcode, see markers on the map, and pick a relay point | planned |
-| As a buyer, the populated state shows the current address + change + delete buttons | planned |
-| As a buyer, the relay dialog resets every time it closes | planned |
+| As a buyer, I see a single "Adresse de livraison" card instead of two | completed |
+| As a buyer, the empty state has two buttons: manual and Mondial Relay | completed |
+| As a buyer, "Ajouter à la main" opens the address form dialog | completed |
+| As a buyer, "Choisir avec Mondial Relay" opens a map dialog (Leaflet + OSM) | completed |
+| As a buyer, I can search by postcode, see markers on the map, and pick a relay point | completed |
+| As a buyer, the populated state shows the current address + change + delete buttons | completed |
+| As a buyer, the relay dialog resets every time it closes | completed |

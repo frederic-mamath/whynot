@@ -50,9 +50,8 @@ export function useProfile() {
   // ── Payment dialog state ─────────────────────────────────────────────────
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
-  // ── Relay point picker state ─────────────────────────────────────────────
-  const [relayPostcode, setRelayPostcode] = useState("");
-  const [relaySearchEnabled, setRelaySearchEnabled] = useState(false);
+  // ── Relay dialog state ───────────────────────────────────────────────────
+  const [relayDialogOpen, setRelayDialogOpen] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: profile, isLoading } = trpc.profile.me.useQuery(undefined, {
@@ -66,11 +65,6 @@ export function useProfile() {
   });
 
   const { data: paymentStatus } = trpc.payment.getPaymentStatus.useQuery();
-
-  const searchRelayPoints = trpc.profile.addresses.searchRelayPoints.useQuery(
-    { postcode: relayPostcode, country: "FR" },
-    { enabled: relaySearchEnabled && relayPostcode.length >= 4 },
-  );
 
   // ── Mutations ─────────────────────────────────────────────────────────────
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -263,6 +257,16 @@ export function useProfile() {
     }
   };
 
+  const handleReplaceWithManual = async () => {
+    const existing = profile?.addresses[0];
+    if (existing) {
+      await deleteAddress.mutateAsync({ id: existing.id });
+    }
+    setEditingAddress(null);
+    setAddressForm(emptyAddress);
+    setAddressDialogOpen(true);
+  };
+
   return {
     // State
     firstName,
@@ -282,15 +286,12 @@ export function useProfile() {
     setDeleteDialogOpen,
     paymentDialogOpen,
     setPaymentDialogOpen,
-    relayPostcode,
-    setRelayPostcode,
-    relaySearchEnabled,
-    setRelaySearchEnabled,
+    relayDialogOpen,
+    setRelayDialogOpen,
     // Queries
     profile,
     isLoading,
     paymentStatus,
-    searchRelayPoints,
     // Mutations
     logoutMutation,
     updateProfile,
@@ -311,6 +312,7 @@ export function useProfile() {
     handleDeleteAddress,
     handleSubmitAddress,
     confirmDelete,
+    handleReplaceWithManual,
     // Utils
     utils,
   };
