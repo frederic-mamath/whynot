@@ -52,7 +52,7 @@ export default function HomePage() {
   } = useHomePage();
 
   return (
-    <div className="min-h-screen bg-background px-4 pt-10 space-y-6">
+    <div className="min-h-screen bg-background px-4 lg:px-8 pt-6 lg:pt-10 space-y-6">
       {/* Next live highlight */}
       <LiveHighlight live={nextLive} isLoading={isNextLiveLoading} />
 
@@ -72,7 +72,7 @@ export default function HomePage() {
               </Link>
             )}
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3">
             {isActiveLivesLoading
               ? Array.from({ length: 2 }).map((_, i) => (
                   <Skeleton key={i} className="h-28 w-full rounded-2xl" />

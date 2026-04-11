@@ -41,6 +41,7 @@ import SellersPage from "./pages/SellersPage";
 import LivesPage from "./pages/LivesPage/LivesPage";
 import { Navigate } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
+import NavBar from "./components/NavBar/NavBar";
 import { cn } from "./lib/utils";
 
 function AuthRedirect({ children }: { children: React.ReactNode }) {
@@ -92,10 +93,12 @@ function AppContent() {
 
   return (
     <>
+      {showBottomNav && <NavBar />}
       <div
         className={cn(
-          `max-w-[460px] flex-1`,
-          `${showBottomNav ? " pb-20" : ""}`,
+          "w-full flex-1 mx-auto",
+          "lg:max-w-[1280px]",
+          showBottomNav && "pb-20 lg:pb-0",
         )}
       >
         <Routes>

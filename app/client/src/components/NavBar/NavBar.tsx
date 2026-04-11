@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -32,6 +32,7 @@ import { toast } from "sonner";
 
 export default function NavBar() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { t } = useTranslation();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -102,104 +103,38 @@ export default function NavBar() {
             onClick={closeSheet}
           >
             <Video className="size-5 md:size-6 text-primary" />
-            <span className="hidden xs:inline">WhyNot</span>
+            <span className="hidden xs:inline">Popup</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden xl:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-1">
             {authenticated ? (
               <>
-                <HoverMenu
-                  trigger={t("navbar.browse")}
-                  items={[
-                    {
-                      icon: Video,
-                      label: t("navbar.channels"),
-                      to: "/channels",
-                    },
-                  ]}
-                />
-
-                <HoverMenu
-                  trigger={t("navbar.myActivity")}
-                  items={[
-                    {
-                      icon: Home,
-                      label: t("navbar.dashboard"),
-                      to: "/dashboard",
-                    },
-                    {
-                      icon: UserCircle,
-                      label: t("navbar.profile"),
-                      to: "/profile",
-                    },
-                    {
-                      icon: ShoppingBag,
-                      label: t("navbar.myOrders"),
-                      to: "/my-orders",
-                    },
-                  ]}
-                />
-
-                {isSeller && (
-                  <HoverMenu
-                    trigger={t("navbar.sell")}
-                    items={[
-                      { icon: Store, label: t("navbar.shops"), to: "/shops" },
-                      {
-                        icon: Package,
-                        label: t("navbar.deliveries"),
-                        to: "/pending-deliveries",
-                      },
-                    ]}
-                  />
-                )}
-
-                {/* Separator */}
+                {[
+                  { label: "Home", to: "/home" },
+                  { label: "Vendre", to: isSeller ? "/seller" : "/vendre" },
+                  { label: "Activité", to: "/my-orders" },
+                  { label: "Profil", to: "/profile" },
+                ].map(({ label, to }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-outfit font-semibold transition-colors",
+                      pathname.startsWith(to)
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:text-primary",
+                    )}
+                  >
+                    {label}
+                  </Link>
+                ))}
                 <div className="h-6 w-px bg-border mx-2" />
-
-                {/* Actions */}
-                {!isSeller ? (
-                  <ButtonV2
-                    icon={<BadgeCheck className="size-4" />}
-                    label={hasPendingRequest ? t("navbar.requestPending") : t("navbar.becomeSeller")}
-                    onClick={handleRequestSellerRole}
-                    disabled={hasPendingRequest || requestSellerRole.isPending}
-                    className="border border-border bg-background text-foreground"
-                  />
-                ) : (
-                  <ButtonV2
-                    icon={<Plus className="size-4" />}
-                    label={t("navbar.create")}
-                    onClick={() => navigate("/create-channel")}
-                    className="bg-primary text-primary-foreground"
-                  />
-                )}
-
-                {/* Separator */}
-                <div className="h-6 w-px bg-border mx-2" />
-
-                {/* Account */}
-                {user && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-accent">
-                      <div className="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                        {user.email[0].toUpperCase()}
-                      </div>
-                      <span className="text-sm hidden lg:inline">
-                        {user.email}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:text-primary rounded-md"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-md"
                 >
                   <LogOut className="size-4" />
-                  <span className="hidden lg:inline">{t("navbar.logout")}</span>
-                  <span className="lg:hidden">{t("navbar.exit")}</span>
                 </button>
               </>
             ) : (
@@ -224,7 +159,7 @@ export default function NavBar() {
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button
-                className="xl:hidden p-2 text-foreground hover:text-primary rounded-md"
+                className="lg:hidden p-2 text-foreground hover:text-primary rounded-md"
                 aria-label="Toggle menu"
               >
                 <Menu className="size-5" />

@@ -112,255 +112,266 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold">{t("profile.title")}</h1>
         <p className="text-muted-foreground mt-2">{t("profile.subtitle")}</p>
       </div>
-
-      {/* Avatar */}
-      <Card className={cn("mb-6", "bg-card", "border-border")}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Camera className="size-5" />
-            Avatar
-          </CardTitle>
-          <CardDescription>
-            Votre photo de profil visible par les autres utilisateurs
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-6">
-            <div className="shrink-0">
-              {avatarPreview || profile?.avatarUrl ? (
-                <img
-                  src={avatarPreview || profile?.avatarUrl || ""}
-                  alt="Avatar"
-                  className="size-20 rounded-full object-cover border border-border"
-                />
-              ) : (
-                <div className="size-20 rounded-full bg-muted flex items-center justify-center text-2xl font-outfit font-black uppercase text-muted-foreground">
-                  {profile?.nickname?.[0] ?? <User className="size-8" />}
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-              <ButtonV2
-                className={cn(
-                  "border-2 border-dashed border-primary rounded-[12px]",
-                  "text-primary text-[11px] font-bold",
-                  "px-4",
+      <div className="flex flex-col gap-6">
+        {/* Avatar */}
+        <Card className={cn("bg-card", "border-border")}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Camera className="size-5" />
+              Avatar
+            </CardTitle>
+            <CardDescription>
+              Votre photo de profil visible par les autres utilisateurs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-6">
+              <div className="shrink-0">
+                {avatarPreview || profile?.avatarUrl ? (
+                  <img
+                    src={avatarPreview || profile?.avatarUrl || ""}
+                    alt="Avatar"
+                    className="size-20 rounded-full object-cover border border-border"
+                  />
+                ) : (
+                  <div className="size-20 rounded-full bg-muted flex items-center justify-center text-2xl font-outfit font-black uppercase text-muted-foreground">
+                    {profile?.nickname?.[0] ?? <User className="size-8" />}
+                  </div>
                 )}
-                icon={<Camera />}
-                onClick={() => fileInputRef.current?.click()}
-                label="Changer mon avatar"
-              />
-              {selectedFile && (
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
                 <ButtonV2
                   className={cn(
                     "border-2 border-dashed border-primary rounded-[12px]",
                     "text-primary text-[11px] font-bold",
-                    "bg-primary text-primary-foreground",
                     "px-4",
                   )}
-                  icon={<Save />}
-                  onClick={handleAvatarSave}
-                  label={
-                    isAvatarUploading ? "Envoi en cours…" : "Enregistrer l'avatar"
-                  }
+                  icon={<Camera />}
+                  onClick={() => fileInputRef.current?.click()}
+                  label="Changer mon avatar"
                 />
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Personal Information */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="size-5" />
-            {t("profile.personalInfo.title")}
-          </CardTitle>
-          <CardDescription>
-            {t("profile.personalInfo.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleUpdateProfile} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{t("profile.personalInfo.firstName")}</Label>
-                <Input
-                  type="text"
-                  value={firstName}
-                  onChange={(v) => setFirstName(v)}
-                  placeholder={t("profile.personalInfo.firstNamePlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("profile.personalInfo.lastName")}</Label>
-                <Input
-                  type="text"
-                  value={lastName}
-                  onChange={(v) => setLastName(v)}
-                  placeholder={t("profile.personalInfo.lastNamePlaceholder")}
-                />
+                {selectedFile && (
+                  <ButtonV2
+                    className={cn(
+                      "border-2 border-dashed border-primary rounded-[12px]",
+                      "text-primary text-[11px] font-bold",
+                      "bg-primary text-primary-foreground",
+                      "px-4",
+                    )}
+                    icon={<Save />}
+                    onClick={handleAvatarSave}
+                    label={
+                      isAvatarUploading
+                        ? "Envoi en cours…"
+                        : "Enregistrer l'avatar"
+                    }
+                  />
+                )}
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>{t("common.email")}</Label>
-              <Input
-                type="text"
-                value={profile?.email || ""}
-                onChange={() => {}}
-                disabled
-                borderClassName="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">
-                {t("profile.personalInfo.emailNote")}
-              </p>
-            </div>
-            <ButtonV2
-              type="submit"
-              disabled={updateProfile.isPending}
-              label={
-                updateProfile.isPending
-                  ? t("profile.personalInfo.saveLoading")
-                  : t("profile.personalInfo.save")
-              }
-              className="bg-b-primary text-txt-primary w-fit px-4"
-            />
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Payment Method */}
-      <EntityConfigurationCard
-        Icon={<CreditCard className="size-5" />}
-        title={t("profile.payment.title")}
-        description={t("profile.payment.description")}
-        PlaceholderProps={{
-          Icon: <AlertCircle className="size-10" />,
-          title: t("profile.payment.noMethod"),
-          ButtonListProps: [{
-            icon: <CreditCard className="size-4" />,
-            label: t("profile.payment.addMethod"),
-            onClick: () => setPaymentDialogOpen(true),
-            className: "bg-primary text-primary-foreground",
-          }],
-        }}
-      >
-        {paymentStatus?.hasPaymentMethod ? (
-          <div className="space-y-3">
-            {paymentStatus.paymentMethods.map((pm) => (
-              <div
-                key={pm.id}
-                className="flex items-center gap-3 border rounded-lg p-3"
-              >
-                <CheckCircle2 className="size-5 text-success shrink-0" />
-                <div className="flex-1">
-                  <p className="font-medium capitalize">
-                    {pm.wallet
-                      ? pm.wallet.replace("_", " ")
-                      : pm.card
-                        ? `${pm.card.brand} •••• ${pm.card.last4}`
-                        : pm.type}
-                  </p>
-                  {pm.card && !pm.wallet && (
-                    <p className="text-xs text-muted-foreground">
-                      Expires {pm.card.expMonth}/{pm.card.expYear}
-                    </p>
-                  )}
+        {/* Personal Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="size-5" />
+              {t("profile.personalInfo.title")}
+            </CardTitle>
+            <CardDescription>
+              {t("profile.personalInfo.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t("profile.personalInfo.firstName")}</Label>
+                  <Input
+                    type="text"
+                    value={firstName}
+                    onChange={(v) => setFirstName(v)}
+                    placeholder={t("profile.personalInfo.firstNamePlaceholder")}
+                  />
                 </div>
-                <Badge variant="secondary">
-                  {t("profile.payment.active")}
-                </Badge>
-                <button
-                  className="shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-50"
-                  disabled={deletePaymentMethod.isPending}
-                  onClick={() =>
-                    deletePaymentMethod.mutate({ paymentMethodId: pm.id })
-                  }
-                >
-                  <Trash2 className="size-4" />
-                </button>
+                <div className="space-y-2">
+                  <Label>{t("profile.personalInfo.lastName")}</Label>
+                  <Input
+                    type="text"
+                    value={lastName}
+                    onChange={(v) => setLastName(v)}
+                    placeholder={t("profile.personalInfo.lastNamePlaceholder")}
+                  />
+                </div>
               </div>
-            ))}
-            <ButtonV2
-              className="border border-border bg-background text-foreground w-full mt-2"
-              onClick={() => setPaymentDialogOpen(true)}
-              label={t("profile.payment.change")}
-            />
-          </div>
-        ) : undefined}
-      </EntityConfigurationCard>
+              <div className="space-y-2">
+                <Label>{t("common.email")}</Label>
+                <Input
+                  type="text"
+                  value={profile?.email || ""}
+                  onChange={() => {}}
+                  disabled
+                  borderClassName="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("profile.personalInfo.emailNote")}
+                </p>
+              </div>
+              <ButtonV2
+                type="submit"
+                disabled={updateProfile.isPending}
+                label={
+                  updateProfile.isPending
+                    ? t("profile.personalInfo.saveLoading")
+                    : t("profile.personalInfo.save")
+                }
+                className="bg-b-primary text-txt-primary w-fit px-4"
+              />
+            </form>
+          </CardContent>
+        </Card>
 
-      <PaymentSetupDialog
-        open={paymentDialogOpen}
-        onOpenChange={setPaymentDialogOpen}
-        onSuccess={() => {
-          utils.payment.getPaymentStatus.invalidate();
-        }}
-      />
-
-      {/* Delivery Address */}
-      <EntityConfigurationCard
-        Icon={<MapPin className="size-5" />}
-        title="Adresse de livraison"
-        description="Choisissez comment vous souhaitez recevoir vos commandes"
-        PlaceholderProps={{
-          Icon: <MapPin className="size-10" />,
-          title: t("profile.addresses.empty"),
-          ButtonListProps: [
-            {
-              icon: <MapPin className="size-4" />,
-              label: "Ajouter une adresse à la main",
-              onClick: handleAddAddress,
-              className: "border border-border bg-background text-foreground",
-            },
-            {
-              icon: <Package className="size-4" />,
-              label: "Choisir avec Mondial Relay",
-              onClick: () => setRelayDialogOpen(true),
-              className: "border border-border bg-background text-foreground",
-            },
-          ],
-        }}
-      >
-        {(profile?.addresses.length ?? 0) > 0 ? (() => {
-          const address = profile!.addresses[0];
-          return (
+        {/* Payment Method */}
+        <EntityConfigurationCard
+          Icon={<CreditCard className="size-5" />}
+          title={t("profile.payment.title")}
+          description={t("profile.payment.description")}
+          PlaceholderProps={{
+            Icon: <AlertCircle className="size-10" />,
+            title: t("profile.payment.noMethod"),
+            ButtonListProps: [
+              {
+                icon: <CreditCard className="size-4" />,
+                label: t("profile.payment.addMethod"),
+                onClick: () => setPaymentDialogOpen(true),
+                className: "bg-primary text-primary-foreground",
+              },
+            ],
+          }}
+        >
+          {paymentStatus?.hasPaymentMethod ? (
             <div className="space-y-3">
-              <div className="border rounded-lg p-4">
-                <p className="font-semibold">{address.label}</p>
-                <p className="text-sm text-muted-foreground">{address.street}</p>
-                <p className="text-sm text-muted-foreground">{address.city}, {address.zipCode}</p>
-              </div>
+              {paymentStatus.paymentMethods.map((pm) => (
+                <div
+                  key={pm.id}
+                  className="flex items-center gap-3 border rounded-lg p-3"
+                >
+                  <CheckCircle2 className="size-5 text-success shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium capitalize">
+                      {pm.wallet
+                        ? pm.wallet.replace("_", " ")
+                        : pm.card
+                          ? `${pm.card.brand} •••• ${pm.card.last4}`
+                          : pm.type}
+                    </p>
+                    {pm.card && !pm.wallet && (
+                      <p className="text-xs text-muted-foreground">
+                        Expires {pm.card.expMonth}/{pm.card.expYear}
+                      </p>
+                    )}
+                  </div>
+                  <Badge variant="secondary">
+                    {t("profile.payment.active")}
+                  </Badge>
+                  <button
+                    className="shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-50"
+                    disabled={deletePaymentMethod.isPending}
+                    onClick={() =>
+                      deletePaymentMethod.mutate({ paymentMethodId: pm.id })
+                    }
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+              ))}
               <ButtonV2
-                icon={<MapPin className="size-4" />}
-                label="Ajouter une adresse à la main"
-                onClick={handleReplaceWithManual}
-                className="border border-border bg-background text-foreground w-full"
+                className="border border-border bg-background text-foreground w-full mt-2"
+                onClick={() => setPaymentDialogOpen(true)}
+                label={t("profile.payment.change")}
               />
-              <ButtonV2
-                icon={<Package className="size-4" />}
-                label="Choisir avec Mondial Relay"
-                onClick={() => setRelayDialogOpen(true)}
-                className="border border-border bg-background text-foreground w-full"
-              />
-              <button
-                onClick={() => handleDeleteAddress(address.id)}
-                className="text-destructive text-sm flex items-center gap-1 mx-auto"
-              >
-                <Trash2 className="size-3" /> Supprimer l'adresse
-              </button>
             </div>
-          );
-        })() : undefined}
-      </EntityConfigurationCard>
+          ) : undefined}
+        </EntityConfigurationCard>
+
+        <PaymentSetupDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          onSuccess={() => {
+            utils.payment.getPaymentStatus.invalidate();
+          }}
+        />
+
+        {/* Delivery Address */}
+        <EntityConfigurationCard
+          Icon={<MapPin className="size-5" />}
+          title="Adresse de livraison"
+          description="Choisissez comment vous souhaitez recevoir vos commandes"
+          PlaceholderProps={{
+            Icon: <MapPin className="size-10" />,
+            title: t("profile.addresses.empty"),
+            ButtonListProps: [
+              {
+                icon: <MapPin className="size-4" />,
+                label: "Ajouter une adresse à la main",
+                onClick: handleAddAddress,
+                className: "border border-border bg-background text-foreground",
+              },
+              {
+                icon: <Package className="size-4" />,
+                label: "Choisir avec Mondial Relay",
+                onClick: () => setRelayDialogOpen(true),
+                className: "border border-border bg-background text-foreground",
+              },
+            ],
+          }}
+        >
+          {(profile?.addresses.length ?? 0) > 0
+            ? (() => {
+                const address = profile!.addresses[0];
+                return (
+                  <div className="space-y-3">
+                    <div className="border rounded-lg p-4">
+                      <p className="font-semibold">{address.label}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {address.street}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {address.city}, {address.zipCode}
+                      </p>
+                    </div>
+                    <ButtonV2
+                      icon={<MapPin className="size-4" />}
+                      label="Ajouter une adresse à la main"
+                      onClick={handleReplaceWithManual}
+                      className="border border-border bg-background text-foreground w-full"
+                    />
+                    <ButtonV2
+                      icon={<Package className="size-4" />}
+                      label="Choisir avec Mondial Relay"
+                      onClick={() => setRelayDialogOpen(true)}
+                      className="border border-border bg-background text-foreground w-full"
+                    />
+                    <button
+                      onClick={() => handleDeleteAddress(address.id)}
+                      className="text-destructive text-sm flex items-center gap-1 mx-auto"
+                    >
+                      <Trash2 className="size-3" /> Supprimer l'adresse
+                    </button>
+                  </div>
+                );
+              })()
+            : undefined}
+        </EntityConfigurationCard>
+      </div>
 
       <MondialRelayMapDialog
         open={relayDialogOpen}
@@ -443,9 +454,7 @@ export default function ProfilePage() {
               <Input
                 type="text"
                 value={addressForm.street2}
-                onChange={(v) =>
-                  setAddressForm({ ...addressForm, street2: v })
-                }
+                onChange={(v) => setAddressForm({ ...addressForm, street2: v })}
                 placeholder={t("profile.addresses.street2Placeholder")}
               />
             </div>

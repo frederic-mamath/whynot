@@ -125,7 +125,7 @@ export function LiveHighlight({ live, isLoading }: LiveHighlightProps) {
   };
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden min-h-[360px] flex flex-col justify-between">
+    <div className="relative w-full rounded-2xl overflow-hidden min-h-[360px] lg:min-h-[480px] flex flex-col justify-between">
       {/* Background: cover image, then host avatar, then gradient fallback */}
       {live.coverUrl || live.host.avatarUrl ? (
         <img
