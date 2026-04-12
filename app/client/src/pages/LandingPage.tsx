@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import Logo from "@/components/Logo/Logo";
 import posthog from "posthog-js";
 import {
   TrendingDown,
@@ -226,9 +227,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground w-full">
       {/* ── Navbar ── */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto w-full">
-        <span className="font-outfit font-bold text-xl text-primary tracking-tight">
-          popup
-        </span>
+        <Logo />
         <Link
           to="/login"
           onClick={() =>
@@ -444,9 +443,7 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-border px-6 py-10">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-outfit font-bold text-lg text-primary">
-            popup
-          </span>
+          <Logo className="text-lg" />
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted">
             <Link to="/cgu" className="hover:text-foreground transition-colors">
               CGU

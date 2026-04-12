@@ -1,4 +1,5 @@
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import Logo from "@/components/Logo/Logo";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -29,6 +30,7 @@ import {
 } from "../ui/sheet";
 import { HoverMenu } from "../ui/HoverMenu";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function NavBar() {
   const navigate = useNavigate();
@@ -93,25 +95,20 @@ export default function NavBar() {
   const closeSheet = () => setSheetOpen(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="hidden md:block sticky top-0 z-50 border-b border-border bg-background">
+      <div className="max-w-[1024px] mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-lg md:text-xl font-bold hover:text-primary transition-colors"
-            onClick={closeSheet}
-          >
-            <Video className="size-5 md:size-6 text-primary" />
-            <span className="hidden xs:inline">Popup</span>
+          <Link to="/" onClick={closeSheet}>
+            <Logo />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1">
             {authenticated ? (
               <>
                 {[
-                  { label: "Home", to: "/home" },
+                  { label: "Accueil", to: "/home" },
                   { label: "Vendre", to: isSeller ? "/seller" : "/vendre" },
                   { label: "Activité", to: "/my-orders" },
                   { label: "Profil", to: "/profile" },
@@ -159,7 +156,7 @@ export default function NavBar() {
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button
-                className="lg:hidden p-2 text-foreground hover:text-primary rounded-md"
+                className="md:hidden p-2 text-foreground hover:text-primary rounded-md"
                 aria-label="Toggle menu"
               >
                 <Menu className="size-5" />
@@ -195,7 +192,10 @@ export default function NavBar() {
                       <ButtonV2
                         icon={<Video className="size-4" />}
                         label={t("navbar.channels")}
-                        onClick={() => { navigate("/lives"); closeSheet(); }}
+                        onClick={() => {
+                          navigate("/lives");
+                          closeSheet();
+                        }}
                         className="bg-transparent text-foreground justify-start w-full"
                       />
 
@@ -206,19 +206,28 @@ export default function NavBar() {
                       <ButtonV2
                         icon={<Home className="size-4" />}
                         label={t("navbar.dashboard")}
-                        onClick={() => { navigate("/dashboard"); closeSheet(); }}
+                        onClick={() => {
+                          navigate("/dashboard");
+                          closeSheet();
+                        }}
                         className="bg-transparent text-foreground justify-start w-full"
                       />
                       <ButtonV2
                         icon={<UserCircle className="size-4" />}
                         label={t("navbar.profile")}
-                        onClick={() => { navigate("/profile"); closeSheet(); }}
+                        onClick={() => {
+                          navigate("/profile");
+                          closeSheet();
+                        }}
                         className="bg-transparent text-foreground justify-start w-full"
                       />
                       <ButtonV2
                         icon={<ShoppingBag className="size-4" />}
                         label={t("navbar.myOrders")}
-                        onClick={() => { navigate("/my-orders"); closeSheet(); }}
+                        onClick={() => {
+                          navigate("/my-orders");
+                          closeSheet();
+                        }}
                         className="bg-transparent text-foreground justify-start w-full"
                       />
 
@@ -231,13 +240,19 @@ export default function NavBar() {
                           <ButtonV2
                             icon={<Store className="size-4" />}
                             label={t("navbar.shops")}
-                            onClick={() => { navigate("/shops"); closeSheet(); }}
+                            onClick={() => {
+                              navigate("/shops");
+                              closeSheet();
+                            }}
                             className="bg-transparent text-foreground justify-start w-full"
                           />
                           <ButtonV2
                             icon={<Package className="size-4" />}
                             label={t("navbar.pendingDeliveries")}
-                            onClick={() => { navigate("/pending-deliveries"); closeSheet(); }}
+                            onClick={() => {
+                              navigate("/pending-deliveries");
+                              closeSheet();
+                            }}
                             className="bg-transparent text-foreground justify-start w-full"
                           />
                         </>
@@ -248,16 +263,28 @@ export default function NavBar() {
                       {!isSeller ? (
                         <ButtonV2
                           icon={<BadgeCheck className="size-4" />}
-                          label={hasPendingRequest ? t("navbar.requestPending") : t("navbar.becomeSeller")}
-                          onClick={() => { handleRequestSellerRole(); closeSheet(); }}
-                          disabled={hasPendingRequest || requestSellerRole.isPending}
+                          label={
+                            hasPendingRequest
+                              ? t("navbar.requestPending")
+                              : t("navbar.becomeSeller")
+                          }
+                          onClick={() => {
+                            handleRequestSellerRole();
+                            closeSheet();
+                          }}
+                          disabled={
+                            hasPendingRequest || requestSellerRole.isPending
+                          }
                           className="border border-border bg-background text-foreground justify-start w-full"
                         />
                       ) : (
                         <ButtonV2
                           icon={<Plus className="size-4" />}
                           label={t("navbar.createChannel")}
-                          onClick={() => { navigate("/create-channel"); closeSheet(); }}
+                          onClick={() => {
+                            navigate("/create-channel");
+                            closeSheet();
+                          }}
                           className="bg-primary text-primary-foreground justify-start w-full"
                         />
                       )}
@@ -278,13 +305,19 @@ export default function NavBar() {
                     <ButtonV2
                       icon={<LogIn className="size-4" />}
                       label={t("navbar.login")}
-                      onClick={() => { navigate("/login"); closeSheet(); }}
+                      onClick={() => {
+                        navigate("/login");
+                        closeSheet();
+                      }}
                       className="bg-transparent text-foreground justify-start w-full"
                     />
                     <ButtonV2
                       icon={<UserPlus className="size-4" />}
                       label={t("navbar.signUp")}
-                      onClick={() => { navigate("/register"); closeSheet(); }}
+                      onClick={() => {
+                        navigate("/register");
+                        closeSheet();
+                      }}
                       className="bg-primary text-primary-foreground justify-start w-full"
                     />
                   </nav>

@@ -92,13 +92,13 @@ function AppContent() {
   }
 
   return (
-    <>
+    <div className="flex flex-col w-full min-h-screen">
       {showBottomNav && <NavBar />}
       <div
         className={cn(
           "w-full flex-1 mx-auto",
-          "lg:max-w-[1280px]",
-          showBottomNav && "pb-20 lg:pb-0",
+          "md:max-w-[1024px]",
+          showBottomNav && "pb-20 md:pb-0",
         )}
       >
         <Routes>
@@ -291,7 +291,7 @@ function AppContent() {
       </div>
       {showBottomNav && <BottomNav />}
       <Toaster />
-    </>
+    </div>
   );
 }
 

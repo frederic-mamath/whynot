@@ -34,9 +34,9 @@ function SidebarLink({
 
 export default function SellerLayout() {
   return (
-    <div className="min-h-screen bg-background lg:flex">
+    <div className="min-h-screen bg-background md:flex">
       {/* Sidebar — desktop only */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:shrink-0 lg:border-r lg:border-border bg-background p-4 gap-1 sticky top-16 self-start h-[calc(100vh-4rem)]">
+      <aside className="hidden md:flex md:flex-col md:w-56 md:shrink-0 md:border-r md:border-border bg-background p-4 gap-1 sticky top-16 self-start h-[calc(100vh-4rem)]">
         <SidebarLink to="/seller" icon={Home} label="Accueil" end />
         <SidebarLink to="/seller/shop" icon={Store} label="Boutique" />
         <SidebarLink to="/seller/lives" icon={Video} label="Lives" />

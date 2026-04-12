@@ -59,8 +59,25 @@ The semantic tokens `success`, `warning`, `info` were added in Feature 043. Use 
 - Icons from Lucide React
 - Toast notifications via Sonner: `toast.success(...)`, `toast.error(...)`
 - Fonts: `font-outfit` (headings), `font-syne` (body) — applied via `@theme inline` in `index.css`
-- Mobile-first responsive design using `md:` and `lg:` breakpoints
+- Mobile-first responsive design using exactly **two breakpoints** — see Breakpoint System below
 - **WelcomePage** (`pages/WelcomePage/WelcomePage.tsx`) is the design-system playground — test palette/typography changes there first
+
+## Breakpoint System
+
+The app uses **exactly two breakpoints**. No others.
+
+| Breakpoint | Tailwind prefix | Min-width | Layout |
+|---|---|---|---|
+| Mobile | *(base)* | 0px | BottomNav, full-width content |
+| Desktop | `md:` | 768px | TopNav, content max-width 1024px |
+
+**Rules:**
+- Every responsive class must use `md:` — never `sm:`, `lg:`, `xl:`, or `2xl:` for layout decisions
+- Navigation switch: BottomNav = `md:hidden` / TopNav desktop links = `hidden md:flex`
+- Content container: `md:max-w-[1024px] md:mx-auto`
+- There must never be a viewport width where both BottomNav and TopNav are simultaneously visible
+
+The `md` (768px) boundary was chosen deliberately over `lg` (1024px) to avoid browser scrollbar width (~15px) causing both navbars to appear at the same time at 1024px viewport.
 
 ## Routing
 
