@@ -70,7 +70,7 @@ export default function SellerLivesPage() {
   } = useSellerLives();
 
   return (
-    <div className="px-4 pt-6 pb-24">
+    <div className="pt-6 pb-24">
       {/* Header */}
       <div className={cn("flex items-center gap-3", "mb-2")}>
         <button

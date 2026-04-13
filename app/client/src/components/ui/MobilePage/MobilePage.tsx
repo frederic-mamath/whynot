@@ -7,7 +7,7 @@ interface Props {
 
 const MobilePage = ({ children, className }: Props) => {
   return (
-    <div className={cn("min-h-screen w-full", "bg-b-fourth", "p-6 md:px-12 md:py-10 md:max-w-3xl md:mx-auto", className)}>
+    <div className={cn("min-h-screen w-full", "bg-b-fourth", "py-6 md:py-10 md:max-w-3xl md:mx-auto", className)}>
       {children}
     </div>
   );

@@ -38,10 +38,25 @@ const CATEGORIES = [
 ];
 
 const SUB_CATEGORIES: Record<string, string[]> = {
-  "Trading card games": ["Singles", "Produits scellés", "Cartes gradées", "Accessoires"],
-  "Comics": ["BD franco-belge", "Comics américains", "Manga", "Éditions collector"],
+  "Trading card games": [
+    "Singles",
+    "Produits scellés",
+    "Cartes gradées",
+    "Accessoires",
+  ],
+  Comics: [
+    "BD franco-belge",
+    "Comics américains",
+    "Manga",
+    "Éditions collector",
+  ],
   "Sneakers & shoes": ["Sneakers", "Boots", "Sandales", "Accessoires"],
-  "Video games": ["Jeux rétro", "Jeux modernes", "Consoles & accessoires", "Guides, manuels & boîtiers"],
+  "Video games": [
+    "Jeux rétro",
+    "Jeux modernes",
+    "Consoles & accessoires",
+    "Guides, manuels & boîtiers",
+  ],
 };
 
 const SELLING_CHANNELS = [
@@ -146,7 +161,9 @@ export default function SellerOnboardingPage() {
 
   const toggleChannel = (channel: string) => {
     setSelectedChannels((prev) =>
-      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel],
+      prev.includes(channel)
+        ? prev.filter((c) => c !== channel)
+        : [...prev, channel],
     );
   };
 
@@ -162,7 +179,7 @@ export default function SellerOnboardingPage() {
   const progressPct = (currentStepIndex / STEPS.length) * 100;
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground px-6 py-10 gap-6">
+    <div className="flex flex-col min-h-screen bg-background text-foreground py-10 gap-6">
       {/* Header */}
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground font-outfit">
@@ -195,7 +212,9 @@ export default function SellerOnboardingPage() {
                 isAnimating && "animate-[popup-bounce_0.5s_ease-out]",
                 isCompleted && "border-primary/30 bg-primary/5 text-primary",
                 isActive && "border-foreground bg-card text-foreground",
-                !isCompleted && !isActive && "border-border bg-muted/30 text-muted-foreground",
+                !isCompleted &&
+                  !isActive &&
+                  "border-border bg-muted/30 text-muted-foreground",
               )}
             >
               <div
@@ -231,8 +250,13 @@ export default function SellerOnboardingPage() {
             </p>
             <ul className="flex flex-col gap-2">
               {SELLER_RULES.map((rule, i) => (
-                <li key={i} className="flex gap-2 text-sm text-muted-foreground">
-                  <span className="shrink-0 text-primary font-bold mt-0.5">{i + 1}.</span>
+                <li
+                  key={i}
+                  className="flex gap-2 text-sm text-muted-foreground"
+                >
+                  <span className="shrink-0 text-primary font-bold mt-0.5">
+                    {i + 1}.
+                  </span>
                   <span>{rule}</span>
                 </li>
               ))}
@@ -324,7 +348,8 @@ export default function SellerOnboardingPage() {
             <div>
               <p className="text-sm font-bold">Entreprise enregistrée</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Je possède ou travaille pour une entreprise officiellement enregistrée.
+                Je possède ou travaille pour une entreprise officiellement
+                enregistrée.
               </p>
             </div>
           </button>
@@ -467,20 +492,21 @@ export default function SellerOnboardingPage() {
       {/* Step 10 — Submit / status */}
       {currentStepIndex >= 10 && (
         <div className="flex flex-col gap-4 mt-2">
-          {(sellerStatus === "none" || sellerStatus === "pending") && currentStepIndex >= 10 && (
-            <>
-              <div className="p-4 rounded-xl bg-card border border-border text-sm text-muted-foreground">
-                Votre profil vendeur est complet. Cliquez pour activer votre
-                compte vendeur.
-              </div>
-              <ButtonV2
-                className="w-full bg-primary text-primary-foreground"
-                label="Devenir vendeur"
-                disabled={isPending}
-                onClick={handleSubmitApplication}
-              />
-            </>
-          )}
+          {(sellerStatus === "none" || sellerStatus === "pending") &&
+            currentStepIndex >= 10 && (
+              <>
+                <div className="p-4 rounded-xl bg-card border border-border text-sm text-muted-foreground">
+                  Votre profil vendeur est complet. Cliquez pour activer votre
+                  compte vendeur.
+                </div>
+                <ButtonV2
+                  className="w-full bg-primary text-primary-foreground"
+                  label="Devenir vendeur"
+                  disabled={isPending}
+                  onClick={handleSubmitApplication}
+                />
+              </>
+            )}
 
           {sellerStatus === "active" && (
             <div className="flex flex-col items-center gap-3 py-6 text-center">
@@ -489,7 +515,8 @@ export default function SellerOnboardingPage() {
                 Félicitations, vous êtes vendeur !
               </p>
               <p className="text-sm text-muted-foreground">
-                Votre compte vendeur est actif. Commencez à vendre dès maintenant.
+                Votre compte vendeur est actif. Commencez à vendre dès
+                maintenant.
               </p>
               <ButtonV2
                 className="w-full bg-primary text-primary-foreground mt-2"

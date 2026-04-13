@@ -52,7 +52,7 @@ export default function HomePage() {
   } = useHomePage();
 
   return (
-    <div className="min-h-screen bg-background px-4 md:px-8 pt-6 md:pt-10 space-y-6">
+    <div className="min-h-screen bg-background pt-6 md:pt-10 space-y-6">
       {/* Next live highlight */}
       <LiveHighlight live={nextLive} isLoading={isNextLiveLoading} />
 

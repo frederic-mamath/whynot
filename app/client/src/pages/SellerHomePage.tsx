@@ -5,7 +5,7 @@ export default function SellerHomePage() {
   const { navigate, cards } = useSellerHomePage();
 
   return (
-    <div className="px-4 py-6">
+    <div className="py-6">
       <h1 className="font-syne font-extrabold text-2xl text-foreground mb-6">
         Ma boutique
       </h1>

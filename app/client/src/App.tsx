@@ -97,7 +97,7 @@ function AppContent() {
       <div
         className={cn(
           "w-full flex-1 mx-auto",
-          "md:max-w-[1024px]",
+          "px-4 md:px-8 md:max-w-[1024px]",
           showBottomNav && "pb-20 md:pb-0",
         )}
       >

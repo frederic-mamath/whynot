@@ -96,7 +96,7 @@ export default function NavBar() {
 
   return (
     <nav className="hidden md:block sticky top-0 z-50 border-b border-border bg-background">
-      <div className="max-w-[1024px] mx-auto px-4 lg:px-8">
+      <div className="max-w-[1024px] mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <Link to="/" onClick={closeSheet}>

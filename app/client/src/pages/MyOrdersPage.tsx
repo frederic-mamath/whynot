@@ -80,7 +80,7 @@ export default function MyOrdersPage() {
 
   return (
     <div className="min-h-[calc(100vh - 160px)] bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("orders.title")}</h1>
@@ -91,22 +91,38 @@ export default function MyOrdersPage() {
         <div className="flex flex-wrap gap-2 mb-6">
           <ButtonV2
             onClick={() => setFilter("all")}
-            className={filter === "all" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            className={
+              filter === "all"
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-background text-foreground"
+            }
             label={t("orders.allOrders")}
           />
           <ButtonV2
             onClick={() => setFilter("pending")}
-            className={filter === "pending" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            className={
+              filter === "pending"
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-background text-foreground"
+            }
             label={t("orders.pendingPayment")}
           />
           <ButtonV2
             onClick={() => setFilter("paid")}
-            className={filter === "paid" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            className={
+              filter === "paid"
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-background text-foreground"
+            }
             label={t("orders.paid")}
           />
           <ButtonV2
             onClick={() => setFilter("shipped")}
-            className={filter === "shipped" ? "bg-primary text-primary-foreground" : "border border-border bg-background text-foreground"}
+            className={
+              filter === "shipped"
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-background text-foreground"
+            }
             label={t("orders.shipped")}
           />
         </div>
@@ -184,10 +200,14 @@ function EmptyState({ filter }: { filter: FilterType }) {
 
   const getMessage = () => {
     switch (filter) {
-      case "pending": return t("orders.noPendingOrders");
-      case "paid": return t("orders.noPaidOrders");
-      case "shipped": return t("orders.noShippedOrders");
-      default: return t("orders.noOrders");
+      case "pending":
+        return t("orders.noPendingOrders");
+      case "paid":
+        return t("orders.noPaidOrders");
+      case "shipped":
+        return t("orders.noShippedOrders");
+      default:
+        return t("orders.noOrders");
     }
   };
 
@@ -196,12 +216,14 @@ function EmptyState({ filter }: { filter: FilterType }) {
       <Placeholder
         Icon={<ShoppingBag className="size-8" />}
         title={t("orders.noOrders")}
-        ButtonListProps={[{
-          icon: <Package className="size-4" />,
-          label: t("orders.browseChannels"),
-          onClick: () => window.location.assign("/lives"),
-          className: "bg-primary text-primary-foreground",
-        }]}
+        ButtonListProps={[
+          {
+            icon: <Package className="size-4" />,
+            label: t("orders.browseChannels"),
+            onClick: () => window.location.assign("/lives"),
+            className: "bg-primary text-primary-foreground",
+          },
+        ]}
       />
     );
   }
@@ -210,11 +232,13 @@ function EmptyState({ filter }: { filter: FilterType }) {
     <Placeholder
       Icon={<ShoppingBag className="size-8" />}
       title={getMessage()}
-      ButtonListProps={[{
-        label: t("orders.viewAllOrders"),
-        onClick: () => window.location.reload(),
-        className: "border border-border bg-background text-foreground",
-      }]}
+      ButtonListProps={[
+        {
+          label: t("orders.viewAllOrders"),
+          onClick: () => window.location.reload(),
+          className: "border border-border bg-background text-foreground",
+        },
+      ]}
     />
   );
 }

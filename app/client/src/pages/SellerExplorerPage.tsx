@@ -5,7 +5,7 @@ export default function SellerExplorerPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col px-4 pt-6">
+    <div className="flex flex-col pt-6">
       <div className="flex items-center gap-3 mb-8">
         <button
           onClick={() => navigate("/seller")}

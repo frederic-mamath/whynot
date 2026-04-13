@@ -23,7 +23,7 @@ export default function SellersPage() {
   } = useSellersPage();
 
   return (
-    <div className="min-h-screen bg-background px-4 pt-10 space-y-6">
+    <div className="min-h-screen bg-background pt-10 space-y-6">
       <h1 className="text-xs font-outfit font-black tracking-widest uppercase text-foreground">
         Vendeurs
       </h1>
