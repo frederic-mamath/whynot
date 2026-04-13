@@ -38,7 +38,7 @@ export default function SellerUpsellPage() {
         "flex flex-col items-center",
         "min-h-[calc(100vh - 160px)]",
         "bg-background text-foreground",
-        "px-6 py-10",
+        "py-10",
         "gap-8",
       )}
     >
