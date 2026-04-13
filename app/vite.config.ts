@@ -32,6 +32,14 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_URL || "http://localhost:3000",
           changeOrigin: true,
         },
+        "/auth": {
+          target: env.VITE_API_URL || "http://localhost:3000",
+          changeOrigin: true,
+        },
+        "/api": {
+          target: env.VITE_API_URL || "http://localhost:3000",
+          changeOrigin: true,
+        },
       },
     },
   };

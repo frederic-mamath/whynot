@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useNavigate, Navigate } from "react-router-dom";
-import { Clock, Receipt, Users } from "lucide-react";
+import { Clock, Receipt, Users, Store } from "lucide-react";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import { trpc } from "@/lib/trpc";
 
@@ -42,20 +42,17 @@ export default function SellerUpsellPage() {
         "gap-8",
       )}
     >
-      {/* Floating product images */}
-      <div className={cn("flex justify-center gap-4 w-full", "mt-4")}>
-        {[
-          "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg",
-        ].map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              "w-16 h-16 rounded-2xl bg-muted",
-              "overflow-hidden",
-              "border border-border",
-            )}
-          />
-        ))}
+      {/* Store icon */}
+      <div className={cn("flex justify-center", "mt-4")}>
+        <div
+          className={cn(
+            "w-16 h-16 rounded-2xl bg-muted",
+            "flex items-center justify-center",
+            "border border-border",
+          )}
+        >
+          <Store className="w-8 h-8 text-foreground" />
+        </div>
       </div>
 
       {/* Title */}
