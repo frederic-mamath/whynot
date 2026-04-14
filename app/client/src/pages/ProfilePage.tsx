@@ -213,6 +213,16 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="space-y-2">
+                <Label>Pseudo</Label>
+                <Input
+                  type="text"
+                  value={profile?.nickname || ""}
+                  onChange={() => {}}
+                  disabled
+                  borderClassName="bg-muted"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label>{t("common.email")}</Label>
                 <Input
                   type="text"
@@ -233,7 +243,7 @@ export default function ProfilePage() {
                     ? t("profile.personalInfo.saveLoading")
                     : t("profile.personalInfo.save")
                 }
-                className="bg-b-primary text-txt-primary w-fit px-4"
+                className="bg-primary text-primary-foreground w-full"
               />
             </form>
           </CardContent>
@@ -320,15 +330,15 @@ export default function ProfilePage() {
             title: t("profile.addresses.empty"),
             ButtonListProps: [
               {
-                icon: <MapPin className="size-4" />,
-                label: "Ajouter une adresse à la main",
-                onClick: handleAddAddress,
-                className: "border border-border bg-background text-foreground",
-              },
-              {
                 icon: <Package className="size-4" />,
                 label: "Choisir avec Mondial Relay",
                 onClick: () => setRelayDialogOpen(true),
+                className: "bg-primary text-primary-foreground",
+              },
+              {
+                icon: <MapPin className="size-4" />,
+                label: "Ajouter une adresse à la main",
+                onClick: handleAddAddress,
                 className: "border border-border bg-background text-foreground",
               },
             ],
