@@ -62,8 +62,7 @@ const ProductCard = ({
         {variant === "host-boutique" && (
           <ButtonV2
             className={cn(
-              isHighlighted ? "bg-destructive" : "bg-primary",
-              "text-primary-foreground",
+              isHighlighted ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground",
               "px-4",
             )}
             label={
@@ -75,8 +74,7 @@ const ProductCard = ({
         {variant === "host-inventaire" && (
           <ButtonV2
             className={cn(
-              isAssociated ? "bg-destructive" : "bg-primary",
-              "text-primary-foreground",
+              isAssociated ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground",
               "px-4",
             )}
             label={isAssociated ? "Retirer du live" : "Associer au live"}

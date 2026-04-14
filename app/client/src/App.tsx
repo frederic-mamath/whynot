@@ -71,6 +71,7 @@ function AppContent() {
     retry: false,
   });
   const showBottomNav = profile?.hasCompletedOnboarding === true;
+  const isLivePage = pathname.startsWith("/live/") || pathname.startsWith("/channel/");
 
   // Landing page is full-width — render outside the app shell
   if (pathname === "/") {
@@ -97,7 +98,7 @@ function AppContent() {
       <div
         className={cn(
           "w-full flex-1 mx-auto",
-          "px-8 md:max-w-[1024px]",
+          !isLivePage && "px-8 md:max-w-[1024px]",
           showBottomNav && "pb-20 md:pb-0",
         )}
       >

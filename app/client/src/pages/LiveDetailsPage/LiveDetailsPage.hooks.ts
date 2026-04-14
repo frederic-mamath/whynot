@@ -441,6 +441,10 @@ export const useAuction = (liveId: string | undefined) => {
   const utils = trpc.useUtils();
   const [timeLeftSeconds, setTimeLeftSeconds] = useState(0);
   const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
+  const [bidIncrement, setBidIncrement] = useState<1 | 5 | 10>(() => {
+    const stored = Number(localStorage.getItem("popup_bid_increment"));
+    return (stored === 1 || stored === 5 || stored === 10 ? stored : 1) as 1 | 5 | 10;
+  });
 
   const { data: activeAuction } = trpc.auction.getActive.useQuery(
     { channelId: Number(liveId) },
@@ -508,8 +512,15 @@ export const useAuction = (liveId: string | undefined) => {
       bidMutation.mutate({ auctionId: activeAuction.id, amount });
   };
 
-  const buyout = () => {
-    if (activeAuction) buyoutMutation.mutate({ auctionId: activeAuction.id });
+  const selectIncrement = (n: 1 | 5 | 10) => {
+    setBidIncrement(n);
+    localStorage.setItem("popup_bid_increment", String(n));
+  };
+
+  const onConfirmBid = () => {
+    if (activeAuction) {
+      placeBid(activeAuction.currentBid + bidIncrement);
+    }
   };
 
   return {
@@ -520,7 +531,9 @@ export const useAuction = (liveId: string | undefined) => {
     startAuction,
     closeAuction,
     placeBid,
-    buyout,
+    bidIncrement,
+    selectIncrement,
+    onConfirmBid,
   };
 };
 

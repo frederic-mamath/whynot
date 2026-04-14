@@ -1,5 +1,6 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
 import IconButton from "@/components/ui/IconButton/IconButton";
+import SwipeToBid from "@/components/ui/SwipeToBid/SwipeToBid";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -58,8 +59,9 @@ const LiveDetailsPage = () => {
     setIsAuctionModalOpen,
     startAuction,
     closeAuction,
-    placeBid,
-    buyout,
+    bidIncrement,
+    selectIncrement,
+    onConfirmBid,
   } = useAuction(liveId);
 
   const isHost = channelConfig?.isHost ?? false;
@@ -238,7 +240,7 @@ const LiveDetailsPage = () => {
                   className={cn(
                     "flex-1",
                     "bg-destructive",
-                    "text-primary-foreground",
+                    "text-destructive-foreground",
                   )}
                   label="Annuler l'enchère"
                   onClick={closeAuction}
@@ -246,58 +248,29 @@ const LiveDetailsPage = () => {
               )}
             </div>
           ) : (
-            <div className={cn("flex", "gap-2")}>
-              <ButtonV2
-                className={cn(
-                  "flex-1",
-                  "bg-primary",
-                  "text-primary-foreground",
-                )}
-                onClick={buyout}
-                disabled={!activeAuction || !activeAuction.buyoutPrice}
-                label="Acheter tout de suite"
-              />
-              <IconButton
-                className={cn(
-                  "border-primary",
-                  "text-primary",
-                  !activeAuction && "opacity-50 cursor-not-allowed",
-                )}
-                icon={<div>+1€</div>}
-                onClick={
-                  activeAuction
-                    ? () => placeBid(activeAuction.currentBid + 1)
-                    : () => {}
-                }
-                size={50}
-              />
-              <IconButton
-                className={cn(
-                  "border-primary",
-                  "text-primary",
-                  !activeAuction && "opacity-50 cursor-not-allowed",
-                )}
-                icon={<div>+5€</div>}
-                onClick={
-                  activeAuction
-                    ? () => placeBid(activeAuction.currentBid + 5)
-                    : () => {}
-                }
-                size={50}
-              />
-              <IconButton
-                className={cn(
-                  "border-primary",
-                  "text-primary",
-                  !activeAuction && "opacity-50 cursor-not-allowed",
-                )}
-                icon={<div>+10€</div>}
-                onClick={
-                  activeAuction
-                    ? () => placeBid(activeAuction.currentBid + 10)
-                    : () => {}
-                }
-                size={50}
+            <div className={cn("flex flex-col", "gap-2")}>
+              <div className="flex gap-2">
+                {([1, 5, 10] as const).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => selectIncrement(n)}
+                    disabled={!activeAuction}
+                    className={cn(
+                      "flex-1 h-12 rounded-full border text-sm font-semibold transition-colors",
+                      bidIncrement === n
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-primary border-primary",
+                      !activeAuction && "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    +{n}€
+                  </button>
+                ))}
+              </div>
+              <SwipeToBid
+                amount={(activeAuction?.currentBid ?? 0) + bidIncrement}
+                onConfirm={onConfirmBid}
+                disabled={!activeAuction}
               />
             </div>
           )}
