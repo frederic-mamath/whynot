@@ -295,18 +295,18 @@ const LiveDetailsPage = () => {
           )}
         </div>
       </MobilePage>
-      <div ref={shopPageRef}>
-        <MobilePage>
-          {isHost && (
-            <Tabs
-              selectedTabId={activeTab}
-              items={shopTabs}
-              onClickItem={(id) => {
-                setActiveTab(id);
-                setSearchQuery("");
-              }}
-            />
-          )}
+      <div ref={shopPageRef} className="min-h-screen w-full bg-b-fourth py-6">
+        {isHost && (
+          <Tabs
+            selectedTabId={activeTab}
+            items={shopTabs}
+            onClickItem={(id) => {
+              setActiveTab(id);
+              setSearchQuery("");
+            }}
+          />
+        )}
+        <div className="px-4">
           <Input
             placeholder="Rechercher un produit"
             className="mb-4 mt-4"
@@ -343,7 +343,7 @@ const LiveDetailsPage = () => {
               onRemove={removeProduct}
             />
           )}
-        </MobilePage>
+        </div>
       </div>
     </div>
   );
