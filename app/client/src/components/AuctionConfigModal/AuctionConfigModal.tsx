@@ -115,7 +115,7 @@ export function AuctionConfigModal({
                     "px-4 py-3 rounded-md border-2 text-sm font-medium transition-colors",
                     durationSeconds === option.value
                       ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input bg-background hover:bg-accent",
+                      : "border-border bg-background text-foreground hover:bg-muted",
                   )}
                 >
                   {t(option.labelKey)}
@@ -160,7 +160,7 @@ export function AuctionConfigModal({
           <DialogFooter>
             <ButtonV2
               type="button"
-              className="border border-border bg-background text-foreground"
+              className="border border-border bg-background text-foreground hover:bg-muted"
               onClick={onClose}
               disabled={isSubmitting}
               label={t("auction.config.cancel")}

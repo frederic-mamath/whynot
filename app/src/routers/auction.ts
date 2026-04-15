@@ -17,6 +17,7 @@ import { mapAuctionToOutboundDto } from "../mappers/auction.mapper";
 import { mapBidToOutboundDto } from "../mappers/bid.mapper";
 import { closeAuction } from "../services/auctionService";
 import { userRepository } from "../repositories/UserRepository";
+import { addressRepository } from "../repositories/AddressRepository";
 import { stripeService } from "../services/StripeService";
 
 /**
@@ -40,6 +41,28 @@ async function requirePaymentMethod(userId: number): Promise<void> {
       code: "PRECONDITION_FAILED",
       message:
         "You must add a payment method before bidding. Go to Profile → Payment Method.",
+    });
+  }
+}
+
+async function requireFullName(userId: number): Promise<void> {
+  const user = await userRepository.findById(userId);
+  const firstName = user?.first_name || user?.firstname;
+  const lastName = user?.last_name || user?.lastname;
+  if (!firstName || !lastName) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "You must add your first and last name before bidding.",
+    });
+  }
+}
+
+async function requireDeliveryAddress(userId: number): Promise<void> {
+  const addresses = await addressRepository.findByUserId(userId);
+  if (addresses.length === 0) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "You must add a delivery address before bidding.",
     });
   }
 }
@@ -212,8 +235,10 @@ export const auctionRouter = router({
         });
       }
 
-      // Require a saved payment method before bidding
+      // Require full name, payment method, and delivery address before bidding
+      await requireFullName(ctx.user.id);
       await requirePaymentMethod(ctx.user.id);
+      await requireDeliveryAddress(ctx.user.id);
 
       // Use transaction for race condition safety
       return await db.transaction().execute(async (trx) => {

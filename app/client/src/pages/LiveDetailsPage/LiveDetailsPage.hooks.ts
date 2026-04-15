@@ -441,10 +441,22 @@ export const useAuction = (liveId: string | undefined) => {
   const utils = trpc.useUtils();
   const [timeLeftSeconds, setTimeLeftSeconds] = useState(0);
   const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
+  const [isBidRequirementsOpen, setIsBidRequirementsOpen] = useState(false);
+  const [showPersonalInfo, setShowPersonalInfo] = useState(false);
+  const [showPaymentSetup, setShowPaymentSetup] = useState(false);
+  const [showAddressSetup, setShowAddressSetup] = useState(false);
+  const pendingBidAmountRef = useRef<number | null>(null);
   const [bidIncrement, setBidIncrement] = useState<1 | 5 | 10>(() => {
     const stored = Number(localStorage.getItem("popup_bid_increment"));
     return (stored === 1 || stored === 5 || stored === 10 ? stored : 1) as 1 | 5 | 10;
   });
+
+  const { data: profile } = trpc.profile.me.useQuery();
+  const { data: paymentStatus } = trpc.payment.getPaymentStatus.useQuery();
+
+  const fullNameDone = !!(profile?.firstName && profile?.lastName);
+  const paymentDone = paymentStatus?.hasPaymentMethod ?? false;
+  const addressDone = (profile?.addresses?.length ?? 0) > 0;
 
   const { data: activeAuction } = trpc.auction.getActive.useQuery(
     { channelId: Number(liveId) },
@@ -488,7 +500,13 @@ export const useAuction = (liveId: string | undefined) => {
 
   const bidMutation = trpc.auction.placeBid.useMutation({
     onSuccess: invalidateAuction,
-    onError: (err) => toast.error(err.message),
+    onError: (err) => {
+      if (err.data?.code === "PRECONDITION_FAILED") {
+        setIsBidRequirementsOpen(true);
+      } else {
+        toast.error(err.message);
+      }
+    },
   });
 
   const buyoutMutation = trpc.auction.buyout.useMutation({
@@ -519,7 +537,48 @@ export const useAuction = (liveId: string | undefined) => {
 
   const onConfirmBid = () => {
     if (activeAuction) {
-      placeBid(activeAuction.currentBid + bidIncrement);
+      const amount = activeAuction.currentBid + bidIncrement;
+      pendingBidAmountRef.current = amount;
+      placeBid(amount);
+    }
+  };
+
+  const savePersonalInfoMutation = trpc.profile.update.useMutation({
+    onSuccess: () => utils.profile.me.invalidate(),
+    onError: (err) => toast.error(err.message),
+  });
+
+  const savePersonalInfo = (firstName: string, lastName: string) => {
+    savePersonalInfoMutation.mutate({ firstName, lastName });
+  };
+
+  const saveRelayAddressMutation = trpc.profile.addresses.saveRelayPoint.useMutation({
+    onSuccess: () => utils.profile.me.invalidate(),
+    onError: (err) => toast.error(err.message),
+  });
+
+  const saveRelayAddress = (point: {
+    id: string;
+    name: string;
+    address: string;
+    city: string;
+    zipCode: string;
+    country: string;
+  }) => {
+    saveRelayAddressMutation.mutate({
+      relayPointId: point.id,
+      name: point.name,
+      street: point.address,
+      city: point.city,
+      zipCode: point.zipCode,
+      country: point.country,
+    });
+  };
+
+  const onAllRequirementsMet = () => {
+    if (pendingBidAmountRef.current !== null) {
+      placeBid(pendingBidAmountRef.current);
+      pendingBidAmountRef.current = null;
     }
   };
 
@@ -534,6 +593,23 @@ export const useAuction = (liveId: string | undefined) => {
     bidIncrement,
     selectIncrement,
     onConfirmBid,
+    isBidRequirementsOpen,
+    setIsBidRequirementsOpen,
+    showPersonalInfo,
+    setShowPersonalInfo,
+    showPaymentSetup,
+    setShowPaymentSetup,
+    showAddressSetup,
+    setShowAddressSetup,
+    fullNameDone,
+    paymentDone,
+    addressDone,
+    profileFirstName: profile?.firstName ?? "",
+    profileLastName: profile?.lastName ?? "",
+    onAllRequirementsMet,
+    paymentStatusUtils: utils.payment.getPaymentStatus,
+    savePersonalInfo,
+    saveRelayAddress,
   };
 };
 

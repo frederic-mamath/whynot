@@ -1,6 +1,10 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
 import IconButton from "@/components/ui/IconButton/IconButton";
 import SwipeToBid from "@/components/ui/SwipeToBid/SwipeToBid";
+import { BidRequirementsDialog } from "@/components/BidRequirementsDialog/BidRequirementsDialog";
+import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
+import MondialRelayMapDialog from "@/components/MondialRelayMapDialog/MondialRelayMapDialog";
+import { PersonalInfoDialog } from "@/components/PersonalInfoDialog/PersonalInfoDialog";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -62,6 +66,23 @@ const LiveDetailsPage = () => {
     bidIncrement,
     selectIncrement,
     onConfirmBid,
+    isBidRequirementsOpen,
+    setIsBidRequirementsOpen,
+    showPaymentSetup,
+    setShowPaymentSetup,
+    showAddressSetup,
+    setShowAddressSetup,
+    paymentDone,
+    addressDone,
+    onAllRequirementsMet,
+    paymentStatusUtils,
+    showPersonalInfo,
+    setShowPersonalInfo,
+    fullNameDone,
+    profileFirstName,
+    profileLastName,
+    savePersonalInfo,
+    saveRelayAddress,
   } = useAuction(liveId);
 
   const isHost = channelConfig?.isHost ?? false;
@@ -293,6 +314,57 @@ const LiveDetailsPage = () => {
               }}
             />
           )}
+          <BidRequirementsDialog
+            open={isBidRequirementsOpen}
+            onOpenChange={setIsBidRequirementsOpen}
+            requirements={[
+              {
+                id: "name",
+                label: "Informations personnelles",
+                description: "Prénom et nom requis pour la livraison",
+                done: fullNameDone,
+                onComplete: () => setShowPersonalInfo(true),
+              },
+              {
+                id: "payment",
+                label: "Moyen de paiement",
+                description: "Carte bancaire, Google Pay ou Apple Pay",
+                done: paymentDone,
+                onComplete: () => setShowPaymentSetup(true),
+              },
+              {
+                id: "address",
+                label: "Adresse de livraison",
+                description: "Point Relais Mondial Relay ou adresse personnelle",
+                done: addressDone,
+                onComplete: () => setShowAddressSetup(true),
+              },
+            ]}
+            onAllComplete={onAllRequirementsMet}
+          />
+          <PersonalInfoDialog
+            open={showPersonalInfo}
+            onOpenChange={setShowPersonalInfo}
+            initialFirstName={profileFirstName}
+            initialLastName={profileLastName}
+            onSave={savePersonalInfo}
+          />
+          <PaymentSetupDialog
+            open={showPaymentSetup}
+            onOpenChange={setShowPaymentSetup}
+            onSuccess={() => {
+              paymentStatusUtils.invalidate();
+              setShowPaymentSetup(false);
+            }}
+          />
+          <MondialRelayMapDialog
+            open={showAddressSetup}
+            onOpenChange={setShowAddressSetup}
+            onSave={(point) => {
+              saveRelayAddress(point);
+              setShowAddressSetup(false);
+            }}
+          />
         </div>
       </MobilePage>
       <div ref={shopPageRef} className="min-h-screen w-full bg-b-fourth py-6">
