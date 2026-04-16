@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, Lock, ArrowLeft } from "lucide-react";
+import { Mail, Lock, ArrowLeft, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import OAuthButtons from "@/components/OAuthButtons";
 import OrDivider from "@/components/OrDivider/OrDivider";
@@ -56,6 +56,12 @@ export default function Login() {
             Mot de passe oublié ?
           </Link>
         </div>
+        {error && (
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle size={16} className="text-destructive shrink-0" />
+            <p className="text-destructive text-sm font-outfit">{error}</p>
+          </div>
+        )}
         <ButtonV2
           className="bg-b-primary text-txt-primary font-semibold w-full"
           label={t("login.submit")}

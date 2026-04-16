@@ -16,8 +16,10 @@ export function useLoginPage() {
       setToken(data.token);
       navigate("/dashboard");
     },
-    onError: (err) => {
-      setError(err.message);
+    onError: () => {
+      setError(
+        "Identifiants incorrects. Vérifie ton e-mail et ton mot de passe, ou utilise « Mot de passe oublié ? » si tu ne t'en souviens plus.",
+      );
     },
   });
 
