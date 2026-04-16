@@ -159,7 +159,7 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+                className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
               />
             </div>
             <div className="flex gap-3">
@@ -172,7 +172,7 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   required
-                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
@@ -183,7 +183,7 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
                 />
               </div>
             </div>
