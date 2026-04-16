@@ -1,4 +1,5 @@
 import ButtonV2 from "@/components/ui/ButtonV2";
+import DevicePicker from "@/components/DevicePicker/DevicePicker";
 import IconButton from "@/components/ui/IconButton/IconButton";
 import SwipeToBid from "@/components/ui/SwipeToBid/SwipeToBid";
 import { BidRequirementsDialog } from "@/components/BidRequirementsDialog/BidRequirementsDialog";
@@ -45,6 +46,13 @@ const LiveDetailsPage = () => {
     channelConfig,
     highlightedProduct,
     viewerCount,
+    cameras,
+    microphones,
+    selectedCameraId,
+    selectedMicId,
+    switchCamera,
+    switchMicrophone,
+    enumerateDevices,
   } = useAgora(liveId);
   const { messageList, messageInput, setMessageInput, onSubmitMessage } =
     useChat(liveId);
@@ -196,6 +204,17 @@ const LiveDetailsPage = () => {
                 }
                 size={50}
               />
+              {isHost && (
+                <DevicePicker
+                  cameras={cameras}
+                  microphones={microphones}
+                  selectedCameraId={selectedCameraId}
+                  selectedMicId={selectedMicId}
+                  onSwitchCamera={switchCamera}
+                  onSwitchMicrophone={switchMicrophone}
+                  onOpen={enumerateDevices}
+                />
+              )}
             </div>
           </div>
           <div>

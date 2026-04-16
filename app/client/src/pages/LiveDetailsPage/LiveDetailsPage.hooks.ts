@@ -36,6 +36,8 @@ export const useAgora = (liveId: string | undefined) => {
   const localAudioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
   const screenTrackRef = useRef<ICameraVideoTrack | null>(null);
   const clientRef = useRef<IAgoraRTCClient | null>(null);
+  const selectedCameraIdRef = useRef<string | null>(null);
+  const selectedMicIdRef = useRef<string | null>(null);
 
   const [joined, setJoined] = useState(false);
   const [liveStatus, setLiveStatus] = useState<
@@ -46,6 +48,10 @@ export const useAgora = (liveId: string | undefined) => {
     startsAt: string;
     endsAt: string | null;
   } | null>(null);
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
+  const [selectedMicId, setSelectedMicId] = useState<string | null>(null);
   const [audioMuted, setAudioMuted] = useState(false);
   const [videoMuted, setVideoMuted] = useState(false);
   const [error, setError] = useState("");
@@ -117,6 +123,26 @@ export const useAgora = (liveId: string | undefined) => {
     },
   );
 
+  useEffect(() => {
+    selectedCameraIdRef.current = selectedCameraId;
+  }, [selectedCameraId]);
+
+  useEffect(() => {
+    selectedMicIdRef.current = selectedMicId;
+  }, [selectedMicId]);
+
+  const enumerateDevices = async () => {
+    const devices = await AgoraRTC.getDevices();
+    const cams = devices.filter((d) => d.kind === "videoinput");
+    const mics = devices.filter((d) => d.kind === "audioinput");
+    setCameras(cams);
+    setMicrophones(mics);
+    if (!selectedCameraIdRef.current && cams.length > 0)
+      setSelectedCameraId(cams[0].deviceId);
+    if (!selectedMicIdRef.current && mics.length > 0)
+      setSelectedMicId(mics[0].deviceId);
+  };
+
   const leaveMutation = trpc.live.leave.useMutation({
     onSuccess: () => navigate("/lives"),
   });
@@ -183,16 +209,18 @@ export const useAgora = (liveId: string | undefined) => {
       await agoraClient.setClientRole(config.isHost ? "host" : "audience");
 
       if (config.isHost) {
-        const devices = await AgoraRTC.getDevices();
-        const cameras = devices.filter((d) => d.kind === "videoinput");
-        const microphones = devices.filter((d) => d.kind === "audioinput");
+        await enumerateDevices();
 
-        if (cameras.length === 0 || microphones.length === 0) {
-          throw new Error("Missing camera or microphone device");
-        }
-
-        const videoTrack = await AgoraRTC.createCameraVideoTrack();
-        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        const videoTrack = await AgoraRTC.createCameraVideoTrack(
+          selectedCameraIdRef.current
+            ? { cameraId: selectedCameraIdRef.current }
+            : undefined,
+        );
+        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack(
+          selectedMicIdRef.current
+            ? { microphoneId: selectedMicIdRef.current }
+            : undefined,
+        );
         await agoraClient.publish([videoTrack, audioTrack]);
 
         setLocalVideoTrack(videoTrack);
@@ -281,6 +309,22 @@ export const useAgora = (liveId: string | undefined) => {
       }
     }
   }, [remoteUsers]);
+
+  const switchCamera = async (deviceId: string) => {
+    setSelectedCameraId(deviceId);
+    selectedCameraIdRef.current = deviceId;
+    if (localVideoTrackRef.current) {
+      await localVideoTrackRef.current.setDevice(deviceId);
+    }
+  };
+
+  const switchMicrophone = async (deviceId: string) => {
+    setSelectedMicId(deviceId);
+    selectedMicIdRef.current = deviceId;
+    if (localAudioTrackRef.current) {
+      await localAudioTrackRef.current.setDevice(deviceId);
+    }
+  };
 
   const toggleAudio = async () => {
     if (localAudioTrack) {
@@ -376,6 +420,13 @@ export const useAgora = (liveId: string | undefined) => {
     forceLeave,
     toggleAudio,
     toggleVideo,
+    cameras,
+    microphones,
+    selectedCameraId,
+    selectedMicId,
+    switchCamera,
+    switchMicrophone,
+    enumerateDevices,
   };
 };
 
