@@ -112,7 +112,7 @@ const LiveDetailsPage = () => {
   );
 
   return (
-    <div className="h-full">
+    <div className="h-full overflow-x-hidden">
       <MobilePage
         className={cn(
           "relative",
