@@ -38,9 +38,6 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
   const [selectedCoverFile, setSelectedCoverFile] = useState<File | null>(null);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
-  const timeInputRef = useRef<HTMLInputElement>(null);
-  const endTimeInputRef = useRef<HTMLInputElement>(null);
 
   const { data: myShop } = trpc.shop.getMyShop.useQuery();
   const { data: shopProducts } = trpc.product.list.useQuery(
@@ -153,71 +150,42 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
             <Label className="font-syne font-bold text-foreground">
               Date et heure
             </Label>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground font-syne">
+                Date du live
+              </span>
               <input
                 type="date"
-                ref={dateInputRef}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="sr-only"
                 required
+                className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
               />
-              <input
-                type="time"
-                ref={timeInputRef}
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="sr-only"
-                required
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  dateInputRef.current?.showPicker?.() ??
-                  dateInputRef.current?.click()
-                }
-                className="flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
-              >
-                📅{" "}
-                {date === todayDate()
-                  ? "Ce soir"
-                  : new Date(date + "T12:00:00").toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "short",
-                    })}
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  timeInputRef.current?.showPicker?.() ??
-                  timeInputRef.current?.click()
-                }
-                className="flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
-              >
-                🕐 {time.replace(":", "h")}
-              </button>
             </div>
             <div className="flex gap-3">
-              <input
-                type="time"
-                ref={endTimeInputRef}
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="sr-only"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  endTimeInputRef.current?.showPicker?.() ??
-                  endTimeInputRef.current?.click()
-                }
-                className={`flex-1 flex items-center justify-center gap-2 bg-b-fourth rounded-2xl px-5 py-3 font-syne font-bold text-sm ${endTime ? "text-foreground" : "text-muted-foreground"}`}
-              >
-                🏁{" "}
-                {endTime
-                  ? `Fin : ${endTime.replace(":", "h")}`
-                  : "+ Heure de fin (optionnel)"}
-              </button>
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground font-syne">
+                  Début
+                </span>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  required
+                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+                />
+              </div>
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground font-syne">
+                  Fin (optionnel)
+                </span>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm"
+                />
+              </div>
             </div>
           </div>
 
