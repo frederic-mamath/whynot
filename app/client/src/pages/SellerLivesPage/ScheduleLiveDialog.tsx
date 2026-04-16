@@ -150,42 +150,32 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
             <Label className="font-syne font-bold text-foreground">
               Date et heure
             </Label>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground font-syne">
-                Date du live
-              </span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
-              />
-            </div>
+            <Input
+              type="date"
+              label="Date du live"
+              value={date}
+              onChange={(v) => setDate(v)}
+              required
+              inputClassName="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
+            />
             <div className="flex gap-3">
-              <div className="flex-1 flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground font-syne">
-                  Début
-                </span>
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  required
-                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
-                />
-              </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground font-syne">
-                  Fin (optionnel)
-                </span>
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full bg-b-fourth border-0 rounded-2xl px-5 py-4 font-syne font-bold text-foreground text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
-                />
-              </div>
+              <Input
+                type="time"
+                label="Début"
+                value={time}
+                onChange={(v) => setTime(v)}
+                required
+                className="flex-1"
+                inputClassName="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
+              />
+              <Input
+                type="time"
+                label="Fin (optionnel)"
+                value={endTime}
+                onChange={(v) => setEndTime(v)}
+                className="flex-1"
+                inputClassName="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-60"
+              />
             </div>
           </div>
 
