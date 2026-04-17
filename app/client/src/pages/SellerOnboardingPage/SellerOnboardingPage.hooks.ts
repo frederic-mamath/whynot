@@ -1,4 +1,5 @@
 import { useState } from "react";
+import posthog from "posthog-js";
 import { trpc } from "@/lib/trpc";
 
 export const useSellerOnboarding = () => {
@@ -10,9 +11,26 @@ export const useSellerOnboarding = () => {
     number | null
   >(null);
 
+  const STEP_NAMES = [
+    "rules",
+    "category",
+    "sub_category",
+    "seller_type",
+    "selling_channels",
+    "monthly_revenue",
+    "item_count",
+    "team_size",
+    "live_hours",
+    "return_address",
+  ] as const;
+
   const invalidateAndAnimate = (stepIndex: number) => {
     utils.sellerOnboarding.getProgress.invalidate();
     setJustCompletedStepIndex(stepIndex);
+    posthog.capture("seller_onboarding_step_completed", {
+      step_index: stepIndex,
+      step_name: STEP_NAMES[stepIndex],
+    });
   };
 
   const acceptRulesMutation = trpc.sellerOnboarding.acceptRules.useMutation({
@@ -63,6 +81,10 @@ export const useSellerOnboarding = () => {
   const submitApplicationMutation =
     trpc.sellerOnboarding.submitApplication.useMutation({
       onSuccess: () => {
+        posthog.capture("seller_onboarding_submitted", {
+          category: progress?.surveyData?.category ?? null,
+          seller_type: progress?.surveyData?.seller_type ?? null,
+        });
         utils.sellerOnboarding.getProgress.invalidate();
         utils.role.myRoles.invalidate();
       },

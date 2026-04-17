@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
+import posthog from "posthog-js";
 import { trpc } from "../lib/trpc";
 import { toast } from "sonner";
 import { debugLog } from "../lib/debug";
@@ -33,9 +34,10 @@ export function useMyOrdersPage() {
   // Handle payment success redirect
   useEffect(() => {
     if (searchParams.get("payment_success") === "true") {
+      const orderId = searchParams.get("order_id");
+      if (orderId) posthog.capture("order_paid", { order_id: orderId });
       toast.success(t("orders.paymentSuccess"));
       refetch();
-      // Remove query parameter
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams, refetch]);
@@ -56,15 +58,19 @@ export function useMyOrdersPage() {
       const result = await createPayment.mutateAsync({ orderId });
       debugLog("✅ Result:", result);
       debugLog("✅ Client Secret:", result.clientSecret ? "SET" : "NULL");
+      posthog.capture("order_pay_initiated", { order_id: orderId });
       setClientSecret(result.clientSecret || null);
       setPayingOrderId(orderId);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Payment initialization error:", error);
-      toast.error(error.message || t("orders.failedToInit"));
+      toast.error((error as { message?: string })?.message || t("orders.failedToInit"));
     }
   };
 
   const handlePaymentSuccess = () => {
+    if (payingOrderId) {
+      posthog.capture("order_paid", { order_id: payingOrderId });
+    }
     setClientSecret(null);
     setPayingOrderId(null);
     refetch();

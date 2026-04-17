@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImagePlus } from "lucide-react";
+import posthog from "posthog-js";
 import { trpc } from "../../lib/trpc";
 import {
   Dialog,
@@ -56,6 +57,16 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
           associateMutation.mutateAsync({ productId, channelId: liveId }),
         ),
       );
+      const startsAt = new Date(`${date}T${time}:00`);
+      const daysUntilStart = Math.round(
+        (startsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      );
+      posthog.capture("live_scheduled", {
+        live_id: liveId,
+        days_until_start: daysUntilStart,
+        has_cover: !!selectedCoverFile,
+        product_count: selectedProductIds.length,
+      });
       utils.live.listByHost.invalidate();
       setSelectedProductIds([]);
       setName("");

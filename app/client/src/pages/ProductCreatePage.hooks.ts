@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import posthog from "posthog-js";
 import { trpc } from "../lib/trpc";
 import { toast } from "sonner";
 import { type ProductImageItem } from "../components/ui/ImageUploader";
@@ -55,6 +56,12 @@ export function useProductCreatePage() {
         });
       }
 
+      posthog.capture("product_created", {
+        shop_id: shopIdNum,
+        has_price: !!price,
+        has_images: images.length > 0,
+        image_count: images.length,
+      });
       toast.success(t("products.create.successCreate"));
       navigate(`/shops/${shopIdNum}/products`);
     } catch (error: any) {

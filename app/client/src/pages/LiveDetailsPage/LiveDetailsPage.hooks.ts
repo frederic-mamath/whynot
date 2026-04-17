@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import posthog from "posthog-js";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -39,6 +40,7 @@ export const useAgora = (liveId: string | undefined) => {
   const selectedCameraIdRef = useRef<string | null>(null);
   const selectedMicIdRef = useRef<string | null>(null);
 
+  const joinedAtRef = useRef<number | null>(null);
   const [joined, setJoined] = useState(false);
   const [liveStatus, setLiveStatus] = useState<
     "upcoming" | "active" | "ended" | null
@@ -231,7 +233,11 @@ export const useAgora = (liveId: string | undefined) => {
 
       setClient(agoraClient);
       setJoined(true);
+      joinedAtRef.current = Date.now();
       clientRef.current = agoraClient;
+      if (config.isHost) {
+        posthog.capture("live_started", { live_id: Number(liveId) });
+      }
     } catch (err: unknown) {
       const agoraErr = err as { code?: string; message?: string };
       if (agoraErr.code === "UID_CONFLICT") return;
@@ -243,6 +249,13 @@ export const useAgora = (liveId: string | undefined) => {
     onSuccess: async (data) => {
       setLiveStatus(data.liveStatus);
       setLiveMeta(data.live);
+      if (!data.isHost) {
+        posthog.capture("live_joined", {
+          live_id: Number(liveId),
+          live_status: data.liveStatus,
+          is_host: false,
+        });
+      }
 
       if (data.liveStatus === "active") {
         const config: ChannelConfig = {
@@ -340,7 +353,28 @@ export const useAgora = (liveId: string | undefined) => {
     }
   };
 
+  const captureLeaveEvent = useCallback(
+    (isHost: boolean) => {
+      const durationSeconds = joinedAtRef.current
+        ? Math.round((Date.now() - joinedAtRef.current) / 1000)
+        : 0;
+      if (isHost) {
+        posthog.capture("live_ended", {
+          live_id: Number(liveId),
+          duration_seconds: durationSeconds,
+        });
+      } else {
+        posthog.capture("live_left", {
+          live_id: Number(liveId),
+          watch_duration_seconds: durationSeconds,
+        });
+      }
+    },
+    [liveId],
+  );
+
   const forceLeave = useCallback(() => {
+    captureLeaveEvent(!!channelConfig?.isHost);
     localVideoTrackRef.current?.stop();
     localVideoTrackRef.current?.close();
     localAudioTrackRef.current?.stop();
@@ -359,9 +393,10 @@ export const useAgora = (liveId: string | undefined) => {
 
     if (liveId) leaveMutation.mutate({ channelId: Number(liveId) });
     navigate("/lives");
-  }, [liveId, navigate, leaveMutation]);
+  }, [liveId, navigate, leaveMutation, captureLeaveEvent, channelConfig?.isHost]);
 
   const handleLeave = useCallback(async () => {
+    captureLeaveEvent(!!channelConfig?.isHost);
     setIsLeaving(true);
     try {
       localVideoTrackRef.current?.stop();
@@ -398,7 +433,7 @@ export const useAgora = (liveId: string | undefined) => {
     } catch {
       forceLeave();
     }
-  }, [liveId, navigate, leaveMutation, forceLeave]);
+  }, [liveId, navigate, leaveMutation, forceLeave, captureLeaveEvent, channelConfig?.isHost]);
 
   return {
     joined,
@@ -442,10 +477,15 @@ export const useShop = (liveId: string | undefined) => {
   });
 
   const highlightMutation = trpc.live.highlightProduct.useMutation({
-    onSuccess: () =>
+    onSuccess: (_, variables) => {
       utils.live.getHighlightedProduct.invalidate({
         channelId: Number(liveId),
-      }),
+      });
+      posthog.capture("product_highlighted", {
+        live_id: Number(liveId),
+        product_id: variables.productId,
+      });
+    },
   });
 
   const unhighlightMutation = trpc.live.unhighlightProduct.useMutation({
@@ -537,22 +577,49 @@ export const useAuction = (liveId: string | undefined) => {
     utils.auction.getActive.invalidate({ channelId: Number(liveId) });
 
   const startMutation = trpc.auction.start.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       setIsAuctionModalOpen(false);
       invalidateAuction();
+      posthog.capture("auction_started", {
+        live_id: Number(liveId),
+        auction_id: data.id,
+        product_id: data.productId,
+        starting_price_cents: Math.round(data.startingPrice * 100),
+        duration_seconds: data.durationSeconds,
+        has_buyout: data.buyoutPrice !== null,
+      });
     },
     onError: (err) => toast.error(err.message),
   });
 
   const closeMutation = trpc.auction.close.useMutation({
-    onSuccess: invalidateAuction,
+    onSuccess: (_, variables) => {
+      invalidateAuction();
+      posthog.capture("auction_closed", {
+        live_id: Number(liveId),
+        auction_id: variables.auctionId,
+      });
+    },
     onError: (err) => toast.error(err.message),
   });
 
   const bidMutation = trpc.auction.placeBid.useMutation({
-    onSuccess: invalidateAuction,
+    onSuccess: (data) => {
+      invalidateAuction();
+      posthog.capture("bid_placed", {
+        live_id: Number(liveId),
+        auction_id: data.auctionId,
+        amount_cents: Math.round(data.amount * 100),
+        bid_increment: bidIncrement,
+      });
+    },
     onError: (err) => {
       if (err.data?.code === "PRECONDITION_FAILED") {
+        const missing = !fullNameDone ? "full_name" : !paymentDone ? "payment" : "address";
+        posthog.capture("bid_requirements_modal_shown", {
+          live_id: Number(liveId),
+          missing,
+        });
         setIsBidRequirementsOpen(true);
       } else {
         toast.error(err.message);
@@ -561,7 +628,14 @@ export const useAuction = (liveId: string | undefined) => {
   });
 
   const buyoutMutation = trpc.auction.buyout.useMutation({
-    onSuccess: invalidateAuction,
+    onSuccess: (data) => {
+      invalidateAuction();
+      posthog.capture("auction_bought_out", {
+        live_id: Number(liveId),
+        auction_id: data.auctionId,
+        buyout_price_cents: Math.round(data.finalPrice * 100),
+      });
+    },
     onError: (err) => toast.error(err.message),
   });
 

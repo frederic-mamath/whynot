@@ -1,4 +1,5 @@
 import { useState } from "react";
+import posthog from "posthog-js";
 import { trpc } from "@/lib/trpc";
 
 export function useHomePage() {
@@ -16,7 +17,10 @@ export function useHomePage() {
   );
 
   const followSeller = trpc.shop.followSeller.useMutation({
-    onSuccess: () => utils.shop.listSellers.invalidate(),
+    onSuccess: (_, variables) => {
+      utils.shop.listSellers.invalidate();
+      posthog.capture("seller_followed", { seller_id: variables.sellerId });
+    },
   });
 
   const unfollowSeller = trpc.shop.unfollowSeller.useMutation({

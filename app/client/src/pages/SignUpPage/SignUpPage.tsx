@@ -1,7 +1,8 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import posthog from "posthog-js";
 import { trpc } from "../../lib/trpc";
 import { setToken } from "../../lib/auth";
 import ButtonV2 from "@/components/ui/ButtonV2";
@@ -13,6 +14,10 @@ export default function SignUpPage() {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    posthog.capture("sign_up_started");
+  }, []);
   const [acceptedCgu, setAcceptedCgu] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,6 +29,8 @@ export default function SignUpPage() {
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (data) => {
       setToken(data.token);
+      posthog.identify(data.user.id.toString());
+      posthog.capture("sign_up_completed", { method: "email" });
       window.location.href = "/onboarding";
     },
     onError: (err) => {

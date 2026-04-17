@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import posthog from "posthog-js";
 import { trpc } from "../../lib/trpc";
 import { setToken } from "../../lib/auth";
 
@@ -14,6 +15,8 @@ export function useLoginPage() {
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: (data) => {
       setToken(data.token);
+      posthog.identify(data.user.id.toString());
+      posthog.capture("login_completed", { method: "email" });
       navigate("/dashboard");
     },
     onError: () => {

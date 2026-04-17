@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import posthog from "posthog-js";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { type ProductImageItem } from "@/components/ui/ImageUploader/ImageUploader";
@@ -32,6 +33,9 @@ export function useOnboardingPage() {
       await completeOnboarding.mutateAsync({
         nickname: trimmed,
         avatarUrl: avatarImages[0]?.url,
+      });
+      posthog.capture("onboarding_completed", {
+        has_avatar: avatarImages.length > 0,
       });
       toast.success("Bienvenue !");
       window.location.href = "/home";

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import posthog from "posthog-js";
 import { toast } from "sonner";
 import { trpc } from "../../lib/trpc";
 import { PackageItem } from "./PackageCard";
@@ -18,8 +19,12 @@ export function useSellerDeliveries() {
   const { data, isLoading } = trpc.package.getPackagesForSeller.useQuery();
 
   const generateLabel = trpc.package.generateLabel.useMutation({
-    onSuccess: ({ trackingNumber, labelUrl }) => {
+    onSuccess: ({ trackingNumber, labelUrl }, variables) => {
       utils.package.getPackagesForSeller.invalidate();
+      posthog.capture("delivery_label_generated", {
+        package_id: variables.packageId,
+        weight_grams: variables.weightGrams,
+      });
       setLabelDialogPackageId(null);
       setWeightInput("");
       setWeightError("");
@@ -47,6 +52,7 @@ export function useSellerDeliveries() {
   const requestPayouts = trpc.package.requestPayouts.useMutation({
     onSuccess: ({ createdCount }) => {
       utils.package.getPackagesForSeller.invalidate();
+      posthog.capture("payout_requested", { payout_count: createdCount });
       toast.success(
         `${createdCount} demande${createdCount !== 1 ? "s" : ""} de paiement créée${createdCount !== 1 ? "s" : ""}`,
       );

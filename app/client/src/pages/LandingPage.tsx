@@ -135,7 +135,7 @@ function WaitlistForm({
 
   const join = trpc.waitlist.join.useMutation({
     onSuccess: () => {
-      posthog.capture("waitlist_signup", { role, email });
+      posthog.capture("waitlist_signup", { role });
       setSubmitted(true);
       setError(null);
     },
