@@ -485,6 +485,7 @@ export const useShop = (liveId: string | undefined) => {
         live_id: Number(liveId),
         product_id: variables.productId,
       });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
   });
 
