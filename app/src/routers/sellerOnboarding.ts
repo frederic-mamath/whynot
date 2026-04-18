@@ -41,16 +41,6 @@ export const sellerOnboardingRouter = router({
   }),
 
   acceptRules: protectedProcedure.mutation(async ({ ctx }) => {
-    const user = await db
-      .selectFrom("users")
-      .select(["seller_onboarding_step"])
-      .where("id", "=", ctx.userId!)
-      .executeTakeFirstOrThrow();
-
-    if (user.seller_onboarding_step >= 1) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Rules already accepted" });
-    }
-
     await userRepository.updateSellerOnboardingStep(ctx.userId!, 1, {
       accepted_seller_rules_at: new Date(),
     });

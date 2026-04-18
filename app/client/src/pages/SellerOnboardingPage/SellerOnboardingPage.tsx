@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Building2, Check, User } from "lucide-react";
-import { toast } from "sonner";
+import { ArrowLeft, Building2, Check, User } from "lucide-react";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import Input from "@/components/ui/Input/Input";
 import { useSellerOnboarding } from "./SellerOnboardingPage.hooks";
@@ -144,10 +143,13 @@ export default function SellerOnboardingPage() {
   const navigate = useNavigate();
   const {
     currentStepIndex,
+    viewingStep,
     surveyData,
     sellerStatus,
     justCompletedStepIndex,
     clearCompletedAnimation,
+    navigateToStep,
+    goBack,
     handleAcceptRules,
     handleSaveCategory,
     handleSaveSubCategory,
@@ -187,16 +189,26 @@ export default function SellerOnboardingPage() {
 
   if (isLoading) return null;
 
-  const displayStep = Math.min(currentStepIndex, STEPS.length - 1);
   const progressPct = (currentStepIndex / STEPS.length) * 100;
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground py-10 gap-6">
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground font-outfit">
-          Étape {Math.min(currentStepIndex + 1, STEPS.length)} / {STEPS.length}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground font-outfit">
+            Étape {Math.min(viewingStep + 1, STEPS.length)} / {STEPS.length}
+          </p>
+          {viewingStep > 0 && (
+            <button
+              onClick={goBack}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Retour
+            </button>
+          )}
+        </div>
         <h1 className="text-2xl font-syne font-extrabold">Deviens vendeur</h1>
       </div>
 
@@ -209,8 +221,9 @@ export default function SellerOnboardingPage() {
           />
         </div>
         {STEPS.map((step, index) => {
-          const isCompleted = index < currentStepIndex;
-          const isActive = index === displayStep;
+          const isActive = index === viewingStep;
+          const isCompleted = index < currentStepIndex && !isActive;
+          const isLocked = index > currentStepIndex;
           return (
             <div
               key={step.displayId}
@@ -219,7 +232,8 @@ export default function SellerOnboardingPage() {
             >
               <div className="group relative flex items-center justify-center">
                 <button
-                  onClick={() => toast(step.label, { duration: 1500 })}
+                  onClick={() => !isLocked && navigateToStep(index)}
+                  disabled={isLocked}
                   style={
                     justCompletedStepIndex === index
                       ? { animation: "bullet-pop 0.4s ease-out" }
@@ -229,7 +243,7 @@ export default function SellerOnboardingPage() {
                     "rounded-full transition-all duration-200",
                     isCompleted && "w-3 h-3 bg-primary",
                     isActive && "w-4 h-4 border-2 border-foreground bg-background",
-                    !isCompleted && !isActive && "w-2.5 h-2.5 bg-muted",
+                    isLocked && "w-2.5 h-2.5 bg-muted cursor-default",
                   )}
                 />
                 {justCompletedStepIndex === index &&
@@ -270,15 +284,15 @@ export default function SellerOnboardingPage() {
       {/* Active step card */}
       <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-foreground bg-card text-foreground">
         <div className="shrink-0 w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">
-          <span>{displayStep + 1}</span>
+          <span>{viewingStep + 1}</span>
         </div>
-        <span className="text-sm font-medium">{STEPS[displayStep].label}</span>
+        <span className="text-sm font-medium">{STEPS[viewingStep].label}</span>
       </div>
 
       {/* ── Step forms ── */}
 
       {/* Step 0 — Accept rules */}
-      {currentStepIndex === 0 && (
+      {viewingStep === 0 && (
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border">
             <p className="text-sm font-bold text-foreground mb-1">
@@ -308,7 +322,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 1 — Main category */}
-      {currentStepIndex === 1 && (
+      {viewingStep === 1 && (
         <div className="flex flex-col gap-2 mt-2">
           <p className="text-sm text-muted-foreground">
             Dans quelle catégorie vendrez-vous le plus souvent ?
@@ -335,7 +349,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 2 — Sub-category */}
-      {currentStepIndex === 2 && (
+      {viewingStep === 2 && (
         <div className="flex flex-col gap-2 mt-2">
           <p className="text-sm text-muted-foreground">
             Quelle est votre sous-catégorie principale ?
@@ -349,7 +363,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 3 — Seller type */}
-      {currentStepIndex === 3 && (
+      {viewingStep === 3 && (
         <div className="flex flex-col gap-3 mt-2">
           <p className="text-sm text-muted-foreground">
             Qu'est-ce qui vous décrit le mieux ?
@@ -393,7 +407,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 4 — Selling channels (multi-select) */}
-      {currentStepIndex === 4 && (
+      {viewingStep === 4 && (
         <div className="flex flex-col gap-3 mt-2">
           <p className="text-sm text-muted-foreground">
             Où vendez-vous ou promouvez-vous votre inventaire aujourd'hui ?
@@ -431,7 +445,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 5 — Monthly revenue */}
-      {currentStepIndex === 5 && (
+      {viewingStep === 5 && (
         <div className="flex flex-col gap-2 mt-2">
           <p className="text-sm text-muted-foreground">
             Quel est votre chiffre d'affaires mensuel moyen ?
@@ -445,7 +459,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 6 — Item count */}
-      {currentStepIndex === 6 && (
+      {viewingStep === 6 && (
         <div className="flex flex-col gap-2 mt-2">
           <p className="text-sm text-muted-foreground">
             Combien d'articles avez-vous à vendre ?
@@ -459,7 +473,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 7 — Team size */}
-      {currentStepIndex === 7 && (
+      {viewingStep === 7 && (
         <div className="flex flex-col gap-2 mt-2">
           <p className="text-sm text-muted-foreground">
             Quelle est la taille de votre équipe ?
@@ -473,7 +487,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 8 — Live hours */}
-      {currentStepIndex === 8 && (
+      {viewingStep === 8 && (
         <div className="flex flex-col gap-2 mt-2">
           <p className="text-sm text-muted-foreground">
             Combien d'heures par semaine pourriez-vous streamer en live ?
@@ -487,7 +501,7 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 9 — Return address */}
-      {currentStepIndex === 9 && (
+      {viewingStep === 9 && (
         <div className="flex flex-col gap-4 mt-2">
           <p className="text-sm text-muted-foreground">
             Quelle adresse les acheteurs doivent-ils utiliser pour les retours ?
@@ -526,10 +540,9 @@ export default function SellerOnboardingPage() {
       )}
 
       {/* Step 10 — Submit / status */}
-      {currentStepIndex >= 10 && (
+      {viewingStep >= 10 && (
         <div className="flex flex-col gap-4 mt-2">
-          {(sellerStatus === "none" || sellerStatus === "pending") &&
-            currentStepIndex >= 10 && (
+          {(sellerStatus === "none" || sellerStatus === "pending") && (
               <>
                 <div className="p-4 rounded-xl bg-card border border-border text-sm text-muted-foreground">
                   Votre profil vendeur est complet. Cliquez pour activer votre

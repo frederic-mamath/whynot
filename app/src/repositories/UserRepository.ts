@@ -160,6 +160,7 @@ export class UserRepository {
         updated_at: new Date(),
       })
       .where("id", "=", userId)
+      .where("seller_onboarding_step", "<", step)
       .returningAll()
       .executeTakeFirst();
   }

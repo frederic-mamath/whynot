@@ -10,6 +10,10 @@ export const useSellerOnboarding = () => {
   const [justCompletedStepIndex, setJustCompletedStepIndex] = useState<
     number | null
   >(null);
+  const [viewingStepIndex, setViewingStepIndex] = useState<number | null>(null);
+
+  const currentStepIndex = progress?.step ?? 0;
+  const effectiveViewingStep = viewingStepIndex ?? currentStepIndex;
 
   const STEP_NAMES = [
     "rules",
@@ -27,6 +31,7 @@ export const useSellerOnboarding = () => {
   const invalidateAndAnimate = (stepIndex: number) => {
     utils.sellerOnboarding.getProgress.invalidate();
     setJustCompletedStepIndex(stepIndex);
+    setViewingStepIndex(stepIndex + 1);
     posthog.capture("seller_onboarding_step_completed", {
       step_index: stepIndex,
       step_name: STEP_NAMES[stepIndex],
@@ -91,11 +96,17 @@ export const useSellerOnboarding = () => {
     });
 
   return {
-    currentStepIndex: progress?.step ?? 0,
+    currentStepIndex,
+    viewingStep: effectiveViewingStep,
     surveyData: progress?.surveyData ?? null,
     sellerStatus: progress?.sellerStatus ?? "none",
     justCompletedStepIndex,
     clearCompletedAnimation: () => setJustCompletedStepIndex(null),
+    navigateToStep: (index: number) => {
+      if (index <= currentStepIndex) setViewingStepIndex(index);
+    },
+    goBack: () =>
+      setViewingStepIndex(Math.max(0, effectiveViewingStep - 1)),
     handleAcceptRules: () => acceptRulesMutation.mutate(),
     handleSaveCategory: (category: string) =>
       saveCategoryMutation.mutate({ category }),
