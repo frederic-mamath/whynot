@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Check, Lock, Building2, User } from "lucide-react";
+import { Building2, Check, User } from "lucide-react";
+import { toast } from "sonner";
 import ButtonV2 from "@/components/ui/ButtonV2";
 import Input from "@/components/ui/Input/Input";
 import { useSellerOnboarding } from "./SellerOnboardingPage.hooks";
@@ -98,6 +99,17 @@ const LIVE_HOURS_RANGES = [
   "Plus de 20 heures",
 ];
 
+const PARTICLE_DIRS = [
+  { tx: "0px",   ty: "-16px" },
+  { tx: "11px",  ty: "-11px" },
+  { tx: "16px",  ty: "0px"   },
+  { tx: "11px",  ty: "11px"  },
+  { tx: "0px",   ty: "16px"  },
+  { tx: "-11px", ty: "11px"  },
+  { tx: "-16px", ty: "0px"   },
+  { tx: "-11px", ty: "-11px" },
+] as const;
+
 function OptionList({
   options,
   onSelect,
@@ -188,55 +200,79 @@ export default function SellerOnboardingPage() {
         <h1 className="text-2xl font-syne font-extrabold">Deviens vendeur</h1>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-500"
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
-
-      {/* Step list */}
-      <div className="flex flex-col gap-3">
+      {/* Progress bar with bullets */}
+      <div className="relative w-full h-5 flex items-center">
+        <div className="absolute w-full h-1.5 bg-muted rounded-full">
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
         {STEPS.map((step, index) => {
           const isCompleted = index < currentStepIndex;
           const isActive = index === displayStep;
-          const isAnimating = justCompletedStepIndex === index;
-
           return (
             <div
               key={step.displayId}
-              onAnimationEnd={isAnimating ? clearCompletedAnimation : undefined}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors",
-                isAnimating && "animate-[popup-bounce_0.5s_ease-out]",
-                isCompleted && "border-primary/30 bg-primary/5 text-primary",
-                isActive && "border-foreground bg-card text-foreground",
-                !isCompleted &&
-                  !isActive &&
-                  "border-border bg-muted/30 text-muted-foreground",
-              )}
+              className="absolute -translate-x-1/2"
+              style={{ left: `${(index / (STEPS.length - 1)) * 100}%` }}
             >
-              <div
-                className={cn(
-                  "shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
-                  isCompleted && "bg-primary text-primary-foreground",
-                  isActive && "bg-foreground text-background",
-                  !isCompleted && !isActive && "bg-muted text-muted-foreground",
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="w-4 h-4" />
-                ) : !isActive ? (
-                  <Lock className="w-3 h-3" />
-                ) : (
-                  <span>{index + 1}</span>
-                )}
+              <div className="group relative flex items-center justify-center">
+                <button
+                  onClick={() => toast(step.label, { duration: 1500 })}
+                  style={
+                    justCompletedStepIndex === index
+                      ? { animation: "bullet-pop 0.4s ease-out" }
+                      : undefined
+                  }
+                  className={cn(
+                    "rounded-full transition-all duration-200",
+                    isCompleted && "w-3 h-3 bg-primary",
+                    isActive && "w-4 h-4 border-2 border-foreground bg-background",
+                    !isCompleted && !isActive && "w-2.5 h-2.5 bg-muted",
+                  )}
+                />
+                {justCompletedStepIndex === index &&
+                  PARTICLE_DIRS.map((dir, i) => (
+                    <span
+                      key={i}
+                      onAnimationEnd={
+                        i === PARTICLE_DIRS.length - 1
+                          ? clearCompletedAnimation
+                          : undefined
+                      }
+                      className="absolute w-1.5 h-1.5 rounded-full bg-primary pointer-events-none"
+                      style={
+                        {
+                          "--tx": dir.tx,
+                          "--ty": dir.ty,
+                          animation: "particle-burst 0.6s ease-out forwards",
+                        } as React.CSSProperties
+                      }
+                    />
+                  ))}
+                <span
+                  className={cn(
+                    "absolute bottom-full mb-2 left-1/2 -translate-x-1/2",
+                    "hidden group-hover:block",
+                    "bg-foreground text-background text-xs font-outfit",
+                    "px-2 py-1 rounded-md whitespace-nowrap pointer-events-none z-10",
+                  )}
+                >
+                  {step.label}
+                </span>
               </div>
-              <span className="text-sm font-medium">{step.label}</span>
             </div>
           );
         })}
+      </div>
+
+      {/* Active step card */}
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-foreground bg-card text-foreground">
+        <div className="shrink-0 w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold">
+          <span>{displayStep + 1}</span>
+        </div>
+        <span className="text-sm font-medium">{STEPS[displayStep].label}</span>
       </div>
 
       {/* ── Step forms ── */}

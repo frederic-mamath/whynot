@@ -81,7 +81,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                   <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground mb-2">
                     Stack Trace (Development Only)
                   </summary>
-                  <pre className="overflow-auto p-3 rounded-md bg-muted text-muted-foreground max-h-48 text-[10px]">
+                  <pre className="overflow-auto p-3 rounded-md bg-background text-foreground max-h-48 text-[10px]">
                     {this.state.error?.stack}
                     {'\n\n'}
                     {this.state.errorInfo.componentStack}

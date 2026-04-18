@@ -102,6 +102,17 @@
   100% { transform: scale(1); }
 }
 
+@keyframes particle-burst {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+@keyframes bullet-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+
 :root {
   /*
    * === HOW TO ADD A CUSTOM COLOR ===
