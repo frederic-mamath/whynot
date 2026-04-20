@@ -102,6 +102,7 @@ export const useAgora = (liveId: string | undefined) => {
     {
       enabled: !!liveId,
       onData: (event) => {
+        console.log("[useAgora subscription] event received:", event.type);
         if (event.type === "PRODUCT_HIGHLIGHTED") {
           setHighlightedProduct({
             id: event.product.id,
@@ -531,12 +532,23 @@ export const useShop = (liveId: string | undefined) => {
 
 export const useAuction = (liveId: string | undefined) => {
   const utils = trpc.useUtils();
+  const { t } = useTranslation();
   const [timeLeftSeconds, setTimeLeftSeconds] = useState(0);
   const [isAuctionModalOpen, setIsAuctionModalOpen] = useState(false);
   const [isBidRequirementsOpen, setIsBidRequirementsOpen] = useState(false);
   const [showPersonalInfo, setShowPersonalInfo] = useState(false);
   const [showPaymentSetup, setShowPaymentSetup] = useState(false);
   const [showAddressSetup, setShowAddressSetup] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endedAuction, setEndedAuction] = useState<{
+    productName: string;
+    productImage: string | null;
+    finalPrice: number;
+    winnerUsername: string;
+    winnerId: number | null;
+    totalBids: number;
+    isParticipant: boolean;
+  } | null>(null);
   const pendingBidAmountRef = useRef<number | null>(null);
   const [bidIncrement, setBidIncrement] = useState<1 | 5 | 10>(() => {
     const stored = Number(localStorage.getItem("popup_bid_increment"));
@@ -550,9 +562,42 @@ export const useAuction = (liveId: string | undefined) => {
   const paymentDone = paymentStatus?.hasPaymentMethod ?? false;
   const addressDone = (profile?.addresses?.length ?? 0) > 0;
 
+  const { data: currentUser } = trpc.auth.me.useQuery();
   const { data: activeAuction } = trpc.auction.getActive.useQuery(
     { channelId: Number(liveId) },
     { enabled: !!liveId, refetchInterval: 3000 },
+  );
+
+  const activeAuctionRef = useRef(activeAuction);
+  useEffect(() => { activeAuctionRef.current = activeAuction; }, [activeAuction]);
+
+  trpc.live.subscribeToEvents.useSubscription(
+    { channelId: Number(liveId) },
+    {
+      enabled: !!liveId,
+      onData: (event) => {
+        console.log("[useAuction subscription] event received:", event.type);
+        if (event.type === "auction:ended") {
+          const snapshot = activeAuctionRef.current;
+          if (snapshot) {
+            setEndedAuction({
+              productName: snapshot.productName,
+              productImage: snapshot.productImageUrl,
+              finalPrice: event.finalPrice,
+              winnerUsername: event.hasWinner && event.winnerUsername
+                ? event.winnerUsername
+                : t("channels.chat.auctionNoWinner"),
+              winnerId: event.winnerId ?? null,
+              totalBids: 0,
+              isParticipant: false,
+            });
+            setShowEndModal(true);
+          }
+          invalidateAuction();
+        }
+      },
+      onError: (err) => console.error("[useAuction] events subscription error:", err),
+    },
   );
 
   useEffect(() => {
@@ -710,6 +755,7 @@ export const useAuction = (liveId: string | undefined) => {
 
   return {
     activeAuction,
+    currentUserId: currentUser?.id ?? null,
     timeLeftSeconds,
     isAuctionModalOpen,
     setIsAuctionModalOpen,
@@ -736,6 +782,9 @@ export const useAuction = (liveId: string | undefined) => {
     paymentStatusUtils: utils.payment.getPaymentStatus,
     savePersonalInfo,
     saveRelayAddress,
+    endedAuction,
+    showEndModal,
+    setShowEndModal,
   };
 };
 

@@ -804,7 +804,7 @@ export const liveRouter = router({
    */
   subscribeToEvents: publicProcedure
     .input(z.object({ channelId: z.number() }))
-    .subscription(async ({ input, ctx }) => {
+    .subscription(({ input, ctx }) => {
       console.log(
         `📡 User ${ctx.userId || "anonymous"} subscribed to live events: ${input.channelId}`,
       );
@@ -813,10 +813,12 @@ export const liveRouter = router({
         const eventName = `channel:${input.channelId}:events`;
 
         const handler = (data: any) => {
+          console.log(`[subscribeToEvents] → channel ${input.channelId}: type=${data.type}`);
           emit.next(data);
         };
 
         liveEvents.on(eventName, handler);
+        console.log(`[subscribeToEvents] ✅ Listener added for ${eventName} (total: ${liveEvents.listenerCount(eventName)})`);
 
         // Send current highlighted product immediately after subscription
         (async () => {
@@ -855,8 +857,8 @@ export const liveRouter = router({
         })();
 
         return () => {
-          console.log(`📴 User unsubscribed from ${eventName}`);
           liveEvents.off(eventName, handler);
+          console.log(`[subscribeToEvents] ❌ Listener removed for ${eventName} (remaining: ${liveEvents.listenerCount(eventName)})`);
         };
       });
     }),

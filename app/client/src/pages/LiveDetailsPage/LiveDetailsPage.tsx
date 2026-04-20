@@ -69,6 +69,7 @@ const LiveDetailsPage = () => {
   } = useShop(liveId);
   const {
     activeAuction,
+    currentUserId,
     timeLeftSeconds,
     isAuctionModalOpen,
     setIsAuctionModalOpen,
@@ -94,22 +95,15 @@ const LiveDetailsPage = () => {
     profileLastName,
     savePersonalInfo,
     saveRelayAddress,
+    endedAuction,
+    showEndModal,
+    setShowEndModal,
   } = useAuction(liveId);
 
   const isHost = channelConfig?.isHost ?? false;
   const shopPageRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("boutique");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showEndModal, setShowEndModal] = useState(false);
-  const [endedAuction, setEndedAuction] = useState<{
-    productName: string;
-    productImage: string | null;
-    finalPrice: number;
-    winnerUsername: string;
-    winnerId: number | null;
-    totalBids: number;
-    isParticipant: boolean;
-  } | null>(null);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -122,15 +116,6 @@ const LiveDetailsPage = () => {
   };
 
   const handleDebugAuctionEnd = () => {
-    setEndedAuction({
-      productName: activeAuction?.productName ?? "Produit test",
-      productImage: activeAuction?.productImageUrl ?? null,
-      finalPrice: activeAuction?.currentBid ?? 25,
-      winnerUsername: activeAuction?.highestBidderUsername ?? "testuser",
-      winnerId: activeAuction?.highestBidderId ?? null,
-      totalBids: 5,
-      isParticipant: false,
-    });
     setShowEndModal(true);
   };
 
@@ -428,19 +413,17 @@ const LiveDetailsPage = () => {
           />
         </div>
       </MobilePage>
-      {endedAuction && (
-        <AuctionEndModal
-          open={showEndModal}
-          onOpenChange={setShowEndModal}
-          productName={endedAuction.productName}
-          productImage={endedAuction.productImage}
-          finalBid={endedAuction.finalPrice}
-          winnerUsername={endedAuction.winnerUsername}
-          totalBids={endedAuction.totalBids}
-          isWinner={endedAuction.winnerId != null}
-          isParticipant={endedAuction.isParticipant}
-        />
-      )}
+      <AuctionEndModal
+        open={showEndModal}
+        onOpenChange={setShowEndModal}
+        productName={endedAuction?.productName ?? activeAuction?.productName ?? "Enchère terminée"}
+        productImage={endedAuction?.productImage ?? activeAuction?.productImageUrl ?? null}
+        finalBid={endedAuction?.finalPrice ?? activeAuction?.currentBid ?? 0}
+        winnerUsername={endedAuction?.winnerUsername ?? activeAuction?.highestBidderUsername ?? "—"}
+        totalBids={endedAuction?.totalBids ?? 0}
+        isWinner={endedAuction?.winnerId != null && endedAuction.winnerId === currentUserId}
+        isParticipant={endedAuction?.isParticipant ?? false}
+      />
       <div ref={shopPageRef} className="min-h-screen w-full bg-b-fourth py-6">
         {isHost && (
           <Tabs

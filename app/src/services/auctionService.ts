@@ -106,6 +106,8 @@ export async function closeAuction(auctionId: string): Promise<{
         hasWinner: !!auction.highest_bidder_id,
       };
       broadcastToChannel(auction.channel_id, auctionEndedMsg);
+      const listenerCount = liveEvents.listenerCount(`channel:${auction.channel_id}:events`);
+      console.log(`[auctionService] liveEvents.emit auction:ended → channel ${auction.channel_id} (${listenerCount} listeners)`);
       liveEvents.emit(`channel:${auction.channel_id}:events`, auctionEndedMsg);
 
       const unhighlightMsg = {
