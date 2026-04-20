@@ -43,8 +43,8 @@ Native iOS app for buyers, built with Expo (managed → bare after ticket-005) c
 |:-------|:------------|
 | ticket-001 | Project Bootstrap — Expo app + tRPC client + tab shell | ✅ |
 | ticket-002 | Authentication — login, register, JWT persistence | ✅ |
-| ticket-003 | Onboarding — nickname + avatar, onboarding guard |
-| ticket-004 | Home + Lives Discovery — live cards, category filters |
+| ticket-003 | Onboarding — nickname + avatar, onboarding guard | ✅ |
+| ticket-004 | Home + Lives Discovery — live cards, category filters | ✅ |
 | ticket-005 | Live Viewer (Agora) — video stream, dev build ⚠ |
 | ticket-006 | Chat + Live Events — real-time chat, product highlights |
 | ticket-007 | Auction Bidding ⭐ — bid flow, requirements check, Stripe setup |
