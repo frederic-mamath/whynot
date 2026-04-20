@@ -34,6 +34,8 @@ import {
 import { useUserRole } from "../hooks/useUserRole";
 import { RoleBadge } from "../components/RoleBadge";
 import { ChatPanel } from "../components/ChatPanel";
+import { WinnerCelebration } from "../components/WinnerCelebration/WinnerCelebration";
+import { AuctionEndModal } from "../components/AuctionEndModal";
 import VerticalControlPanel from "../components/VerticalControlPanel";
 import { toast } from "sonner";
 
@@ -78,6 +80,17 @@ export default function ChannelDetailsPage() {
   const [showParticipants, setShowParticipants] = useState(false);
   const [showProducts, setShowProducts] = useState(false);
   const [showHighlightedProduct, setShowHighlightedProduct] = useState(true);
+  const [showWinCelebration, setShowWinCelebration] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endedAuction, setEndedAuction] = useState<{
+    productName: string;
+    productImage: string | null;
+    finalPrice: number;
+    winnerUsername: string;
+    winnerId: number | null;
+    totalBids: number;
+    isParticipant: boolean;
+  } | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
   const [channelConfig, setChannelConfig] = useState<ChannelConfig | null>(
     null,
@@ -736,6 +749,11 @@ export default function ChannelDetailsPage() {
                   setShowHighlightedProduct(!showHighlightedProduct)
                 }
                 isHost={channelConfig?.isHost ?? false}
+                onWin={() => setShowWinCelebration(true)}
+                onAuctionEnd={(data) => {
+                  setEndedAuction(data);
+                  setShowEndModal(true);
+                }}
               />
             </div>
           )}
@@ -758,6 +776,24 @@ export default function ChannelDetailsPage() {
           </div>
         </div>
       </div>
+
+      {showWinCelebration && (
+        <WinnerCelebration onDismiss={() => setShowWinCelebration(false)} />
+      )}
+
+      {endedAuction && (
+        <AuctionEndModal
+          open={showEndModal}
+          onOpenChange={setShowEndModal}
+          productName={endedAuction.productName}
+          productImage={endedAuction.productImage}
+          finalBid={endedAuction.finalPrice}
+          winnerUsername={endedAuction.winnerUsername}
+          totalBids={endedAuction.totalBids}
+          isWinner={endedAuction.winnerId === currentUser?.id}
+          isParticipant={endedAuction.isParticipant}
+        />
+      )}
 
       <ParticipantList
         channelId={Number(channelId)}

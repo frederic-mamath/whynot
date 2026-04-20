@@ -74,7 +74,7 @@ export function AuctionEndModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trophy
-              className={isWinner ? "text-yellow-500" : "text-muted-foreground"}
+              className={isWinner ? "text-primary" : "text-muted-foreground"}
             />
             {isWinner ? t("auction.end.youWon") : t("auction.end.ended")}
           </DialogTitle>

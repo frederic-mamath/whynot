@@ -7,17 +7,14 @@ export function mapAuctionToOutboundDto(
     product_image_url: string | null;
     seller_firstname: string | null;
     seller_lastname: string | null;
-    bidder_firstname: string | null;
-    bidder_lastname: string | null;
+    bidder_nickname: string | null;
   }
 ): AuctionOutboundDto {
   const sellerUsername = auction.seller_firstname && auction.seller_lastname
     ? `${auction.seller_firstname} ${auction.seller_lastname}`
     : 'Unknown Seller';
 
-  const bidderUsername = auction.bidder_firstname && auction.bidder_lastname
-    ? `${auction.bidder_firstname} ${auction.bidder_lastname}`
-    : null;
+  const bidderUsername = auction.bidder_nickname ?? null;
 
   return {
     id: auction.id,

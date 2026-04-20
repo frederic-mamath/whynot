@@ -14,6 +14,7 @@ import {
   Send,
   Share,
   Store,
+  Trophy,
   Users,
 } from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
@@ -34,6 +35,8 @@ import Tabs from "@/components/ui/Tabs";
 import { useRef, useState } from "react";
 import AuctionCard from "./AuctionCard/AuctionCard";
 import { AuctionConfigModal } from "@/components/AuctionConfigModal/AuctionConfigModal";
+import { AuctionEndModal } from "@/components/AuctionEndModal";
+import { toast } from "sonner";
 
 const LiveDetailsPage = () => {
   const { liveId } = useParams<{ liveId: string }>();
@@ -97,6 +100,39 @@ const LiveDetailsPage = () => {
   const shopPageRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("boutique");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [endedAuction, setEndedAuction] = useState<{
+    productName: string;
+    productImage: string | null;
+    finalPrice: number;
+    winnerUsername: string;
+    winnerId: number | null;
+    totalBids: number;
+    isParticipant: boolean;
+  } | null>(null);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Lien du live copié !");
+    } catch {
+      toast.error("Impossible de copier le lien");
+    }
+  };
+
+  const handleDebugAuctionEnd = () => {
+    setEndedAuction({
+      productName: activeAuction?.productName ?? "Produit test",
+      productImage: activeAuction?.productImageUrl ?? null,
+      finalPrice: activeAuction?.currentBid ?? 25,
+      winnerUsername: activeAuction?.highestBidderUsername ?? "testuser",
+      winnerId: activeAuction?.highestBidderId ?? null,
+      totalBids: 5,
+      isParticipant: false,
+    });
+    setShowEndModal(true);
+  };
 
   const shopTabs = [
     { id: "boutique", label: "Boutique du live" },
@@ -192,8 +228,14 @@ const LiveDetailsPage = () => {
             <div className={cn("flex flex-col justify-end", "gap-2")}>
               <IconButton
                 className={cn("border-white", "text-white")}
+                icon={<Trophy size={20} />}
+                onClick={handleDebugAuctionEnd}
+                size={50}
+              />
+              <IconButton
+                className={cn("border-white", "text-white")}
                 icon={<Share size={20} />}
-                onClick={() => {}}
+                onClick={handleShare}
                 size={50}
               />
               <IconButton
@@ -386,6 +428,19 @@ const LiveDetailsPage = () => {
           />
         </div>
       </MobilePage>
+      {endedAuction && (
+        <AuctionEndModal
+          open={showEndModal}
+          onOpenChange={setShowEndModal}
+          productName={endedAuction.productName}
+          productImage={endedAuction.productImage}
+          finalBid={endedAuction.finalPrice}
+          winnerUsername={endedAuction.winnerUsername}
+          totalBids={endedAuction.totalBids}
+          isWinner={endedAuction.winnerId != null}
+          isParticipant={endedAuction.isParticipant}
+        />
+      )}
       <div ref={shopPageRef} className="min-h-screen w-full bg-b-fourth py-6">
         {isHost && (
           <Tabs

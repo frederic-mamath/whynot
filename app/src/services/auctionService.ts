@@ -2,6 +2,7 @@ import { db } from "../db";
 import { sql } from "kysely";
 import { auctionRepository } from "../repositories";
 import { broadcastToChannel } from "../websocket/broadcast";
+import { liveEvents } from "../routers/live";
 import { calculatePlatformFee, calculateSellerPayout } from "../utils/fees";
 
 /**
@@ -80,14 +81,11 @@ export async function closeAuction(auctionId: string): Promise<{
       // Get winner info
       const winner = await trx
         .selectFrom("users")
-        .select(["firstname", "lastname"])
+        .select(["nickname"])
         .where("id", "=", auction.highest_bidder_id)
         .executeTakeFirst();
 
-      winnerUsername =
-        winner?.firstname && winner.lastname
-          ? `${winner.firstname} ${winner.lastname}`
-          : "Anonymous";
+      winnerUsername = winner?.nickname ?? "Anonymous";
     }
 
     // Clear highlighted product from channel
@@ -99,19 +97,23 @@ export async function closeAuction(auctionId: string): Promise<{
 
     // Broadcast events (outside transaction to avoid locks)
     setTimeout(() => {
-      broadcastToChannel(auction.channel_id, {
-        type: "auction:ended",
+      const auctionEndedMsg = {
+        type: "auction:ended" as const,
         auctionId,
         winnerId: auction.highest_bidder_id,
         winnerUsername,
         finalPrice: parseFloat(auction.current_bid),
         hasWinner: !!auction.highest_bidder_id,
-      });
+      };
+      broadcastToChannel(auction.channel_id, auctionEndedMsg);
+      liveEvents.emit(`channel:${auction.channel_id}:events`, auctionEndedMsg);
 
-      broadcastToChannel(auction.channel_id, {
-        type: "PRODUCT_UNHIGHLIGHTED",
+      const unhighlightMsg = {
+        type: "PRODUCT_UNHIGHLIGHTED" as const,
         channelId: auction.channel_id,
-      });
+      };
+      broadcastToChannel(auction.channel_id, unhighlightMsg);
+      liveEvents.emit(`channel:${auction.channel_id}:events`, unhighlightMsg);
     }, 0);
 
     console.log(

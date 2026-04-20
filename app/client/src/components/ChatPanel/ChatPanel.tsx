@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { MessageList } from "../MessageList";
@@ -23,6 +23,16 @@ interface ChatPanelProps {
   showHighlightedProduct?: boolean;
   onToggleHighlightedProduct?: () => void;
   isHost?: boolean;
+  onWin?: () => void;
+  onAuctionEnd?: (data: {
+    productName: string;
+    productImage: string | null;
+    finalPrice: number;
+    winnerUsername: string;
+    winnerId: number | null;
+    totalBids: number;
+    isParticipant: boolean;
+  }) => void;
 }
 
 export function ChatPanel({
@@ -32,6 +42,8 @@ export function ChatPanel({
   showHighlightedProduct = true,
   onToggleHighlightedProduct,
   isHost = false,
+  onWin,
+  onAuctionEnd,
 }: ChatPanelProps) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<any[]>([]);
@@ -52,7 +64,7 @@ export function ChatPanel({
     trpc.auction.getActive.useQuery(
       { channelId },
       {
-        refetchInterval: 5000, // Poll every 5s as fallback
+        refetchInterval: 5000,
         refetchOnWindowFocus: true,
       },
     );
@@ -62,6 +74,12 @@ export function ChatPanel({
     { auctionId: activeAuction?.id || "" },
     { enabled: !!activeAuction },
   );
+
+  // Refs to avoid stale closures in the WebSocket subscription callback
+  const activeAuctionRef = useRef(activeAuction);
+  useEffect(() => { activeAuctionRef.current = activeAuction; }, [activeAuction]);
+  const bidsRef = useRef(bids);
+  useEffect(() => { bidsRef.current = bids; }, [bids]);
 
   // Update local endsAt when auction changes
   useEffect(() => {
@@ -243,8 +261,23 @@ export function ChatPanel({
             refetchAuction();
             break;
 
-          case "auction:ended":
-            if (event.hasWinner && event.winnerUsername) {
+          case "auction:ended": {
+            const snapshot = activeAuctionRef.current;
+            const snapshotBids = bidsRef.current;
+            if (snapshot) {
+              onAuctionEnd?.({
+                productName: snapshot.productName,
+                productImage: snapshot.productImageUrl,
+                finalPrice: event.finalPrice,
+                winnerUsername: event.hasWinner && event.winnerUsername
+                  ? event.winnerUsername
+                  : t("channels.chat.auctionNoWinner"),
+                winnerId: event.winnerId ?? null,
+                totalBids: snapshotBids.length,
+                isParticipant: snapshotBids.some((b) => b.bidderId === currentUserId),
+              });
+              if (event.winnerId === currentUserId) onWin?.();
+            } else if (event.hasWinner && event.winnerUsername) {
               toast.success(
                 t("channels.chat.auctionWon", {
                   winner: event.winnerUsername,
@@ -256,6 +289,7 @@ export function ChatPanel({
             }
             refetchAuction();
             break;
+          }
 
           case "auction:bought_out":
             toast.success(

@@ -132,8 +132,7 @@ export class AuctionRepository {
         'products.image_url as product_image_url',
         'seller.firstname as seller_firstname',
         'seller.lastname as seller_lastname',
-        'bidder.firstname as bidder_firstname',
-        'bidder.lastname as bidder_lastname',
+        'bidder.nickname as bidder_nickname',
       ])
       .where('auctions.id', '=', id)
       .executeTakeFirst();
