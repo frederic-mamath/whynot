@@ -1,21 +1,17 @@
-import { View, Text, StyleSheet } from "react-native";
-import { trpc } from "@/lib/trpc";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProfileScreen() {
-  const { data, isLoading, error } = trpc.live.list.useQuery({ limit: 4 });
+  const { user, logout } = useAuth();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
-      {isLoading && <Text style={styles.subtitle}>Connecting to backend…</Text>}
-      {error && (
-        <Text style={styles.error}>Backend error: {error.message}</Text>
-      )}
-      {data && (
-        <Text style={styles.subtitle}>
-          tRPC OK — {data.lives.length} active live(s)
-        </Text>
-      )}
+      {user && <Text style={styles.email}>{user.email}</Text>}
+
+      <Pressable style={styles.logoutButton} onPress={logout}>
+        <Text style={styles.logoutText}>Se déconnecter</Text>
+      </Pressable>
     </View>
   );
 }
@@ -26,22 +22,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#fff",
+    gap: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: "600",
     color: "#111827",
   },
-  subtitle: {
+  email: {
     fontSize: 16,
     color: "#6B7280",
-    marginTop: 8,
   },
-  error: {
-    fontSize: 14,
-    color: "#EF4444",
+  logoutButton: {
     marginTop: 8,
-    textAlign: "center",
+    borderWidth: 1.5,
+    borderColor: "#EF4444",
+    borderRadius: 12,
     paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  logoutText: {
+    color: "#EF4444",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
