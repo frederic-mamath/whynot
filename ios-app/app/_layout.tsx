@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { TRPCProvider } from "@/providers/TRPCProvider";
+import { StripeProvider } from "@/providers/StripeProvider";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
 
@@ -10,9 +11,11 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   return (
     <TRPCProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
+      <StripeProvider>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </StripeProvider>
     </TRPCProvider>
   );
 }
@@ -37,13 +40,20 @@ function RootNavigator() {
     const inOnboarding = segments[0] === "onboarding";
     const hasOnboarded = profileQuery.data?.hasCompletedOnboarding ?? false;
 
-    if (!user && !inAuthGroup) {
-      router.replace("/(auth)/welcome");
-    } else if (user && !hasOnboarded && !inOnboarding) {
-      router.replace("/onboarding");
-    } else if (user && hasOnboarded && (inAuthGroup || inOnboarding)) {
-      router.replace("/(tabs)");
-    }
+    const redirect = () => {
+      if (!user && !inAuthGroup) {
+        router.replace("/(auth)/welcome");
+      } else if (user && !hasOnboarded && !inOnboarding) {
+        router.replace("/onboarding");
+      } else if (user && hasOnboarded && (inAuthGroup || inOnboarding)) {
+        router.replace("/(tabs)");
+      }
+    };
+
+    // Defer one tick so the Stack navigator finishes registering all screens
+    // before we navigate, avoiding the "(auth) not handled" dev warning.
+    const t = setTimeout(redirect, 0);
+    return () => clearTimeout(t);
   }, [user, isLoading, profileQuery.data?.hasCompletedOnboarding, segments]);
 
   if (isLoading) return null;

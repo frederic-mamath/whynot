@@ -18,8 +18,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: "fr.mamath.popup",
+    infoPlist: {
+      NSCameraUsageDescription:
+        "Popup utilise la caméra pour les lives vidéo.",
+      NSMicrophoneUsageDescription:
+        "Popup utilise le micro pour les lives vidéo.",
+    },
   },
-  plugins: ["expo-router", "expo-secure-store"],
+  plugins: [
+    "expo-router",
+    "expo-secure-store",
+    ["@stripe/stripe-react-native", { merchantIdentifier: "" }],
+  ],
   experiments: {
     typedRoutes: true,
   },
@@ -28,5 +38,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Prod/staging: https://api.whynot.mamath.fr
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000",
     wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? "ws://localhost:3000",
+    stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
   },
 });

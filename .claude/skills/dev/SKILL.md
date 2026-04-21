@@ -62,12 +62,25 @@ If a layer is not in the ticket's scope, do not touch it.
 
 ### 3. Verify
 
-After every change, run from `app/`:
+**If working in `app/`** — run from `app/`:
 ```bash
 npm run build:client   # catches all TypeScript + import errors
 ```
 
-The app **must build with zero errors** before you report done. Fix all TypeScript errors — do not use `// @ts-ignore` unless it already exists in the file.
+**If working in `ios-app/`** — run from `ios-app/`:
+```bash
+npx tsc --noEmit                   # catches TypeScript + import errors
+npx expo prebuild --clean 2>&1 | tail -20   # run this ONLY if app.config.ts or plugins changed
+```
+
+Both must complete with zero errors before you report done. Fix all TypeScript errors — do not use `// @ts-ignore` unless it already exists in the file.
+
+### iOS-specific rules (applies when working in `ios-app/`)
+
+- **Config plugins**: only list packages that ship an `app.plugin.js` in their npm package root. If a package has no `app.plugin.js`, do NOT add it to the `plugins` array in `app.config.ts` — React Native autolinking handles native setup automatically via `npx expo run:ios`.
+- Verify a plugin exists before adding it: `ls node_modules/<package>/app.plugin.js`.
+- Styling uses `StyleSheet.create` — no Tailwind, no design tokens from the web app.
+- tRPC calls are allowed directly in screen files (no `.hooks.ts` split required for React Native screens).
 
 ---
 
