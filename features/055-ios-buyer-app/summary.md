@@ -48,7 +48,7 @@ Native iOS app for buyers, built with Expo (managed → bare after ticket-005) c
 | ticket-005 | Live Viewer (Agora) — video stream, dev build ✅ |
 | ticket-006 | Chat + Live Events — real-time chat, product highlights ✅ |
 | ticket-007 | Auction Bidding ⭐ — bid flow, requirements check, Stripe setup ✅ |
-| ticket-008 | Orders + Stripe Payment — orders list, payment sheet |
+| ticket-008 | Orders + Stripe Payment — orders list, payment sheet ✅ |
 | ticket-009 | Profile — name, payment method, logout |
 
 ## Out of Scope (v1)
