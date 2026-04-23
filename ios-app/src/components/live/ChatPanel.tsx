@@ -6,8 +6,13 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
+  Keyboard,
+  InputAccessoryView,
+  Platform,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
+
+const INPUT_ACCESSORY_ID = "chat-dismiss";
 
 type MessageUser = {
   id: number;
@@ -33,6 +38,7 @@ type Props = { channelId: number };
 export function ChatPanel({ channelId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const listRef = useRef<FlatList>(null);
 
   const { data: initial } = trpc.message.list.useQuery({ channelId, limit: 50 });
@@ -41,6 +47,19 @@ export function ChatPanel({ channelId }: Props) {
   useEffect(() => {
     if (initial) setMessages(initial as Message[]);
   }, [initial]);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardWillShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener("keyboardWillHide", () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   trpc.message.subscribe.useSubscription(
     { channelId },
@@ -60,45 +79,57 @@ export function ChatPanel({ channelId }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        ref={listRef}
-        data={messages}
-        keyExtractor={(m) => String(m.id)}
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-        renderItem={({ item }) => (
-          <View style={styles.messageRow}>
-            <Text style={styles.name}>{displayName(item.user)} </Text>
-            <Text style={styles.content}>{item.content}</Text>
-          </View>
-        )}
-      />
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={text}
-          onChangeText={setText}
-          placeholder="Message…"
-          placeholderTextColor="rgba(255,255,255,0.4)"
-          onSubmitEditing={send}
-          returnKeyType="send"
-          blurOnSubmit={false}
+    <>
+      <View style={[styles.container, { bottom: keyboardHeight }]}>
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(m) => String(m.id)}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          renderItem={({ item }) => (
+            <View style={styles.messageRow}>
+              <Text style={styles.name}>{displayName(item.user)} </Text>
+              <Text style={styles.content}>{item.content}</Text>
+            </View>
+          )}
         />
-        <Pressable style={styles.sendButton} onPress={send}>
-          <Text style={styles.sendText}>↑</Text>
-        </Pressable>
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            value={text}
+            onChangeText={setText}
+            placeholder="Message…"
+            placeholderTextColor="rgba(255,255,255,0.4)"
+            onSubmitEditing={send}
+            returnKeyType="send"
+            blurOnSubmit={false}
+            inputAccessoryViewID={Platform.OS === "ios" ? INPUT_ACCESSORY_ID : undefined}
+          />
+          <Pressable style={styles.sendButton} onPress={send}>
+            <Text style={styles.sendText}>↑</Text>
+          </Pressable>
+        </View>
       </View>
-    </View>
+
+      {Platform.OS === "ios" && (
+        <InputAccessoryView nativeID={INPUT_ACCESSORY_ID}>
+          <View style={styles.accessory}>
+            <Pressable onPress={Keyboard.dismiss} style={styles.dismissButton}>
+              <Text style={styles.dismissText}>Fermer</Text>
+            </Pressable>
+          </View>
+        </InputAccessoryView>
+      )}
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
     height: 260,
@@ -154,5 +185,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
+  },
+  accessory: {
+    backgroundColor: "#1C1C1E",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: "flex-end",
+  },
+  dismissButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  dismissText: {
+    color: "#A78BFA",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

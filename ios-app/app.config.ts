@@ -18,7 +18,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: "fr.mamath.popup",
-    deploymentTarget: "18.0",
     infoPlist: {
       NSCameraUsageDescription: "Popup utilise la caméra pour les lives vidéo.",
       NSMicrophoneUsageDescription:

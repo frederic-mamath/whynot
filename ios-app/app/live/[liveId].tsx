@@ -2,15 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
+import type { IRtcEngine, RtcConnection, UserOfflineReasonType } from "react-native-agora";
 import {
+  isAgoraAvailable,
   createAgoraRtcEngine,
-  IRtcEngine,
+  RtcSurfaceView,
   ChannelProfileType,
   ClientRoleType,
-  RtcSurfaceView,
-  RtcConnection,
-  UserOfflineReasonType,
-} from "react-native-agora";
+} from "@/lib/agora";
 import { trpc } from "@/lib/trpc";
 import { LiveBadge } from "@/components/live/LiveBadge";
 import { ChatPanel } from "@/components/live/ChatPanel";
@@ -97,6 +96,10 @@ export default function LiveScreen() {
             return;
           }
 
+          setLiveStatus("active");
+
+          if (!isAgoraAvailable || !createAgoraRtcEngine) return;
+
           const { token, appId, uid, channel } = data as {
             liveStatus: "active";
             token: string;
@@ -110,10 +113,10 @@ export default function LiveScreen() {
 
           engine.initialize({
             appId,
-            channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
+            channelProfile: ChannelProfileType!.ChannelProfileLiveBroadcasting,
           });
 
-          engine.setClientRole(ClientRoleType.ClientRoleAudience);
+          engine.setClientRole(ClientRoleType!.ClientRoleAudience);
           engine.enableVideo();
 
           engine.addListener("onUserJoined", (_connection: RtcConnection, uid: number) => {
@@ -133,7 +136,6 @@ export default function LiveScreen() {
           });
 
           setJoined(true);
-          setLiveStatus("active");
         },
         onError: () => {
           setLiveStatus("ended");
@@ -154,11 +156,18 @@ export default function LiveScreen() {
   return (
     <View style={styles.container}>
       {/* Video layer */}
-      {joined && remoteUid !== null && (
+      {joined && remoteUid !== null && RtcSurfaceView && (
         <RtcSurfaceView
           style={StyleSheet.absoluteFill}
           canvas={{ uid: remoteUid }}
         />
+      )}
+
+      {/* Video unavailable placeholder */}
+      {liveStatus === "active" && !isAgoraAvailable && (
+        <View style={styles.noVideoOverlay}>
+          <Text style={styles.noVideoText}>Vidéo non disponible sur cet appareil</Text>
+        </View>
       )}
 
       {/* Top bar: back + LIVE badge */}
@@ -183,7 +192,7 @@ export default function LiveScreen() {
         </View>
       )}
 
-      {liveStatus === "active" && joined && remoteUid === null && (
+      {liveStatus === "active" && joined && remoteUid === null && isAgoraAvailable && (
         <View style={styles.center}>
           <Text style={styles.waitText}>En attente du vendeur…</Text>
         </View>
@@ -274,5 +283,17 @@ const styles = StyleSheet.create({
   statusSub: {
     color: "rgba(255,255,255,0.6)",
     fontSize: 14,
+  },
+  noVideoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#111",
+  },
+  noVideoText: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: 14,
+    textAlign: "center",
+    paddingHorizontal: 32,
   },
 });
