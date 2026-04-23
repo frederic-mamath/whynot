@@ -6,11 +6,13 @@ import {
   Image,
   Pressable,
   ScrollView,
+  Modal,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
+import { PaymentSetupSheet } from "@/components/live/PaymentSetupSheet";
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
@@ -22,6 +24,7 @@ export default function ProfileScreen() {
   const [editingName, setEditingName] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [showCardSetup, setShowCardSetup] = useState(false);
 
   const updateMutation = trpc.profile.update.useMutation({
     onSuccess: () => {
@@ -170,8 +173,24 @@ export default function ProfileScreen() {
             </Pressable>
           </View>
         ) : (
-          <Text style={styles.noCard}>Aucune carte enregistrée</Text>
+          <Pressable style={styles.addCardButton} onPress={() => setShowCardSetup(true)}>
+            <Text style={styles.addCardText}>+ Ajouter une carte</Text>
+          </Pressable>
         )}
+
+      <Modal
+        visible={showCardSetup}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCardSetup(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowCardSetup(false)} />
+        <View style={styles.modalSheet}>
+          <View style={styles.modalHandle} />
+          <Text style={styles.modalTitle}>Ajouter une carte</Text>
+          <PaymentSetupSheet onSuccess={() => setShowCardSetup(false)} />
+        </View>
+      </Modal>
       </View>
 
       {/* Log out */}
@@ -337,9 +356,42 @@ const styles = StyleSheet.create({
     color: "#EF4444",
     fontWeight: "600",
   },
-  noCard: {
-    fontSize: 14,
-    color: "#9CA3AF",
+  addCardButton: {
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: "#7C3AED",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addCardText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalSheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#E5E7EB",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 16,
   },
   logoutButton: {
     marginHorizontal: 16,

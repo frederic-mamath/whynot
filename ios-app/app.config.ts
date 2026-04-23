@@ -18,6 +18,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: "fr.mamath.popup",
+    deploymentTarget: "18.0",
     infoPlist: {
       NSCameraUsageDescription:
         "Popup utilise la caméra pour les lives vidéo.",
@@ -28,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-router",
     "expo-secure-store",
-    ["@stripe/stripe-react-native", { merchantIdentifier: "" }],
+    ["@stripe/stripe-react-native", { merchantIdentifier: "merchant.fr.mamath.popup" }],
   ],
   experiments: {
     typedRoutes: true,
@@ -39,5 +40,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000",
     wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? "ws://localhost:3000",
     stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
+    applePayMerchantId: process.env.EXPO_PUBLIC_APPLE_PAY_MERCHANT_ID ?? "",
   },
 });
