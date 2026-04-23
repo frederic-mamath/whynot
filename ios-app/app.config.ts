@@ -20,16 +20,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "fr.mamath.popup",
     deploymentTarget: "18.0",
     infoPlist: {
-      NSCameraUsageDescription:
-        "Popup utilise la caméra pour les lives vidéo.",
+      NSCameraUsageDescription: "Popup utilise la caméra pour les lives vidéo.",
       NSMicrophoneUsageDescription:
         "Popup utilise le micro pour les lives vidéo.",
     },
   },
+  android: {
+    package: "fr.mamath.popup",
+  },
   plugins: [
     "expo-router",
     "expo-secure-store",
-    ["@stripe/stripe-react-native", { merchantIdentifier: "merchant.fr.mamath.popup" }],
+    [
+      "@stripe/stripe-react-native",
+      { merchantIdentifier: "merchant.fr.mamath.popup" },
+    ],
   ],
   experiments: {
     typedRoutes: true,
