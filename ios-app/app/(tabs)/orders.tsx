@@ -44,11 +44,15 @@ export default function OrdersScreen() {
   const handlePayNow = async (orderId: string) => {
     setPayingOrderId(orderId);
     try {
-      const { clientSecret } = await createPaymentIntent.mutateAsync({ orderId });
+      const { clientSecret, customerId, ephemeralKey } =
+        await createPaymentIntent.mutateAsync({ orderId });
 
       const initResult = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret ?? "",
         merchantDisplayName: "Popup",
+        ...(customerId && ephemeralKey
+          ? { customerId, customerEphemeralKeySecret: ephemeralKey }
+          : {}),
       });
 
       if (initResult.error) {

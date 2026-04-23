@@ -9,6 +9,9 @@ import {
   Modal,
   StyleSheet,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
@@ -182,13 +185,33 @@ export default function ProfileScreen() {
         visible={showCardSetup}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowCardSetup(false)}
+        onRequestClose={() => { Keyboard.dismiss(); setShowCardSetup(false); }}
       >
-        <Pressable style={styles.modalBackdrop} onPress={() => setShowCardSetup(false)} />
-        <View style={styles.modalSheet}>
-          <View style={styles.modalHandle} />
-          <Text style={styles.modalTitle}>Ajouter une carte</Text>
-          <PaymentSetupSheet onSuccess={() => setShowCardSetup(false)} />
+        <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => { Keyboard.dismiss(); setShowCardSetup(false); }}
+          />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.modalKav}
+            pointerEvents="box-none"
+          >
+            <View style={styles.modalSheet}>
+              <View style={styles.modalHandle} />
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Ajouter une carte</Text>
+                <Pressable
+                  onPress={() => { Keyboard.dismiss(); setShowCardSetup(false); }}
+                  style={styles.modalClose}
+                  hitSlop={12}
+                >
+                  <Text style={styles.modalCloseText}>✕</Text>
+                </Pressable>
+              </View>
+              <PaymentSetupSheet onSuccess={() => setShowCardSetup(false)} />
+            </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
       </View>
@@ -368,9 +391,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
-  modalBackdrop: {
+  modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalKav: {
+    justifyContent: "flex-end",
   },
   modalSheet: {
     backgroundColor: "#fff",
@@ -387,11 +414,29 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 16,
   },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
   modalTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 16,
+  },
+  modalClose: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCloseText: {
+    fontSize: 13,
+    color: "#6B7280",
+    fontWeight: "600",
   },
   logoutButton: {
     marginHorizontal: 16,

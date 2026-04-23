@@ -17,13 +17,15 @@ export class StripeService {
     currency?: string;
     orderId: string;
     buyerEmail?: string;
+    customerId?: string;
     metadata?: Record<string, string>;
   }): Promise<Stripe.PaymentIntent> {
     const {
       amount,
-      currency = "usd",
+      currency = "eur",
       orderId,
       buyerEmail,
+      customerId,
       metadata = {},
     } = params;
 
@@ -38,6 +40,7 @@ export class StripeService {
         ...metadata,
       },
       ...(buyerEmail && { receipt_email: buyerEmail }),
+      ...(customerId && { customer: customerId }),
     });
   }
 
@@ -157,6 +160,24 @@ export class StripeService {
     paymentMethodId: string,
   ): Promise<Stripe.PaymentMethod> {
     return stripe.paymentMethods.detach(paymentMethodId);
+  }
+
+  async updatePaymentIntent(
+    paymentIntentId: string,
+    params: { customerId?: string },
+  ): Promise<Stripe.PaymentIntent> {
+    return stripe.paymentIntents.update(paymentIntentId, {
+      ...(params.customerId && { customer: params.customerId }),
+    });
+  }
+
+  async createEphemeralKey(params: {
+    customerId: string;
+  }): Promise<Stripe.EphemeralKey> {
+    return stripe.ephemeralKeys.create(
+      { customer: params.customerId },
+      { apiVersion: "2025-12-15.clover" },
+    );
   }
 }
 

@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { orderRepository } from '../repositories';
+import { orderRepository, userRepository } from '../repositories';
 import { stripeService } from '../services/StripeService';
 
 export const orderRouter = router({
@@ -118,12 +118,30 @@ export const orderRouter = router({
         });
       }
 
+      // Look up user's Stripe customer ID to attach saved payment method
+      const user = await userRepository.findById(ctx.user.id);
+      const customerId = user?.stripe_customer_id ?? undefined;
+
+      // Create ephemeral key when customer exists (enables saved card in PaymentSheet)
+      let ephemeralKey: string | undefined;
+      if (customerId) {
+        const key = await stripeService.createEphemeralKey({ customerId });
+        ephemeralKey = key.secret;
+      }
+
       // Return existing payment intent if available
       if (order.stripe_payment_intent_id) {
-        const existing = await stripeService.getPaymentIntent(
+        let existing = await stripeService.getPaymentIntent(
           order.stripe_payment_intent_id
         );
-        return { clientSecret: existing.client_secret };
+        // Attach customer if the intent was created before the customer existed
+        if (customerId && !existing.customer) {
+          existing = await stripeService.updatePaymentIntent(
+            order.stripe_payment_intent_id,
+            { customerId }
+          );
+        }
+        return { clientSecret: existing.client_secret, customerId, ephemeralKey };
       }
 
       // Create new payment intent
@@ -132,12 +150,13 @@ export const orderRouter = router({
         amount: amountInCents,
         orderId: order.id,
         buyerEmail: ctx.user.email,
+        customerId,
       });
 
       // Save payment intent ID
       await orderRepository.updateStripePaymentIntent(order.id, paymentIntent.id);
 
-      return { clientSecret: paymentIntent.client_secret };
+      return { clientSecret: paymentIntent.client_secret, customerId, ephemeralKey };
     }),
 
   /**

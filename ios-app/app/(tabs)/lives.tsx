@@ -45,6 +45,7 @@ export default function LivesScreen() {
         keyExtractor={(c) => c}
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.chipsScroll}
         contentContainerStyle={styles.chips}
         renderItem={({ item }) => (
           <Pressable
@@ -120,10 +121,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
   },
+  chipsScroll: {
+    flexShrink: 0,
+    marginBottom: 16,
+  },
   chips: {
     paddingHorizontal: 16,
     gap: 8,
-    marginBottom: 16,
   },
   chip: {
     paddingHorizontal: 14,
