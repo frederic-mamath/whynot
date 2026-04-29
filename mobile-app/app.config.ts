@@ -4,17 +4,17 @@ import { ExpoConfig, ConfigContext } from "expo/config";
  * Dynamic Expo config — reads from .env automatically (Expo SDK 49+).
  *
  * Dev:  API_URL=http://192.168.X.X:3000 in .env
- * Prod: API_URL not set → falls back to https://whynot-app.onrender.com
+ * Prod: API_URL not set → falls back to https://popup-live.fr
  */
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "WhyNot",
-  slug: "whynot",
+  name: "Popup",
+  slug: "popup",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
-  scheme: "whynot",
+  scheme: "popup",
   splash: {
     image: "./assets/splash-icon.png",
     resizeMode: "contain",
@@ -22,18 +22,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "fr.mamath.whynot",
+    bundleIdentifier: "fr.popup-live",
     infoPlist: {
       NSCameraUsageDescription:
-        "WhyNot needs access to your camera to host live streams and take product photos.",
+        "Popup needs access to your camera to host live streams and take product photos.",
       NSMicrophoneUsageDescription:
-        "WhyNot needs access to your microphone to host live streams.",
+        "Popup needs access to your microphone to host live streams.",
       NSPhotoLibraryUsageDescription:
-        "WhyNot needs access to your photo library to upload product images.",
+        "Popup needs access to your photo library to upload product images.",
     },
   },
   android: {
-    package: "fr.mamath.whynot",
+    package: "fr.popup-live",
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
       foregroundImage: "./assets/android-icon-foreground.png",
@@ -51,20 +51,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "@stripe/stripe-react-native",
       {
-        merchantIdentifier: "merchant.fr.mamath.whynot",
+        merchantIdentifier: "merchant.fr.popup-live",
         enableGooglePay: true,
       },
     ],
   ],
   extra: {
     // Reads API_URL from .env — falls back to production if not set
-    apiUrl: process.env.API_URL ?? "https://whynot-app.onrender.com",
+    apiUrl: process.env.API_URL ?? "https://popup-live.fr",
     // Reads WS_URL from .env — derived from apiUrl if not set
     wsUrl:
       process.env.WS_URL ??
       (process.env.API_URL
         ? process.env.API_URL.replace(/^http/, "ws")
-        : "wss://whynot-app.onrender.com"),
+        : "wss://popup-live.fr"),
     stripePublishableKey:
       process.env.STRIPE_PUBLISHABLE_KEY ??
       "pk_test_51RX5wpFpXSJuaxQVgRq7ESvBfZuVGMUC50zBcr8lWtlaiSPjd4FShApmDX7BDlY9UYQ2vTrMpLoPvvdgZNvGythr00ge5JIFoi",

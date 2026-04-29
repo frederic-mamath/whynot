@@ -10,7 +10,7 @@ export function StripeProvider({ children }: { children: React.ReactElement }) {
   return (
     <NativeStripeProvider
       publishableKey={PUBLISHABLE_KEY}
-      merchantIdentifier="merchant.fr.mamath.whynot"
+      merchantIdentifier="merchant.fr.popup-live"
     >
       {children}
     </NativeStripeProvider>
