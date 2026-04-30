@@ -5,7 +5,10 @@
 let mod: typeof import("react-native-agora") | null = null;
 try {
   mod = require("react-native-agora");
-} catch {}
+} catch (e) {
+  console.error("[Agora] Failed to load react-native-agora:", e);
+  throw e;
+}
 
 export const isAgoraAvailable = mod !== null;
 export const createAgoraRtcEngine = mod?.createAgoraRtcEngine ?? null;
