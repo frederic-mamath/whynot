@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
-import type { IRtcEngine, RtcConnection, UserOfflineReasonType } from "react-native-agora";
 import {
   isAgoraAvailable,
   createAgoraRtcEngine,
@@ -37,7 +36,7 @@ export default function LiveScreen() {
   const { user } = useAuth();
   const channelId = Number(liveId);
 
-  const engineRef = useRef<IRtcEngine | null>(null);
+  const engineRef = useRef<ReturnType<typeof createAgoraRtcEngine> | null>(null);
   const [remoteUid, setRemoteUid] = useState<number | null>(null);
   const [joined, setJoined] = useState(false);
   const [liveStatus, setLiveStatus] = useState<"loading" | "upcoming" | "active" | "ended">("loading");
@@ -119,16 +118,13 @@ export default function LiveScreen() {
           engine.setClientRole(ClientRoleType!.ClientRoleAudience);
           engine.enableVideo();
 
-          engine.addListener("onUserJoined", (_connection: RtcConnection, uid: number) => {
+          engine.addListener("onUserJoined", (_: any, uid: number) => {
             setRemoteUid(uid);
           });
 
-          engine.addListener(
-            "onUserOffline",
-            (_connection: RtcConnection, _uid: number, _reason: UserOfflineReasonType) => {
-              setRemoteUid(null);
-            }
-          );
+          engine.addListener("onUserOffline", () => {
+            setRemoteUid(null);
+          });
 
           await engine.joinChannel(token, channel.id.toString(), uid, {
             autoSubscribeVideo: true,

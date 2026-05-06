@@ -1,0 +1,8 @@
+{
+  "platforms": ["ios"],
+  "ios": {
+    "modules": ["AgoraViewerModule"],
+    "swiftModuleName": "agora_viewer",
+    "podspecPath": "agora-viewer.podspec"
+  }
+}
