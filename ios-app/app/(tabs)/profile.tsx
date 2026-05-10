@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  Alert,
 } from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
@@ -39,6 +40,25 @@ export default function ProfileScreen() {
   const deleteMutation = trpc.payment.deletePaymentMethod.useMutation({
     onSuccess: () => utils.payment.getPaymentStatus.invalidate(),
   });
+
+  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation({
+    onSuccess: () => logout(),
+  });
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Supprimer mon compte",
+      "Cette action est irréversible. Toutes tes données seront supprimées définitivement.",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer définitivement",
+          style: "destructive",
+          onPress: () => deleteAccountMutation.mutate(),
+        },
+      ],
+    );
+  };
 
   const profile = profileQuery.data;
   const paymentMethods = paymentQuery.data?.paymentMethods ?? [];
@@ -219,6 +239,19 @@ export default function ProfileScreen() {
       {/* Log out */}
       <Pressable style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Se déconnecter</Text>
+      </Pressable>
+
+      {/* Delete account */}
+      <Pressable
+        style={[styles.deleteButton, deleteAccountMutation.isPending && styles.disabled]}
+        onPress={handleDeleteAccount}
+        disabled={deleteAccountMutation.isPending}
+      >
+        {deleteAccountMutation.isPending ? (
+          <ActivityIndicator color="#EF4444" size="small" />
+        ) : (
+          <Text style={styles.deleteText}>Supprimer mon compte</Text>
+        )}
       </Pressable>
     </ScrollView>
   );
@@ -450,5 +483,18 @@ const styles = StyleSheet.create({
     color: "#EF4444",
     fontSize: 16,
     fontWeight: "600",
+  },
+  deleteButton: {
+    marginHorizontal: 16,
+    paddingVertical: 14,
+    alignItems: "center",
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  deleteText: {
+    color: "#9CA3AF",
+    fontSize: 14,
+    fontWeight: "500",
+    textDecorationLine: "underline",
   },
 });

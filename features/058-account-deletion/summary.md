@@ -22,14 +22,20 @@ Apple App Store guideline 5.1.1(v) requires that any app allowing account creati
 
 | Ticket | Description | Status |
 |:-------|:------------|:-------|
-| ticket-001 | Backend — `auth.deleteAccount` mutation | planned |
-| ticket-002 | Web — delete account UI in ProfilePage | planned |
-| ticket-003 | iOS — delete account UI in profile screen | planned |
+| ticket-001 | Backend — `auth.deleteAccount` mutation | completed |
+| ticket-002 | Web — delete account UI in ProfilePage | completed |
+| ticket-003 | iOS — delete account UI in profile screen | completed |
+| ticket-004 | Backend — `auth.deletionBlockers` query + guard in `deleteAccount` | planned |
+| ticket-005 | Web — deletion blockers pre-check in ProfilePage | planned |
+| ticket-006 | iOS — deletion blockers pre-check in profile screen | planned |
 
 ## User Stories
 
 | User Story | Status |
 |:-----------|:-------|
-| As a buyer, in the web profile page, I can permanently delete my account | planned |
-| As a buyer, in the iOS profile screen, I can permanently delete my account | planned |
-| As a buyer, after deleting my account, I am logged out and cannot log back in | planned |
+| As a buyer, in the web profile page, I can permanently delete my account | completed |
+| As a buyer, in the iOS profile screen, I can permanently delete my account | completed |
+| As a buyer, after deleting my account, I am logged out and cannot log back in | completed |
+| As a buyer with unpaid orders, when I try to delete my account, I am blocked and shown which orders are pending | planned |
+| As a buyer with packages in transit, when I try to delete my account, I am blocked and shown which packages are not yet delivered | planned |
+| As a seller with paid orders not yet shipped, when I try to delete my account, I am blocked and shown which orders are waiting to be shipped | planned |
