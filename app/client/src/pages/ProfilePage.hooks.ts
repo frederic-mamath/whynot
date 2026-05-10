@@ -53,6 +53,10 @@ export function useProfile() {
   // ── Relay dialog state ───────────────────────────────────────────────────
   const [relayDialogOpen, setRelayDialogOpen] = useState(false);
 
+  // ── Account deletion dialog state ────────────────────────────────────────
+  const [blockersDialogOpen, setBlockersDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: profile, isLoading } = trpc.profile.me.useQuery(undefined, {
     onSuccess: (data) => {
@@ -65,6 +69,10 @@ export function useProfile() {
   });
 
   const { data: paymentStatus } = trpc.payment.getPaymentStatus.useQuery();
+
+  const deletionBlockers = trpc.auth.deletionBlockers.useQuery(undefined, {
+    enabled: false,
+  });
 
   // ── Mutations ─────────────────────────────────────────────────────────────
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -83,6 +91,15 @@ export function useProfile() {
       navigate("/");
     } catch {
       toast.error("Une erreur est survenue. Réessaie plus tard.");
+    }
+  };
+
+  const handleRequestDelete = async () => {
+    const result = await deletionBlockers.refetch();
+    if ((result.data?.blockers.length ?? 0) > 0) {
+      setBlockersDialogOpen(true);
+    } else {
+      setConfirmDialogOpen(true);
     }
   };
 
@@ -327,6 +344,13 @@ export function useProfile() {
     handleReplaceWithManual,
     deleteAccountMutation,
     handleDeleteAccount,
+    // Deletion blockers
+    deletionBlockers,
+    blockersDialogOpen,
+    setBlockersDialogOpen,
+    confirmDialogOpen,
+    setConfirmDialogOpen,
+    handleRequestDelete,
     // Utils
     utils,
   };

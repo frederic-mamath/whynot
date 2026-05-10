@@ -41,7 +41,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
@@ -95,6 +94,12 @@ export default function ProfilePage() {
     handleReplaceWithManual,
     deleteAccountMutation,
     handleDeleteAccount,
+    deletionBlockers,
+    blockersDialogOpen,
+    setBlockersDialogOpen,
+    confirmDialogOpen,
+    setConfirmDialogOpen,
+    handleRequestDelete,
     utils,
   } = useProfile();
 
@@ -414,37 +419,67 @@ export default function ProfilePage() {
 
       {/* Danger zone */}
       <div className="mt-2 pb-8 pt-6 border-t border-border">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <ButtonV2
-              icon={<Trash2 className="size-4" />}
-              label="Supprimer mon compte"
-              className="w-full bg-destructive text-destructive-foreground hover:opacity-90"
-            />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Supprimer mon compte</AlertDialogTitle>
-              <AlertDialogDescription>
-                Cette action est irréversible. Toutes tes données seront
-                supprimées définitivement.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteAccount}
-                disabled={deleteAccountMutation.isPending}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleteAccountMutation.isPending
-                  ? "Suppression…"
-                  : "Supprimer définitivement"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ButtonV2
+          icon={<Trash2 className="size-4" />}
+          label="Supprimer mon compte"
+          className="w-full bg-destructive text-destructive-foreground hover:opacity-90"
+          onClick={handleRequestDelete}
+          disabled={deletionBlockers.isFetching}
+        />
       </div>
+
+      {/* Blockers dialog */}
+      <AlertDialog open={blockersDialogOpen} onOpenChange={setBlockersDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suppression impossible</AlertDialogTitle>
+            <AlertDialogDescription>
+              Les commandes suivantes bloquent la suppression de ton compte :
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <ul className="mt-2 mb-4 space-y-1 px-1">
+            {deletionBlockers.data?.blockers.map((b, i) => (
+              <li key={i} className="text-sm text-foreground">
+                <span className="font-medium">{b.productName}</span>
+                {" — "}
+                {b.reason === "payment_pending"
+                  ? "paiement en attente"
+                  : b.reason === "delivery_pending"
+                    ? "livraison en cours"
+                    : "expédition en attente"}
+              </li>
+            ))}
+          </ul>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Compris</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm delete dialog */}
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer mon compte</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes tes données seront
+              supprimées définitivement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteAccountMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAccountMutation.isPending
+                ? "Suppression…"
+                : "Supprimer définitivement"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Address Dialog */}
       <Dialog open={addressDialogOpen} onOpenChange={setAddressDialogOpen}>
