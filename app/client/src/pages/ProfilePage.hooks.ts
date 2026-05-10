@@ -74,6 +74,18 @@ export function useProfile() {
     },
   });
 
+  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation();
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccountMutation.mutateAsync();
+      removeToken();
+      navigate("/");
+    } catch {
+      toast.error("Une erreur est survenue. Réessaie plus tard.");
+    }
+  };
+
   const imageUpload = trpc.image.upload.useMutation();
 
   const updateAvatarMutation = trpc.profile.updateAvatar.useMutation({
@@ -313,6 +325,8 @@ export function useProfile() {
     handleSubmitAddress,
     confirmDelete,
     handleReplaceWithManual,
+    deleteAccountMutation,
+    handleDeleteAccount,
     // Utils
     utils,
   };

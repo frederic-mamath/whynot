@@ -41,6 +41,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { PaymentSetupDialog } from "@/components/PaymentSetupDialog";
@@ -92,6 +93,8 @@ export default function ProfilePage() {
     handleSubmitAddress,
     confirmDelete,
     handleReplaceWithManual,
+    deleteAccountMutation,
+    handleDeleteAccount,
     utils,
   } = useProfile();
 
@@ -407,6 +410,40 @@ export default function ProfilePage() {
           disabled={logoutMutation.isPending}
           className="w-full border border-destructive bg-background text-destructive hover:bg-destructive hover:text-destructive-foreground"
         />
+      </div>
+
+      {/* Danger zone */}
+      <div className="mt-2 pb-8 pt-6 border-t border-border">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <ButtonV2
+              icon={<Trash2 className="size-4" />}
+              label="Supprimer mon compte"
+              className="w-full bg-destructive text-destructive-foreground hover:opacity-90"
+            />
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Supprimer mon compte</AlertDialogTitle>
+              <AlertDialogDescription>
+                Cette action est irréversible. Toutes tes données seront
+                supprimées définitivement.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                disabled={deleteAccountMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteAccountMutation.isPending
+                  ? "Suppression…"
+                  : "Supprimer définitivement"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {/* Address Dialog */}
