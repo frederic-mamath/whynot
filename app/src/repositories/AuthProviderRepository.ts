@@ -67,6 +67,13 @@ export class AuthProviderRepository {
 
     return Number(result.numDeletedRows) > 0;
   }
+
+  async deleteAllByUserId(userId: number): Promise<void> {
+    await db
+      .deleteFrom("auth_providers")
+      .where("user_id", "=", userId)
+      .execute();
+  }
 }
 
 export const authProviderRepository = new AuthProviderRepository();

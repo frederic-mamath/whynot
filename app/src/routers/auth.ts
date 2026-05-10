@@ -9,6 +9,7 @@ import {
 } from "../utils/auth";
 import { accountMergeService } from "../services/AccountMergeService";
 import { passwordResetService } from "../services/PasswordResetService";
+import { stripeService } from "../services/StripeService";
 import { TRPCError } from "@trpc/server";
 
 // In-memory rate limiting for forgot-password (email -> timestamps)
@@ -301,6 +302,28 @@ export const authRouter = router({
       await passwordResetService.requestReset(input.email);
       return { success: true };
     }),
+
+  deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await userRepository.findById(ctx.user.id);
+    if (!user) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+    }
+
+    if (user.stripe_customer_id) {
+      await stripeService.deleteCustomer(user.stripe_customer_id);
+    }
+
+    await authProviderRepository.deleteAllByUserId(ctx.user.id);
+    await userRepository.deleteById(ctx.user.id);
+
+    if (ctx.req?.session) {
+      await new Promise<void>((resolve) => {
+        ctx.req!.session.destroy(() => resolve());
+      });
+    }
+
+    return { success: true };
+  }),
 
   resetPassword: publicProcedure
     .input(

@@ -171,6 +171,16 @@ export class StripeService {
     });
   }
 
+  async deleteCustomer(customerId: string): Promise<void> {
+    try {
+      await stripe.customers.del(customerId);
+    } catch (err) {
+      if ((err as Stripe.errors.StripeError).code !== "resource_missing") {
+        throw err;
+      }
+    }
+  }
+
   async createEphemeralKey(params: {
     customerId: string;
   }): Promise<Stripe.EphemeralKey> {
