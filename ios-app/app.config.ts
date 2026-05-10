@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Popup",
   slug: "popup-ios",
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "popup",
@@ -22,6 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSCameraUsageDescription: "Popup utilise la caméra pour les lives vidéo.",
       NSMicrophoneUsageDescription:
         "Popup utilise le micro pour les lives vidéo.",
+      ITSAppUsesNonExemptEncryption: false,
     },
   },
   android: {
