@@ -41,6 +41,10 @@ export default function ProfileScreen() {
     onSuccess: () => utils.payment.getPaymentStatus.invalidate(),
   });
 
+  const deletionBlockers = trpc.auth.deletionBlockers.useQuery(undefined, {
+    enabled: false,
+  });
+
   const deleteAccountMutation = trpc.auth.deleteAccount.useMutation({
     onSuccess: () => logout(),
   });
@@ -58,6 +62,27 @@ export default function ProfileScreen() {
         },
       ],
     );
+  };
+
+  const reasonLabel = (reason: string) => {
+    if (reason === "payment_pending") return "paiement en attente";
+    if (reason === "delivery_pending") return "livraison en cours";
+    return "expédition en attente";
+  };
+
+  const handleRequestDelete = async () => {
+    const result = await deletionBlockers.refetch();
+    const blockers = result.data?.blockers ?? [];
+    if (blockers.length > 0) {
+      const message = blockers
+        .map((b) => `${b.productName} — ${reasonLabel(b.reason)}`)
+        .join("\n");
+      Alert.alert("Suppression impossible", message, [
+        { text: "Compris", style: "cancel" },
+      ]);
+    } else {
+      handleDeleteAccount();
+    }
   };
 
   const profile = profileQuery.data;
@@ -243,9 +268,9 @@ export default function ProfileScreen() {
 
       {/* Delete account */}
       <Pressable
-        style={[styles.deleteButton, deleteAccountMutation.isPending && styles.disabled]}
-        onPress={handleDeleteAccount}
-        disabled={deleteAccountMutation.isPending}
+        style={[styles.deleteButton, (deleteAccountMutation.isPending || deletionBlockers.isFetching) && styles.disabled]}
+        onPress={handleRequestDelete}
+        disabled={deleteAccountMutation.isPending || deletionBlockers.isFetching}
       >
         {deleteAccountMutation.isPending ? (
           <ActivityIndicator color="#EF4444" size="small" />
