@@ -45,3 +45,4 @@ import { OrderRepository } from "./OrderRepository";
 export const auctionRepository = new AuctionRepository();
 export const bidRepository = new BidRepository();
 export const orderRepository = new OrderRepository();
+export { packageRepository } from "./PackageRepository";

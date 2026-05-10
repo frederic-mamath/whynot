@@ -208,6 +208,19 @@ export class PackageRepository {
       .where("seller_id", "=", sellerId)
       .executeTakeFirst();
   }
+
+  async findActiveByBuyer(
+    buyerId: number,
+  ): Promise<{ product_name: string }[]> {
+    return db
+      .selectFrom("packages")
+      .innerJoin("orders", "orders.package_id", "packages.id")
+      .innerJoin("products", "products.id", "orders.product_id")
+      .select([sql<string>`products.name`.as("product_name")])
+      .where("packages.buyer_id", "=", buyerId)
+      .where("packages.status", "not in", ["shipped", "delivered"])
+      .execute() as Promise<{ product_name: string }[]>;
+  }
 }
 
 export const packageRepository = new PackageRepository();

@@ -228,4 +228,35 @@ export class OrderRepository {
       .returningAll()
       .executeTakeFirstOrThrow();
   }
+
+  async findUnpaidByBuyer(
+    buyerId: number,
+  ): Promise<{ product_name: string }[]> {
+    return db
+      .selectFrom("orders")
+      .innerJoin("products", "products.id", "orders.product_id")
+      .select([sql<string>`products.name`.as("product_name")])
+      .where("orders.buyer_id", "=", buyerId)
+      .where("orders.payment_status", "not in", ["paid", "refunded"])
+      .execute() as Promise<{ product_name: string }[]>;
+  }
+
+  async findPaidUnshippedBySeller(
+    sellerId: number,
+  ): Promise<{ product_name: string }[]> {
+    return db
+      .selectFrom("orders")
+      .innerJoin("products", "products.id", "orders.product_id")
+      .leftJoin("packages", "packages.id", "orders.package_id")
+      .select([sql<string>`products.name`.as("product_name")])
+      .where("orders.seller_id", "=", sellerId)
+      .where("orders.payment_status", "=", "paid")
+      .where((eb) =>
+        eb.or([
+          eb("orders.package_id", "is", null),
+          eb("packages.status", "not in", ["shipped", "delivered"]),
+        ]),
+      )
+      .execute() as Promise<{ product_name: string }[]>;
+  }
 }

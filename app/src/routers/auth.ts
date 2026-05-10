@@ -1,6 +1,11 @@
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import { userRepository, authProviderRepository } from "../repositories";
+import {
+  userRepository,
+  authProviderRepository,
+  orderRepository,
+  packageRepository,
+} from "../repositories";
 import {
   hashPassword,
   verifyPassword,
@@ -14,6 +19,40 @@ import { TRPCError } from "@trpc/server";
 
 // In-memory rate limiting for forgot-password (email -> timestamps)
 const rateLimitMap = new Map<string, number[]>();
+
+type DeletionBlocker = {
+  productName: string;
+  reason: "payment_pending" | "delivery_pending" | "shipment_pending";
+};
+
+async function getDeletionBlockers(
+  userId: number,
+): Promise<{ eligible: boolean; blockers: DeletionBlocker[] }> {
+  const [unpaidOrders, activePackages, paidUnshipped] = await Promise.all([
+    orderRepository.findUnpaidByBuyer(userId),
+    packageRepository.findActiveByBuyer(userId),
+    orderRepository.findPaidUnshippedBySeller(userId),
+  ]);
+
+  const seen = new Set<string>();
+  const blockers: DeletionBlocker[] = [];
+
+  const add = (productName: string, reason: DeletionBlocker["reason"]) => {
+    const key = `${productName}:${reason}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      blockers.push({ productName, reason });
+    }
+  };
+
+  for (const r of unpaidOrders) add(r.product_name, "payment_pending");
+  for (const r of activePackages) add(r.product_name, "delivery_pending");
+  for (const r of paidUnshipped) add(r.product_name, "shipment_pending");
+
+  blockers.sort((a, b) => a.productName.localeCompare(b.productName));
+
+  return { eligible: blockers.length === 0, blockers };
+}
 
 export const authRouter = router({
   register: publicProcedure
@@ -303,7 +342,19 @@ export const authRouter = router({
       return { success: true };
     }),
 
+  deletionBlockers: protectedProcedure.query(async ({ ctx }) => {
+    return getDeletionBlockers(ctx.user.id);
+  }),
+
   deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
+    const { blockers } = await getDeletionBlockers(ctx.user.id);
+    if (blockers.length > 0) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "pending_orders",
+      });
+    }
+
     const user = await userRepository.findById(ctx.user.id);
     if (!user) {
       throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
