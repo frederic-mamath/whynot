@@ -33,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-secure-store",
     [
       "@stripe/stripe-react-native",
-      { merchantIdentifier: "merchant.fr.mamath.popup" },
+      { merchantIdentifier: "merchant.fr.popup-live" },
     ],
   ],
   experiments: {

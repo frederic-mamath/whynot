@@ -7,9 +7,14 @@ type Props = { children: React.ReactElement | React.ReactElement[] };
 export function StripeProvider({ children }: Props) {
   const publishableKey =
     (Constants.expoConfig?.extra?.stripePublishableKey as string) ?? "";
+  const merchantIdentifier =
+    (Constants.expoConfig?.extra?.applePayMerchantId as string) ?? "";
 
   return (
-    <RNStripeProvider publishableKey={publishableKey}>
+    <RNStripeProvider
+      publishableKey={publishableKey}
+      merchantIdentifier={merchantIdentifier}
+    >
       {children}
     </RNStripeProvider>
   );
