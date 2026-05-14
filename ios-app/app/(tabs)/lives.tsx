@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
   },
   chipsScroll: {
     flexShrink: 0,
+    flexGrow: 0,
     marginBottom: 16,
   },
   chips: {
