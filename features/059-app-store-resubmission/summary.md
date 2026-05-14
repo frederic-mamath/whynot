@@ -28,13 +28,13 @@ First submission of Popup Live (1.0.0 build 3) was rejected on May 11, 2026 with
 | Ticket     | Description                                         | Status  |
 | :--------- | :-------------------------------------------------- | :------ |
 | ticket-001 | Reply to Apple on 4.1 Copycats in App Store Connect | done    |
-| ticket-002 | Build and upload 1.0.1 binary with account deletion | planned |
-| ticket-003 | Record demo videos, fill Review Notes, resubmit     | planned |
+| ticket-002 | Build and upload 1.0.1 binary with account deletion | done    |
+| ticket-003 | Record demo videos, fill Review Notes, resubmit     | done    |
 
 ## User Stories
 
 | User Story                                                                               | Status  |
 | :--------------------------------------------------------------------------------------- | :------ |
-| As a submitter, the 4.1 Copycats rejection is addressed via App Store Connect reply      | planned |
-| As a submitter, a new binary including account deletion is uploaded to App Store Connect | planned |
-| As a submitter, both demo videos are linked in Review Notes and the app is resubmitted   | planned |
+| As a submitter, the 4.1 Copycats rejection is addressed via App Store Connect reply      | completed |
+| As a submitter, a new binary including account deletion is uploaded to App Store Connect | completed |
+| As a submitter, both demo videos are linked in Review Notes and the app is resubmitted   | completed |
