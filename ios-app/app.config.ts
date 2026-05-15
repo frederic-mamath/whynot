@@ -46,5 +46,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? "ws://localhost:3000",
     stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
     applePayMerchantId: process.env.EXPO_PUBLIC_APPLE_PAY_MERCHANT_ID ?? "",
+    eas: {
+      projectId: "e4fb598f-33f8-45f1-859b-33581a264e81",
+    },
   },
 });
