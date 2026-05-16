@@ -28,7 +28,7 @@ Set up Expo EAS Update (free tier) so that JavaScript-only changes can be pushed
 
 | Ticket     | Description                                              | Status  |
 | :--------- | :------------------------------------------------------- | :------ |
-| ticket-001 | Create Expo account and initialize EAS project           | planned |
+| ticket-001 | Create Expo account and initialize EAS project           | done    |
 | ticket-002 | Install expo-updates and configure app.config.ts + eas.json | planned |
 | ticket-003 | Build and submit 1.0.2 binary with expo-updates baked in | planned |
 | ticket-004 | Push first OTA update and verify it lands on device      | planned |
