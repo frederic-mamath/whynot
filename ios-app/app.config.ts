@@ -15,6 +15,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     resizeMode: "contain",
     backgroundColor: "#ffffff",
   },
+  updates: {
+    url: "https://u.expo.dev/e4fb598f-33f8-45f1-859b-33581a264e81",
+  },
+  runtimeVersion: {
+    policy: "appVersion",
+  },
   ios: {
     supportsTablet: false,
     bundleIdentifier: "fr.mamath.popup",

@@ -1,5 +1,9 @@
 # EAS Update Setup
 
+## Status: ON HOLD (2026-05-17)
+
+Blocked by App Store review. Tickets 001 and 002 are complete (Expo project initialized, `expo-updates` installed, `updates.url` + `runtimeVersion` wired in `app.config.ts`). The next step (ticket-003: submit a 1.0.3 binary that bakes in `expo-updates`) cannot proceed until the **currently in-review 1.0.2 submission** is resolved — submitting 1.0.3 now would queue it behind the open review and add another rejection cycle if 1.0.2 is rejected. Resume once 1.0.2 receives a final verdict.
+
 ## Initial Prompt
 
 Set up Expo EAS Update (free tier) so that JavaScript-only changes can be pushed directly to users without going through App Store review. Every future JS/UI/feature change deploys in minutes via `eas update` instead of waiting 1–3 days for Apple.
@@ -29,13 +33,13 @@ Set up Expo EAS Update (free tier) so that JavaScript-only changes can be pushed
 | Ticket     | Description                                              | Status  |
 | :--------- | :------------------------------------------------------- | :------ |
 | ticket-001 | Create Expo account and initialize EAS project           | done    |
-| ticket-002 | Install expo-updates and configure app.config.ts + eas.json | planned |
-| ticket-003 | Build and submit 1.0.2 binary with expo-updates baked in | planned |
-| ticket-004 | Push first OTA update and verify it lands on device      | planned |
+| ticket-002 | Install expo-updates and configure app.config.ts + eas.json | done    |
+| ticket-003 | Build and submit 1.0.3 binary with expo-updates baked in | on hold |
+| ticket-004 | Push first OTA update and verify it lands on device      | on hold |
 
 ## User Stories
 
 | User Story                                                                                          | Status  |
 | :-------------------------------------------------------------------------------------------------- | :------ |
-| As a developer, I can push a JS-only change to production users without submitting to the App Store | planned |
-| As a developer, a new binary automatically receives future OTA updates via the production channel   | planned |
+| As a developer, I can push a JS-only change to production users without submitting to the App Store | on hold |
+| As a developer, a new binary automatically receives future OTA updates via the production channel   | on hold |

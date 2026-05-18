@@ -1,18 +1,22 @@
-# ticket-003 — Build and submit 1.0.2 binary with expo-updates baked in
+# ticket-003 — Build and submit 1.0.3 binary with expo-updates baked in
+
+## Context
+
+Version 1.0.3 was submitted to App Store review **before** `expo-updates` was wired into `app.config.ts` (the `updates.url` and `runtimeVersion` fields were added during ticket-002, after the 1.0.3 binary upload). The 1.0.3 binary is therefore the first version that will be capable of receiving OTA updates.
 
 ## Acceptance Criteria
 
-- As a developer, a 1.0.2 binary containing the `expo-updates` native module is uploaded to App Store Connect
-- As a developer, the 1.0.2 build is attached to a new version in App Store Connect and submitted for review
+- As a developer, a 1.0.3 binary containing the `expo-updates` native module **and** the `EXUpdatesURL` Info.plist entry is uploaded to App Store Connect
+- As a developer, the 1.0.3 build is attached to a new version in App Store Connect and submitted for review
 
 ## Technical Strategy
 
 - iOS App (`ios-app/`)
   - Configuration
     - `ios-app/app.config.ts`
-      - Bump `version` from `1.0.1` to `1.0.2`
+      - Bump `version` from `1.0.3` to `1.0.3`
 
-The binary is built locally via Xcode (same workflow as 1.0.1), not via EAS Build.
+The binary is built locally via Xcode (same workflow as previous versions), not via EAS Build.
 
 ## Manual Operations
 
@@ -21,13 +25,13 @@ The binary is built locally via Xcode (same workflow as 1.0.1), not via EAS Buil
 In `ios-app/app.config.ts`, change:
 
 ```typescript
-version: "1.0.1",
+version: "1.0.3",
 ```
 
 to:
 
 ```typescript
-version: "1.0.2",
+version: "1.0.3",
 ```
 
 ---
@@ -63,7 +67,7 @@ In Xcode:
 
 In the Xcode Organizer:
 
-1. Select the new archive (check the version shows **1.0.2**)
+1. Select the new archive (check the version shows **1.0.3**)
 2. Click **Distribute App**
 3. Select **App Store Connect** → **Next**
 4. Select **Upload** → **Next**
@@ -73,13 +77,13 @@ In the Xcode Organizer:
 
 ---
 
-### Step 5 — Create version 1.0.2 in App Store Connect
+### Step 5 — Create version 1.0.3 in App Store Connect
 
 1. Go to **https://appstoreconnect.apple.com** → **Popup** → **Distribution**
 2. On the left sidebar, under **iOS App**, click the **+** next to the version list
-3. Enter version **1.0.2** → **Create**
-4. Wait 15–30 minutes for the 1.0.2 build to finish processing by Apple
-5. In the version page, under **Build**, click **+** → select the 1.0.2 build
+3. Enter version **1.0.3** → **Create**
+4. Wait 15–30 minutes for the 1.0.3 build to finish processing by Apple
+5. In the version page, under **Build**, click **+** → select the 1.0.3 build
 6. In **What's new**: write a brief note (e.g. *"Améliorations de stabilité"*) — required even for internal changes
 7. Review Notes: copy the same review notes from 1.0.1 (demo videos + demo account)
 8. Click **Ajouter à la révision** → **Soumettre à la révision Apple**
@@ -88,4 +92,4 @@ In the Xcode Organizer:
 
 ### Wait condition
 
-Apple will review 1.0.2 (typically 1–3 days). Once approved and live, every future JS-only change deploys via `eas update` — no new binary needed until you add native code.
+Apple will review 1.0.3 (typically 1–3 days). Once approved and live, every future JS-only change deploys via `eas update` — no new binary needed until you add native code.

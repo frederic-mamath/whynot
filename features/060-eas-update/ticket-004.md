@@ -3,7 +3,7 @@
 ## Acceptance Criteria
 
 - As a developer, I can push a JS change to the production channel with `eas update`
-- As a developer, the change appears on a physical device running 1.0.2 without installing a new binary
+- As a developer, the change appears on a physical device running 1.0.3 without installing a new binary
 
 ## Technical Strategy
 
@@ -17,8 +17,8 @@
 ### Before you start
 
 Make sure:
-- Ticket-003 is done and the 1.0.2 binary is **approved and live on the App Store** (not just uploaded — it must be the public production version)
-- Your physical iPhone has updated to 1.0.2 from the App Store
+- Ticket-003 is done and the 1.0.3 binary is **approved and live on the App Store** (not just uploaded — it must be the public production version)
+- Your physical iPhone has updated to 1.0.3 from the App Store
 - You are logged in to EAS CLI (`eas whoami`)
 
 ---
@@ -89,7 +89,7 @@ eas update --channel production --message "revert: remove OTA test label"
 ### Step 5 — Verify in the EAS dashboard
 
 1. Go to **https://expo.dev** → your account → project **popup-ios** → **Updates**
-2. You should see both updates listed with their timestamps, message, and runtime version (1.0.2)
+2. You should see both updates listed with their timestamps, message, and runtime version (1.0.3)
 
 ---
 
