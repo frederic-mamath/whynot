@@ -34,13 +34,14 @@ Enable Google Pay on Android while keeping Apple Pay working on iOS, via a `Plat
 
 ## Manual operations
 
-### Verify on Android (S23+)
+### Verify on Android (emulator with Google Play target, or S23+)
 
-1. Build and install via `npx expo run:android -d`
-2. Log in as a buyer
-3. Profile → "+ Ajouter une carte"
-4. Confirm the Stripe payment sheet appears with a **Google Pay** button at the top
-5. Tap Google Pay → confirm with fingerprint / PIN → verify the card is saved and appears in the profile
+1. Build and install via `npx expo run:android`
+2. **On emulator only**: open the Play Store app on the emulator, sign in with a Google account, then open the Google Pay app and add a test card. The AVD must have been created with a **"Google Play"** system image (not "Google APIs"), otherwise Google Pay is unavailable.
+3. Log in as a buyer in Popup
+4. Profile → "+ Ajouter une carte"
+5. Confirm the Stripe payment sheet appears with a **Google Pay** button at the top
+6. Tap Google Pay → confirm → verify the card is saved and appears in the profile
 
 ### Verify on iOS (no regression)
 

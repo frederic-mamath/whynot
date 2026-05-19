@@ -10,8 +10,10 @@ Sign and build the first Android binary, upload it to Google Play Console under 
 - As a developer, the Android version is set in `app.config.ts` (`android.versionCode: 1`, `android.versionName: "1.0.0"`)
 - As a developer, `cd android && ./gradlew bundleRelease` produces a signed `.aab` file under `android/app/build/outputs/bundle/release/`
 - As a developer, the `.aab` is uploaded to Google Play Console → **Internal testing** track
-- As a developer, the buyer account (`fredericmamath@gmail.com`) is added as an internal tester and can install the app from the test link on the S23+
-- As a buyer on Android, I can: log in, browse the Lives tab, watch a live (video renders via the Kotlin module from tickets 002–003), add a card via Google Pay (from ticket-004), and place a fixed-price purchase
+- As a developer, the buyer account (`fredericmamath@gmail.com`) is added as an internal tester
+- As a developer, the build is uploaded to the Play Console **Internal testing** track and the test link is generated successfully
+- As a buyer on Android (emulator with Play Store, or S23+ when available), I can sideload the AAB via `adb install` and verify: log in, browse Lives tab, watch a live (video renders via Kotlin module from tickets 002–003), add a card via Google Pay (from ticket-004), and place a fixed-price purchase
+- As a developer, **the "install from Play Store internal test link on a real device" final check is deferred** until a physical Android device is available. Build, upload, and sideload verification are sufficient to complete the ticket; the Play Store install path will be revalidated when hardware is back.
 - As a developer, the build is promoted from internal testing to **Production review** (Google Play review typically completes in hours to ~3 days)
 
 ## Technical Strategy

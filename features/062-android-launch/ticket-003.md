@@ -11,7 +11,7 @@ Replace the stub from ticket-002 with the real Agora Android SDK implementation.
 - As a developer, a custom `IRtcEngineEventHandler` bridges Agora's `onUserJoined(uid, elapsed)` and `onUserOffline(uid, reason)` callbacks back to JS via `sendEvent` with the same payload shape the iOS module sends
 - As a developer, `AgoraViewerView.kt` defines a `uid` prop. When the prop is set, the view attaches a `SurfaceView` child and calls `engine.setupRemoteVideo(VideoCanvas(surfaceView, RENDER_MODE_HIDDEN, uid))`
 - As a developer, no JS-side changes are required — `ios-app/src/lib/agora.ts` continues to work transparently via `requireNativeModule("AgoraViewer")`
-- As a buyer on Android (S23+), I navigate to an active live channel from the Lives tab and see the seller's video stream rendered full-screen
+- As a buyer on Android (emulator or S23+), I navigate to an active live channel from the Lives tab and see the seller's video stream rendered full-screen
 - As a developer, `npx tsc --noEmit` passes; `npx expo run:android -d` builds and installs without errors; the iOS build still works
 - As a developer, leaving a live (`router.back()` from the live screen) does not crash the app — `release()` is called and `sharedEngine` is reset
 
@@ -55,21 +55,23 @@ grep AgoraRtcEngine /Users/fredericmamath/freelance/whynot/ios-app/modules/agora
 
 Match the major.minor of the iOS Pod. Agora's Android SDK Maven coordinates: `io.agora.rtc:full-sdk:<version>`. Available versions: **https://central.sonatype.com/artifact/io.agora.rtc/full-sdk**.
 
-### Build & test on device
+### Build & test
 
 From `ios-app/`:
 
 ```bash
 npx expo prebuild --clean
-npx expo run:android -d
+npx expo run:android          # emulator or attached device
 ```
 
-On the S23+:
+Test flow:
 1. Log in to the buyer account
 2. Open the Lives tab
 3. Tap an active live (a seller must be broadcasting on `popup-live.fr`)
 4. Verify the seller's video appears within ~3 seconds
 5. Tap the back button — app should not crash
+
+**Emulator caveats**: video may decode slower than on a real device, and frame rate can drop on lower-spec host machines. Audio quality is also degraded. Functional verification is what matters here — quality validation needs a real device.
 
 ### If video does not render
 

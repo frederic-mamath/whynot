@@ -1,8 +1,11 @@
 {
-  "platforms": ["ios"],
+  "platforms": ["ios", "android"],
   "ios": {
     "modules": ["AgoraViewerModule"],
     "swiftModuleName": "agora_viewer",
     "podspecPath": "agora-viewer.podspec"
+  },
+  "android": {
+    "modules": ["expo.modules.agoraviewer.AgoraViewerModule"]
   }
 }

@@ -9,6 +9,7 @@ Launch the app on Android while the AppStore is reviewing the iOS submission, re
 - The `ios-app/` directory is misnamed — it is an Expo project that already supports Android at the framework level (`app.config.ts > android.package` is set, RN/Expo are cross-platform). No fork or rename needed.
 - The **hard blocker** for an Android launch is the custom `modules/agora-viewer/` native module: it had iOS Swift code only. Buyers cannot watch live streams on Android without a working Agora pipeline. See `docs/investigations/agora-ios26.md` for why this custom module was written in the first place.
 - Cash cost: **$25 one-time** for Google Play Developer registration. Stripe / Agora / Cloudinary / EAS accounts are already paid for iOS and work on Android.
+- **Hardware status (2026-05-18)**: the Samsung Galaxy S23+ is temporarily out of service. Phase 2 work proceeds on an Android emulator (AVD with Google Play system image). All tickets remain feasible on emulator EXCEPT the final "install from Play Store internal test link on a physical device" check in ticket-006, which is deferred until hardware is back.
 
 ## Phase 1 — PoC outcome (closed, 2026-05-18)
 

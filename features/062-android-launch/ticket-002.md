@@ -6,11 +6,11 @@ Set up the local Android toolchain, register the Samsung Galaxy S23+ for develop
 
 ## Acceptance Criteria
 
-- As a developer, the Samsung Galaxy S23+ is configured for USB debugging and visible via `adb devices`
+- As a developer, an Android target is available — either an emulator (AVD) running, or the Samsung Galaxy S23+ connected via USB — visible via `adb devices`
 - As a developer, `modules/agora-viewer/expo-module.config.json` declares both iOS and Android platforms
 - As a developer, `modules/agora-viewer/android/` contains a Kotlin module scaffold (`build.gradle`, `AndroidManifest.xml`, `AgoraViewerModule.kt`, `AgoraViewerView.kt`) that compiles
 - As a developer, `npx expo prebuild --clean` regenerates `android/` with the module wired up via autolinking
-- As a developer, `npx expo run:android -d` builds and installs the app on the S23+ without errors
+- As a developer, `npx expo run:android` builds and installs the app on the running target (emulator or device) without errors
 - As a developer, at app launch on Android, the diagnostic log already present in `src/lib/agora.ts` (`[Agora] Registered expo modules: ...`) lists `AgoraViewer` among the modules — proving registration works before any SDK code is added
 - As a developer, the iOS build is unaffected — `npx tsc --noEmit` passes and the iOS app still builds and runs as before
 
@@ -53,15 +53,24 @@ Reload: `source ~/.zshrc`.
 
 Verify: `adb --version` should print a version.
 
-### 2. Enable USB debugging on the Samsung Galaxy S23+
+### 2. Set up an Android target
+
+**Option A — Emulator (current default while the S23+ is unavailable)**
+
+1. Open **Android Studio → More Actions → Virtual Device Manager** (or **Tools → Device Manager** if a project is open)
+2. **Create Virtual Device**:
+   - Phone profile: **Pixel 7** (or any modern phone — matches S23+ form factor closely enough)
+   - System image: **API 34 (UpsideDownCake)** or **API 35 (VanillaIceCream)**, **Google Play** target (NOT "Google APIs only" — the Play target is required for ticket-004's Google Pay testing later)
+   - Finish, then click ▶ to start the emulator
+3. Verify: `adb devices` lists `emulator-5554` (or similar) followed by `device`
+
+**Option B — Physical device (Samsung Galaxy S23+, when available)**
 
 1. **Paramètres → À propos du téléphone → Informations sur le logiciel**
-2. Tap **"Numéro de version"** 7 times in a row → "Vous êtes maintenant développeur" toast appears
-3. Back to **Paramètres → Options pour les développeurs**
-4. Enable **"Débogage USB"**
-5. Connect S23+ via USB-C to the Mac
-6. On the S23+, accept the **"Autoriser le débogage USB ?"** prompt (check "Toujours autoriser depuis cet ordinateur")
-7. From the terminal: `adb devices` should list a device ID followed by `device` (not `unauthorized`). If it shows `unauthorized`, re-accept the prompt on the phone.
+2. Tap **"Numéro de version"** 7 times → "Vous êtes maintenant développeur" toast appears
+3. Back to **Paramètres → Options pour les développeurs** → enable **"Débogage USB"**
+4. Connect via USB-C, accept the **"Autoriser le débogage USB ?"** prompt (check "Toujours autoriser depuis cet ordinateur")
+5. Verify: `adb devices` lists the device ID followed by `device` (not `unauthorized`)
 
 ### 3. Build and run
 
@@ -69,10 +78,10 @@ From `ios-app/`:
 
 ```bash
 npx expo prebuild --clean
-npx expo run:android -d
+npx expo run:android          # runs on the default target (emulator if running, else first device)
+# or:
+npx expo run:android -d       # prompts for which target to install on
 ```
-
-`-d` prompts for which device to install on — select the S23+.
 
 ### 4. Verify module registration
 
