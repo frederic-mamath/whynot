@@ -17,6 +17,7 @@ export interface RelayPoint {
   country: string;
   latitude: number;
   longitude: number;
+  distanceKm: number | null;
 }
 
 export interface CreateLabelParams {
@@ -94,6 +95,52 @@ export class MondialRelayService {
     });
   }
 
+  /**
+   * Great-circle distance between two lat/lng points using the Haversine formula.
+   */
+  private haversineDistanceKm(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number,
+  ): number {
+    const R = 6371; // Earth radius in km
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  /**
+   * Resolve the centroid (lat, lng) of a French postcode via the Base Adresse
+   * Nationale (api-adresse.data.gouv.fr). Returns null on any failure so that
+   * callers fall back to distanceKm: null instead of throwing.
+   */
+  private async geocodePostcode(
+    postcode: string,
+  ): Promise<{ lat: number; lng: number } | null> {
+    try {
+      const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
+        postcode,
+      )}&type=municipality&limit=1`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = (await res.json()) as {
+        features?: { geometry?: { coordinates?: [number, number] } }[];
+      };
+      const coords = data.features?.[0]?.geometry?.coordinates;
+      if (!coords || coords.length < 2) return null;
+      const [lng, lat] = coords;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return { lat, lng };
+    } catch {
+      return null;
+    }
+  }
+
   async searchRelayPoints(
     postcode: string,
     country: string = "FR",
@@ -133,16 +180,28 @@ export class MondialRelayService {
     const points: any[] = data?.PointsRelais?.PointRelais_Details ?? [];
     const list = Array.isArray(points) ? points : [points];
 
-    return list.map((p: any): RelayPoint => ({
-      id: p.Num ?? "",
-      name: p.LgAdr1 ?? p.Localisation1 ?? "",
-      address: [p.LgAdr2, p.LgAdr3].filter(Boolean).join(", "),
-      city: p.Ville ?? "",
-      zipCode: p.CP ?? "",
-      country: p.Pays ?? "",
-      latitude: parseFloat(String(p.Latitude ?? "0").replace(",", ".")),
-      longitude: parseFloat(String(p.Longitude ?? "0").replace(",", ".")),
-    }));
+    const centroid = await this.geocodePostcode(postcode);
+
+    return list.map((p: any): RelayPoint => {
+      const latitude = parseFloat(String(p.Latitude ?? "0").replace(",", "."));
+      const longitude = parseFloat(String(p.Longitude ?? "0").replace(",", "."));
+      const distanceKm = centroid
+        ? Math.round(
+            this.haversineDistanceKm(centroid.lat, centroid.lng, latitude, longitude) * 10,
+          ) / 10
+        : null;
+      return {
+        id: p.Num ?? "",
+        name: p.LgAdr1 ?? p.Localisation1 ?? "",
+        address: [p.LgAdr2, p.LgAdr3].filter(Boolean).join(", "),
+        city: p.Ville ?? "",
+        zipCode: p.CP ?? "",
+        country: p.Pays ?? "",
+        latitude,
+        longitude,
+        distanceKm,
+      };
+    });
   }
 
   async createLabel(params: CreateLabelParams): Promise<CreateLabelResult> {

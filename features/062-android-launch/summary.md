@@ -1,5 +1,9 @@
 # Android Launch
 
+## Status: BLOCKED (2026-05-19) — waiting on D&B for DUNS number
+
+Tickets 002, 003, 004 are complete — the Android binary works end-to-end on the emulator: live streams render via the Kotlin `agora-viewer` port, and payment cards save via Google Pay. The remaining tickets (005 Play Console setup, 006 AAB upload + submission) cannot proceed until the DUNS number is issued by Dun & Bradstreet. Resume once the DUNS arrives.
+
 ## Initial Prompt
 
 Launch the app on Android while the AppStore is reviewing the iOS submission, reusing the existing `ios-app/` Expo project. Buyer-only scope. Cost should include any required licences. Hardware: Samsung Galaxy S23+ already owned.
@@ -39,11 +43,11 @@ Five atomic tickets, sequential dependency: 002 → 003 → 004 → 005 → 006.
 | Ticket     | Description                                                                  | Status  |
 | :--------- | :--------------------------------------------------------------------------- | :------ |
 | ticket-001 | PoC `react-native-agora` on iOS 26 (additive, no production changes)         | done — blocked, see outcome |
-| ticket-002 | Android dev environment + Kotlin stub for agora-viewer                       | planned |
-| ticket-003 | Wire Agora Android SDK into agora-viewer Kotlin module                       | planned |
-| ticket-004 | Apple Pay → Google Pay platform split                                        | planned |
-| ticket-005 | Google Play Console account + first listing                                  | planned |
-| ticket-006 | Build + submit Android AAB to Play Store internal testing                    | planned |
+| ticket-002 | Android dev environment + Kotlin stub for agora-viewer                       | done    |
+| ticket-003 | Wire Agora Android SDK into agora-viewer Kotlin module                       | done    |
+| ticket-004 | Apple Pay → Google Pay platform split                                        | done    |
+| ticket-005 | Google Play Console account + first listing                                  | on hold (DUNS) |
+| ticket-006 | Build + submit Android AAB to Play Store internal testing                    | on hold (DUNS) |
 
 ## User Stories
 
