@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { CardField, useStripe, usePlatformPay, PlatformPay } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
 
@@ -8,7 +8,7 @@ type Props = { onSuccess: () => void };
 export function PaymentSetupSheet({ onSuccess }: Props) {
   const { confirmSetupIntent } = useStripe();
   const { isPlatformPaySupported, confirmPlatformPaySetupIntent } = usePlatformPay();
-  const [applePayAvailable, setApplePayAvailable] = useState(false);
+  const [platformPayAvailable, setPlatformPayAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,29 +16,41 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
   const createSetupIntent = trpc.payment.createSetupIntent.useMutation();
 
   useEffect(() => {
-    isPlatformPaySupported().then(setApplePayAvailable);
+    isPlatformPaySupported().then(setPlatformPayAvailable);
   }, [isPlatformPaySupported]);
 
-  const saveWithApplePay = async () => {
+  const platformPayLabel = Platform.OS === "ios" ? "Payer avec Apple Pay" : "Payer avec Google Pay";
+
+  const saveWithPlatformPay = async () => {
     setError(null);
     setLoading(true);
     try {
       const { clientSecret } = await createSetupIntent.mutateAsync();
-      const { error: applePayError } = await confirmPlatformPaySetupIntent(clientSecret, {
-        applePay: {
-          merchantCountryCode: "FR",
-          currencyCode: "EUR",
-          cartItems: [
-            {
-              paymentType: PlatformPay.PaymentType.Immediate,
-              label: "Popup",
-              amount: "0.00",
-            },
-          ],
-        },
-      });
-      if (applePayError) {
-        setError(applePayError.message ?? "Apple Pay annulé.");
+      const { error: platformPayError } =
+        Platform.OS === "ios"
+          ? await confirmPlatformPaySetupIntent(clientSecret, {
+              applePay: {
+                merchantCountryCode: "FR",
+                currencyCode: "EUR",
+                cartItems: [
+                  {
+                    paymentType: PlatformPay.PaymentType.Immediate,
+                    label: "Popup",
+                    amount: "0.00",
+                  },
+                ],
+              },
+            })
+          : await confirmPlatformPaySetupIntent(clientSecret, {
+              googlePay: {
+                testEnv: __DEV__,
+                merchantName: "Popup",
+                merchantCountryCode: "FR",
+                currencyCode: "EUR",
+              },
+            });
+      if (platformPayError) {
+        setError(platformPayError.message ?? "Paiement annulé.");
       } else {
         utils.payment.getPaymentStatus.invalidate();
         onSuccess();
@@ -73,21 +85,21 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
 
   return (
     <View style={styles.container}>
-      {applePayAvailable && (
+      {platformPayAvailable && (
         <Pressable
-          style={[styles.applePayButton, loading && styles.buttonDisabled]}
-          onPress={saveWithApplePay}
+          style={[styles.platformPayButton, loading && styles.buttonDisabled]}
+          onPress={saveWithPlatformPay}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.applePayText}>  Payer avec Apple Pay</Text>
+            <Text style={styles.platformPayText}>{platformPayLabel}</Text>
           )}
         </Pressable>
       )}
 
-      {applePayAvailable && (
+      {platformPayAvailable && (
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>ou</Text>
@@ -119,14 +131,14 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
 
 const styles = StyleSheet.create({
   container: { gap: 8 },
-  applePayButton: {
+  platformPayButton: {
     height: 50,
     borderRadius: 10,
     backgroundColor: "#000",
     alignItems: "center",
     justifyContent: "center",
   },
-  applePayText: { color: "#fff", fontSize: 17, fontWeight: "600" },
+  platformPayText: { color: "#fff", fontSize: 17, fontWeight: "600" },
   divider: {
     flexDirection: "row",
     alignItems: "center",

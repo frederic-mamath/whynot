@@ -1,4 +1,5 @@
 import React from "react";
+import { Platform } from "react-native";
 import { StripeProvider as RNStripeProvider } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
 
@@ -8,7 +9,9 @@ export function StripeProvider({ children }: Props) {
   const publishableKey =
     (Constants.expoConfig?.extra?.stripePublishableKey as string) ?? "";
   const merchantIdentifier =
-    (Constants.expoConfig?.extra?.applePayMerchantId as string) ?? "";
+    Platform.OS === "ios"
+      ? ((Constants.expoConfig?.extra?.applePayMerchantId as string) ?? "")
+      : undefined;
 
   return (
     <RNStripeProvider
