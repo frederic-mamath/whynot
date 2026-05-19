@@ -14,12 +14,14 @@ import {
   Keyboard,
   Alert,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
 import { PaymentSetupSheet } from "@/components/live/PaymentSetupSheet";
 
 export default function ProfileScreen() {
   const { logout } = useAuth();
+  const router = useRouter();
 
   const profileQuery = trpc.profile.me.useQuery();
   const paymentQuery = trpc.payment.getPaymentStatus.useQuery();
@@ -261,6 +263,19 @@ export default function ProfileScreen() {
       </Modal>
       </View>
 
+      {/* Delivery address */}
+      <Pressable style={styles.section} onPress={() => router.push("/address")}>
+        <View style={styles.deliveryRow}>
+          <View style={styles.deliveryTextWrap}>
+            <Text style={styles.sectionTitle}>Adresse de livraison</Text>
+            <Text style={styles.deliverySub}>
+              Gère tes adresses et points relais
+            </Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </View>
+      </Pressable>
+
       {/* Log out */}
       <Pressable style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutText}>Se déconnecter</Text>
@@ -496,6 +511,14 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontWeight: "600",
   },
+  deliveryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  deliveryTextWrap: { gap: 2, flex: 1 },
+  deliverySub: { fontSize: 13, color: "#6B7280" },
+  chevron: { fontSize: 22, color: "#9CA3AF", fontWeight: "400" },
   logoutButton: {
     marginHorizontal: 16,
     borderWidth: 1.5,

@@ -176,6 +176,7 @@ export const profileRouter = router({
         zipCode: addr.zip_code,
         country: addr.country,
         isDefault: addr.is_default,
+        mondialRelayPointId: addr.mondial_relay_point_id ?? null,
         createdAt: addr.created_at,
       }));
     }),

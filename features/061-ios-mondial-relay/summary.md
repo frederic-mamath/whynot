@@ -28,7 +28,7 @@ As a user on iOS, I would like to be able to choose my address with Mondial Rela
 | Ticket     | Description                                                                  | Status  |
 | :--------- | :--------------------------------------------------------------------------- | :------ |
 | ticket-001 | Add `distanceKm` to `searchRelayPoints` response (backend)                   | done    |
-| ticket-002 | iOS Profile — Adresse de livraison section + home address CRUD              | planned |
+| ticket-002 | iOS Profile — Adresse de livraison section + home address CRUD              | done    |
 | ticket-003 | iOS Mondial Relay point picker (list-based, with distance + fallback)        | planned |
 
 ## User Stories

@@ -64,6 +64,7 @@ function RootNavigator() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="live/[liveId]" />
+      <Stack.Screen name="address" />
     </Stack>
   );
 }
