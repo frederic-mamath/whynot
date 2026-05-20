@@ -1,5 +1,10 @@
 import { ExpoConfig, ConfigContext } from "expo/config";
 
+const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? "";
+const googleIosUrlScheme = googleIosClientId
+  ? `com.googleusercontent.apps.${googleIosClientId.split(".")[0]}`
+  : "";
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Popup",
@@ -24,6 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: "fr.mamath.popup",
+    usesAppleSignIn: true,
     infoPlist: {
       NSCameraUsageDescription: "Popup utilise la caméra pour les lives vidéo.",
       NSMicrophoneUsageDescription:
@@ -41,6 +47,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "@stripe/stripe-react-native",
       { merchantIdentifier: "merchant.fr.popup-live" },
     ],
+    "expo-apple-authentication",
+    ...(googleIosUrlScheme
+      ? [
+          [
+            "@react-native-google-signin/google-signin",
+            { iosUrlScheme: googleIosUrlScheme },
+          ] as [string, { iosUrlScheme: string }],
+        ]
+      : []),
   ],
   experiments: {
     typedRoutes: true,
@@ -52,6 +67,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? "ws://localhost:3000",
     stripePublishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
     applePayMerchantId: process.env.EXPO_PUBLIC_APPLE_PAY_MERCHANT_ID ?? "",
+    googleIosClientId,
+    googleAndroidClientId:
+      process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "",
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
     eas: {
       projectId: "e4fb598f-33f8-45f1-859b-33581a264e81",
     },

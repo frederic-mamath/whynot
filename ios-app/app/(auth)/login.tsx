@@ -12,6 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -49,6 +50,14 @@ export default function LoginScreen() {
 
       <View style={styles.content}>
         <Text style={styles.title}>Connexion</Text>
+
+        <SocialAuthButtons />
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>ou</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
         <View style={styles.form}>
           <TextInput
@@ -124,6 +133,13 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
   },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: "#E5E7EB" },
+  dividerText: { fontSize: 13, color: "#9CA3AF" },
   form: {
     gap: 12,
   },

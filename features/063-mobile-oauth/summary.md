@@ -40,13 +40,13 @@ The web flow does **not** auto-link by default. When OAuth returns an email matc
 | Ticket     | Description                                                                  | Status  |
 | :--------- | :--------------------------------------------------------------------------- | :------ |
 | ticket-001 | Backend: `auth.googleSignIn` + `auth.appleSignIn` tRPC mutations             | done    |
-| ticket-002 | Mobile: install + configure native OAuth packages (manual provider setup)    | planned |
-| ticket-003 | Mobile: wire OAuth buttons on welcome / login / register screens             | planned |
+| ticket-002 | Mobile: install + configure native OAuth packages (manual provider setup)    | done (code) — manual provider setup pending |
+| ticket-003 | Mobile: wire OAuth buttons on welcome / login / register screens             | done    |
 
 ## User Stories
 
 | User Story                                                                                                       | Status  |
 | :--------------------------------------------------------------------------------------------------------------- | :------ |
-| As a buyer on iOS, I can sign up or log in with Apple via the native Sign In with Apple sheet                   | planned |
-| As a buyer on iOS or Android, I can sign up or log in with Google via the native Google sheet                   | planned |
-| As an existing buyer (email + password) using OAuth for the first time with the same email, my accounts auto-link | planned |
+| As a buyer on iOS, I can sign up or log in with Apple via the native Sign In with Apple sheet                   | done    |
+| As a buyer on iOS or Android, I can sign up or log in with Google via the native Google sheet                   | done    |
+| As an existing buyer (email + password) using OAuth for the first time with the same email, my accounts auto-link | done    |

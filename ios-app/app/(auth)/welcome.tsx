@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -12,6 +13,14 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={styles.actions}>
+        <SocialAuthButtons />
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>ou</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
         <Pressable
           style={styles.primaryButton}
           onPress={() => router.push("/(auth)/register")}
@@ -57,6 +66,14 @@ const styles = StyleSheet.create({
   actions: {
     gap: 12,
   },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginVertical: 4,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: "#E5E7EB" },
+  dividerText: { fontSize: 13, color: "#9CA3AF" },
   primaryButton: {
     backgroundColor: "#7C3AED",
     borderRadius: 14,
