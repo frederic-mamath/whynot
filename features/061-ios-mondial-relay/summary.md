@@ -29,13 +29,13 @@ As a user on iOS, I would like to be able to choose my address with Mondial Rela
 | :--------- | :--------------------------------------------------------------------------- | :------ |
 | ticket-001 | Add `distanceKm` to `searchRelayPoints` response (backend)                   | done    |
 | ticket-002 | iOS Profile — Adresse de livraison section + home address CRUD              | done    |
-| ticket-003 | iOS Mondial Relay point picker (list-based, with distance + fallback)        | planned |
+| ticket-003 | iOS Mondial Relay point picker (list-based, with distance + fallback)        | done    |
 
 ## User Stories
 
 | User Story                                                                                                       | Status  |
 | :--------------------------------------------------------------------------------------------------------------- | :------ |
-| As a buyer on iOS, I can view, add, edit, and delete my home delivery addresses from my profile                  | planned |
-| As a buyer on iOS, I can search for Mondial Relay pickup points by postcode and see distance from that postcode | planned |
-| As a buyer on iOS, I can select a Mondial Relay point as my default delivery address                            | planned |
-| As a buyer on iOS, when the Mondial Relay API is unavailable, I see a clear error and can fall back to home    | planned |
+| As a buyer on iOS, I can view, add, edit, and delete my home delivery addresses from my profile                  | done    |
+| As a buyer on iOS, I can search for Mondial Relay pickup points by postcode and see distance from that postcode | done    |
+| As a buyer on iOS, I can select a Mondial Relay point as my default delivery address                            | done    |
+| As a buyer on iOS, when the Mondial Relay API is unavailable, I see a clear error and can fall back to home    | done    |

@@ -13,6 +13,7 @@ export default function AddressLayout() {
       <Stack.Screen name="index" options={{ title: "Adresse de livraison" }} />
       <Stack.Screen name="new" options={{ title: "Nouvelle adresse" }} />
       <Stack.Screen name="[id]" options={{ title: "Modifier l'adresse" }} />
+      <Stack.Screen name="relay" options={{ title: "Point relais" }} />
     </Stack>
   );
 }
