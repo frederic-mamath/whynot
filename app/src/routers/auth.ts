@@ -15,7 +15,69 @@ import {
 import { accountMergeService } from "../services/AccountMergeService";
 import { passwordResetService } from "../services/PasswordResetService";
 import { stripeService } from "../services/StripeService";
+import { mobileOAuthService } from "../services/MobileOAuthService";
 import { TRPCError } from "@trpc/server";
+
+type OAuthSignInResult = {
+  user: { id: number; email: string; isVerified: boolean };
+  token: string;
+};
+
+async function signInOrLinkOAuth(
+  provider: "google" | "apple",
+  providerId: string,
+  email: string,
+  firstName: string | null,
+  lastName: string | null,
+): Promise<OAuthSignInResult> {
+  const existingProvider =
+    await authProviderRepository.findByProviderAndProviderId(
+      provider,
+      providerId,
+    );
+  if (existingProvider) {
+    const user = await userRepository.findById(existingProvider.user_id);
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Linked user not found",
+      });
+    }
+    return {
+      user: { id: user.id, email: user.email, isVerified: user.is_verified },
+      token: generateToken(user.id),
+    };
+  }
+
+  const existingByEmail = await userRepository.findByEmail(email);
+  if (existingByEmail) {
+    await authProviderRepository.save(
+      existingByEmail.id,
+      provider,
+      providerId,
+      email,
+    );
+    return {
+      user: {
+        id: existingByEmail.id,
+        email: existingByEmail.email,
+        isVerified: existingByEmail.is_verified,
+      },
+      token: generateToken(existingByEmail.id),
+    };
+  }
+
+  const newUser = await userRepository.saveOAuthUser(email, firstName, lastName);
+  await authProviderRepository.save(newUser.id, provider, providerId, email);
+  return {
+    user: {
+      id: newUser.id,
+      email: newUser.email,
+      isVerified: newUser.is_verified,
+    },
+    token: generateToken(newUser.id),
+  };
+}
 
 // In-memory rate limiting for forgot-password (email -> timestamps)
 const rateLimitMap = new Map<string, number[]>();
@@ -184,6 +246,54 @@ export const authRouter = router({
         },
         token,
       };
+    }),
+
+  googleSignIn: publicProcedure
+    .input(z.object({ idToken: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      let payload;
+      try {
+        payload = await mobileOAuthService.verifyGoogleIdToken(input.idToken);
+      } catch {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid Google token",
+        });
+      }
+      return signInOrLinkOAuth(
+        "google",
+        payload.providerId,
+        payload.email,
+        payload.firstName,
+        payload.lastName,
+      );
+    }),
+
+  appleSignIn: publicProcedure
+    .input(
+      z.object({
+        idToken: z.string().min(1),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      let payload;
+      try {
+        payload = await mobileOAuthService.verifyAppleIdToken(input.idToken);
+      } catch {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Invalid Apple token",
+        });
+      }
+      return signInOrLinkOAuth(
+        "apple",
+        payload.providerId,
+        payload.email,
+        input.firstName ?? null,
+        input.lastName ?? null,
+      );
     }),
 
   me: protectedProcedure.query(async ({ ctx }) => {

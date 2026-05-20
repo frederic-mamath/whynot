@@ -39,7 +39,7 @@ The web flow does **not** auto-link by default. When OAuth returns an email matc
 
 | Ticket     | Description                                                                  | Status  |
 | :--------- | :--------------------------------------------------------------------------- | :------ |
-| ticket-001 | Backend: `auth.googleSignIn` + `auth.appleSignIn` tRPC mutations             | planned |
+| ticket-001 | Backend: `auth.googleSignIn` + `auth.appleSignIn` tRPC mutations             | done    |
 | ticket-002 | Mobile: install + configure native OAuth packages (manual provider setup)    | planned |
 | ticket-003 | Mobile: wire OAuth buttons on welcome / login / register screens             | planned |
 
