@@ -7,7 +7,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:ios:prod": "cp .env .env.dev.backup && cp .env.production .env && npx expo prebuild --clean && open ios/Popup.xcworkspace && echo 'Archive in Xcode, then restore env with: cp .env.dev.backup .env'"
+    "build:ios:prod": "cp .env .env.dev.backup && cp .env.production .env && npx expo prebuild --clean && open ios/Popup.xcworkspace && echo 'Archive in Xcode, then restore env with: cp .env.dev.backup .env'",
+    "restore-env": "cp .env.dev.backup .env"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
