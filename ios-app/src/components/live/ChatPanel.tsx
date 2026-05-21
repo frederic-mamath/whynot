@@ -65,8 +65,12 @@ export function ChatPanel({ channelId }: Props) {
     { channelId },
     {
       onData: (msg) => {
+        console.log("[message.subscribe] onData", (msg as Message)?.id);
         setMessages((prev) => [...prev, msg as Message]);
         listRef.current?.scrollToEnd({ animated: true });
+      },
+      onError: (err) => {
+        console.log("[message.subscribe] ERROR", err.message);
       },
     }
   );
