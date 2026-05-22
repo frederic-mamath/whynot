@@ -5,6 +5,8 @@
   "scripts": {
     "postinstall": "node ../design-tokens/generate.mjs",
     "design-tokens": "node ../design-tokens/generate.mjs",
+    "arch:test": "node ../scripts/arch-test.mjs",
+    "predev": "node ../scripts/arch-test.mjs",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

@@ -63,6 +63,16 @@ ios-app/
 - **Native modules**: live in `modules/<name>/` as Expo Module packages with their own `expo-module.config.json`, `ios/` Swift sources, and `src/` TS bindings.
 - **Env vars**: read via `expo-constants` (`Constants.expoConfig.extra.<key>`), declared in `app.config.ts > extra`. `EXPO_PUBLIC_*` vars are baked at build time.
 
+## Architecture Tests
+
+One rule is enforced by `scripts/arch-test.mjs` (runs automatically via `npm run predev`).
+
+| Rule | What it enforces |
+|:-----|:----------------|
+| R4 — `no-mobile-hex` | No literal hex color codes (`#RRGGBB`, `#RGB`) in `app/**/*.tsx` or `src/**/*.{tsx,ts}`. The only legitimate hex-code location is `src/theme/tokens.ts`. Everywhere else, use `Colors.*` from that file. |
+
+Run manually: `npm run arch:test` from `ios-app/`.
+
 ## Gotchas
 
 - **Stale `ios/` after installing a native module** — `npm install` of a package with native code does NOT update `ios/Podfile` or `Pods/`. Linker errors like `Undefined symbols ... facebook::react::Sealable` follow. Fix: `npx expo prebuild --clean`.

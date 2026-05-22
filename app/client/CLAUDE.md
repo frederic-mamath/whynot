@@ -79,6 +79,15 @@ The app uses **exactly two breakpoints**. No others.
 
 The `md` (768px) boundary was chosen deliberately over `lg` (1024px) to avoid browser scrollbar width (~15px) causing both navbars to appear at the same time at 1024px viewport.
 
+## Architecture Tests
+
+Two rules are enforced by `scripts/arch-test.mjs` (runs automatically via `prebuild:client`).
+
+| Rule | What it enforces |
+|:-----|:----------------|
+| R2 — `no-headless-violation` | `pages/**/*.tsx` (excluding `.hooks.ts`) cannot import `@trpc/*` or call `useState`/`useEffect`/`useQuery`/`useMutation` — put logic in the paired `.hooks.ts` |
+| R3 — `no-raw-tailwind-colors` | All `.tsx/.ts` files under `client/src/` (excluding `lib/` and `components/ui/`) cannot use raw Tailwind color classes like `bg-white`, `text-red-500` — use semantic tokens instead |
+
 ## Routing
 
 Routes are defined in `App.tsx`. Each route maps to exactly one page component. Protected routes use the `<ProtectedRoute>` wrapper.
