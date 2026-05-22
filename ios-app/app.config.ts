@@ -1,4 +1,17 @@
 import { ExpoConfig, ConfigContext } from "expo/config";
+import { execSync } from "node:child_process";
+import { resolve } from "node:path";
+
+// Regenerate design tokens on every Expo config evaluation (prebuild / start / run).
+// Wrapped so a generator failure never blocks the dev workflow — stale tokens are
+// preferable to a crashed `expo run`.
+try {
+  execSync(`node ${resolve(__dirname, "../design-tokens/generate.mjs")}`, {
+    stdio: "inherit",
+  });
+} catch (err) {
+  console.warn("[app.config] design-tokens generator failed:", err);
+}
 
 const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? "";
 const googleIosUrlScheme = googleIosClientId

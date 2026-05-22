@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { SocialAuthButtons } from "@/components/SocialAuthButtons";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -42,59 +43,59 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
     justifyContent: "space-between",
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
     paddingTop: 120,
     paddingBottom: 60,
   },
   hero: {
     alignItems: "center",
-    gap: 12,
+    gap: Spacing.md,
   },
   logo: {
     fontSize: 48,
-    fontWeight: "700",
-    color: "#7C3AED",
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.primary,
     letterSpacing: -1,
   },
   tagline: {
-    fontSize: 18,
-    color: "#6B7280",
+    fontSize: Typography.fontSize.lg,
+    color: Colors.mutedForeground,
     textAlign: "center",
   },
   actions: {
-    gap: 12,
+    gap: Spacing.md,
   },
   divider: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    marginVertical: 4,
+    gap: Spacing.md,
+    marginVertical: Spacing.xs,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: "#E5E7EB" },
-  dividerText: { fontSize: 13, color: "#9CA3AF" },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { fontSize: 13, color: Colors.inputHint },
   primaryButton: {
-    backgroundColor: "#7C3AED",
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
   },
   primaryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: Colors.primaryForeground,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
   },
   secondaryButton: {
     borderWidth: 1.5,
-    borderColor: "#7C3AED",
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderColor: Colors.primary,
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
   },
   secondaryButtonText: {
-    color: "#7C3AED",
-    fontSize: 16,
-    fontWeight: "600",
+    color: Colors.primary,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
   },
 });

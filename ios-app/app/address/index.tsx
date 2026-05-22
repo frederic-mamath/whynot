@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function AddressListScreen() {
   const router = useRouter();
@@ -157,76 +158,76 @@ export default function AddressListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFB" },
+  container: { flex: 1, backgroundColor: Colors.card },
   loading: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: Colors.card,
   },
-  list: { padding: 16, gap: 12, paddingBottom: 160 },
+  list: { padding: Spacing.lg, gap: Spacing.md, paddingBottom: 160 },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 16,
+    backgroundColor: Colors.background,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    gap: 4,
+    borderColor: Colors.border,
+    gap: Spacing.xs,
   },
   cardPressed: { opacity: 0.6 },
-  cardLabel: { fontSize: 16, fontWeight: "700", color: "#111827" },
-  cardLine: { fontSize: 14, color: "#6B7280" },
+  cardLabel: { fontSize: Typography.fontSize.base, fontWeight: Typography.fontWeight.bold, color: Colors.foreground },
+  cardLine: { fontSize: Typography.fontSize.sm, color: Colors.mutedForeground },
   badges: {
     flexDirection: "row",
     gap: 6,
     flexWrap: "wrap",
     marginTop: 2,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   badge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: Radius.md,
   },
-  badgeDefault: { backgroundColor: "#EDE9FE" },
-  badgeDefaultText: { fontSize: 11, color: "#7C3AED", fontWeight: "700" },
+  badgeDefault: { backgroundColor: Colors.accent },
+  badgeDefaultText: { fontSize: 11, color: Colors.accentForeground, fontWeight: Typography.fontWeight.bold },
   badgeRelay: { backgroundColor: "#FEF3C7" },
-  badgeRelayText: { fontSize: 11, color: "#B45309", fontWeight: "700" },
+  badgeRelayText: { fontSize: 11, color: "#B45309", fontWeight: Typography.fontWeight.bold },
   empty: {
     paddingTop: 60,
     alignItems: "center",
     gap: 6,
   },
-  emptyTitle: { fontSize: 16, fontWeight: "700", color: "#111827" },
+  emptyTitle: { fontSize: Typography.fontSize.base, fontWeight: Typography.fontWeight.bold, color: Colors.foreground },
   emptySub: {
-    fontSize: 14,
-    color: "#6B7280",
+    fontSize: Typography.fontSize.sm,
+    color: Colors.mutedForeground,
     textAlign: "center",
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing["2xl"],
   },
   bottomActions: {
     position: "absolute",
     bottom: 24,
-    left: 16,
-    right: 16,
-    gap: 8,
+    left: Spacing.lg,
+    right: Spacing.lg,
+    gap: Spacing.sm,
   },
   fab: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  fabText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  fabText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.base, fontWeight: Typography.fontWeight.semibold },
   relayButton: {
     height: 44,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: "#7C3AED",
-    backgroundColor: "#fff",
+    borderColor: Colors.primary,
+    backgroundColor: Colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
-  relayButtonText: { color: "#7C3AED", fontSize: 14, fontWeight: "600" },
+  relayButtonText: { color: Colors.primary, fontSize: Typography.fontSize.sm, fontWeight: Typography.fontWeight.semibold },
 });

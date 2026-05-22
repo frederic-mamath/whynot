@@ -7,6 +7,12 @@
     "npm": "10.x"
   },
   "scripts": {
+    "postinstall": "node ../design-tokens/generate.mjs",
+    "design-tokens": "node ../design-tokens/generate.mjs",
+    "predev": "node ../design-tokens/generate.mjs",
+    "predev:watch": "node ../design-tokens/generate.mjs",
+    "prebuild:server": "node ../design-tokens/generate.mjs",
+    "prebuild:client": "node ../design-tokens/generate.mjs",
     "dev": "npm run build && node --trace-warnings dist/index.js",
     "dev:watch": "tsx watch src/index.ts",
     "dev:full": "concurrently --names \"api,web\" --prefix-colors \"blue,green\" \"npm run dev:watch\" \"npx vite\"",

@@ -7,6 +7,7 @@ The web app uses Tailwind v4 with semantic tokens (`bg-primary`, `text-foregroun
 ## Approach (locked)
 
 - **Single source of truth**: `design-tokens/tokens.json` at the repo root. Categories: colors, spacing, radius, typography (fontFamily, fontSize, fontWeight). Dark mode out.
+- **Per-platform color palettes, shared everything else** (Option C). `colors.web` holds the dark/yellow web palette; `colors.mobile` holds the light/purple mobile palette. **Token names are unified across platforms** — `Colors.primary` works on both — only the values diverge. This avoids forcing a premature visual rewrite of either platform and lets the design decision ("which platform is canon?") be a separate later feature. Spacing / radius / typography are shared.
 - **Codegen**: `design-tokens/generate.mjs` reads the JSON and writes two outputs — one per platform:
   - `app/client/src/styles/tokens.css` — Tailwind v4 `@theme` block (drives `bg-primary`, `text-foreground`, etc.)
   - `ios-app/src/theme/tokens.ts` — typed constants (`Colors.primary`, `Spacing.lg`, `Radius.md`, `Typography.fontSize.base`)
@@ -28,14 +29,14 @@ The web app uses Tailwind v4 with semantic tokens (`bg-primary`, `text-foregroun
 
 | Ticket     | Description                                                                  | Status  |
 | :--------- | :--------------------------------------------------------------------------- | :------ |
-| ticket-001 | Create `design-tokens/` infrastructure: JSON + generator script + gitignore  | planned |
-| ticket-002 | Wire web Tailwind to consume generated `tokens.css` (no visual change)      | planned |
-| ticket-003 | Wire mobile to consume `tokens.ts` + migrate 3 example screens + update CLAUDE.md | planned |
+| ticket-001 | Create `design-tokens/` infrastructure: JSON + generator script + gitignore  | done    |
+| ticket-002 | Wire web Tailwind to consume generated `tokens.css` (no visual change)      | done    |
+| ticket-003 | Wire mobile to consume `tokens.ts` + migrate 3 example screens + update CLAUDE.md | done    |
 
 ## User Stories
 
 | User Story                                                                                                       | Status  |
 | :--------------------------------------------------------------------------------------------------------------- | :------ |
-| As a developer, I can change a design value once in `tokens.json` and see it propagate to both web and mobile  | planned |
-| As a developer working on a mobile screen, I import `Colors`/`Spacing`/`Radius`/`Typography` and stop hardcoding hex codes | planned |
-| As a CI / Render build, the generator runs automatically and the deploy succeeds without extra configuration  | planned |
+| As a developer, I can change a design value once in `tokens.json` and see it propagate to both web and mobile  | done    |
+| As a developer working on a mobile screen, I import `Colors`/`Spacing`/`Radius`/`Typography` and stop hardcoding hex codes | done    |
+| As a CI / Render build, the generator runs automatically and the deploy succeeds without extra configuration  | done    |
