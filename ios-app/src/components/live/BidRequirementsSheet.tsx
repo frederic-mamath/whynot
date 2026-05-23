@@ -2,6 +2,7 @@ import { View, Text, Modal, Pressable, StyleSheet, ScrollView, ActivityIndicator
 import { trpc } from "@/lib/trpc";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { PaymentSetupSheet } from "./PaymentSetupSheet";
+import { SwipeToConfirm } from "./SwipeToConfirm";
 
 type Props = {
   visible: boolean;
@@ -76,19 +77,14 @@ export function BidRequirementsSheet({
           <Text style={styles.error}>{placeBidMutation.error.message}</Text>
         )}
 
-        <Pressable
-          style={[styles.confirmButton, (!bothMet || placeBidMutation.isPending) && styles.buttonDisabled]}
-          onPress={confirmBid}
-          disabled={!bothMet || placeBidMutation.isPending}
-        >
-          {placeBidMutation.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.confirmText}>
-              {bothMet ? "Confirmer l'enchère" : "Complétez les étapes ci-dessus"}
-            </Text>
-          )}
-        </Pressable>
+        <View style={styles.swipeContainer}>
+          <SwipeToConfirm
+            label="Glisser pour enchérir"
+            onConfirm={confirmBid}
+            disabled={!bothMet}
+            loading={placeBidMutation.isPending}
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -141,14 +137,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
   },
-  confirmButton: {
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: "#7C3AED",
+  swipeContainer: {
     alignItems: "center",
-    justifyContent: "center",
     marginTop: 16,
   },
-  buttonDisabled: { backgroundColor: "#D1D5DB" },
-  confirmText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
