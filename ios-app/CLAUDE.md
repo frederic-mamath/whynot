@@ -63,6 +63,27 @@ ios-app/
 - **Native modules**: live in `modules/<name>/` as Expo Module packages with their own `expo-module.config.json`, `ios/` Swift sources, and `src/` TS bindings.
 - **Env vars**: read via `expo-constants` (`Constants.expoConfig.extra.<key>`), declared in `app.config.ts > extra`. `EXPO_PUBLIC_*` vars are baked at build time.
 
+## Cache Update Strategy
+
+After any mutation that updates data **immediately visible on screen**, use `setData()` to patch the cache instantly, then `invalidate()` in the background to sync with the server:
+
+```ts
+const utils = trpc.useUtils();
+
+const updateMutation = trpc.profile.update.useMutation({
+  onSuccess: (_, input) => {
+    utils.profile.me.setData(undefined, (old) =>
+      old ? { ...old, firstName: input.firstName, lastName: input.lastName } : old
+    );
+    utils.profile.me.invalidate();
+  },
+});
+```
+
+This eliminates the post-save lag (200–500ms of stale data) without a loader.
+
+**Exception — live screen (`app/live/[liveId].tsx` and `src/components/live/`):** do NOT use `setData()` for mutations inside the live session. Multiple buyers bid concurrently — optimistic updates would show stale state if another buyer's action lands between your mutation and the server response. The server is the source of truth there. The live screen will have its own custom cache strategy (feature 067 follow-up).
+
 ## Architecture Tests
 
 One rule is enforced by `scripts/arch-test.mjs` (runs automatically via `npm run predev`).
