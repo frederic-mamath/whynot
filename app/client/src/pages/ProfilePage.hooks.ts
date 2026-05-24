@@ -106,8 +106,11 @@ export function useProfile() {
   const imageUpload = trpc.image.upload.useMutation();
 
   const updateAvatarMutation = trpc.profile.updateAvatar.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
       toast.success("Avatar mis à jour");
+      utils.profile.me.setData(undefined, (old) =>
+        old ? { ...old, avatarUrl: input.avatarUrl } : old,
+      );
       utils.profile.me.invalidate();
       setSelectedFile(null);
       setAvatarPreview(null);
@@ -118,8 +121,17 @@ export function useProfile() {
   });
 
   const updateProfile = trpc.profile.update.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
       toast.success(t("profile.personalInfo.toastSuccess"));
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              firstName: input.firstName ?? old.firstName,
+              lastName: input.lastName ?? old.lastName,
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
     },
     onError: (error) => {
@@ -128,8 +140,31 @@ export function useProfile() {
   });
 
   const createAddress = trpc.profile.addresses.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(t("profile.addresses.toastAdded"));
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              addresses: [
+                ...old.addresses,
+                {
+                  id: data.address.id,
+                  label: data.address.label,
+                  street: data.address.street,
+                  street2: data.address.street2 ?? null,
+                  city: data.address.city,
+                  state: data.address.state,
+                  zipCode: data.address.zipCode,
+                  country: data.address.country,
+                  isDefault: data.address.isDefault,
+                  mondialRelayPointId: null,
+                  createdAt: new Date(),
+                },
+              ],
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
       setAddressDialogOpen(false);
       setAddressForm(emptyAddress);
@@ -140,8 +175,30 @@ export function useProfile() {
   });
 
   const updateAddress = trpc.profile.addresses.update.useMutation({
-    onSuccess: () => {
+    onSuccess: (data, input) => {
       toast.success(t("profile.addresses.toastUpdated"));
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              addresses: old.addresses.map((a) =>
+                a.id === input.id
+                  ? {
+                      ...a,
+                      label: input.label ?? a.label,
+                      street: input.street ?? a.street,
+                      street2: input.street2 ?? a.street2,
+                      city: input.city ?? a.city,
+                      state: input.state ?? a.state,
+                      zipCode: input.zipCode ?? a.zipCode,
+                      country: input.country ?? a.country,
+                      isDefault: data.address.isDefault,
+                    }
+                  : a,
+              ),
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
       setAddressDialogOpen(false);
       setEditingAddress(null);
@@ -153,8 +210,16 @@ export function useProfile() {
   });
 
   const deleteAddress = trpc.profile.addresses.delete.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
       toast.success(t("profile.addresses.toastDeleted"));
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              addresses: old.addresses.filter((a) => a.id !== input.id),
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
       setDeleteDialogOpen(false);
       setAddressToDelete(null);
@@ -165,7 +230,21 @@ export function useProfile() {
   });
 
   const deletePaymentMethod = trpc.payment.deletePaymentMethod.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.payment.getPaymentStatus.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              paymentMethods: old.paymentMethods.filter(
+                (pm) => pm.id !== input.paymentMethodId,
+              ),
+              hasPaymentMethod:
+                old.paymentMethods.filter(
+                  (pm) => pm.id !== input.paymentMethodId,
+                ).length > 0,
+            }
+          : old,
+      );
       utils.payment.getPaymentStatus.invalidate();
       toast.success("Moyen de paiement supprimé");
     },
@@ -175,8 +254,34 @@ export function useProfile() {
   });
 
   const saveRelayPoint = trpc.profile.addresses.saveRelayPoint.useMutation({
-    onSuccess: () => {
+    onSuccess: (data, input) => {
       toast.success("Point relais enregistré");
+      utils.profile.me.setData(undefined, (old) => {
+        if (!old) return old;
+        const withoutRelay = old.addresses.filter(
+          (a) => a.mondialRelayPointId === null,
+        );
+        const updated = withoutRelay.map((a) => ({ ...a, isDefault: false }));
+        return {
+          ...old,
+          addresses: [
+            ...updated,
+            {
+              id: data.addressId,
+              label: `Point Relais — ${input.name}`,
+              street: input.street,
+              street2: null,
+              city: input.city,
+              state: input.city,
+              zipCode: input.zipCode,
+              country: input.country ?? "FR",
+              isDefault: true,
+              mondialRelayPointId: input.relayPointId,
+              createdAt: new Date(),
+            },
+          ],
+        };
+      });
       utils.profile.me.invalidate();
       setRelaySearchEnabled(false);
       setRelayPostcode("");
@@ -186,8 +291,19 @@ export function useProfile() {
   });
 
   const setDefaultAddress = trpc.profile.addresses.setDefault.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
       toast.success(t("profile.addresses.toastDefaultSet"));
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              addresses: old.addresses.map((a) => ({
+                ...a,
+                isDefault: a.id === input.id,
+              })),
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
     },
     onError: (error) => {

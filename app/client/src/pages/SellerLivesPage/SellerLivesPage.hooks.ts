@@ -48,7 +48,15 @@ export function useSellerLives() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const deleteMutation = trpc.live.delete.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.live.listByHost.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              upcoming: old.upcoming.filter((l) => l.id !== input.liveId),
+            }
+          : old,
+      );
       utils.live.listByHost.invalidate();
       toast.success("Live supprimé");
       setDeleteId(null);

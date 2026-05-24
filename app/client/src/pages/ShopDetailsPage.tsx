@@ -37,9 +37,18 @@ export default function ShopDetailsPage() {
   const utils = trpc.useUtils();
 
   const updateShopMutation = trpc.shop.update.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
       toast.success(t("shops.details.successUpdate"));
       setIsEditing(false);
+      utils.shop.get.setData({ shopId }, (old) =>
+        old
+          ? {
+              ...old,
+              name: input.name ?? old.name,
+              description: input.description ?? old.description,
+            }
+          : old,
+      );
       utils.shop.get.invalidate({ shopId });
       utils.shop.list.invalidate();
     },

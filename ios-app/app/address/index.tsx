@@ -21,16 +21,43 @@ export default function AddressListScreen() {
   const addresses = data ?? [];
 
   const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.profile.addresses.list.setData(undefined, (old) =>
+        old
+          ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
+          : old,
+      );
       utils.profile.addresses.list.invalidate();
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              addresses: old.addresses.map((a) => ({
+                ...a,
+                isDefault: a.id === input.id,
+              })),
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
     },
     onError: (e) => Alert.alert("Erreur", e.message),
   });
 
   const deleteMutation = trpc.profile.addresses.delete.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.profile.addresses.list.setData(undefined, (old) =>
+        old ? old.filter((a) => a.id !== input.id) : old,
+      );
       utils.profile.addresses.list.invalidate();
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              addresses: old.addresses.filter((a) => a.id !== input.id),
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
     },
     onError: (e) => Alert.alert("Erreur", e.message),

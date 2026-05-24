@@ -61,7 +61,7 @@ const SellerShopPage = () => {
         ajouter un nouveau produit
       </button>
 
-      <MyShopTab products={products ?? []} />
+      <MyShopTab shopId={shop.id} products={products ?? []} />
 
       <CreateProductDialog
         shopId={shop.id}

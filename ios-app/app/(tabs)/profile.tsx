@@ -34,14 +34,36 @@ export default function ProfileScreen() {
   const [showCardSetup, setShowCardSetup] = useState(false);
 
   const updateMutation = trpc.profile.update.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.profile.me.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              firstName: input.firstName ?? old.firstName,
+              lastName: input.lastName ?? old.lastName,
+            }
+          : old,
+      );
       utils.profile.me.invalidate();
       setEditingName(false);
     },
   });
 
   const deleteMutation = trpc.payment.deletePaymentMethod.useMutation({
-    onSuccess: () => utils.payment.getPaymentStatus.invalidate(),
+    onSuccess: (_, input) => {
+      utils.payment.getPaymentStatus.setData(undefined, (old) => {
+        if (!old) return old;
+        const filtered = old.paymentMethods.filter(
+          (pm) => pm.id !== input.paymentMethodId,
+        );
+        return {
+          ...old,
+          paymentMethods: filtered,
+          hasPaymentMethod: filtered.length > 0,
+        };
+      });
+      utils.payment.getPaymentStatus.invalidate();
+    },
   });
 
   const deletionBlockers = trpc.auth.deletionBlockers.useQuery(undefined, {

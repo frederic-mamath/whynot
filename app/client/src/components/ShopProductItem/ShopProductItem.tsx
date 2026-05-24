@@ -17,19 +17,23 @@ import {
 
 interface Props {
   id: number;
+  shopId: number;
   name: string;
   description?: string | null;
   pictureUrl?: string | null;
 }
 
-const ShopProductItem = ({ id, name, description, pictureUrl }: Props) => {
+const ShopProductItem = ({ id, shopId, name, description, pictureUrl }: Props) => {
   const navigate = useNavigate();
   const utils = trpc.useUtils();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const deleteMutation = trpc.product.delete.useMutation({
     onSuccess: () => {
-      utils.product.list.invalidate();
+      utils.product.list.setData({ shopId }, (old) =>
+        old ? old.filter((p) => p.id !== id) : old,
+      );
+      utils.product.list.invalidate({ shopId });
       toast.success("Produit supprimé");
       setDeleteOpen(false);
     },
