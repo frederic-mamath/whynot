@@ -281,6 +281,7 @@ export const auctionRouter = router({
           });
         }
 
+        const previousHighestBidderId = auction.highest_bidder_id;
         const currentBid = parseFloat(auction.current_bid);
         const minBid = currentBid + 1;
 
@@ -360,7 +361,18 @@ export const auctionRouter = router({
             newEndsAt: shouldExtend ? newEndsAt.toISOString() : undefined,
           });
 
-          // TODO: Send 'auction:outbid' to previous highest bidder
+          if (previousHighestBidderId && previousHighestBidderId !== ctx.user!.id) {
+            productRepository.findById(auction.product_id).then((product) => {
+              broadcastToChannel(auction.channel_id, {
+                type: "auction:outbid",
+                auctionId: input.auctionId,
+                outbidUserId: previousHighestBidderId,
+                productName: product?.name ?? "",
+                yourBid: currentBid,
+                currentBid: input.amount,
+              });
+            });
+          }
         }, 0);
 
         return {

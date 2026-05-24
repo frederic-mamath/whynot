@@ -81,6 +81,7 @@ export interface AuctionBoughtOutMessage {
 export interface AuctionOutbidMessage {
   type: 'auction:outbid';
   auctionId: string;
+  outbidUserId: number;
   productName: string;
   yourBid: number;
   currentBid: number;

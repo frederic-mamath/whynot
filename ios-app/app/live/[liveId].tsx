@@ -15,6 +15,7 @@ import { ChatPanel } from "@/components/live/ChatPanel";
 import { HighlightedProduct } from "@/components/live/HighlightedProduct";
 import { AuctionWidget } from "@/components/live/AuctionWidget";
 import { AuctionEndModal } from "@/components/live/AuctionEndModal";
+import { OutbidBanner } from "@/components/live/OutbidBanner";
 
 type HighlightedProductData = {
   id: number;
@@ -42,6 +43,8 @@ export default function LiveScreen() {
   const [liveStatus, setLiveStatus] = useState<"loading" | "upcoming" | "active" | "ended">("loading");
   const [highlightedProduct, setHighlightedProduct] = useState<HighlightedProductData | null>(null);
   const [auctionEndInfo, setAuctionEndInfo] = useState<AuctionEndInfo | null>(null);
+  const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
+  const [openBidSheet, setOpenBidSheet] = useState(false);
 
   const joinMutation = trpc.live.join.useMutation();
   const leaveMutation = trpc.live.leave.useMutation();
@@ -58,6 +61,9 @@ export default function LiveScreen() {
           winnerId?: number | null;
           finalPrice?: number;
           hasWinner?: boolean;
+          outbidUserId?: number;
+          productName?: string;
+          currentBid?: number;
         };
         if (e.type === "PRODUCT_HIGHLIGHTED" && e.product) {
           setHighlightedProduct(e.product);
@@ -69,6 +75,11 @@ export default function LiveScreen() {
             productName: highlightedProduct?.name ?? "Produit",
             finalPrice: e.finalPrice ?? 0,
             winnerUsername: e.winnerUsername ?? null,
+          });
+        } else if (e.type === "auction:outbid" && e.outbidUserId === user?.id) {
+          setOutbidBanner({
+            productName: e.productName ?? "",
+            newBid: e.currentBid ?? 0,
           });
         }
       },
@@ -210,7 +221,23 @@ export default function LiveScreen() {
       )}
 
       {/* Auction widget + end modal — only when active */}
-      {liveStatus === "active" && <AuctionWidget channelId={channelId} />}
+      {liveStatus === "active" && (
+        <AuctionWidget
+          channelId={channelId}
+          forceOpen={openBidSheet}
+          onForceOpenHandled={() => setOpenBidSheet(false)}
+        />
+      )}
+
+      {/* Outbid banner — overlays the top of the screen */}
+      {outbidBanner && (
+        <OutbidBanner
+          productName={outbidBanner.productName}
+          newBid={outbidBanner.newBid}
+          onDismiss={() => setOutbidBanner(null)}
+          onBidAgain={() => setOpenBidSheet(true)}
+        />
+      )}
 
       {/* Chat panel — only when active */}
       {liveStatus === "active" && <ChatPanel channelId={channelId} />}

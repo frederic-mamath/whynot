@@ -1,13 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { AuctionCountdown } from "./AuctionCountdown";
 import { BidRequirementsSheet } from "./BidRequirementsSheet";
 
-type Props = { channelId: number };
+type Props = {
+  channelId: number;
+  forceOpen?: boolean;
+  onForceOpenHandled?: () => void;
+};
 
-export function AuctionWidget({ channelId }: Props) {
+export function AuctionWidget({ channelId, forceOpen, onForceOpenHandled }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    if (forceOpen) {
+      setSheetOpen(true);
+      onForceOpenHandled?.();
+    }
+  }, [forceOpen]);
 
   const { data: auction } = trpc.auction.getActive.useQuery(
     { channelId },
