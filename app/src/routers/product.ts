@@ -5,6 +5,7 @@ import {
   channelProductRepository,
   userShopRoleRepository,
   productImageRepository,
+  liveProductInterestRepository,
 } from "../repositories";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "../types/context";
@@ -244,7 +245,35 @@ export const productRouter = router({
     .input(z.object({ channelId: z.number() }))
     .query(async ({ ctx, input }) => {
       const products = await productRepository.findByChannelId(input.channelId);
-      return products.map(mapProductToProductOutboundDto);
+      const interestedProductIds =
+        await liveProductInterestRepository.findInterestedProductIds(
+          ctx.user.id,
+          input.channelId,
+        );
+      const interestedSet = new Set(interestedProductIds);
+      const counts = await Promise.all(
+        products.map((p) =>
+          liveProductInterestRepository.countByProductAndLive(
+            p.id,
+            input.channelId,
+          ),
+        ),
+      );
+      return products.map((p, i) => ({
+        ...mapProductToProductOutboundDto(p),
+        interestedCount: counts[i],
+        isInterestedByCurrentUser: interestedSet.has(p.id),
+      }));
+    }),
+
+  toggleInterest: protectedProcedure
+    .input(z.object({ productId: z.number(), liveId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return liveProductInterestRepository.toggle(
+        ctx.user.id,
+        input.productId,
+        input.liveId,
+      );
     }),
 
   // Product Images

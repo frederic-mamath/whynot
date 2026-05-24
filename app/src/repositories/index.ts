@@ -36,6 +36,7 @@ export { conditionRepository } from "./ConditionRepository";
 export { waitlistRepository } from "./WaitlistRepository";
 export { payoutRequestRepository } from "./PayoutRequestRepository";
 export { sellerFollowerRepository } from "./SellerFollowerRepository";
+export { liveProductInterestRepository } from "./LiveProductInterestRepository";
 
 // Auction-related repositories
 import { AuctionRepository } from "./AuctionRepository";
