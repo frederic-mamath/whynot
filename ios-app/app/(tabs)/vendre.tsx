@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,24 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { TrendingUp, Users, Sparkles } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 export default function VendreScreen() {
+  const router = useRouter();
   const rolesQuery = trpc.role.myRoles.useQuery();
 
-  if (rolesQuery.isLoading) {
+  const isSeller = rolesQuery.data?.roles.includes("SELLER") ?? false;
+
+  useEffect(() => {
+    if (isSeller) {
+      router.replace("/seller");
+    }
+  }, [isSeller, router]);
+
+  if (rolesQuery.isLoading || isSeller) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={Colors.primary} size="large" />
@@ -22,21 +32,7 @@ export default function VendreScreen() {
     );
   }
 
-  const isSeller = rolesQuery.data?.roles.includes("SELLER") ?? false;
-
-  if (isSeller) {
-    return <SellerDashboardStub />;
-  }
-
   return <SellerUpsell />;
-}
-
-function SellerDashboardStub() {
-  return (
-    <View style={styles.center}>
-      <Text style={styles.dashboardTitle}>Mon espace vendeur</Text>
-    </View>
-  );
 }
 
 function SellerUpsell() {
@@ -140,11 +136,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.background,
-  },
-  dashboardTitle: {
-    fontSize: Typography.fontSize.xl,
-    fontWeight: "700",
-    color: Colors.foreground,
   },
   container: {
     flexGrow: 1,
