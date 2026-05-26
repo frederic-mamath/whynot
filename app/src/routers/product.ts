@@ -142,6 +142,10 @@ export const productRouter = router({
         price: input.price,
         imageUrl: input.imageUrl,
         isActive: input.isActive,
+        startingPrice: input.startingPrice,
+        wishedPrice: input.wishedPrice,
+        categoryId: input.categoryId,
+        conditionId: input.conditionId,
       });
 
       const product = await productRepository.updateById(

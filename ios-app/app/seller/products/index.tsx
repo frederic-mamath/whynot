@@ -52,7 +52,10 @@ export default function SellerProductsScreen() {
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <Pressable
+              style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              onPress={() => router.push(`/seller/products/${item.id}`)}
+            >
               {item.imageUrl ? (
                 <Image source={{ uri: item.imageUrl }} style={styles.thumb} />
               ) : (
@@ -85,7 +88,7 @@ export default function SellerProductsScreen() {
                   {item.isActive ? "Actif" : "Inactif"}
                 </Text>
               </View>
-            </View>
+            </Pressable>
           )}
         />
       )}
@@ -140,6 +143,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  rowPressed: { opacity: 0.7 },
   thumb: {
     width: 64,
     height: 64,
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: Colors.foreground,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
