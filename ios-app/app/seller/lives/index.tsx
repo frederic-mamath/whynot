@@ -128,6 +128,7 @@ export default function SellerLivesScreen() {
                   live={live}
                   canDelete
                   onDelete={() => confirmDelete(live.id, live.name)}
+                  onPress={() => router.push(`/seller/lives/${live.id}`)}
                 />
               ))}
             </Section>
@@ -135,7 +136,12 @@ export default function SellerLivesScreen() {
           {past.length > 0 && (
             <Section title="Passés">
               {past.map((live) => (
-                <LiveRow key={live.id} live={live} canDelete={false} />
+                <LiveRow
+                  key={live.id}
+                  live={live}
+                  canDelete={false}
+                  onPress={() => router.push(`/seller/lives/${live.id}`)}
+                />
               ))}
             </Section>
           )}
@@ -171,13 +177,18 @@ function LiveRow({
   live,
   canDelete,
   onDelete,
+  onPress,
 }: {
   live: Live;
   canDelete: boolean;
   onDelete?: () => void;
+  onPress: () => void;
 }) {
   return (
-    <View style={styles.row}>
+    <Pressable
+      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      onPress={onPress}
+    >
       {live.cover_url ? (
         <Image source={{ uri: live.cover_url }} style={styles.thumb} />
       ) : (
@@ -198,7 +209,7 @@ function LiveRow({
           <Trash2 size={18} color={Colors.destructive} />
         </Pressable>
       )}
-    </View>
+    </Pressable>
   );
 }
 
