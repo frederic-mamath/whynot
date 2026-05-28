@@ -73,7 +73,15 @@ npx tsc --noEmit                   # catches TypeScript + import errors
 npx expo prebuild --clean 2>&1 | tail -20   # run this ONLY if app.config.ts or plugins changed
 ```
 
+**If you modified Swift native module code** under `ios-app/modules/<module>/ios/*.swift` — Swift errors are NOT caught by `tsc`. You must compile the module via xcodebuild. From `ios-app/ios`:
+```bash
+xcodebuild -workspace Popup.xcworkspace -scheme <module-name> -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build 2>&1 | tail -50
+```
+The output must end with `** BUILD SUCCEEDED **`. **A SourceKit "No such module" diagnostic in the editor/LSP is NOT a stale-cache excuse to skip this verification** — it is the only signal you have that Swift code compiles, and you must run xcodebuild to confirm. If xcodebuild fails, fix the Swift code.
+
 Both must complete with zero errors before you report done. Fix all TypeScript errors — do not use `// @ts-ignore` unless it already exists in the file.
+
+**Reporting "done":** never report a ticket as done while leaving any diagnostic (LSP, SourceKit, hook, or compiler warning) unexplained. Either eliminate the diagnostic, or prove with a concrete command (xcodebuild, tsc, build:client) that it does not represent a real failure — and include that proof in your report.
 
 ---
 

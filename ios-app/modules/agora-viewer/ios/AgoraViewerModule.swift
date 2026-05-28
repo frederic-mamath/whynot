@@ -43,6 +43,26 @@ public class AgoraViewerModule: Module {
       promise.resolve(nil)
     }
 
+    AsyncFunction("initializeBroadcaster") { (appId: String, promise: Promise) in
+      let delegate = AgoraDelegate()
+      delegate.onUserJoined = { [weak self] uid, elapsed in
+        self?.sendEvent("onUserJoined", ["uid": uid, "elapsed": elapsed])
+      }
+      delegate.onUserOffline = { [weak self] uid, reason in
+        self?.sendEvent("onUserOffline", ["uid": uid, "reason": reason.rawValue])
+      }
+      sharedAgoraDelegate = delegate
+
+      let engine = AgoraRtcEngineKit.sharedEngine(withAppId: appId, delegate: delegate)
+      engine.setChannelProfile(.liveBroadcasting)
+      engine.setClientRole(.broadcaster)
+      engine.enableVideo()
+      engine.enableAudio()
+      engine.startPreview()
+      sharedAgoraEngine = engine
+      promise.resolve(nil)
+    }
+
     AsyncFunction("joinChannel") { (token: String?, channelName: String, uid: Int, promise: Promise) in
       guard let engine = sharedAgoraEngine else {
         promise.reject("NOT_INITIALIZED", "Agora engine not initialized")
@@ -51,6 +71,22 @@ public class AgoraViewerModule: Module {
       let options = AgoraRtcChannelMediaOptions()
       options.channelProfile = .liveBroadcasting
       options.clientRoleType = .audience
+      options.autoSubscribeAudio = true
+      options.autoSubscribeVideo = true
+      engine.joinChannel(byToken: token, channelId: channelName, uid: UInt(uid), mediaOptions: options)
+      promise.resolve(nil)
+    }
+
+    AsyncFunction("joinChannelAsBroadcaster") { (token: String?, channelName: String, uid: Int, promise: Promise) in
+      guard let engine = sharedAgoraEngine else {
+        promise.reject("NOT_INITIALIZED", "Agora engine not initialized")
+        return
+      }
+      let options = AgoraRtcChannelMediaOptions()
+      options.channelProfile = .liveBroadcasting
+      options.clientRoleType = .broadcaster
+      options.publishCameraTrack = true
+      options.publishMicrophoneTrack = true
       options.autoSubscribeAudio = true
       options.autoSubscribeVideo = true
       engine.joinChannel(byToken: token, channelId: channelName, uid: UInt(uid), mediaOptions: options)
@@ -69,9 +105,24 @@ public class AgoraViewerModule: Module {
       promise.resolve(nil)
     }
 
+    AsyncFunction("stopBroadcaster") { (promise: Promise) in
+      sharedAgoraEngine?.stopPreview()
+      sharedAgoraEngine?.leaveChannel()
+      AgoraRtcEngineKit.destroy()
+      sharedAgoraEngine = nil
+      sharedAgoraDelegate = nil
+      promise.resolve(nil)
+    }
+
     View(AgoraViewerView.self) {
       Prop("uid") { (view: AgoraViewerView, uid: Int) in
         view.attachRemoteUid(UInt(uid))
+      }
+      Prop("local") { (view: AgoraViewerView, local: Bool) in
+        view.isLocal = local
+        if local {
+          view.attachLocal()
+        }
       }
     }
   }
