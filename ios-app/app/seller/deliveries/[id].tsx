@@ -78,6 +78,8 @@ export default function SellerDeliveryDetailScreen() {
   })();
 
   const [weight, setWeight] = useState("");
+  const [manualTracking, setManualTracking] = useState("");
+  const [manualError, setManualError] = useState<string | null>(null);
   const [labelInfo, setLabelInfo] = useState<{
     trackingNumber: string;
     labelUrl: string;
@@ -98,6 +100,12 @@ export default function SellerDeliveryDetailScreen() {
     },
   });
   const payoutMutation = trpc.package.requestPayouts.useMutation();
+  const markShippedMutation = trpc.package.markShippedManually.useMutation({
+    onSuccess: async () => {
+      await utils.package.getPackagesForSeller.invalidate();
+      router.back();
+    },
+  });
 
   if (packagesQuery.isLoading) {
     return (
@@ -161,6 +169,25 @@ export default function SellerDeliveryDetailScreen() {
       Alert.alert(
         "Erreur",
         e instanceof Error ? e.message : "Impossible d'actualiser",
+      );
+    }
+  };
+
+  const handleMarkShipped = async () => {
+    setManualError(null);
+    const trimmed = manualTracking.trim();
+    if (!trimmed) {
+      setManualError("Le numéro de suivi est obligatoire");
+      return;
+    }
+    try {
+      await markShippedMutation.mutateAsync({
+        packageId: pkg!.id,
+        trackingNumber: trimmed,
+      });
+    } catch (e) {
+      setManualError(
+        e instanceof Error ? e.message : "Impossible d'enregistrer le suivi",
       );
     }
   };
@@ -318,12 +345,42 @@ export default function SellerDeliveryDetailScreen() {
           </Section>
         )}
 
-        {!pkg.hasBuyerRelayPoint && !pkg.trackingNumber && (
+        {!pkg.hasBuyerRelayPoint && !pkg.trackingNumber && status === "pending" && (
           <Section title="Expédition">
             <View style={styles.formCard}>
-              <Text style={styles.placeholderText}>
-                En attente du numéro de suivi
-              </Text>
+              <Text style={styles.formLabel}>Numéro de suivi</Text>
+              <TextInput
+                style={styles.input}
+                value={manualTracking}
+                onChangeText={(v) => {
+                  setManualTracking(v);
+                  if (manualError) setManualError(null);
+                }}
+                placeholder="Ex: 1Z999AA10123456784"
+                placeholderTextColor={Colors.inputHint}
+                autoCapitalize="characters"
+                autoCorrect={false}
+              />
+              {manualError && (
+                <Text style={styles.errorText}>{manualError}</Text>
+              )}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                  markShippedMutation.isPending && styles.btnDisabled,
+                ]}
+                disabled={markShippedMutation.isPending}
+                onPress={handleMarkShipped}
+              >
+                {markShippedMutation.isPending ? (
+                  <ActivityIndicator color={Colors.primaryForeground} />
+                ) : (
+                  <Text style={styles.primaryBtnText}>
+                    Marquer comme expédié
+                  </Text>
+                )}
+              </Pressable>
             </View>
           </Section>
         )}
@@ -518,11 +575,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  placeholderText: {
-    color: Colors.mutedForeground,
+  errorText: {
+    color: Colors.destructive,
     fontSize: Typography.fontSize.sm,
-    textAlign: "center",
-    paddingVertical: Spacing.md,
   },
   primaryBtn: {
     flexDirection: "row",
