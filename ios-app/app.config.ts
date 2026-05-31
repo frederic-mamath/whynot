@@ -84,6 +84,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     googleAndroidClientId:
       process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "",
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
+    posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? "",
+    posthogHost:
+      process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
     eas: {
       projectId: "e4fb598f-33f8-45f1-859b-33581a264e81",
     },

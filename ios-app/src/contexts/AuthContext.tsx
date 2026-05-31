@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { usePostHog } from "posthog-react-native";
 import { trpc } from "@/lib/trpc";
 import { getToken, setToken, removeToken } from "@/lib/auth";
 
@@ -21,6 +22,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [hasToken, setHasToken] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const posthog = usePostHog();
+  const identifiedWithRoleRef = useRef<number | null>(null);
 
   useEffect(() => {
     const token = getToken();
@@ -30,6 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     enabled: hasToken && !isInitializing,
+    retry: false,
+  });
+
+  const rolesQuery = trpc.role.myRoles.useQuery(undefined, {
+    enabled: !!user,
     retry: false,
   });
 
@@ -47,6 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [meQuery.data, meQuery.isError]);
 
+  // Identify the user in PostHog as soon as their role is known.
+  // Identify is idempotent — calling it again on cold start just updates properties.
+  useEffect(() => {
+    if (!posthog || !user || !rolesQuery.data) return;
+    if (identifiedWithRoleRef.current === user.id) return;
+    const role = rolesQuery.data.roles.includes("SELLER") ? "SELLER" : "BUYER";
+    posthog.identify(user.id.toString(), { role });
+    identifiedWithRoleRef.current = user.id;
+  }, [posthog, user, rolesQuery.data]);
+
   const isLoading =
     isInitializing || (hasToken && (meQuery.isLoading || meQuery.isFetching));
 
@@ -54,12 +72,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await setToken(token);
     setHasToken(true);
     setUser(loginUser);
+    // Identify immediately with the userId. The role property will be added
+    // by the useEffect above once role.myRoles resolves.
+    posthog?.identify(loginUser.id.toString());
   };
 
   const logout = async () => {
     await removeToken();
     setHasToken(false);
     setUser(null);
+    identifiedWithRoleRef.current = null;
+    posthog?.reset();
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { PostHogProvider } from "posthog-react-native";
 import { TRPCProvider } from "@/providers/TRPCProvider";
 import { StripeProvider } from "@/providers/StripeProvider";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -8,8 +9,12 @@ import { trpc } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
 
+const POSTHOG_KEY = process.env.EXPO_PUBLIC_POSTHOG_KEY ?? "";
+const POSTHOG_HOST =
+  process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+
 export default function RootLayout() {
-  return (
+  const tree = (
     <TRPCProvider>
       <StripeProvider>
         <AuthProvider>
@@ -17,6 +22,24 @@ export default function RootLayout() {
         </AuthProvider>
       </StripeProvider>
     </TRPCProvider>
+  );
+
+  if (!POSTHOG_KEY) return tree;
+
+  return (
+    <PostHogProvider
+      apiKey={POSTHOG_KEY}
+      options={{
+        host: POSTHOG_HOST,
+        // GDPR Option A — anonymous-until-identified, no consent banner needed.
+        // Anonymous users do not get a person profile; only post-identify users do.
+        personProfiles: "identified_only",
+        captureAppLifecycleEvents: false,
+      }}
+      autocapture={false}
+    >
+      {tree}
+    </PostHogProvider>
   );
 }
 
