@@ -4,7 +4,18 @@
   },
   "build": {
     "production": {
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://popup-live.fr",
+        "EXPO_PUBLIC_WS_URL": "wss://popup-live.fr",
+        "EXPO_PUBLIC_APPLE_PAY_MERCHANT_ID": "merchant.fr.popup-live",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51TRxCdLzw29A0yhbqu7FSy5mYKAAtuzgUHuPpKKkH1O6qTAxqUVc9QT9neJrWtOLhJZjcDJGgPPu7z5mYs8LzmKj00PQf4jPLE",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "1002178426724-nd5kp02l9ujb4veuntsv7bg7ehistmoj.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "1002178426724-ecoe5uu5e3935bv3uhu3ihfp78eeqmar.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "1002178426724-o3u6rpf8sls7rqo1kkg6iolug6jpifcg.apps.googleusercontent.com",
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_lMASuhVznx3EudP2FHylo6zNJYjqdKgZ5OcMODyxCmM",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://eu.i.posthog.com"
+      }
     }
   }
 }
