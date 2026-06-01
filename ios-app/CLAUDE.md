@@ -62,6 +62,12 @@ ios-app/
 - **Config plugins** (`app.config.ts`): only list packages that ship `node_modules/<pkg>/app.plugin.js`. Verify with `ls` before adding. Packages without `app.plugin.js` are autolinked automatically — adding them to `plugins` will error at prebuild.
 - **Native modules**: live in `modules/<name>/` as Expo Module packages with their own `expo-module.config.json`, `ios/` Swift sources, and `src/` TS bindings.
 - **Env vars**: read via `expo-constants` (`Constants.expoConfig.extra.<key>`), declared in `app.config.ts > extra`. `EXPO_PUBLIC_*` vars are baked at build time.
+- **Versioning** (`app.config.ts > version`): semver, decided per release by the user — never bump unprompted.
+  - **major** — exceptional, only when explicitly requested. Reserved for a large refactor that touches multiple features at once.
+  - **minor** — a new major feature ships (e.g. the seller feature, a new payments flow, a new live mode).
+  - **patch** — bug fixes or adjustments to an existing feature.
+
+  Because `runtimeVersion.policy: "appVersion"` ties OTA updates to the binary's version, every bump implies a fresh native build + App Store submission — patches included. If a fix can ship purely as JS, prefer `eas update` over a version bump.
 
 ## Cache Update Strategy
 
