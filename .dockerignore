@@ -1,0 +1,46 @@
+# Docker build context is the repo root (see render.yaml > dockerContext).
+# Exclude everything the web Dockerfile does not need so the upload stays small.
+
+# Dependency / build outputs
+**/node_modules
+**/dist
+**/build
+app/client/dist
+
+# Mobile workspaces (not part of the web server build)
+ios-app
+mobile-app
+
+# Other unused-at-build assets
+ffmpeg-worker
+docs
+slides
+features
+mtp
+service-setups
+
+# Local env files (envs come from render.yaml at runtime)
+.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# VCS + editor cruft
+.git
+.gitignore
+.github
+.vscode
+.idea
+.DS_Store
+**/.DS_Store
+
+# Logs and temp
+*.log
+*.tar.gz
+debug
+
+# Top-level dev-only files
+test-*.js
+agora-diagnostic.js
+check_promotions.sql
+use-dynamic-uid-guide.md

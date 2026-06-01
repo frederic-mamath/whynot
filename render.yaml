@@ -10,7 +10,11 @@ services:
     runtime: docker
     plan: free
     dockerfilePath: ./app/Dockerfile
-    dockerContext: ./app
+    # Repo root — needed so the build can reach ../design-tokens, which the
+    # `postinstall` and `prebuild:client` hooks in app/package.json invoke
+    # (`node ../design-tokens/generate.mjs`) to produce the Vite client's
+    # tokens.css (gitignored).
+    dockerContext: .
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

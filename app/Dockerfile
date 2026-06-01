@@ -14,12 +14,19 @@ ENV VITE_POSTHOG_HOST=$VITE_POSTHOG_HOST
 
 WORKDIR /app
 
-# Install dependencies first (better cache)
-COPY package.json package-lock.json .npmrc ./
+# Sibling folders referenced via `../` from app/package.json scripts:
+#   - design-tokens/generate.mjs  → postinstall + prebuild hooks
+#   - scripts/arch-test.mjs       → arch:test (called from prebuild:server/client)
+# Both must sit one level above /app so the relative paths resolve.
+COPY design-tokens /design-tokens
+COPY scripts /scripts
+
+# Install dependencies first (better cache). postinstall now finds /design-tokens.
+COPY app/package.json app/package-lock.json app/.npmrc ./
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy the rest of the server + client source
+COPY app/ ./
 
 # Build server (TypeScript → dist/) and client (Vite → dist/public/)
 RUN npm run build
@@ -29,20 +36,25 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install production dependencies + tsx for migrations
-COPY package.json package-lock.json .npmrc ./
-RUN npm ci --omit=dev && npm install tsx && npm cache clean --force
+# Install production dependencies + tsx for migrations.
+# --ignore-scripts skips the postinstall token generator: its only output is the
+# Vite tokens.css, which is already baked into dist/public/ from the builder
+# stage. No production dependency has a meaningful build hook on alpine.
+COPY app/package.json app/package-lock.json app/.npmrc ./
+RUN npm ci --omit=dev --ignore-scripts \
+ && npm install tsx --ignore-scripts \
+ && npm cache clean --force
 
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 
 # Copy migrations for startup execution
-COPY migrations ./migrations
-COPY migrate.ts ./migrate.ts
-COPY src/db ./src/db
+COPY app/migrations ./migrations
+COPY app/migrate.ts ./migrate.ts
+COPY app/src/db ./src/db
 
 # Copy entrypoint script
-COPY entrypoint.sh ./entrypoint.sh
+COPY app/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3000
