@@ -77,9 +77,13 @@ export default function SellerLiveDetailScreen() {
   const utils = trpc.useUtils();
 
   const liveQuery = trpc.live.get.useQuery({ channelId: liveId });
-  const attachedQuery = trpc.product.listByChannel.useQuery({
-    channelId: liveId,
-  });
+  // Seller management view: must include inactive products so the picker's
+  // checkboxes reflect what `isAssociated` reports. Otherwise tapping an
+  // already-associated inactive product silently 409s.
+  // Reused as the cache key for every cancel/getData/setData/invalidate below
+  // — tRPC hashes the input to derive the key, so it has to match exactly.
+  const attachedKey = { channelId: liveId, includeInactive: true } as const;
+  const attachedQuery = trpc.product.listByChannel.useQuery(attachedKey);
   const shopQuery = trpc.shop.getOrCreateMyShop.useQuery();
   const shopId = shopQuery.data?.id;
   const allProductsQuery = trpc.product.list.useQuery(
@@ -89,30 +93,32 @@ export default function SellerLiveDetailScreen() {
 
   const associateMutation = trpc.product.associateToChannel.useMutation({
     onSuccess: () => {
-      utils.product.listByChannel.invalidate({ channelId: liveId });
+      utils.product.listByChannel.invalidate(attachedKey);
+    },
+    onError: (err) => {
+      // Surface the failure instead of swallowing it. CONFLICT used to slip
+      // through silently when the cache disagreed with the server about
+      // association state — the includeInactive fix above prevents that, but
+      // the alert is the safety net for any future drift.
+      Alert.alert("Impossible d'ajouter ce produit", err.message);
     },
   });
   const removeMutation = trpc.product.removeFromChannel.useMutation({
     onMutate: async ({ productId }) => {
-      await utils.product.listByChannel.cancel({ channelId: liveId });
-      const previous = utils.product.listByChannel.getData({
-        channelId: liveId,
-      });
-      utils.product.listByChannel.setData({ channelId: liveId }, (old) =>
+      await utils.product.listByChannel.cancel(attachedKey);
+      const previous = utils.product.listByChannel.getData(attachedKey);
+      utils.product.listByChannel.setData(attachedKey, (old) =>
         old?.filter((p) => p.id !== productId),
       );
       return { previous };
     },
-    onError: (_e, _i, ctx) => {
+    onError: (err, _i, ctx) => {
       if (ctx?.previous) {
-        utils.product.listByChannel.setData(
-          { channelId: liveId },
-          ctx.previous,
-        );
+        utils.product.listByChannel.setData(attachedKey, ctx.previous);
       }
+      Alert.alert("Impossible de retirer ce produit", err.message);
     },
-    onSettled: () =>
-      utils.product.listByChannel.invalidate({ channelId: liveId }),
+    onSettled: () => utils.product.listByChannel.invalidate(attachedKey),
   });
   const deleteLiveMutation = trpc.live.delete.useMutation();
 

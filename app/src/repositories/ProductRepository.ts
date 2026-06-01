@@ -53,19 +53,31 @@ export class ProductRepository {
   }
 
   /**
-   * Find products by channel
-   * Similar to: SELECT p.* FROM products p
-   *             INNER JOIN channel_products cp ON cp.product_id = p.id
-   *             WHERE cp.channel_id = ? AND p.is_active = true
+   * Find products by channel.
+   *
+   * Default behaviour filters out inactive products — that's what buyer-facing
+   * routes want (don't surface deactivated stock during a live). Pass
+   * `includeInactive: true` for seller management UIs that need the real
+   * association state: deactivating a product does not delete the
+   * `live_products` join row, so a seller's picker must see those rows to
+   * reflect what `isAssociated` will report, otherwise `associateToChannel`
+   * rejects with 409 against a checkbox that looks unchecked.
    */
-  async findByChannelId(channelId: number): Promise<Product[]> {
-    return db
+  async findByChannelId(
+    channelId: number,
+    options?: { includeInactive?: boolean },
+  ): Promise<Product[]> {
+    let query = db
       .selectFrom("products")
       .innerJoin("live_products", "live_products.product_id", "products.id")
       .selectAll("products")
-      .where("live_products.live_id", "=", channelId)
-      .where("products.is_active", "=", true)
-      .execute();
+      .where("live_products.live_id", "=", channelId);
+
+    if (!options?.includeInactive) {
+      query = query.where("products.is_active", "=", true);
+    }
+
+    return query.execute();
   }
 
   /**

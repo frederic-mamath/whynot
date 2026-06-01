@@ -246,9 +246,20 @@ export const productRouter = router({
     }),
 
   listByChannel: protectedProcedure
-    .input(z.object({ channelId: z.number() }))
+    .input(
+      z.object({
+        channelId: z.number(),
+        // Seller management UIs need to see association rows for inactive
+        // products too — otherwise the picker shows them unchecked but the
+        // server rejects associate with 409. Buyer paths leave this off.
+        includeInactive: z.boolean().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-      const products = await productRepository.findByChannelId(input.channelId);
+      const products = await productRepository.findByChannelId(
+        input.channelId,
+        { includeInactive: input.includeInactive },
+      );
       const interestedProductIds =
         await liveProductInterestRepository.findInterestedProductIds(
           ctx.user.id,
