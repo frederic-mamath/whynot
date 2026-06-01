@@ -5,36 +5,46 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { PhotoSourceSheet } from "@/components/PhotoSourceSheet";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { trpc } from "@/lib/trpc";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
-function parseDateTime(dateStr: string, timeStr: string): Date | null {
-  const dateMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  const timeMatch = timeStr.match(/^(\d{2}):(\d{2})$/);
-  if (!dateMatch || !timeMatch) return null;
-  const [, y, mo, d] = dateMatch;
-  const [, h, mi] = timeMatch;
-  const date = new Date(
-    Number(y),
-    Number(mo) - 1,
-    Number(d),
-    Number(h),
-    Number(mi),
-    0,
-    0,
-  );
-  if (isNaN(date.getTime())) return null;
-  return date;
+/**
+ * Default start time for a new live: tomorrow at 20:00 local — a sensible
+ * placeholder that's guaranteed to pass the "must be in the future" check.
+ */
+function defaultStartsAt(): Date {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(20, 0, 0, 0);
+  return d;
+}
+
+/** Merge the date part of `picked` into `base`, keeping `base`'s time. */
+function withDate(base: Date, picked: Date): Date {
+  const d = new Date(base);
+  d.setFullYear(picked.getFullYear(), picked.getMonth(), picked.getDate());
+  return d;
+}
+
+/** Merge the time part of `picked` into `base`, keeping `base`'s date. */
+function withTime(base: Date, picked: Date): Date {
+  const d = new Date(base);
+  d.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+  return d;
 }
 
 export default function SellerLiveNewScreen() {
@@ -42,20 +52,26 @@ export default function SellerLiveNewScreen() {
   const utils = trpc.useUtils();
 
   const [name, setName] = useState("");
-  const [dateStr, setDateStr] = useState("");
-  const [timeStr, setTimeStr] = useState("");
+  const [startsAt, setStartsAt] = useState<Date>(defaultStartsAt);
   const [description, setDescription] = useState("");
   const [coverUri, setCoverUri] = useState<string | null>(null);
   const [coverBase64, setCoverBase64] = useState<string | null>(null);
+  const [coverSheetOpen, setCoverSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const scheduleMutation = trpc.live.schedule.useMutation();
   const uploadMutation = trpc.image.upload.useMutation();
 
-  const pickCover = async () => {
+  const onChangeDate = (_: DateTimePickerEvent, picked?: Date) => {
+    if (picked) setStartsAt((prev) => withDate(prev, picked));
+  };
+  const onChangeTime = (_: DateTimePickerEvent, picked?: Date) => {
+    if (picked) setStartsAt((prev) => withTime(prev, picked));
+  };
+
+  const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return;
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true,
@@ -63,12 +79,29 @@ export default function SellerLiveNewScreen() {
       quality: 0.7,
       base64: true,
     });
-
     if (!result.canceled && result.assets[0]) {
       setCoverUri(result.assets[0].uri);
       setCoverBase64(result.assets[0].base64 ?? null);
     }
   };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") return;
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: "images",
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.7,
+      base64: true,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setCoverUri(result.assets[0].uri);
+      setCoverBase64(result.assets[0].base64 ?? null);
+    }
+  };
+
+  const pickCover = () => setCoverSheetOpen(true);
 
   const handleSubmit = async () => {
     setError(null);
@@ -78,11 +111,6 @@ export default function SellerLiveNewScreen() {
       return;
     }
 
-    const startsAt = parseDateTime(dateStr.trim(), timeStr.trim());
-    if (!startsAt) {
-      setError("Format de date attendu : AAAA-MM-JJ — Format d'heure : HH:MM");
-      return;
-    }
     if (startsAt.getTime() <= Date.now()) {
       setError("La date doit être dans le futur");
       return;
@@ -151,28 +179,25 @@ export default function SellerLiveNewScreen() {
 
           <View style={styles.row}>
             <View style={styles.col}>
-              <Field label="Date * (AAAA-MM-JJ)">
-                <TextInput
-                  style={styles.input}
-                  value={dateStr}
-                  onChangeText={setDateStr}
-                  placeholder="2026-06-15"
-                  placeholderTextColor={Colors.inputHint}
-                  autoCapitalize="none"
-                  autoCorrect={false}
+              <Field label="Date *">
+                <DateTimePicker
+                  value={startsAt}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  locale="fr-FR"
+                  onChange={onChangeDate}
                 />
               </Field>
             </View>
             <View style={styles.col}>
-              <Field label="Heure * (HH:MM)">
-                <TextInput
-                  style={styles.input}
-                  value={timeStr}
-                  onChangeText={setTimeStr}
-                  placeholder="20:30"
-                  placeholderTextColor={Colors.inputHint}
-                  autoCapitalize="none"
-                  autoCorrect={false}
+              <Field label="Heure *">
+                <DateTimePicker
+                  value={startsAt}
+                  mode="time"
+                  display="default"
+                  locale="fr-FR"
+                  onChange={onChangeTime}
                 />
               </Field>
             </View>
@@ -209,6 +234,13 @@ export default function SellerLiveNewScreen() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PhotoSourceSheet
+        visible={coverSheetOpen}
+        onClose={() => setCoverSheetOpen(false)}
+        onTakePhoto={takePhoto}
+        onPickFromLibrary={pickFromLibrary}
+      />
     </SafeAreaView>
   );
 }

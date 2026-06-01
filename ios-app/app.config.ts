@@ -56,6 +56,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-router",
     "expo-secure-store",
+    "@react-native-community/datetimepicker",
     [
       "@stripe/stripe-react-native",
       { merchantIdentifier: "merchant.fr.popup-live" },

@@ -10,10 +10,10 @@ import {
   TextInput,
   Image,
   Modal,
-  SafeAreaView,
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { X, Radio, Tag, Plus, Square } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";

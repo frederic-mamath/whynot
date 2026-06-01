@@ -1,35 +1,29 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Switch,
-  Alert,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ImagePlus, Trash2 } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { ChevronLeft, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { trpc } from "@/lib/trpc";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
-export default function SellerProductEditScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const productId = Number(id);
+export default function SellerProductNewScreen() {
   const router = useRouter();
   const utils = trpc.useUtils();
 
   const shopQuery = trpc.shop.getOrCreateMyShop.useQuery();
   const shopId = shopQuery.data?.id;
-
-  const productQuery = trpc.product.get.useQuery({ productId });
 
   const [name, setName] = useState("");
   const [wishedPrice, setWishedPrice] = useState("");
@@ -39,43 +33,9 @@ export default function SellerProductEditScreen() {
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (productQuery.data) {
-      setName(productQuery.data.name);
-      setWishedPrice(productQuery.data.wishedPrice?.toString() ?? "");
-      setStartingPrice(productQuery.data.startingPrice?.toString() ?? "");
-      setDescription(productQuery.data.description ?? "");
-      setImageUri(productQuery.data.imageUrl ?? null);
-    }
-  }, [productQuery.data]);
-
-  const updateMutation = trpc.product.update.useMutation();
+  const createMutation = trpc.product.create.useMutation();
   const uploadMutation = trpc.image.upload.useMutation();
-  const deleteMutation = trpc.product.delete.useMutation();
-
-  const toggleActiveMutation = trpc.product.update.useMutation({
-    onMutate: async (input) => {
-      if (shopId === undefined) return;
-      await utils.product.list.cancel({ shopId });
-      const previous = utils.product.list.getData({ shopId });
-      utils.product.list.setData({ shopId }, (old) =>
-        old?.map((p) =>
-          p.id === input.productId
-            ? { ...p, isActive: input.isActive ?? p.isActive }
-            : p,
-        ),
-      );
-      return { previous };
-    },
-    onError: (_err, _input, ctx) => {
-      if (shopId !== undefined && ctx?.previous) {
-        utils.product.list.setData({ shopId }, ctx.previous);
-      }
-    },
-    onSettled: () => {
-      if (shopId !== undefined) utils.product.list.invalidate({ shopId });
-    },
-  });
+  const addImageMutation = trpc.product.addImage.useMutation();
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -95,13 +55,14 @@ export default function SellerProductEditScreen() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSubmit = async () => {
     setError(null);
     const trimmedName = name.trim();
     if (!trimmedName) {
       setError("Le nom est obligatoire");
       return;
     }
+    if (!shopId) return;
 
     const parsedWished = wishedPrice.trim()
       ? parseFloat(wishedPrice.replace(",", "."))
@@ -111,73 +72,36 @@ export default function SellerProductEditScreen() {
       : undefined;
 
     try {
-      let newImageUrl: string | undefined;
-      if (imageBase64) {
-        const uploaded = await uploadMutation.mutateAsync({
-          base64: imageBase64,
-        });
-        newImageUrl = uploaded.url;
-      }
-
-      await updateMutation.mutateAsync({
-        productId,
+      const product = await createMutation.mutateAsync({
+        shopId,
         name: trimmedName,
         wishedPrice: parsedWished,
         startingPrice: parsedStarting,
         description: description.trim() || undefined,
-        ...(newImageUrl ? { imageUrl: newImageUrl } : {}),
       });
 
-      if (shopId !== undefined) {
-        await utils.product.list.invalidate({ shopId });
+      if (imageBase64) {
+        const uploaded = await uploadMutation.mutateAsync({
+          base64: imageBase64,
+        });
+        await addImageMutation.mutateAsync({
+          productId: product.id,
+          url: uploaded.url,
+          cloudinaryPublicId: uploaded.publicId,
+        });
       }
+
+      await utils.product.list.invalidate({ shopId });
       router.back();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur lors de l'enregistrement");
+      setError(e instanceof Error ? e.message : "Erreur lors de la création");
     }
   };
 
-  const handleDelete = () => {
-    Alert.alert(
-      "Supprimer ce produit",
-      "Cette action est irréversible.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            if (shopId !== undefined) {
-              utils.product.list.setData({ shopId }, (old) =>
-                old?.filter((p) => p.id !== productId),
-              );
-            }
-            try {
-              await deleteMutation.mutateAsync({ productId });
-              if (shopId !== undefined) {
-                utils.product.list.invalidate({ shopId });
-              }
-              router.back();
-            } catch {
-              if (shopId !== undefined) {
-                utils.product.list.invalidate({ shopId });
-              }
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  if (productQuery.isLoading) {
-    return (
-      <SafeAreaView style={styles.center}>
-        <ActivityIndicator color={Colors.primary} size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  const isSaving = updateMutation.isPending || uploadMutation.isPending;
+  const isSubmitting =
+    createMutation.isPending ||
+    uploadMutation.isPending ||
+    addImageMutation.isPending;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -185,7 +109,7 @@ export default function SellerProductEditScreen() {
         <Pressable onPress={() => router.back()} style={styles.back}>
           <ChevronLeft size={24} color={Colors.foreground} />
         </Pressable>
-        <Text style={styles.title}>Modifier le produit</Text>
+        <Text style={styles.title}>Nouveau produit</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -204,21 +128,12 @@ export default function SellerProductEditScreen() {
             )}
           </Pressable>
 
-          <View style={styles.activeRow}>
-            <Text style={styles.activeLabel}>Produit actif</Text>
-            <Switch
-              value={productQuery.data?.isActive ?? false}
-              onValueChange={(value) =>
-                toggleActiveMutation.mutate({ productId, isActive: value })
-              }
-            />
-          </View>
-
           <Field label="Nom *">
             <TextInput
               style={styles.input}
               value={name}
               onChangeText={setName}
+              placeholder="Ex: Veste vintage"
               placeholderTextColor={Colors.inputHint}
             />
           </Field>
@@ -250,6 +165,7 @@ export default function SellerProductEditScreen() {
               style={[styles.input, styles.textarea]}
               value={description}
               onChangeText={setDescription}
+              placeholder="Détails sur l'article"
               placeholderTextColor={Colors.inputHint}
               multiline
               numberOfLines={4}
@@ -262,27 +178,16 @@ export default function SellerProductEditScreen() {
             style={({ pressed }) => [
               styles.submit,
               pressed && styles.submitPressed,
-              isSaving && styles.submitDisabled,
+              isSubmitting && styles.submitDisabled,
             ]}
-            disabled={isSaving}
-            onPress={handleSave}
+            disabled={isSubmitting}
+            onPress={handleSubmit}
           >
-            {isSaving ? (
+            {isSubmitting ? (
               <ActivityIndicator color={Colors.primaryForeground} />
             ) : (
-              <Text style={styles.submitText}>Enregistrer</Text>
+              <Text style={styles.submitText}>Créer le produit</Text>
             )}
-          </Pressable>
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.deleteBtn,
-              pressed && styles.deleteBtnPressed,
-            ]}
-            onPress={handleDelete}
-          >
-            <Trash2 size={18} color={Colors.destructive} />
-            <Text style={styles.deleteText}>Supprimer le produit</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -307,12 +212,6 @@ function Field({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.background,
-  },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -351,23 +250,9 @@ const styles = StyleSheet.create({
     color: Colors.mutedForeground,
     fontSize: Typography.fontSize.sm,
   },
-  activeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: Colors.card,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  field: {
+    gap: Spacing.xs,
   },
-  activeLabel: {
-    fontSize: Typography.fontSize.base,
-    fontWeight: "600",
-    color: Colors.foreground,
-  },
-  field: { gap: Spacing.xs },
   label: {
     fontSize: Typography.fontSize.sm,
     fontWeight: "600",
@@ -402,19 +287,6 @@ const styles = StyleSheet.create({
   submitDisabled: { opacity: 0.6 },
   submitText: {
     color: Colors.primaryForeground,
-    fontSize: Typography.fontSize.base,
-    fontWeight: "600",
-  },
-  deleteBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
-  },
-  deleteBtnPressed: { opacity: 0.6 },
-  deleteText: {
-    color: Colors.destructive,
     fontSize: Typography.fontSize.base,
     fontWeight: "600",
   },

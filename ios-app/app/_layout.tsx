@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PostHogProvider } from "posthog-react-native";
 import { TRPCProvider } from "@/providers/TRPCProvider";
 import { StripeProvider } from "@/providers/StripeProvider";
@@ -15,13 +16,15 @@ const POSTHOG_HOST =
 
 export default function RootLayout() {
   const tree = (
-    <TRPCProvider>
-      <StripeProvider>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
-      </StripeProvider>
-    </TRPCProvider>
+    <SafeAreaProvider>
+      <TRPCProvider>
+        <StripeProvider>
+          <AuthProvider>
+            <RootNavigator />
+          </AuthProvider>
+        </StripeProvider>
+      </TRPCProvider>
+    </SafeAreaProvider>
   );
 
   if (!POSTHOG_KEY) return tree;
@@ -87,6 +90,7 @@ function RootNavigator() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="live/[liveId]" />
+      <Stack.Screen name="seller-live/[liveId]" />
       <Stack.Screen name="address" />
     </Stack>
   );

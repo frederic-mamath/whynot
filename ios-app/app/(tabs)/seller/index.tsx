@@ -1,4 +1,5 @@
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, SafeAreaView } from "react-native";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronRight, Package, Radio, Truck } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";

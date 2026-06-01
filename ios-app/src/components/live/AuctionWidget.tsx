@@ -56,6 +56,7 @@ export function AuctionWidget({ channelId, forceOpen, onForceOpenHandled }: Prop
       <BidRequirementsSheet
         visible={sheetOpen}
         auctionId={auction.id}
+        channelId={channelId}
         bidAmount={nextBid}
         onClose={() => setSheetOpen(false)}
         onBidPlaced={() => setSheetOpen(false)}

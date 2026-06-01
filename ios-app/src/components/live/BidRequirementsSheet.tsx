@@ -1,5 +1,6 @@
 import { View, Text, Modal, Pressable, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { useTrack } from "@/lib/analytics";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { PaymentSetupSheet } from "./PaymentSetupSheet";
 import { SwipeToConfirm } from "./SwipeToConfirm";
@@ -7,6 +8,7 @@ import { SwipeToConfirm } from "./SwipeToConfirm";
 type Props = {
   visible: boolean;
   auctionId: string;
+  channelId: number;
   bidAmount: number;
   onClose: () => void;
   onBidPlaced: () => void;
@@ -15,15 +17,25 @@ type Props = {
 export function BidRequirementsSheet({
   visible,
   auctionId,
+  channelId,
   bidAmount,
   onClose,
   onBidPlaced,
 }: Props) {
   const profileQuery = trpc.profile.me.useQuery(undefined, { enabled: visible });
   const paymentQuery = trpc.payment.getPaymentStatus.useQuery(undefined, { enabled: visible });
+  const track = useTrack();
 
   const placeBidMutation = trpc.auction.placeBid.useMutation({
-    onSuccess: onBidPlaced,
+    onSuccess: () => {
+      track({
+        name: "bid_placed",
+        auctionId,
+        liveId: channelId,
+        amount: bidAmount,
+      });
+      onBidPlaced();
+    },
   });
 
   const hasName = !!(profileQuery.data?.firstName && profileQuery.data?.lastName);

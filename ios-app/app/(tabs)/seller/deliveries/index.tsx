@@ -3,10 +3,10 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";

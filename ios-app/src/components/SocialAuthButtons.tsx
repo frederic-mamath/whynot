@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrack } from "@/lib/analytics";
 import {
   signInWithApple,
   signInWithGoogle,
@@ -20,6 +21,7 @@ type Loading = "apple" | "google" | null;
 
 export function SocialAuthButtons() {
   const { login } = useAuth();
+  const track = useTrack();
   const [loading, setLoading] = useState<Loading>(null);
 
   const appleMutation = trpc.auth.appleSignIn.useMutation();
@@ -35,6 +37,10 @@ export function SocialAuthButtons() {
         lastName: result.lastName ?? undefined,
       });
       await login(data.token, data.user);
+      track({
+        name: data.isNewUser ? "sign_up_completed" : "login_completed",
+        method: "apple",
+      });
     } catch (err) {
       if (!(err instanceof SocialAuthCanceledError)) {
         Alert.alert(
@@ -53,6 +59,10 @@ export function SocialAuthButtons() {
       const result = await signInWithGoogle();
       const data = await googleMutation.mutateAsync({ idToken: result.idToken });
       await login(data.token, data.user);
+      track({
+        name: data.isNewUser ? "sign_up_completed" : "login_completed",
+        method: "google",
+      });
     } catch (err) {
       if (!(err instanceof SocialAuthCanceledError)) {
         Alert.alert(

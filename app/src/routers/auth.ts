@@ -21,6 +21,7 @@ import { TRPCError } from "@trpc/server";
 type OAuthSignInResult = {
   user: { id: number; email: string; isVerified: boolean };
   token: string;
+  isNewUser: boolean;
 };
 
 async function signInOrLinkOAuth(
@@ -46,6 +47,7 @@ async function signInOrLinkOAuth(
     return {
       user: { id: user.id, email: user.email, isVerified: user.is_verified },
       token: generateToken(user.id),
+      isNewUser: false,
     };
   }
 
@@ -64,6 +66,7 @@ async function signInOrLinkOAuth(
         isVerified: existingByEmail.is_verified,
       },
       token: generateToken(existingByEmail.id),
+      isNewUser: false,
     };
   }
 
@@ -76,6 +79,7 @@ async function signInOrLinkOAuth(
       isVerified: newUser.is_verified,
     },
     token: generateToken(newUser.id),
+    isNewUser: true,
   };
 }
 

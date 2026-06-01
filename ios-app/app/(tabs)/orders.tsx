@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useStripe } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
+import { useTrack } from "@/lib/analytics";
 import { OrderCard } from "@/components/OrderCard";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
@@ -26,6 +27,7 @@ export default function OrdersScreen() {
 
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const utils = trpc.useUtils();
+  const track = useTrack();
 
   const { data, isLoading, isFetching } = trpc.order.getMyOrders.useQuery({});
 
@@ -43,6 +45,8 @@ export default function OrdersScreen() {
 
   const handlePayNow = async (orderId: string) => {
     setPayingOrderId(orderId);
+    const order = orders.find((o) => o.id === orderId);
+    const amount = order?.finalPrice ?? 0;
     try {
       const { clientSecret, customerId, ephemeralKey } =
         await createPaymentIntent.mutateAsync({ orderId });
@@ -60,8 +64,10 @@ export default function OrdersScreen() {
         return;
       }
 
+      track({ name: "checkout_started", orderId, amount });
       const result = await presentPaymentSheet();
       if (!result.error) {
+        track({ name: "purchase_completed", orderId, amount });
         utils.order.getMyOrders.invalidate();
       }
     } finally {

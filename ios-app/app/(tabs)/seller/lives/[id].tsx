@@ -5,7 +5,6 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Image,
   ActivityIndicator,
@@ -15,6 +14,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ChevronLeft,
@@ -53,31 +56,18 @@ function formatStartsAt(value: string | Date): string {
   return `${day} ${month} ${year} à ${hh}:${mm}`;
 }
 
-function dateToInputs(d: Date): { dateStr: string; timeStr: string } {
-  const yyyy = d.getFullYear();
-  const mo = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  return { dateStr: `${yyyy}-${mo}-${dd}`, timeStr: `${hh}:${mi}` };
+/** Merge the date part of `picked` into `base`, keeping `base`'s time. */
+function withDate(base: Date, picked: Date): Date {
+  const d = new Date(base);
+  d.setFullYear(picked.getFullYear(), picked.getMonth(), picked.getDate());
+  return d;
 }
 
-function parseDateTime(dateStr: string, timeStr: string): Date | null {
-  const dateMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  const timeMatch = timeStr.match(/^(\d{2}):(\d{2})$/);
-  if (!dateMatch || !timeMatch) return null;
-  const [, y, mo, d] = dateMatch;
-  const [, h, mi] = timeMatch;
-  const date = new Date(
-    Number(y),
-    Number(mo) - 1,
-    Number(d),
-    Number(h),
-    Number(mi),
-    0,
-    0,
-  );
-  return isNaN(date.getTime()) ? null : date;
+/** Merge the time part of `picked` into `base`, keeping `base`'s date. */
+function withTime(base: Date, picked: Date): Date {
+  const d = new Date(base);
+  d.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+  return d;
 }
 
 export default function SellerLiveDetailScreen() {
@@ -247,7 +237,7 @@ export default function SellerLiveDetailScreen() {
               styles.goLive,
               pressed && styles.goLivePressed,
             ]}
-            onPress={() => router.push(`/seller/live/${liveId}`)}
+            onPress={() => router.push(`/seller-live/${liveId}`)}
           >
             <Radio size={20} color={Colors.primaryForeground} />
             <Text style={styles.goLiveText}>Go Live</Text>
@@ -393,29 +383,32 @@ function EditLiveModal({
   };
   onSaved: () => void;
 }) {
+  const initialDate =
+    typeof live.starts_at === "string" ? new Date(live.starts_at) : live.starts_at;
   const [name, setName] = useState(live.name);
   const [description, setDescription] = useState(live.description ?? "");
-  const initial = dateToInputs(
-    typeof live.starts_at === "string" ? new Date(live.starts_at) : live.starts_at,
-  );
-  const [dateStr, setDateStr] = useState(initial.dateStr);
-  const [timeStr, setTimeStr] = useState(initial.timeStr);
+  const [startsAt, setStartsAt] = useState<Date>(initialDate);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (visible) {
       setName(live.name);
       setDescription(live.description ?? "");
-      const init = dateToInputs(
+      setStartsAt(
         typeof live.starts_at === "string"
           ? new Date(live.starts_at)
           : live.starts_at,
       );
-      setDateStr(init.dateStr);
-      setTimeStr(init.timeStr);
       setError(null);
     }
   }, [visible, live]);
+
+  const onChangeDate = (_: DateTimePickerEvent, picked?: Date) => {
+    if (picked) setStartsAt((prev) => withDate(prev, picked));
+  };
+  const onChangeTime = (_: DateTimePickerEvent, picked?: Date) => {
+    if (picked) setStartsAt((prev) => withTime(prev, picked));
+  };
 
   const updateMutation = trpc.live.update.useMutation();
 
@@ -424,11 +417,6 @@ function EditLiveModal({
     const trimmedName = name.trim();
     if (trimmedName.length < 3) {
       setError("Le nom doit contenir au moins 3 caractères");
-      return;
-    }
-    const startsAt = parseDateTime(dateStr, timeStr);
-    if (!startsAt) {
-      setError("Format de date attendu : AAAA-MM-JJ — heure HH:MM");
       return;
     }
     try {
@@ -477,25 +465,24 @@ function EditLiveModal({
 
             <View style={styles.fieldRow}>
               <View style={styles.fieldCol}>
-                <Text style={styles.label}>Date (AAAA-MM-JJ)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={dateStr}
-                  onChangeText={setDateStr}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  placeholderTextColor={Colors.inputHint}
+                <Text style={styles.label}>Date</Text>
+                <DateTimePicker
+                  value={startsAt}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  locale="fr-FR"
+                  onChange={onChangeDate}
                 />
               </View>
               <View style={styles.fieldCol}>
-                <Text style={styles.label}>Heure (HH:MM)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={timeStr}
-                  onChangeText={setTimeStr}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  placeholderTextColor={Colors.inputHint}
+                <Text style={styles.label}>Heure</Text>
+                <DateTimePicker
+                  value={startsAt}
+                  mode="time"
+                  display="default"
+                  locale="fr-FR"
+                  onChange={onChangeTime}
                 />
               </View>
             </View>

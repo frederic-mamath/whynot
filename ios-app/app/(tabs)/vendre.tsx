@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -7,30 +7,28 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { Redirect } from "expo-router";
 import { TrendingUp, Users, Sparkles } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 export default function VendreScreen() {
-  const router = useRouter();
   const rolesQuery = trpc.role.myRoles.useQuery();
 
-  const isSeller = rolesQuery.data?.roles.includes("SELLER") ?? false;
-
-  useEffect(() => {
-    if (isSeller) {
-      router.replace("/seller");
-    }
-  }, [isSeller, router]);
-
-  if (rolesQuery.isLoading || isSeller) {
+  if (rolesQuery.isLoading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={Colors.primary} size="large" />
       </View>
     );
   }
+
+  // <Redirect> navigates on every render where the condition is true.
+  // Using router.replace() inside useEffect was stale across tab focus changes:
+  // expo-router's Tabs keep this screen mounted, so re-focusing the tab didn't
+  // re-run the effect (deps unchanged) and the loader stayed up forever.
+  const isSeller = rolesQuery.data?.roles.includes("SELLER") ?? false;
+  if (isSeller) return <Redirect href="/seller" />;
 
   return <SellerUpsell />;
 }

@@ -18,6 +18,7 @@ import { AuctionEndModal } from "@/components/live/AuctionEndModal";
 import { OutbidBanner } from "@/components/live/OutbidBanner";
 import { LiveProductList } from "@/components/live/LiveProductList";
 import { Colors } from "@/theme/tokens";
+import { useTrack } from "@/lib/analytics";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -50,6 +51,8 @@ export default function LiveScreen() {
   const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
   const [openBidSheet, setOpenBidSheet] = useState(false);
   const [isHost, setIsHost] = useState(false);
+  const track = useTrack();
+  const liveViewedRef = useRef(false);
 
   const productsQuery = trpc.product.listByChannel.useQuery(
     { channelId },
@@ -77,6 +80,7 @@ export default function LiveScreen() {
           winnerId?: number | null;
           finalPrice?: number;
           hasWinner?: boolean;
+          auctionId?: string;
           outbidUserId?: number;
           productName?: string;
           currentBid?: number;
@@ -92,6 +96,14 @@ export default function LiveScreen() {
             finalPrice: e.finalPrice ?? 0,
             winnerUsername: e.winnerUsername ?? null,
           });
+          if (e.winnerId && user?.id === e.winnerId && e.auctionId) {
+            track({
+              name: "auction_won",
+              auctionId: e.auctionId,
+              liveId: channelId,
+              finalPrice: e.finalPrice ?? 0,
+            });
+          }
         } else if (e.type === "auction:outbid" && e.outbidUserId === user?.id) {
           setOutbidBanner({
             productName: e.productName ?? "",
@@ -125,8 +137,20 @@ export default function LiveScreen() {
           setLiveStatus("active");
 
           const channelData = data as { liveStatus: "active"; channel?: { host_id?: number } };
-          if (channelData.channel?.host_id != null) {
-            setIsHost(channelData.channel.host_id === user?.id);
+          const hostId = channelData.channel?.host_id;
+          const isViewerHost = hostId != null && hostId === user?.id;
+          if (hostId != null) {
+            setIsHost(isViewerHost);
+          }
+
+          if (!liveViewedRef.current && hostId != null) {
+            liveViewedRef.current = true;
+            track({
+              name: "live_viewed",
+              liveId: channelId,
+              hostId,
+              isSellerView: isViewerHost,
+            });
           }
 
           if (!isAgoraAvailable || !createAgoraRtcEngine) return;
