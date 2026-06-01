@@ -18,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import FadingUnderlay from "./FadingUnderlay";
+import { OutbidBanner } from "./OutbidBanner";
 import { Link, useParams } from "react-router-dom";
 import Input from "@/components/ui/Input/Input";
 import { HighlightedProduct } from "@/components/HighlightedProduct";
@@ -98,6 +99,8 @@ const LiveDetailsPage = () => {
     endedAuction,
     showEndModal,
     setShowEndModal,
+    outbidBanner,
+    setOutbidBanner,
   } = useAuction(liveId);
 
   const isHost = channelConfig?.isHost ?? false;
@@ -316,6 +319,14 @@ const LiveDetailsPage = () => {
             </div>
           ) : (
             <div className={cn("flex flex-col", "gap-2")}>
+              {outbidBanner && (
+                <OutbidBanner
+                  productName={outbidBanner.productName}
+                  newBid={outbidBanner.newBid}
+                  onDismiss={() => setOutbidBanner(null)}
+                  onBidAgain={() => setOutbidBanner(null)}
+                />
+              )}
               <div className="flex gap-2">
                 {([1, 5, 10] as const).map((n) => (
                   <button

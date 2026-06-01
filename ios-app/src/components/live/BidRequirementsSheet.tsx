@@ -1,11 +1,14 @@
 import { View, Text, Modal, Pressable, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { useTrack } from "@/lib/analytics";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { PaymentSetupSheet } from "./PaymentSetupSheet";
+import { SwipeToConfirm } from "./SwipeToConfirm";
 
 type Props = {
   visible: boolean;
   auctionId: string;
+  channelId: number;
   bidAmount: number;
   onClose: () => void;
   onBidPlaced: () => void;
@@ -14,15 +17,25 @@ type Props = {
 export function BidRequirementsSheet({
   visible,
   auctionId,
+  channelId,
   bidAmount,
   onClose,
   onBidPlaced,
 }: Props) {
   const profileQuery = trpc.profile.me.useQuery(undefined, { enabled: visible });
   const paymentQuery = trpc.payment.getPaymentStatus.useQuery(undefined, { enabled: visible });
+  const track = useTrack();
 
   const placeBidMutation = trpc.auction.placeBid.useMutation({
-    onSuccess: onBidPlaced,
+    onSuccess: () => {
+      track({
+        name: "bid_placed",
+        auctionId,
+        liveId: channelId,
+        amount: bidAmount,
+      });
+      onBidPlaced();
+    },
   });
 
   const hasName = !!(profileQuery.data?.firstName && profileQuery.data?.lastName);
@@ -76,19 +89,14 @@ export function BidRequirementsSheet({
           <Text style={styles.error}>{placeBidMutation.error.message}</Text>
         )}
 
-        <Pressable
-          style={[styles.confirmButton, (!bothMet || placeBidMutation.isPending) && styles.buttonDisabled]}
-          onPress={confirmBid}
-          disabled={!bothMet || placeBidMutation.isPending}
-        >
-          {placeBidMutation.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.confirmText}>
-              {bothMet ? "Confirmer l'enchère" : "Complétez les étapes ci-dessus"}
-            </Text>
-          )}
-        </Pressable>
+        <View style={styles.swipeContainer}>
+          <SwipeToConfirm
+            label="Glisser pour enchérir"
+            onConfirm={confirmBid}
+            disabled={!bothMet}
+            loading={placeBidMutation.isPending}
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -141,14 +149,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
   },
-  confirmButton: {
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: "#7C3AED",
+  swipeContainer: {
     alignItems: "center",
-    justifyContent: "center",
     marginTop: 16,
   },
-  buttonDisabled: { backgroundColor: "#D1D5DB" },
-  confirmText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });

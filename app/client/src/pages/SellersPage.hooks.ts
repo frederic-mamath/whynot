@@ -10,11 +10,27 @@ export function useSellersPage() {
   );
 
   const followSeller = trpc.shop.followSeller.useMutation({
-    onSuccess: () => utils.shop.listAllSellers.invalidate(),
+    onSuccess: (_, input) => {
+      utils.shop.listAllSellers.setData(undefined, (old) =>
+        old
+          ? old.map((s) =>
+              s.userId === input.sellerId ? { ...s, isFollowed: true } : s,
+            )
+          : old,
+      );
+      utils.shop.listAllSellers.invalidate();
+    },
   });
 
   const unfollowSeller = trpc.shop.unfollowSeller.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.shop.listAllSellers.setData(undefined, (old) =>
+        old
+          ? old.map((s) =>
+              s.userId === input.sellerId ? { ...s, isFollowed: false } : s,
+            )
+          : old,
+      );
       utils.shop.listAllSellers.invalidate();
       setPendingUnfollowId(null);
     },

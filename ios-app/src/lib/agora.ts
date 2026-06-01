@@ -76,6 +76,34 @@ export const RtcSurfaceView = NativeViewManager
       React.createElement(NativeViewManager, { uid: canvas.uid, style })
   : null;
 
+// Local camera preview for the broadcaster (seller hosting a live).
+export const RtcLocalView = NativeViewManager
+  ? ({ style }: { style?: any }) =>
+      React.createElement(NativeViewManager, { local: true, uid: 0, style })
+  : null;
+
 // Stub constants — values unused in new implementation but kept for compatibility.
 export const ChannelProfileType = { ChannelProfileLiveBroadcasting: 1 };
-export const ClientRoleType = { ClientRoleAudience: 2 };
+export const ClientRoleType = { ClientRoleAudience: 2, ClientRoleBroadcaster: 1 };
+export const ClientRoleBroadcaster = 1;
+export const ClientRoleAudience = 2;
+
+// Broadcaster (host) APIs — separate from createAgoraRtcEngine which targets audience.
+export async function initializeBroadcaster(appId: string): Promise<void> {
+  if (!NativeModule) throw new Error("Agora native module not available");
+  return NativeModule.initializeBroadcaster(appId);
+}
+
+export async function joinChannelAsBroadcaster(
+  token: string | null,
+  channelName: string,
+  uid: number,
+): Promise<void> {
+  if (!NativeModule) throw new Error("Agora native module not available");
+  return NativeModule.joinChannelAsBroadcaster(token ?? null, channelName, uid);
+}
+
+export async function stopBroadcaster(): Promise<void> {
+  if (!NativeModule) return;
+  return NativeModule.stopBroadcaster();
+}

@@ -162,6 +162,28 @@ posthog.capture("seller_onboarding_step_completed", {
 
 ---
 
+## iOS — Critical Funnel (feature 071)
+
+GDPR Option A: `personProfiles: "identified_only"`. No anonymous tracking, no consent banner. Identity stitched to web via `posthog.identify(userId)` in `src/contexts/AuthContext.tsx` — same userId as the web app.
+
+All events go through the typed `useTrack()` helper in `ios-app/src/lib/analytics.ts`. Adding a new event = extending the union in that one file.
+
+| Event | Trigger | Key Properties | Status | File |
+|-------|---------|----------------|--------|------|
+| `sign_up_completed` | `auth.register` mutation success (email) OR OAuth mutation success with `isNewUser === true` | `method: "email" \| "google" \| "apple"` | **exists** | `app/(auth)/register.tsx`, `src/components/SocialAuthButtons.tsx` |
+| `login_completed` | `auth.login` mutation success (email) OR OAuth mutation success with `isNewUser === false` | `method: "email" \| "google" \| "apple"` | **exists** | `app/(auth)/login.tsx`, `src/components/SocialAuthButtons.tsx` |
+| `live_viewed` | `live.join` mutation `onSuccess` once `liveStatus === "active"` (once per screen entry, ref-guarded) | `live_id`, `host_id`, `is_seller_view` | **exists** | `app/live/[liveId].tsx` |
+| `bid_placed` | `auction.placeBid` mutation `onSuccess` | `auction_id`, `live_id`, `amount` | **exists** | `src/components/live/BidRequirementsSheet.tsx` |
+| `auction_won` | `auction:ended` subscription event where `winnerId === user.id` | `auction_id`, `live_id`, `final_price` | **exists** | `app/live/[liveId].tsx` |
+| `checkout_started` | Immediately before `presentPaymentSheet()` resolves | `order_id`, `amount` | **exists** | `app/(tabs)/orders.tsx` |
+| `purchase_completed` | `presentPaymentSheet()` resolves with no error | `order_id`, `amount` | **exists** | `app/(tabs)/orders.tsx` |
+
+> Backend change for OAuth signup vs login: `auth.appleSignIn` and `auth.googleSignIn` now return `isNewUser: boolean` from `signInOrLinkOAuth` (`app/src/routers/auth.ts`). The web app can read this same field if it wants to fix its OAuth signup detection.
+
+The four post-launch ratios fall out of a PostHog Funnel insight with these four steps: `sign_up_completed` → `live_viewed` → `bid_placed` → `purchase_completed`.
+
+---
+
 ## Summary
 
 | Status | Count |

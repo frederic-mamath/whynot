@@ -63,6 +63,37 @@ ios-app/
 - **Native modules**: live in `modules/<name>/` as Expo Module packages with their own `expo-module.config.json`, `ios/` Swift sources, and `src/` TS bindings.
 - **Env vars**: read via `expo-constants` (`Constants.expoConfig.extra.<key>`), declared in `app.config.ts > extra`. `EXPO_PUBLIC_*` vars are baked at build time.
 
+## Cache Update Strategy
+
+After any mutation that updates data **immediately visible on screen**, use `setData()` to patch the cache instantly, then `invalidate()` in the background to sync with the server:
+
+```ts
+const utils = trpc.useUtils();
+
+const updateMutation = trpc.profile.update.useMutation({
+  onSuccess: (_, input) => {
+    utils.profile.me.setData(undefined, (old) =>
+      old ? { ...old, firstName: input.firstName, lastName: input.lastName } : old
+    );
+    utils.profile.me.invalidate();
+  },
+});
+```
+
+This eliminates the post-save lag (200–500ms of stale data) without a loader.
+
+**Exception — live screen (`app/live/[liveId].tsx` and `src/components/live/`):** do NOT use `setData()` for mutations inside the live session. Multiple buyers bid concurrently — optimistic updates would show stale state if another buyer's action lands between your mutation and the server response. The server is the source of truth there. The live screen will have its own custom cache strategy (feature 067 follow-up).
+
+## Architecture Tests
+
+One rule is enforced by `scripts/arch-test.mjs` (runs automatically via `npm run predev`).
+
+| Rule | What it enforces |
+|:-----|:----------------|
+| R4 — `no-mobile-hex` | No literal hex color codes (`#RRGGBB`, `#RGB`) in `app/**/*.tsx` or `src/**/*.{tsx,ts}`. The only legitimate hex-code location is `src/theme/tokens.ts`. Everywhere else, use `Colors.*` from that file. |
+
+Run manually: `npm run arch:test` from `ios-app/`.
+
 ## Gotchas
 
 - **Stale `ios/` after installing a native module** — `npm install` of a package with native code does NOT update `ios/Podfile` or `Pods/`. Linker errors like `Undefined symbols ... facebook::react::Sealable` follow. Fix: `npx expo prebuild --clean`.

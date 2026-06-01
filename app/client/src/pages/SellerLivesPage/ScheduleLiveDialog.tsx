@@ -67,6 +67,17 @@ export default function ScheduleLiveDialog({ open, onClose }: Props) {
         has_cover: !!selectedCoverFile,
         product_count: selectedProductIds.length,
       });
+      utils.live.listByHost.setData(undefined, (old) =>
+        old
+          ? {
+              ...old,
+              upcoming: [
+                ...old.upcoming,
+                { ...data.live, categoryNames: [] },
+              ],
+            }
+          : old,
+      );
       utils.live.listByHost.invalidate();
       setSelectedProductIds([]);
       setName("");

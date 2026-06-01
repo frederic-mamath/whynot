@@ -17,14 +17,34 @@ export function useHomePage() {
   );
 
   const followSeller = trpc.shop.followSeller.useMutation({
-    onSuccess: (_, variables) => {
+    onSuccess: (_, input) => {
+      utils.shop.listSellers.setData({ limit: 10 }, (old) =>
+        old
+          ? {
+              ...old,
+              sellers: old.sellers.map((s) =>
+                s.userId === input.sellerId ? { ...s, isFollowed: true } : s,
+              ),
+            }
+          : old,
+      );
       utils.shop.listSellers.invalidate();
-      posthog.capture("seller_followed", { seller_id: variables.sellerId });
+      posthog.capture("seller_followed", { seller_id: input.sellerId });
     },
   });
 
   const unfollowSeller = trpc.shop.unfollowSeller.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      utils.shop.listSellers.setData({ limit: 10 }, (old) =>
+        old
+          ? {
+              ...old,
+              sellers: old.sellers.map((s) =>
+                s.userId === input.sellerId ? { ...s, isFollowed: false } : s,
+              ),
+            }
+          : old,
+      );
       utils.shop.listSellers.invalidate();
       setPendingUnfollowId(null);
     },

@@ -218,6 +218,37 @@ export const packageRouter = router({
     }),
 
   /**
+   * Mark a non-Mondial-Relay package as shipped using a manually entered tracking number.
+   */
+  markShippedManually: protectedProcedure
+    .input(
+      z.object({
+        packageId: z.string().uuid(),
+        trackingNumber: z.string().min(1).max(100),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const pkg = await packageRepository.findByIdForSeller(
+        input.packageId,
+        ctx.user.id,
+      );
+      if (!pkg) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Package not found" });
+      }
+      if (pkg.status !== "pending") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Ce colis a déjà été expédié",
+        });
+      }
+      await packageRepository.markShippedManually(
+        input.packageId,
+        input.trackingNumber.trim(),
+      );
+      return { success: true };
+    }),
+
+  /**
    * Request payout for all orders in a shipped package.
    */
   requestPayouts: protectedProcedure

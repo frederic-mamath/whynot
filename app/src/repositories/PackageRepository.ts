@@ -197,6 +197,29 @@ export class PackageRepository {
       .execute();
   }
 
+  async markShippedManually(
+    id: string,
+    trackingNumber: string,
+  ): Promise<void> {
+    const now = new Date();
+    await db.transaction().execute(async (trx) => {
+      await trx
+        .updateTable("packages")
+        .set({
+          tracking_number: trackingNumber,
+          status: "shipped",
+          updated_at: now,
+        })
+        .where("id", "=", id)
+        .execute();
+      await trx
+        .updateTable("orders")
+        .set({ shipped_at: now, updated_at: now })
+        .where("package_id", "=", id)
+        .execute();
+    });
+  }
+
   async findByIdForSeller(
     id: string,
     sellerId: number,

@@ -15,6 +15,16 @@ src/db/types.ts             # Kysely table type definitions
 - Repositories are instantiated as singletons and exported from `src/repositories/index.ts`
 - Business logic lives in `src/services/` when it spans multiple repositories
 
+## Architecture Tests
+
+Three rules are enforced by `dependency-cruiser` (`app/.dependency-cruiser.cjs`). Violations fail the build.
+
+| Rule | What it enforces |
+|:-----|:----------------|
+| R1 — `no-router-db-import` | `src/routers/**` cannot import `src/db/` directly |
+| R5 — `no-direct-repository-imports` | Repository singletons must be imported via `src/repositories/index.ts`, not directly from the individual `*Repository.ts` files |
+| R6 — `no-raw-trpc-import` | Only `client/src/lib/trpc.ts` may import from `@trpc/client` or `@trpc/react-query` |
+
 ## `protectedProcedure` vs `publicProcedure`
 
 Use `protectedProcedure` (from `src/trpc.ts`) for any endpoint that requires an authenticated user. It provides `ctx.user.id` and throws `UNAUTHORIZED` automatically.

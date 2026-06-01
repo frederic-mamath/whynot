@@ -13,11 +13,13 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTrack } from "@/lib/analytics";
 import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { login } = useAuth();
+  const track = useTrack();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptedCgu, setAcceptedCgu] = useState(false);
@@ -26,6 +28,7 @@ export default function RegisterScreen() {
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: async (data) => {
       await login(data.token, data.user);
+      track({ name: "sign_up_completed", method: "email" });
     },
     onError: (err) => {
       setError(err.message);

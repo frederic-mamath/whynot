@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -15,6 +15,12 @@ import { ChatPanel } from "@/components/live/ChatPanel";
 import { HighlightedProduct } from "@/components/live/HighlightedProduct";
 import { AuctionWidget } from "@/components/live/AuctionWidget";
 import { AuctionEndModal } from "@/components/live/AuctionEndModal";
+import { OutbidBanner } from "@/components/live/OutbidBanner";
+import { LiveProductList } from "@/components/live/LiveProductList";
+import { Colors } from "@/theme/tokens";
+import { useTrack } from "@/lib/analytics";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 type HighlightedProductData = {
   id: number;
@@ -42,6 +48,22 @@ export default function LiveScreen() {
   const [liveStatus, setLiveStatus] = useState<"loading" | "upcoming" | "active" | "ended">("loading");
   const [highlightedProduct, setHighlightedProduct] = useState<HighlightedProductData | null>(null);
   const [auctionEndInfo, setAuctionEndInfo] = useState<AuctionEndInfo | null>(null);
+  const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
+  const [openBidSheet, setOpenBidSheet] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const track = useTrack();
+  const liveViewedRef = useRef(false);
+
+  const productsQuery = trpc.product.listByChannel.useQuery(
+    { channelId },
+    { enabled: liveStatus === "active" },
+  );
+  const utils = trpc.useUtils();
+  const toggleInterestMutation = trpc.product.toggleInterest.useMutation({
+    onSuccess: () => {
+      utils.product.listByChannel.invalidate({ channelId });
+    },
+  });
 
   const joinMutation = trpc.live.join.useMutation();
   const leaveMutation = trpc.live.leave.useMutation();
@@ -58,6 +80,10 @@ export default function LiveScreen() {
           winnerId?: number | null;
           finalPrice?: number;
           hasWinner?: boolean;
+          auctionId?: string;
+          outbidUserId?: number;
+          productName?: string;
+          currentBid?: number;
         };
         if (e.type === "PRODUCT_HIGHLIGHTED" && e.product) {
           setHighlightedProduct(e.product);
@@ -69,6 +95,19 @@ export default function LiveScreen() {
             productName: highlightedProduct?.name ?? "Produit",
             finalPrice: e.finalPrice ?? 0,
             winnerUsername: e.winnerUsername ?? null,
+          });
+          if (e.winnerId && user?.id === e.winnerId && e.auctionId) {
+            track({
+              name: "auction_won",
+              auctionId: e.auctionId,
+              liveId: channelId,
+              finalPrice: e.finalPrice ?? 0,
+            });
+          }
+        } else if (e.type === "auction:outbid" && e.outbidUserId === user?.id) {
+          setOutbidBanner({
+            productName: e.productName ?? "",
+            newBid: e.currentBid ?? 0,
           });
         }
       },
@@ -96,6 +135,23 @@ export default function LiveScreen() {
           }
 
           setLiveStatus("active");
+
+          const channelData = data as { liveStatus: "active"; channel?: { host_id?: number } };
+          const hostId = channelData.channel?.host_id;
+          const isViewerHost = hostId != null && hostId === user?.id;
+          if (hostId != null) {
+            setIsHost(isViewerHost);
+          }
+
+          if (!liveViewedRef.current && hostId != null) {
+            liveViewedRef.current = true;
+            track({
+              name: "live_viewed",
+              liveId: channelId,
+              hostId,
+              isSellerView: isViewerHost,
+            });
+          }
 
           if (!isAgoraAvailable || !createAgoraRtcEngine) return;
 
@@ -149,71 +205,122 @@ export default function LiveScreen() {
     router.back();
   };
 
+  const products = productsQuery.data ?? [];
+  const hasProducts = products.length > 0;
+
   return (
     <View style={styles.container}>
-      {/* Video layer */}
-      {joined && remoteUid !== null && RtcSurfaceView && (
-        <RtcSurfaceView
-          style={StyleSheet.absoluteFill}
-          canvas={{ uid: remoteUid }}
-        />
-      )}
+      <ScrollView
+        pagingEnabled
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        bounces={false}
+      >
+        {/* Page 1 — video + overlays */}
+        <View style={{ height: SCREEN_HEIGHT, overflow: "hidden" }}>
+          {/* Video layer */}
+          {joined && remoteUid !== null && RtcSurfaceView && (
+            <RtcSurfaceView
+              style={StyleSheet.absoluteFill}
+              canvas={{ uid: remoteUid }}
+            />
+          )}
 
-      {/* Video unavailable placeholder */}
-      {liveStatus === "active" && !isAgoraAvailable && (
-        <View style={styles.noVideoOverlay}>
-          <Text style={styles.noVideoText}>Vidéo non disponible sur cet appareil</Text>
+          {/* Video unavailable placeholder */}
+          {liveStatus === "active" && !isAgoraAvailable && (
+            <View style={styles.noVideoOverlay}>
+              <Text style={styles.noVideoText}>Vidéo non disponible sur cet appareil</Text>
+            </View>
+          )}
+
+          {/* Top bar: back + LIVE badge */}
+          <View style={styles.topBar}>
+            <Pressable style={styles.backButton} onPress={handleBack}>
+              <Text style={styles.backText}>✕</Text>
+            </Pressable>
+            {liveStatus === "active" && (
+              <LiveBadge channelId={channelId} />
+            )}
+          </View>
+
+          {/* Highlighted product overlay */}
+          {liveStatus === "active" && (
+            <HighlightedProduct product={highlightedProduct} />
+          )}
+
+          {/* Center states */}
+          {liveStatus === "loading" && (
+            <View style={styles.center}>
+              <ActivityIndicator color="#fff" size="large" />
+            </View>
+          )}
+
+          {liveStatus === "active" && joined && remoteUid === null && isAgoraAvailable && (
+            <View style={styles.center}>
+              <Text style={styles.waitText}>En attente du vendeur…</Text>
+            </View>
+          )}
+
+          {liveStatus === "upcoming" && (
+            <View style={styles.center}>
+              <Text style={styles.statusEmoji}>🕐</Text>
+              <Text style={styles.statusTitle}>Live pas encore commencé</Text>
+              <Text style={styles.statusSub}>Revenez bientôt</Text>
+            </View>
+          )}
+
+          {liveStatus === "ended" && (
+            <View style={styles.center}>
+              <Text style={styles.statusEmoji}>🎬</Text>
+              <Text style={styles.statusTitle}>Ce live est terminé</Text>
+            </View>
+          )}
+
+          {/* Auction widget + end modal — only when active */}
+          {liveStatus === "active" && (
+            <AuctionWidget
+              channelId={channelId}
+              forceOpen={openBidSheet}
+              onForceOpenHandled={() => setOpenBidSheet(false)}
+            />
+          )}
+
+          {/* Outbid banner — overlays the top of the screen */}
+          {outbidBanner && (
+            <OutbidBanner
+              productName={outbidBanner.productName}
+              newBid={outbidBanner.newBid}
+              onDismiss={() => setOutbidBanner(null)}
+              onBidAgain={() => setOpenBidSheet(true)}
+            />
+          )}
+
+          {/* Chat panel — only when active */}
+          {liveStatus === "active" && <ChatPanel channelId={channelId} />}
+
+          {/* Swipe-down cue */}
+          {liveStatus === "active" && hasProducts && (
+            <View style={styles.swipeCue} pointerEvents="none">
+              <Text style={styles.swipeCueText}>⌄ Produits du live</Text>
+            </View>
+          )}
         </View>
-      )}
 
-      {/* Top bar: back + LIVE badge */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backText}>✕</Text>
-        </Pressable>
-        {liveStatus === "active" && (
-          <LiveBadge channelId={channelId} />
-        )}
-      </View>
-
-      {/* Highlighted product overlay */}
-      {liveStatus === "active" && (
-        <HighlightedProduct product={highlightedProduct} />
-      )}
-
-      {/* Center states */}
-      {liveStatus === "loading" && (
-        <View style={styles.center}>
-          <ActivityIndicator color="#fff" size="large" />
+        {/* Page 2 — product lineup */}
+        <View style={{ height: SCREEN_HEIGHT, backgroundColor: Colors.background }}>
+          <LiveProductList
+            products={products}
+            isLoading={productsQuery.isLoading}
+            isSellerView={isHost}
+            onToggleInterest={(productId, { onError }) =>
+              toggleInterestMutation.mutate(
+                { productId, liveId: channelId },
+                { onError },
+              )
+            }
+          />
         </View>
-      )}
-
-      {liveStatus === "active" && joined && remoteUid === null && isAgoraAvailable && (
-        <View style={styles.center}>
-          <Text style={styles.waitText}>En attente du vendeur…</Text>
-        </View>
-      )}
-
-      {liveStatus === "upcoming" && (
-        <View style={styles.center}>
-          <Text style={styles.statusEmoji}>🕐</Text>
-          <Text style={styles.statusTitle}>Live pas encore commencé</Text>
-          <Text style={styles.statusSub}>Revenez bientôt</Text>
-        </View>
-      )}
-
-      {liveStatus === "ended" && (
-        <View style={styles.center}>
-          <Text style={styles.statusEmoji}>🎬</Text>
-          <Text style={styles.statusTitle}>Ce live est terminé</Text>
-        </View>
-      )}
-
-      {/* Auction widget + end modal — only when active */}
-      {liveStatus === "active" && <AuctionWidget channelId={channelId} />}
-
-      {/* Chat panel — only when active */}
-      {liveStatus === "active" && <ChatPanel channelId={channelId} />}
+      </ScrollView>
 
       {auctionEndInfo && (
         <AuctionEndModal
@@ -291,5 +398,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     paddingHorizontal: 32,
+  },
+  swipeCue: {
+    position: "absolute",
+    bottom: 100,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  swipeCueText: {
+    color: "rgba(255,255,255,0.45)",
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.3,
   },
 });

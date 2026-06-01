@@ -5,6 +5,7 @@ import {
   channelProductRepository,
   userShopRoleRepository,
   productImageRepository,
+  liveProductInterestRepository,
 } from "../repositories";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "../types/context";
@@ -141,6 +142,10 @@ export const productRouter = router({
         price: input.price,
         imageUrl: input.imageUrl,
         isActive: input.isActive,
+        startingPrice: input.startingPrice,
+        wishedPrice: input.wishedPrice,
+        categoryId: input.categoryId,
+        conditionId: input.conditionId,
       });
 
       const product = await productRepository.updateById(
@@ -241,10 +246,49 @@ export const productRouter = router({
     }),
 
   listByChannel: protectedProcedure
-    .input(z.object({ channelId: z.number() }))
+    .input(
+      z.object({
+        channelId: z.number(),
+        // Seller management UIs need to see association rows for inactive
+        // products too — otherwise the picker shows them unchecked but the
+        // server rejects associate with 409. Buyer paths leave this off.
+        includeInactive: z.boolean().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-      const products = await productRepository.findByChannelId(input.channelId);
-      return products.map(mapProductToProductOutboundDto);
+      const products = await productRepository.findByChannelId(
+        input.channelId,
+        { includeInactive: input.includeInactive },
+      );
+      const interestedProductIds =
+        await liveProductInterestRepository.findInterestedProductIds(
+          ctx.user.id,
+          input.channelId,
+        );
+      const interestedSet = new Set(interestedProductIds);
+      const counts = await Promise.all(
+        products.map((p) =>
+          liveProductInterestRepository.countByProductAndLive(
+            p.id,
+            input.channelId,
+          ),
+        ),
+      );
+      return products.map((p, i) => ({
+        ...mapProductToProductOutboundDto(p),
+        interestedCount: counts[i],
+        isInterestedByCurrentUser: interestedSet.has(p.id),
+      }));
+    }),
+
+  toggleInterest: protectedProcedure
+    .input(z.object({ productId: z.number(), liveId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return liveProductInterestRepository.toggle(
+        ctx.user.id,
+        input.productId,
+        input.liveId,
+      );
     }),
 
   // Product Images

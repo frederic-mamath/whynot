@@ -26,6 +26,7 @@ export interface Database {
   categories: CategoriesTable;
   conditions: ConditionsTable;
   waitlist: WaitlistTable;
+  live_product_interests: LiveProductInterestsTable;
 }
 
 export interface UsersTable {
@@ -360,3 +361,13 @@ export interface SellerFollowerTable {
 }
 
 export type SellerFollower = Selectable<SellerFollowerTable>;
+
+export interface LiveProductInterestsTable {
+  id: Generated<number>;
+  buyer_id: number;
+  product_id: number;
+  live_id: number;
+  created_at: Generated<Date>;
+}
+
+export type LiveProductInterest = Selectable<LiveProductInterestsTable>;

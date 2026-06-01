@@ -540,6 +540,7 @@ export const useAuction = (liveId: string | undefined) => {
   const [showPaymentSetup, setShowPaymentSetup] = useState(false);
   const [showAddressSetup, setShowAddressSetup] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
   const [endedAuction, setEndedAuction] = useState<{
     productName: string;
     productImage: string | null;
@@ -594,11 +595,21 @@ export const useAuction = (liveId: string | undefined) => {
             setShowEndModal(true);
           }
           invalidateAuction();
+        } else if (event.type === "auction:outbid" && event.outbidUserId === currentUser?.id) {
+          setOutbidBanner({ productName: event.productName, newBid: event.currentBid });
         }
       },
       onError: (err) => console.error("[useAuction] events subscription error:", err),
     },
   );
+
+  useEffect(() => {
+    if (!outbidBanner) return;
+    const t = setTimeout(() => setOutbidBanner(null), 4000);
+    return () => clearTimeout(t);
+  }, [outbidBanner]);
+
+  const bidInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!activeAuction?.endsAt) {
@@ -785,6 +796,9 @@ export const useAuction = (liveId: string | undefined) => {
     endedAuction,
     showEndModal,
     setShowEndModal,
+    outbidBanner,
+    setOutbidBanner,
+    bidInputRef,
   };
 };
 
