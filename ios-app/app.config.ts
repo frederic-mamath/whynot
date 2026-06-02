@@ -26,7 +26,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: "popup",
-  userInterfaceStyle: "automatic",
+  // App is dark-only — see features/072-ios-dark-palette/summary.md.
+  // Locking userInterfaceStyle to "dark" forces native surfaces (status bar,
+  // action sheets, alerts, system pickers) to render dark before any JS runs.
+  userInterfaceStyle: "dark",
   newArchEnabled: true,
   // Splash is configured via the expo-splash-screen plugin below — the modern
   // form. The legacy top-level `splash:` block left the asset's baked-in black
