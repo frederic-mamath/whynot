@@ -28,11 +28,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "popup",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
-  splash: {
-    image: "./assets/images/splash-icon.png",
-    resizeMode: "contain",
-    backgroundColor: "#ffffff",
-  },
+  // Splash is configured via the expo-splash-screen plugin below — the modern
+  // form. The legacy top-level `splash:` block left the asset's baked-in black
+  // square framed by white bars on portrait phones.
   updates: {
     url: "https://u.expo.dev/e4fb598f-33f8-45f1-859b-33581a264e81",
   },
@@ -57,6 +55,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-router",
     "expo-secure-store",
     "@react-native-community/datetimepicker",
+    [
+      "expo-splash-screen",
+      {
+        // Full-bleed dark splash. backgroundColor matches the asset's baked-in
+        // background so there are no light bars top/bottom on portrait.
+        // imageWidth keeps the wordmark a polished size instead of stretching
+        // to the screen width.
+        image: "./assets/images/splash-icon.png",
+        resizeMode: "contain",
+        backgroundColor: "#000000",
+        imageWidth: 200,
+      },
+    ],
     [
       "@stripe/stripe-react-native",
       { merchantIdentifier: "merchant.fr.popup-live" },
