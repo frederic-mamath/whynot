@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  FlatList,
+  ScrollView,
   Pressable,
   StyleSheet,
   Keyboard,
@@ -13,6 +13,14 @@ import {
 import { trpc } from "@/lib/trpc";
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
+
+// Keep the message buffer bounded. The list is rendered as a plain ScrollView
+// (FlatList caused the "VirtualizedList nested in same-orientation ScrollView"
+// warning from the outer paged pager in app/live/[liveId].tsx — same root cause
+// as the LiveProductList fix). Without virtualization, every row stays mounted,
+// so a long live could blow up memory if we kept appending forever. Trim from
+// the head — newest messages stay visible at the bottom.
+const MAX_MESSAGES = 200;
 
 type MessageUser = {
   id: number;
@@ -39,7 +47,7 @@ export function ChatPanel({ channelId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<ScrollView>(null);
 
   const { data: initial } = trpc.message.list.useQuery({ channelId, limit: 50 });
   const sendMutation = trpc.message.send.useMutation();
@@ -65,8 +73,12 @@ export function ChatPanel({ channelId }: Props) {
     { channelId },
     {
       onData: (msg) => {
-        console.log("[message.subscribe] onData", (msg as Message)?.id);
-        setMessages((prev) => [...prev, msg as Message]);
+        setMessages((prev) => {
+          const next = [...prev, msg as Message];
+          return next.length > MAX_MESSAGES
+            ? next.slice(next.length - MAX_MESSAGES)
+            : next;
+        });
         listRef.current?.scrollToEnd({ animated: true });
       },
       onError: (err) => {
@@ -85,21 +97,22 @@ export function ChatPanel({ channelId }: Props) {
   return (
     <>
       <View style={[styles.container, { bottom: keyboardHeight }]}>
-        <FlatList
+        <ScrollView
           ref={listRef}
-          data={messages}
-          keyExtractor={(m) => String(m.id)}
           style={styles.list}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-          renderItem={({ item }) => (
-            <View style={styles.messageRow}>
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd({ animated: false })
+          }
+        >
+          {messages.map((item) => (
+            <View key={item.id} style={styles.messageRow}>
               <Text style={styles.name}>{displayName(item.user)} </Text>
               <Text style={styles.content}>{item.content}</Text>
             </View>
-          )}
-        />
+          ))}
+        </ScrollView>
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
