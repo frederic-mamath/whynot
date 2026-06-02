@@ -128,8 +128,7 @@ export default function SellerLiveDetailScreen() {
   const live = liveQuery.data?.channel;
   const attached = attachedQuery.data ?? [];
   const attachedIds = new Set(attached.map((p) => p.id));
-  const isUpcoming =
-    !!live && new Date(live.starts_at).getTime() > Date.now();
+  const isUpcoming = !!live && new Date(live.starts_at).getTime() > Date.now();
 
   const handleDelete = () => {
     if (!live) return;
@@ -169,10 +168,7 @@ export default function SellerLiveDetailScreen() {
           {live.name}
         </Text>
         {isUpcoming && (
-          <Pressable
-            onPress={() => setEditOpen(true)}
-            style={styles.iconBtn}
-          >
+          <Pressable onPress={() => setEditOpen(true)} style={styles.iconBtn}>
             <Pencil size={20} color={Colors.foreground} />
           </Pressable>
         )}
@@ -206,14 +202,15 @@ export default function SellerLiveDetailScreen() {
           </View>
 
           {attached.length === 0 ? (
-            <Text style={styles.empty}>
-              Aucun produit attaché à ce live
-            </Text>
+            <Text style={styles.empty}>Aucun produit attaché à ce live</Text>
           ) : (
             attached.map((p) => (
               <View key={p.id} style={styles.productRow}>
                 {p.imageUrl ? (
-                  <Image source={{ uri: p.imageUrl }} style={styles.productThumb} />
+                  <Image
+                    source={{ uri: p.imageUrl }}
+                    style={styles.productThumb}
+                  />
                 ) : (
                   <View style={[styles.productThumb, styles.thumbFallback]} />
                 )}
@@ -251,10 +248,7 @@ export default function SellerLiveDetailScreen() {
         )}
 
         <Pressable
-          style={({ pressed }) => [
-            styles.deleteBtn,
-            pressed && styles.pressed,
-          ]}
+          style={({ pressed }) => [styles.deleteBtn, pressed && styles.pressed]}
           onPress={handleDelete}
         >
           <Trash2 size={18} color={Colors.destructive} />
@@ -346,9 +340,7 @@ function ProductPickerModal({
                       style={styles.productThumb}
                     />
                   ) : (
-                    <View
-                      style={[styles.productThumb, styles.thumbFallback]}
-                    />
+                    <View style={[styles.productThumb, styles.thumbFallback]} />
                   )}
                   <Text style={styles.productName} numberOfLines={1}>
                     {item.name}
@@ -390,7 +382,9 @@ function EditLiveModal({
   onSaved: () => void;
 }) {
   const initialDate =
-    typeof live.starts_at === "string" ? new Date(live.starts_at) : live.starts_at;
+    typeof live.starts_at === "string"
+      ? new Date(live.starts_at)
+      : live.starts_at;
   const [name, setName] = useState(live.name);
   const [description, setDescription] = useState(live.description ?? "");
   const [startsAt, setStartsAt] = useState<Date>(initialDate);
@@ -471,23 +465,30 @@ function EditLiveModal({
 
             <View style={styles.fieldRow}>
               <View style={styles.fieldCol}>
-                <Text style={styles.label}>Date</Text>
+                <Text style={styles.label}>Date *</Text>
                 <DateTimePicker
                   value={startsAt}
                   mode="date"
                   display="default"
                   minimumDate={new Date()}
                   locale="fr-FR"
+                  // Tints the iOS pill so it doesn't look greyed-out/disabled.
+                  // Force light mode so the popover calendar matches the form
+                  // instead of iOS 26's dark Liquid Glass default, and the
+                  // value text gets a high-contrast foreground (was failing
+                  // WCAG AA on the time pill).
+                  themeVariant="light"
                   onChange={onChangeDate}
                 />
               </View>
               <View style={styles.fieldCol}>
-                <Text style={styles.label}>Heure</Text>
+                <Text style={styles.label}>Heure *</Text>
                 <DateTimePicker
                   value={startsAt}
                   mode="time"
                   display="default"
                   locale="fr-FR"
+                  themeVariant="light"
                   onChange={onChangeTime}
                 />
               </View>
