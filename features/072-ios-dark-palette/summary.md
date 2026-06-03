@@ -25,13 +25,13 @@ After PO discussion (see conversation history), the request was reframed:
 
 | User Story | Status |
 | :--------- | :----- |
-| As a user, when I open the app, every surface uses the same dark palette as the web app | planned |
-| As a user, the launch splash screen is dark — no white flash before the app loads | planned |
-| As a user, primary action buttons are lime-yellow with dark text — the same as the web CTAs | planned |
-| As a user, the auth screens (welcome / login / register / onboarding) read cleanly against the dark background | planned |
-| As a user, the tab bar and profile screen use the new dark surfaces with correct contrast | planned |
-| As a user, the home feed, lives tab, live viewer, and orders screen are visually consistent with the rest of the app | planned |
-| As a seller, the Vendre tab, dashboard, inventory, lives management, broadcaster screen, and deliveries are all visually consistent | planned |
+| As a user, when I open the app, every surface uses the same dark palette as the web app | completed |
+| As a user, the launch splash screen is dark — no white flash before the app loads | completed |
+| As a user, primary action buttons are lime-yellow with dark text — the same as the web CTAs | completed |
+| As a user, the auth screens (welcome / login / register / onboarding) read cleanly against the dark background | completed |
+| As a user, the tab bar and profile screen use the new dark surfaces with correct contrast | completed |
+| As a user, the home feed, lives tab, live viewer, and orders screen are visually consistent with the rest of the app | completed |
+| As a seller, the Vendre tab, dashboard, inventory, lives management, broadcaster screen, and deliveries are all visually consistent | completed |
 
 ## Ticket sequence
 
