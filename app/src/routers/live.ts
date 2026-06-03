@@ -978,13 +978,6 @@ export const liveRouter = router({
         });
       }
 
-      let channel = live;
-      if (live.starts_at > now) {
-        await liveRepository.updateStartsAt(input.channelId, now);
-        const refetched = await liveRepository.findById(input.channelId);
-        if (refetched) channel = refetched;
-      }
-
       const dynamicUid =
         ctx.user.id * 10000 + Math.floor(Math.random() * 9999);
       const token = generateAgoraToken({
@@ -995,7 +988,7 @@ export const liveRouter = router({
 
       return {
         liveStatus: "active" as const,
-        channel,
+        channel: live,
         token,
         appId: getAgoraAppId(),
         uid: dynamicUid,

@@ -26,10 +26,10 @@ After PO review (see conversation history):
 
 | User Story | Status |
 | :--------- | :----- |
-| As a seller, when I tap "Go Live" before the scheduled `starts_at`, the live transitions to active and my broadcaster screen connects to Agora | planned |
-| As a seller on the broadcaster screen, I see my camera preview within a few seconds, with no "live didn't start yet" error | planned |
-| As a seller, when I tap my own live from the Home feed, I am routed to the broadcaster screen instead of the buyer view | planned |
-| As a non-host buyer, the existing buyer-side behaviour is unchanged — I still see "Live pas encore commencé" when a live's `starts_at` is in the future | planned |
+| As a seller, when I tap "Go Live" before the scheduled `starts_at`, the live transitions to active and my broadcaster screen connects to Agora | completed |
+| As a seller on the broadcaster screen, I see my camera preview within a few seconds, with no "live didn't start yet" error | completed |
+| As a seller, when I tap my own live from the Home feed, I am routed to the broadcaster screen instead of the buyer view | completed |
+| As a non-host buyer, the existing buyer-side behaviour is unchanged — I still see "Live pas encore commencé" when a live's `starts_at` is in the future | completed |
 
 ## Ticket sequence
 

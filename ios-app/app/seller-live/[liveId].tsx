@@ -254,7 +254,7 @@ export default function SellerGoLiveScreen() {
             onPress={isBroadcasting ? handleLeave : () => router.back()}
             style={styles.iconBtn}
           >
-            <X size={22} color="white" />
+            <X size={22} color={Colors.foreground} />
           </Pressable>
           {isBroadcasting && (
             <View style={styles.liveBadge}>
@@ -269,12 +269,12 @@ export default function SellerGoLiveScreen() {
 
       {highlightedProduct && (
         <View style={styles.highlightedBanner}>
-          <Tag size={14} color="white" />
+          <Tag size={14} color={Colors.foreground} />
           <Text style={styles.highlightedName} numberOfLines={1}>
             {highlightedProduct.name}
           </Text>
           <Pressable onPress={handleUnhighlight} hitSlop={8}>
-            <X size={16} color="white" />
+            <X size={16} color={Colors.foreground} />
           </Pressable>
         </View>
       )}
@@ -298,7 +298,7 @@ export default function SellerGoLiveScreen() {
             ]}
             onPress={handleCloseAuction}
           >
-            <Square size={14} color="white" />
+            <Square size={14} color={Colors.destructiveForeground} />
             <Text style={styles.endAuctionText}>Terminer l'enchère</Text>
           </Pressable>
         </View>
@@ -323,10 +323,10 @@ export default function SellerGoLiveScreen() {
               disabled={!joinData || startMutation.isPending}
             >
               {startMutation.isPending || !joinData ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color={Colors.destructiveForeground} />
               ) : (
                 <>
-                  <Radio size={20} color="white" />
+                  <Radio size={20} color={Colors.destructiveForeground} />
                   <Text style={styles.startBtnText}>Démarrer le live</Text>
                 </>
               )}
@@ -341,7 +341,7 @@ export default function SellerGoLiveScreen() {
               ]}
               onPress={() => setSheet("highlight")}
             >
-              <Tag size={20} color="white" />
+              <Tag size={20} color={Colors.foreground} />
               <Text style={styles.controlBtnText}>Produit</Text>
             </Pressable>
             {highlightedProduct && !activeAuction && (
@@ -352,7 +352,7 @@ export default function SellerGoLiveScreen() {
                 ]}
                 onPress={() => setSheet("auction")}
               >
-                <Plus size={20} color="white" />
+                <Plus size={20} color={Colors.primaryForeground} />
                 <Text style={styles.controlBtnText}>Enchère</Text>
               </Pressable>
             )}
@@ -603,15 +603,15 @@ function AuctionSheet({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "black" },
+  container: { flex: 1, backgroundColor: Colors.background },
   cameraFallback: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.foreground,
+    backgroundColor: Colors.background,
   },
   cameraFallbackText: {
-    color: "rgba(255,255,255,0.6)",
+    color: Colors.mutedForeground,
     fontSize: 14,
   },
   topBar: {
@@ -649,16 +649,16 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "white",
+    backgroundColor: Colors.destructiveForeground,
   },
   liveBadgeText: {
-    color: "white",
+    color: Colors.destructiveForeground,
     fontWeight: "700",
     fontSize: 12,
     letterSpacing: 0.5,
   },
   viewerCount: {
-    color: "white",
+    color: Colors.foreground,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   },
   highlightedName: {
     flex: 1,
-    color: "white",
+    color: Colors.foreground,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   auctionBid: {
-    color: "white",
+    color: Colors.foreground,
     fontSize: 22,
     fontWeight: "700",
   },
@@ -720,7 +720,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
   },
   endAuctionText: {
-    color: "white",
+    color: Colors.destructiveForeground,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -754,7 +754,7 @@ const styles = StyleSheet.create({
   },
   startBtnDisabled: { opacity: 0.5 },
   startBtnText: {
-    color: "white",
+    color: Colors.destructiveForeground,
     fontSize: 16,
     fontWeight: "700",
   },
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
   },
   controlBtnText: {
-    color: "white",
+    color: Colors.foreground,
     fontWeight: "600",
     fontSize: 14,
   },
