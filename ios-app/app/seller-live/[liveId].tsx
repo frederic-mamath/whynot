@@ -58,7 +58,7 @@ export default function SellerGoLiveScreen() {
   const [sheet, setSheet] = useState<"highlight" | "auction" | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
 
-  const joinMutation = trpc.live.join.useMutation();
+  const startMutation = trpc.live.start.useMutation();
   const endMutation = trpc.live.end.useMutation();
   const highlightMutation = trpc.live.highlightProduct.useMutation();
   const unhighlightMutation = trpc.live.unhighlightProduct.useMutation();
@@ -120,33 +120,16 @@ export default function SellerGoLiveScreen() {
 
     (async () => {
       try {
-        const data = await joinMutation.mutateAsync({ channelId });
+        const data = await startMutation.mutateAsync({ channelId });
         if (cancelled) return;
-        if (data.liveStatus !== "active") {
-          Alert.alert(
-            "Live indisponible",
-            data.liveStatus === "upcoming"
-              ? "Ce live n'a pas encore commencé."
-              : "Ce live est terminé.",
-          );
-          router.back();
-          return;
-        }
-        const active = data as {
-          liveStatus: "active";
-          token: string;
-          appId: string;
-          uid: number;
-          channel: ChannelData;
-        };
         setJoinData({
-          token: active.token,
-          appId: active.appId,
-          uid: active.uid,
-          channel: active.channel,
+          token: data.token,
+          appId: data.appId,
+          uid: data.uid,
+          channel: data.channel,
         });
         if (isAgoraAvailable) {
-          await initializeBroadcaster(active.appId);
+          await initializeBroadcaster(data.appId);
           setHasInitialized(true);
         }
       } catch (e) {
@@ -329,12 +312,12 @@ export default function SellerGoLiveScreen() {
               style={({ pressed }) => [
                 styles.startBtn,
                 pressed && styles.pressed,
-                (!joinData || joinMutation.isPending) && styles.startBtnDisabled,
+                (!joinData || startMutation.isPending) && styles.startBtnDisabled,
               ]}
               onPress={handleStartBroadcast}
-              disabled={!joinData || joinMutation.isPending}
+              disabled={!joinData || startMutation.isPending}
             >
-              {joinMutation.isPending || !joinData ? (
+              {startMutation.isPending || !joinData ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <>
