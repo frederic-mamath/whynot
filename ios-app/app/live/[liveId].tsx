@@ -53,6 +53,7 @@ export default function LiveScreen() {
   const [isHost, setIsHost] = useState(false);
   const track = useTrack();
   const liveViewedRef = useRef(false);
+  const joinedRef = useRef(false);
 
   const productsQuery = trpc.product.listByChannel.useQuery(
     { channelId },
@@ -65,6 +66,7 @@ export default function LiveScreen() {
     },
   });
 
+  const liveQuery = trpc.live.get.useQuery({ channelId });
   const joinMutation = trpc.live.join.useMutation();
   const leaveMutation = trpc.live.leave.useMutation();
 
@@ -125,6 +127,17 @@ export default function LiveScreen() {
   };
 
   useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (joinedRef.current) return;
+    if (liveQuery.data == null && liveQuery.error == null) return;
+    if (user != null && liveQuery.data?.channel.host_id === user.id) return;
+    joinedRef.current = true;
+
     joinMutation.mutate(
       { channelId },
       {
@@ -194,16 +207,23 @@ export default function LiveScreen() {
         },
       }
     );
+  }, [liveQuery.data, liveQuery.error, user, channelId]);
 
-    return () => {
-      cleanup();
-    };
-  }, [channelId]);
+  useEffect(() => {
+    if (user == null || liveQuery.data == null) return;
+    if (liveQuery.data.channel.host_id === user.id) {
+      router.replace(`/seller-live/${channelId}`);
+    }
+  }, [liveQuery.data, user, channelId]);
 
   const handleBack = async () => {
     await cleanup();
     router.back();
   };
+
+  if (user != null && liveQuery.data?.channel.host_id === user.id) {
+    return null;
+  }
 
   const products = productsQuery.data ?? [];
   const hasProducts = products.length > 0;
