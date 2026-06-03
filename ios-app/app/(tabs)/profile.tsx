@@ -129,7 +129,7 @@ export default function ProfileScreen() {
   if (profileQuery.isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7C3AED" />
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -202,7 +202,7 @@ export default function ProfileScreen() {
                 disabled={updateMutation.isPending}
               >
                 {updateMutation.isPending ? (
-                  <ActivityIndicator color="#fff" size="small" />
+                  <ActivityIndicator color={Colors.primaryForeground} size="small" />
                 ) : (
                   <Text style={styles.saveText}>Enregistrer</Text>
                 )}
@@ -239,7 +239,7 @@ export default function ProfileScreen() {
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (
-                <ActivityIndicator color="#EF4444" size="small" />
+                <ActivityIndicator color={Colors.destructive} size="small" />
               ) : (
                 <Text style={styles.removeText}>Supprimer</Text>
               )}
@@ -311,7 +311,7 @@ export default function ProfileScreen() {
         disabled={deleteAccountMutation.isPending || deletionBlockers.isFetching}
       >
         {deleteAccountMutation.isPending ? (
-          <ActivityIndicator color="#EF4444" size="small" />
+          <ActivityIndicator color={Colors.destructive} size="small" />
         ) : (
           <Text style={styles.deleteText}>Supprimer mon compte</Text>
         )}

@@ -146,22 +146,15 @@ for (const f of walkDir(webSrcDir, [".tsx", ".jsx", ".ts"])) {
 
 const R4_PATTERNS = [/#[0-9A-Fa-f]{6,8}\b/, /#[0-9A-Fa-f]{3}\b/];
 
-// TODO: the files below violate R4 — replace hex codes with Colors.* tokens
+// Files below still hold raw hex codes — to be migrated to Colors.* tokens by
+// the remaining tickets in features/072-ios-dark-palette/. SocialAuthButtons is
+// kept indefinitely (Apple + Google brand-mandated literal colors).
 const R4_EXCLUDE = new Set([
   "ios-app/app/(tabs)/index.tsx",
   "ios-app/app/(tabs)/lives.tsx",
-  "ios-app/app/(tabs)/profile.tsx",
-  "ios-app/app/(tabs)/_layout.tsx",
   "ios-app/app/(tabs)/orders.tsx",
   "ios-app/app/+not-found.tsx",
   "ios-app/app/live/[liveId].tsx",
-  "ios-app/app/address/index.tsx",
-  "ios-app/app/address/relay.tsx",
-  "ios-app/app/address/_layout.tsx",
-  "ios-app/app/address/[id].tsx",
-  "ios-app/app/onboarding.tsx",
-  "ios-app/app/(auth)/login.tsx",
-  "ios-app/app/(auth)/register.tsx",
   "ios-app/src/components/AddressForm.tsx",
   "ios-app/src/components/LiveCard.tsx",
   "ios-app/src/components/live/BidRequirementsSheet.tsx",
@@ -173,6 +166,8 @@ const R4_EXCLUDE = new Set([
   "ios-app/src/components/live/AuctionEndModal.tsx",
   "ios-app/src/components/live/PaymentSetupSheet.tsx",
   "ios-app/src/components/live/ChatPanel.tsx",
+  // Apple + Google sign-in: brand guidelines require literal black/white +
+  // Google blue (#4285F4) — leaving as-is per ticket-002 authorization.
   "ios-app/src/components/SocialAuthButtons.tsx",
   "ios-app/src/components/OrderCard.tsx",
 ]);

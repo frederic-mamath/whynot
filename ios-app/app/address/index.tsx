@@ -103,7 +103,7 @@ export default function AddressListScreen() {
   if (isLoading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color="#7C3AED" size="large" />
+        <ActivityIndicator color={Colors.primary} size="large" />
       </View>
     );
   }
@@ -218,8 +218,8 @@ const styles = StyleSheet.create({
   },
   badgeDefault: { backgroundColor: Colors.accent },
   badgeDefaultText: { fontSize: 11, color: Colors.accentForeground, fontWeight: Typography.fontWeight.bold },
-  badgeRelay: { backgroundColor: "#FEF3C7" },
-  badgeRelayText: { fontSize: 11, color: "#B45309", fontWeight: Typography.fontWeight.bold },
+  badgeRelay: { backgroundColor: Colors.warning },
+  badgeRelayText: { fontSize: 11, color: Colors.warningForeground, fontWeight: Typography.fontWeight.bold },
   empty: {
     paddingTop: 60,
     alignItems: "center",

@@ -10,6 +10,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
+import { Colors } from "@/theme/tokens";
 
 export default function EditAddressScreen() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function EditAddressScreen() {
   if (isLoading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color="#7C3AED" size="large" />
+        <ActivityIndicator color={Colors.primary} size="large" />
       </View>
     );
   }
@@ -143,7 +144,7 @@ export default function EditAddressScreen() {
             disabled={anyPending}
           >
             {setDefaultMutation.isPending ? (
-              <ActivityIndicator color="#7C3AED" />
+              <ActivityIndicator color={Colors.primary} />
             ) : (
               <Text style={styles.secondaryText}>Définir par défaut</Text>
             )}
@@ -156,7 +157,7 @@ export default function EditAddressScreen() {
           disabled={anyPending}
         >
           {deleteMutation.isPending ? (
-            <ActivityIndicator color="#EF4444" />
+            <ActivityIndicator color={Colors.destructive} />
           ) : (
             <Text style={styles.deleteText}>Supprimer</Text>
           )}
@@ -167,38 +168,38 @@ export default function EditAddressScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFB" },
+  container: { flex: 1, backgroundColor: Colors.background },
   loading: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: Colors.background,
   },
-  notFound: { fontSize: 15, color: "#6B7280" },
+  notFound: { fontSize: 15, color: Colors.mutedForeground },
   actions: {
     padding: 16,
     gap: 10,
     borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    backgroundColor: "#fff",
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.card,
   },
   secondaryButton: {
     height: 44,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: "#7C3AED",
+    borderColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryText: { color: "#7C3AED", fontSize: 15, fontWeight: "600" },
+  secondaryText: { color: Colors.primary, fontSize: 15, fontWeight: "600" },
   deleteButton: {
     height: 44,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: "#EF4444",
+    borderColor: Colors.destructive,
     alignItems: "center",
     justifyContent: "center",
   },
-  deleteText: { color: "#EF4444", fontSize: 15, fontWeight: "600" },
+  deleteText: { color: Colors.destructive, fontSize: 15, fontWeight: "600" },
   disabled: { opacity: 0.5 },
 });

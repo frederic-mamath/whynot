@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 
 export default function RelayPickerScreen() {
   const router = useRouter();
@@ -88,7 +89,7 @@ export default function RelayPickerScreen() {
             disabled={!canSearch || isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={Colors.primaryForeground} />
             ) : (
               <Text style={styles.searchButtonText}>Rechercher</Text>
             )}
@@ -156,7 +157,7 @@ export default function RelayPickerScreen() {
 
       {saveMutation.isPending && (
         <View style={styles.savingOverlay}>
-          <ActivityIndicator color="#7C3AED" size="large" />
+          <ActivityIndicator color={Colors.primary} size="large" />
           <Text style={styles.savingText}>Enregistrement…</Text>
         </View>
       )}
@@ -165,44 +166,44 @@ export default function RelayPickerScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFB" },
+  container: { flex: 1, backgroundColor: Colors.background },
   searchBar: {
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: Colors.border,
     gap: 8,
   },
-  label: { fontSize: 13, color: "#6B7280", fontWeight: "500" },
+  label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500" },
   searchRow: { flexDirection: "row", gap: 8 },
   input: {
     flex: 1,
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     paddingHorizontal: 12,
     fontSize: 15,
-    color: "#111827",
-    backgroundColor: "#F9FAFB",
+    color: Colors.foreground,
+    backgroundColor: Colors.input,
   },
   searchButton: {
     height: 44,
     paddingHorizontal: 20,
     borderRadius: 10,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  searchDisabled: { backgroundColor: "#C4B5FD" },
-  searchButtonText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  searchDisabled: { backgroundColor: Colors.muted },
+  searchButtonText: { color: Colors.primaryForeground, fontSize: 15, fontWeight: "600" },
   list: { padding: 16, gap: 12 },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     gap: 4,
   },
   cardPressed: { opacity: 0.6 },
@@ -212,24 +213,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 4,
   },
-  cardName: { fontSize: 16, fontWeight: "700", color: "#111827", flex: 1 },
-  cardLine: { fontSize: 14, color: "#6B7280" },
+  cardName: { fontSize: 16, fontWeight: "700", color: Colors.foreground, flex: 1 },
+  cardLine: { fontSize: 14, color: Colors.mutedForeground },
   distanceBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: "#EDE9FE",
+    backgroundColor: Colors.accent,
   },
-  distanceText: { fontSize: 12, color: "#7C3AED", fontWeight: "700" },
+  distanceText: { fontSize: 12, color: Colors.accentForeground, fontWeight: "700" },
   empty: {
     paddingTop: 60,
     alignItems: "center",
     gap: 6,
   },
-  emptyTitle: { fontSize: 16, fontWeight: "700", color: "#111827" },
+  emptyTitle: { fontSize: 16, fontWeight: "700", color: Colors.foreground },
   emptySub: {
     fontSize: 14,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     textAlign: "center",
     paddingHorizontal: 32,
   },
@@ -237,29 +238,31 @@ const styles = StyleSheet.create({
     margin: 16,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: "#FEF2F2",
+    backgroundColor: Colors.card,
     borderWidth: 1,
-    borderColor: "#FCA5A5",
+    borderColor: Colors.destructive,
     gap: 8,
   },
-  errorTitle: { fontSize: 15, fontWeight: "700", color: "#991B1B" },
-  errorText: { fontSize: 14, color: "#7F1D1D", lineHeight: 20 },
+  errorTitle: { fontSize: 15, fontWeight: "700", color: Colors.destructive },
+  errorText: { fontSize: 14, color: Colors.foreground, lineHeight: 20 },
   errorButton: {
     height: 40,
     borderRadius: 10,
-    backgroundColor: "#EF4444",
+    backgroundColor: Colors.destructive,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
   },
-  errorButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  errorButtonText: { color: Colors.destructiveForeground, fontSize: 14, fontWeight: "600" },
   savingOverlay: {
+    // Translucent scrim over the screen while saving — standard iOS pattern,
+    // works against any palette.
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.3)",
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
   },
-  savingText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  savingText: { color: Colors.foreground, fontSize: 15, fontWeight: "600" },
   disabled: { opacity: 0.6 },
 });
