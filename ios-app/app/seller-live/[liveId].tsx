@@ -187,6 +187,11 @@ export default function SellerGoLiveScreen() {
     );
   };
 
+  const handleLeave = async () => {
+    await stopBroadcaster().catch(() => {});
+    router.back();
+  };
+
   const handleHighlightProduct = async (productId: number) => {
     setSheet(null);
     setHighlightedProductId(productId);
@@ -246,7 +251,7 @@ export default function SellerGoLiveScreen() {
       <SafeAreaView style={styles.topBar}>
         <View style={styles.topBarRow}>
           <Pressable
-            onPress={isBroadcasting ? handleEndLive : () => router.back()}
+            onPress={isBroadcasting ? handleLeave : () => router.back()}
             style={styles.iconBtn}
           >
             <X size={22} color="white" />
@@ -351,6 +356,16 @@ export default function SellerGoLiveScreen() {
                 <Text style={styles.controlBtnText}>Enchère</Text>
               </Pressable>
             )}
+            <Pressable
+              style={({ pressed }) => [
+                styles.terminateBtn,
+                pressed && styles.pressed,
+              ]}
+              onPress={handleEndLive}
+            >
+              <Square size={20} color={Colors.destructive} />
+              <Text style={[styles.controlBtnText, styles.terminateBtnText]}>Terminer</Text>
+            </Pressable>
           </View>
         )}
       </SafeAreaView>
@@ -466,7 +481,7 @@ function AuctionSheet({
 }: {
   visible: boolean;
   onClose: () => void;
-  product?: { id: number; name: string; price?: number | null };
+  product?: { id: number; name: string; price?: number | null; imageUrl?: string | null };
   onSubmit: (
     durationSeconds: 60 | 300 | 600 | 1800,
     buyoutPrice: number | undefined,
@@ -505,12 +520,24 @@ function AuctionSheet({
           <ScrollView contentContainerStyle={styles.sheetContent}>
             {product && (
               <View style={styles.productSummary}>
-                <Text style={styles.productSummaryName}>{product.name}</Text>
-                {product.price != null && (
-                  <Text style={styles.productSummaryPrice}>
-                    Prix de départ : {product.price.toFixed(2)} €
-                  </Text>
-                )}
+                <View style={styles.productSummaryRow}>
+                  {product.imageUrl ? (
+                    <Image
+                      source={{ uri: product.imageUrl }}
+                      style={styles.sheetThumb}
+                    />
+                  ) : (
+                    <View style={[styles.sheetThumb, styles.thumbFallback]} />
+                  )}
+                  <View style={styles.productSummaryInfo}>
+                    <Text style={styles.productSummaryName}>{product.name}</Text>
+                    {product.price != null && (
+                      <Text style={styles.productSummaryPrice}>
+                        Prix de départ : {product.price.toFixed(2)} €
+                      </Text>
+                    )}
+                  </View>
+                </View>
               </View>
             )}
 
@@ -821,6 +848,14 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  productSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  productSummaryInfo: {
+    flex: 1,
     gap: Spacing.xs,
   },
   productSummaryName: {
@@ -884,5 +919,19 @@ const styles = StyleSheet.create({
     color: Colors.primaryForeground,
     fontSize: Typography.fontSize.base,
     fontWeight: "700",
+  },
+  terminateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Colors.destructive,
+  },
+  terminateBtnText: {
+    color: Colors.destructive,
   },
 });
