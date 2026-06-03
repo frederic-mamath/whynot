@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import {
   liveRepository,
@@ -946,6 +946,61 @@ export const liveRouter = router({
       categories: catMap.get(live.id) ?? [],
     }));
   }),
+
+  /**
+   * Start a live as host — transitions the live to active and returns a broadcaster token.
+   * Bypasses the starts_at <= now check; the host pressing Go Live IS the live starting.
+   */
+  start: protectedProcedure
+    .input(z.object({ channelId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const live = await liveRepository.findById(input.channelId);
+      if (!live) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Channel not found" });
+      }
+
+      if (live.host_id !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only the host can start this live",
+        });
+      }
+
+      const now = new Date();
+      const isEnded =
+        live.ended_at !== null ||
+        (live.ends_at !== null && live.ends_at <= now);
+
+      if (isEnded) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Live is already ended",
+        });
+      }
+
+      let channel = live;
+      if (live.starts_at > now) {
+        await liveRepository.updateStartsAt(input.channelId, now);
+        const refetched = await liveRepository.findById(input.channelId);
+        if (refetched) channel = refetched;
+      }
+
+      const dynamicUid =
+        ctx.user.id * 10000 + Math.floor(Math.random() * 9999);
+      const token = generateAgoraToken({
+        channelName: live.id.toString(),
+        uid: dynamicUid,
+        role: "host",
+      });
+
+      return {
+        liveStatus: "active" as const,
+        channel,
+        token,
+        appId: getAgoraAppId(),
+        uid: dynamicUid,
+      };
+    }),
 
   /**
    * Get the next globally scheduled live (for homepage highlight)

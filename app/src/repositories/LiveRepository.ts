@@ -239,6 +239,14 @@ export class LiveRepository {
     const activeCount = await this.countActiveParticipants(liveId);
     return activeCount >= live.max_participants;
   }
+
+  async updateStartsAt(liveId: number, startsAt: Date): Promise<void> {
+    await db
+      .updateTable("lives")
+      .set({ starts_at: startsAt })
+      .where("id", "=", liveId)
+      .execute();
+  }
 }
 
 export const liveRepository = new LiveRepository();

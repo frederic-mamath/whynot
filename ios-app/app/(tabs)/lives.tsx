@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
+import { Colors } from "@/theme/tokens";
 
 const ALL = "Tous";
 
@@ -111,13 +112,13 @@ export default function LivesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
     paddingTop: 60,
   },
   pageTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
     paddingHorizontal: 16,
     marginBottom: 16,
   },
@@ -134,21 +135,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: Colors.muted,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
   },
   chipActive: {
-    backgroundColor: "#7C3AED",
-    borderColor: "#7C3AED",
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   chipText: {
     fontSize: 14,
-    color: "#374151",
+    color: Colors.foreground,
     fontWeight: "500",
   },
   chipTextActive: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontWeight: "600",
   },
   grid: {
@@ -169,6 +170,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
   },
 });

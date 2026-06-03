@@ -1,6 +1,7 @@
 import { Pressable, View, Text, Image, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { Users } from "lucide-react-native";
+import { Colors } from "@/theme/tokens";
 
 export type LiveCardData = {
   id: number;
@@ -32,7 +33,7 @@ export function LiveCard({ live }: { live: LiveCardData }) {
         )}
         {live.participantCount !== null && live.participantCount > 0 && (
           <View style={styles.viewerBadge}>
-            <Users size={10} color="#fff" />
+            <Users size={10} color={Colors.foreground} />
             <Text style={styles.viewerText}>{live.participantCount}</Text>
           </View>
         )}
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: "#F3F4F6",
+    backgroundColor: Colors.card,
   },
   imageContainer: {
     aspectRatio: 9 / 16,
@@ -68,19 +69,19 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#E5E7EB",
+    backgroundColor: Colors.muted,
   },
   liveBadge: {
     position: "absolute",
     top: 8,
     left: 8,
-    backgroundColor: "#EF4444",
+    backgroundColor: Colors.destructive,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   liveBadgeText: {
-    color: "#fff",
+    color: Colors.destructiveForeground,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.5,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   viewerText: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 11,
     fontWeight: "600",
   },
@@ -109,11 +110,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#111827",
+    color: Colors.foreground,
     lineHeight: 18,
   },
   host: {
     fontSize: 12,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
   },
 });

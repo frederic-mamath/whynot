@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
 
@@ -166,12 +167,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   name: {
-    color: "#A78BFA",
+    color: Colors.primary,
     fontSize: 13,
     fontWeight: "700",
   },
   content: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 13,
   },
   inputRow: {
@@ -187,24 +188,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.15)",
     paddingHorizontal: 14,
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 14,
   },
   sendButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   sendText: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontSize: 18,
     fontWeight: "700",
   },
   accessory: {
-    backgroundColor: "#1C1C1E",
+    backgroundColor: Colors.card,
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.1)",
     paddingHorizontal: 16,
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   dismissText: {
-    color: "#A78BFA",
+    color: Colors.primary,
     fontSize: 15,
     fontWeight: "600",
   },

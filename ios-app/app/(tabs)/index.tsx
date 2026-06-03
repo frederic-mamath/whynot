@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
+import { Colors } from "@/theme/tokens";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -155,7 +156,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
   },
   content: {
     paddingTop: 60,
@@ -165,14 +166,14 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#7C3AED",
+    color: Colors.primary,
     paddingHorizontal: 16,
     letterSpacing: -0.5,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
     paddingHorizontal: 16,
     marginBottom: 12,
   },
@@ -189,9 +190,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#F9FAFB",
+    backgroundColor: Colors.card,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     flexDirection: "row",
     alignItems: "center",
   },
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     height: 100,
   },
   nextCoverPlaceholder: {
-    backgroundColor: "#E5E7EB",
+    backgroundColor: Colors.muted,
   },
   nextInfo: {
     flex: 1,
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
   nextLabel: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#7C3AED",
+    color: Colors.primary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 2,
@@ -218,16 +219,16 @@ const styles = StyleSheet.create({
   nextName: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: Colors.foreground,
   },
   nextTime: {
     fontSize: 13,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     marginTop: 4,
   },
   nextHost: {
     fontSize: 12,
-    color: "#9CA3AF",
+    color: Colors.mutedForeground,
   },
   empty: {
     alignItems: "center",
@@ -238,11 +239,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: Colors.foreground,
   },
   emptySubtext: {
     fontSize: 14,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     textAlign: "center",
   },
   sellersList: {
@@ -260,18 +261,18 @@ const styles = StyleSheet.create({
     borderRadius: 28,
   },
   sellerAvatarFallback: {
-    backgroundColor: "#E5E7EB",
+    backgroundColor: Colors.muted,
     alignItems: "center",
     justifyContent: "center",
   },
   sellerAvatarInitial: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#6B7280",
+    color: Colors.mutedForeground,
   },
   sellerName: {
     fontSize: 11,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     textAlign: "center",
   },
 });

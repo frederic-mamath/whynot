@@ -251,7 +251,7 @@ export default function LiveScreen() {
           {/* Center states */}
           {liveStatus === "loading" && (
             <View style={styles.center}>
-              <ActivityIndicator color="#fff" size="large" />
+              <ActivityIndicator color={Colors.foreground} size="large" />
             </View>
           )}
 
@@ -339,7 +339,7 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: Colors.background,
   },
   topBar: {
     position: "absolute",
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   backText: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   statusTitle: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 18,
     fontWeight: "700",
     textAlign: "center",
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#111",
+    backgroundColor: Colors.background,
   },
   noVideoText: {
     color: "rgba(255,255,255,0.4)",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 
 type Props = { onSuccess: () => void };
 
@@ -48,7 +49,7 @@ export function PersonalInfoForm({ onSuccess }: Props) {
         disabled={updateMutation.isPending}
       >
         {updateMutation.isPending ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={Colors.primaryForeground} />
         ) : (
           <Text style={styles.buttonText}>Enregistrer</Text>
         )}
@@ -59,26 +60,26 @@ export function PersonalInfoForm({ onSuccess }: Props) {
 
 const styles = StyleSheet.create({
   container: { gap: 6 },
-  label: { fontSize: 13, color: "#6B7280", fontWeight: "500" },
+  label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500" },
   input: {
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     paddingHorizontal: 12,
     fontSize: 15,
-    color: "#111827",
-    backgroundColor: "#F9FAFB",
+    color: Colors.foreground,
+    backgroundColor: Colors.input,
   },
-  error: { fontSize: 13, color: "#EF4444" },
+  error: { fontSize: 13, color: Colors.destructive },
   button: {
     height: 44,
     borderRadius: 10,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  buttonText: { color: Colors.primaryForeground, fontSize: 15, fontWeight: "600" },
 });
