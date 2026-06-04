@@ -1,0 +1,42 @@
+name: ios-app CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "ios-app/**"
+      - "scripts/arch-test.mjs"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ios-app/**"
+      - "scripts/arch-test.mjs"
+      - ".github/workflows/ci.yml"
+
+defaults:
+  run:
+    working-directory: ios-app
+
+jobs:
+  ios-app-checks:
+    name: ios-app-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ios-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Architecture tests
+        run: npm run arch:test
