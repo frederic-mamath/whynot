@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors, Spacing, Typography } from "@/theme/tokens";
 import { LiveProductCard } from "./LiveProductCard";
 
@@ -36,9 +37,15 @@ export function LiveProductList({
   isSellerView,
   onToggleInterest,
 }: Props) {
+  // Page 2 of the live's vertical pager sits at screen y=0 — its top would
+  // render under the status bar / dynamic island without this. The parent
+  // (app/live/[liveId].tsx) can't grow a top inset itself because page 1 needs
+  // to stay full-bleed for the video, so the inset has to live here.
+  const insets = useSafeAreaInsets();
+
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, { paddingTop: insets.top }]}>
         <ActivityIndicator color={Colors.primary} size="large" />
       </View>
     );
@@ -46,7 +53,7 @@ export function LiveProductList({
 
   return (
     <ScrollView contentContainerStyle={styles.list}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.xl }]}>
         <Text style={styles.title}>Produits du live</Text>
         <Text style={styles.count}>
           {products.length} produit{products.length !== 1 ? "s" : ""}

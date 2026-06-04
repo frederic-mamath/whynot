@@ -56,6 +56,7 @@ ios-app/
 ## Conventions
 
 - **Styling**: `StyleSheet.create` only — no Tailwind. Colors / spacing / radius / typography come from `src/theme/tokens.ts` (`Colors.primary`, `Spacing.lg`, `Radius.xl`, `Typography.fontSize.base`, etc.). Do not introduce new hex codes — if a value isn't already in `tokens.ts`, add it to `design-tokens/tokens.json` at the repo root (under `colors.mobile`) and let the codegen update both platforms. The token file is auto-generated on `npm install` (postinstall) and on every `expo` command (via `app.config.ts` side-effect).
+- **Theme**: the app is dark-only — `userInterfaceStyle: "dark"` is locked at the `app.config.ts` level, the palette in `design-tokens/tokens.json > colors.mobile` is the web-aligned dark palette (lime-yellow primary `#E0FF00`, near-black background `#0D0D0D`, cream foreground `#F0F0E8`). Don't introduce a light-mode toggle without product discussion (see `features/072-ios-dark-palette/summary.md`).
 - **tRPC calls**: allowed directly in screen `.tsx` files. The web's `<Page>.tsx` / `<Page>.hooks.ts` split does **not** apply here.
 - **Routing**: file-based via expo-router. New screen = new file in `app/`. Layouts (`_layout.tsx`) wrap nested routes.
 - **Auth gating**: `(auth)` group = unauthenticated, `(tabs)` group = authenticated. Logic lives in `AuthContext` + the root `_layout.tsx`.

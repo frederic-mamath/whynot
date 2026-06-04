@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Colors } from "@/theme/tokens";
 
 type Order = {
   id: string;
@@ -24,11 +25,11 @@ const STATUS_LABEL: Record<Order["paymentStatus"], string> = {
 };
 
 const STATUS_COLOR: Record<Order["paymentStatus"], string> = {
-  pending: "#F59E0B",
-  paid: "#10B981",
-  shipped: "#3B82F6",
-  failed: "#EF4444",
-  refunded: "#6B7280",
+  pending: Colors.warning,
+  paid: Colors.success,
+  shipped: Colors.info,
+  failed: Colors.destructive,
+  refunded: Colors.mutedForeground,
 };
 
 function formatDate(iso: string) {
@@ -87,13 +88,13 @@ export function OrderCard({ order, onPayNow, isPaying }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
     borderRadius: 14,
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     gap: 10,
   },
   row: {
@@ -106,12 +107,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: Colors.foreground,
   },
   price: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
   },
   statusRow: {
     flexDirection: "row",
@@ -132,10 +133,10 @@ const styles = StyleSheet.create({
   },
   deadline: {
     fontSize: 12,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
   },
   payButton: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     paddingHorizontal: 18,
     paddingVertical: 8,
     borderRadius: 20,
@@ -144,12 +145,12 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   payButtonText: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontSize: 14,
     fontWeight: "700",
   },
   meta: {
     fontSize: 13,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
   },
 });

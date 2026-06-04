@@ -239,6 +239,7 @@ export class LiveRepository {
     const activeCount = await this.countActiveParticipants(liveId);
     return activeCount >= live.max_participants;
   }
+
 }
 
 export const liveRepository = new LiveRepository();

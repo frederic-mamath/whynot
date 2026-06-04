@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PostHogProvider } from "posthog-react-native";
 import { TRPCProvider } from "@/providers/TRPCProvider";
@@ -17,6 +18,7 @@ const POSTHOG_HOST =
 export default function RootLayout() {
   const tree = (
     <SafeAreaProvider>
+      <StatusBar style="light" />
       <TRPCProvider>
         <StripeProvider>
           <AuthProvider>

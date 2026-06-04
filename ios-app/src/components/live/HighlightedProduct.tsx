@@ -1,4 +1,5 @@
 import { View, Text, Image, StyleSheet } from "react-native";
+import { Colors } from "@/theme/tokens";
 
 type Product = {
   id: number;
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     height: 72,
   },
   imageFallback: {
-    backgroundColor: "#374151",
+    backgroundColor: Colors.muted,
   },
   info: {
     flex: 1,
@@ -59,18 +60,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#A78BFA",
+    color: Colors.accentForeground,
     letterSpacing: 0.5,
   },
   name: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#fff",
+    color: Colors.foreground,
   },
   price: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#fff",
+    color: Colors.foreground,
     marginTop: 2,
   },
 });

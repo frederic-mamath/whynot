@@ -53,6 +53,7 @@ export default function LiveScreen() {
   const [isHost, setIsHost] = useState(false);
   const track = useTrack();
   const liveViewedRef = useRef(false);
+  const joinedRef = useRef(false);
 
   const productsQuery = trpc.product.listByChannel.useQuery(
     { channelId },
@@ -65,6 +66,7 @@ export default function LiveScreen() {
     },
   });
 
+  const liveQuery = trpc.live.get.useQuery({ channelId });
   const joinMutation = trpc.live.join.useMutation();
   const leaveMutation = trpc.live.leave.useMutation();
 
@@ -125,6 +127,17 @@ export default function LiveScreen() {
   };
 
   useEffect(() => {
+    return () => {
+      cleanup();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (joinedRef.current) return;
+    if (liveQuery.data == null && liveQuery.error == null) return;
+    if (user != null && liveQuery.data?.channel.host_id === user.id) return;
+    joinedRef.current = true;
+
     joinMutation.mutate(
       { channelId },
       {
@@ -194,16 +207,23 @@ export default function LiveScreen() {
         },
       }
     );
+  }, [liveQuery.data, liveQuery.error, user, channelId]);
 
-    return () => {
-      cleanup();
-    };
-  }, [channelId]);
+  useEffect(() => {
+    if (user == null || liveQuery.data == null) return;
+    if (liveQuery.data.channel.host_id === user.id) {
+      router.replace(`/seller-live/${channelId}`);
+    }
+  }, [liveQuery.data, user, channelId]);
 
   const handleBack = async () => {
     await cleanup();
     router.back();
   };
+
+  if (user != null && liveQuery.data?.channel.host_id === user.id) {
+    return null;
+  }
 
   const products = productsQuery.data ?? [];
   const hasProducts = products.length > 0;
@@ -251,7 +271,7 @@ export default function LiveScreen() {
           {/* Center states */}
           {liveStatus === "loading" && (
             <View style={styles.center}>
-              <ActivityIndicator color="#fff" size="large" />
+              <ActivityIndicator color={Colors.foreground} size="large" />
             </View>
           )}
 
@@ -339,7 +359,7 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: Colors.background,
   },
   topBar: {
     position: "absolute",
@@ -360,7 +380,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   backText: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -378,7 +398,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   statusTitle: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 18,
     fontWeight: "700",
     textAlign: "center",
@@ -391,7 +411,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#111",
+    backgroundColor: Colors.background,
   },
   noVideoText: {
     color: "rgba(255,255,255,0.4)",

@@ -14,6 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -110,7 +111,7 @@ export default function OnboardingScreen() {
           <TextInput
             style={styles.input}
             placeholder="Pseudo (ex: marie_dupont)"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={Colors.inputHint}
             value={nickname}
             onChangeText={setNickname}
             autoCapitalize="none"
@@ -129,7 +130,7 @@ export default function OnboardingScreen() {
             disabled={isPending}
           >
             {isPending ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={Colors.primaryForeground} />
             ) : (
               <Text style={styles.buttonText}>Continuer</Text>
             )}
@@ -143,7 +144,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: 24,
@@ -159,12 +160,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     textAlign: "center",
   },
   avatarPicker: {
@@ -181,9 +182,9 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: Colors.muted,
     borderWidth: 2,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   },
   avatarPlaceholderLabel: {
     fontSize: 11,
-    color: "#9CA3AF",
+    color: Colors.inputHint,
     textAlign: "center",
   },
   form: {
@@ -203,26 +204,26 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#111827",
-    backgroundColor: "#F9FAFB",
+    color: Colors.foreground,
+    backgroundColor: Colors.input,
   },
   hint: {
     fontSize: 13,
-    color: "#9CA3AF",
+    color: Colors.inputHint,
     paddingHorizontal: 4,
   },
   error: {
-    color: "#EF4444",
+    color: Colors.destructive,
     fontSize: 14,
     paddingHorizontal: 4,
   },
   button: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontSize: 16,
     fontWeight: "600",
   },

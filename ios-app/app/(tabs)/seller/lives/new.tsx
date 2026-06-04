@@ -135,12 +135,13 @@ export default function SellerLiveNewScreen() {
       await utils.live.listByHost.invalidate();
       router.back();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur lors de la planification");
+      setError(
+        e instanceof Error ? e.message : "Erreur lors de la planification",
+      );
     }
   };
 
-  const isSubmitting =
-    scheduleMutation.isPending || uploadMutation.isPending;
+  const isSubmitting = scheduleMutation.isPending || uploadMutation.isPending;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -162,7 +163,9 @@ export default function SellerLiveNewScreen() {
             ) : (
               <View style={styles.coverPlaceholder}>
                 <ImagePlus size={32} color={Colors.mutedForeground} />
-                <Text style={styles.coverHint}>Ajouter une image de couverture</Text>
+                <Text style={styles.coverHint}>
+                  Ajouter une image de couverture
+                </Text>
               </View>
             )}
           </Pressable>
@@ -186,6 +189,10 @@ export default function SellerLiveNewScreen() {
                   display="default"
                   minimumDate={new Date()}
                   locale="fr-FR"
+                  // Force light mode so the popover calendar matches the form
+                  // instead of iOS 26's dark Liquid Glass default, and the
+                  // value text gets a high-contrast foreground.
+                  themeVariant="light"
                   onChange={onChangeDate}
                 />
               </Field>
@@ -197,6 +204,7 @@ export default function SellerLiveNewScreen() {
                   mode="time"
                   display="default"
                   locale="fr-FR"
+                  themeVariant="light"
                   onChange={onChangeTime}
                 />
               </Field>

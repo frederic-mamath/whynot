@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 import { AuctionCountdown } from "./AuctionCountdown";
 import { BidRequirementsSheet } from "./BidRequirementsSheet";
 
@@ -78,13 +79,13 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 12,
     borderWidth: 1,
-    borderColor: "rgba(124,58,237,0.5)",
+    borderColor: "rgba(224,255,0,0.3)",
   },
   info: { flex: 1, gap: 4 },
   productName: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#fff",
+    color: Colors.foreground,
   },
   row: {
     flexDirection: "row",
@@ -92,16 +93,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   bidLabel: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
-  bidAmount: { fontSize: 18, fontWeight: "700", color: "#fff" },
+  bidAmount: { fontSize: 18, fontWeight: "700", color: Colors.foreground },
   bidder: { fontSize: 11, color: "rgba(255,255,255,0.5)" },
   bidButton: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     alignItems: "center",
     minWidth: 80,
   },
-  bidButtonText: { color: "#fff", fontSize: 13, fontWeight: "700" },
-  bidButtonSub: { color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 1 },
+  bidButtonText: { color: Colors.primaryForeground, fontSize: 13, fontWeight: "700" },
+  bidButtonSub: { color: Colors.primaryForeground, fontSize: 12, marginTop: 1 },
 });

@@ -58,7 +58,7 @@ export default function SellerGoLiveScreen() {
   const [sheet, setSheet] = useState<"highlight" | "auction" | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
 
-  const joinMutation = trpc.live.join.useMutation();
+  const startMutation = trpc.live.start.useMutation();
   const endMutation = trpc.live.end.useMutation();
   const highlightMutation = trpc.live.highlightProduct.useMutation();
   const unhighlightMutation = trpc.live.unhighlightProduct.useMutation();
@@ -120,33 +120,16 @@ export default function SellerGoLiveScreen() {
 
     (async () => {
       try {
-        const data = await joinMutation.mutateAsync({ channelId });
+        const data = await startMutation.mutateAsync({ channelId });
         if (cancelled) return;
-        if (data.liveStatus !== "active") {
-          Alert.alert(
-            "Live indisponible",
-            data.liveStatus === "upcoming"
-              ? "Ce live n'a pas encore commencé."
-              : "Ce live est terminé.",
-          );
-          router.back();
-          return;
-        }
-        const active = data as {
-          liveStatus: "active";
-          token: string;
-          appId: string;
-          uid: number;
-          channel: ChannelData;
-        };
         setJoinData({
-          token: active.token,
-          appId: active.appId,
-          uid: active.uid,
-          channel: active.channel,
+          token: data.token,
+          appId: data.appId,
+          uid: data.uid,
+          channel: data.channel,
         });
         if (isAgoraAvailable) {
-          await initializeBroadcaster(active.appId);
+          await initializeBroadcaster(data.appId);
           setHasInitialized(true);
         }
       } catch (e) {
@@ -202,6 +185,11 @@ export default function SellerGoLiveScreen() {
         },
       ],
     );
+  };
+
+  const handleLeave = async () => {
+    await stopBroadcaster().catch(() => {});
+    router.back();
   };
 
   const handleHighlightProduct = async (productId: number) => {
@@ -263,10 +251,10 @@ export default function SellerGoLiveScreen() {
       <SafeAreaView style={styles.topBar}>
         <View style={styles.topBarRow}>
           <Pressable
-            onPress={isBroadcasting ? handleEndLive : () => router.back()}
+            onPress={isBroadcasting ? handleLeave : () => router.back()}
             style={styles.iconBtn}
           >
-            <X size={22} color="white" />
+            <X size={22} color={Colors.foreground} />
           </Pressable>
           {isBroadcasting && (
             <View style={styles.liveBadge}>
@@ -281,12 +269,12 @@ export default function SellerGoLiveScreen() {
 
       {highlightedProduct && (
         <View style={styles.highlightedBanner}>
-          <Tag size={14} color="white" />
+          <Tag size={14} color={Colors.foreground} />
           <Text style={styles.highlightedName} numberOfLines={1}>
             {highlightedProduct.name}
           </Text>
           <Pressable onPress={handleUnhighlight} hitSlop={8}>
-            <X size={16} color="white" />
+            <X size={16} color={Colors.foreground} />
           </Pressable>
         </View>
       )}
@@ -310,7 +298,7 @@ export default function SellerGoLiveScreen() {
             ]}
             onPress={handleCloseAuction}
           >
-            <Square size={14} color="white" />
+            <Square size={14} color={Colors.destructiveForeground} />
             <Text style={styles.endAuctionText}>Terminer l'enchère</Text>
           </Pressable>
         </View>
@@ -329,16 +317,16 @@ export default function SellerGoLiveScreen() {
               style={({ pressed }) => [
                 styles.startBtn,
                 pressed && styles.pressed,
-                (!joinData || joinMutation.isPending) && styles.startBtnDisabled,
+                (!joinData || startMutation.isPending) && styles.startBtnDisabled,
               ]}
               onPress={handleStartBroadcast}
-              disabled={!joinData || joinMutation.isPending}
+              disabled={!joinData || startMutation.isPending}
             >
-              {joinMutation.isPending || !joinData ? (
-                <ActivityIndicator color="white" />
+              {startMutation.isPending || !joinData ? (
+                <ActivityIndicator color={Colors.destructiveForeground} />
               ) : (
                 <>
-                  <Radio size={20} color="white" />
+                  <Radio size={20} color={Colors.destructiveForeground} />
                   <Text style={styles.startBtnText}>Démarrer le live</Text>
                 </>
               )}
@@ -353,7 +341,7 @@ export default function SellerGoLiveScreen() {
               ]}
               onPress={() => setSheet("highlight")}
             >
-              <Tag size={20} color="white" />
+              <Tag size={20} color={Colors.foreground} />
               <Text style={styles.controlBtnText}>Produit</Text>
             </Pressable>
             {highlightedProduct && !activeAuction && (
@@ -364,10 +352,20 @@ export default function SellerGoLiveScreen() {
                 ]}
                 onPress={() => setSheet("auction")}
               >
-                <Plus size={20} color="white" />
+                <Plus size={20} color={Colors.primaryForeground} />
                 <Text style={styles.controlBtnText}>Enchère</Text>
               </Pressable>
             )}
+            <Pressable
+              style={({ pressed }) => [
+                styles.terminateBtn,
+                pressed && styles.pressed,
+              ]}
+              onPress={handleEndLive}
+            >
+              <Square size={20} color={Colors.destructive} />
+              <Text style={[styles.controlBtnText, styles.terminateBtnText]}>Terminer</Text>
+            </Pressable>
           </View>
         )}
       </SafeAreaView>
@@ -483,7 +481,7 @@ function AuctionSheet({
 }: {
   visible: boolean;
   onClose: () => void;
-  product?: { id: number; name: string; price?: number | null };
+  product?: { id: number; name: string; price?: number | null; imageUrl?: string | null };
   onSubmit: (
     durationSeconds: 60 | 300 | 600 | 1800,
     buyoutPrice: number | undefined,
@@ -522,12 +520,24 @@ function AuctionSheet({
           <ScrollView contentContainerStyle={styles.sheetContent}>
             {product && (
               <View style={styles.productSummary}>
-                <Text style={styles.productSummaryName}>{product.name}</Text>
-                {product.price != null && (
-                  <Text style={styles.productSummaryPrice}>
-                    Prix de départ : {product.price.toFixed(2)} €
-                  </Text>
-                )}
+                <View style={styles.productSummaryRow}>
+                  {product.imageUrl ? (
+                    <Image
+                      source={{ uri: product.imageUrl }}
+                      style={styles.sheetThumb}
+                    />
+                  ) : (
+                    <View style={[styles.sheetThumb, styles.thumbFallback]} />
+                  )}
+                  <View style={styles.productSummaryInfo}>
+                    <Text style={styles.productSummaryName}>{product.name}</Text>
+                    {product.price != null && (
+                      <Text style={styles.productSummaryPrice}>
+                        Prix de départ : {product.price.toFixed(2)} €
+                      </Text>
+                    )}
+                  </View>
+                </View>
               </View>
             )}
 
@@ -593,15 +603,15 @@ function AuctionSheet({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "black" },
+  container: { flex: 1, backgroundColor: Colors.background },
   cameraFallback: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.foreground,
+    backgroundColor: Colors.background,
   },
   cameraFallbackText: {
-    color: "rgba(255,255,255,0.6)",
+    color: Colors.mutedForeground,
     fontSize: 14,
   },
   topBar: {
@@ -639,16 +649,16 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "white",
+    backgroundColor: Colors.destructiveForeground,
   },
   liveBadgeText: {
-    color: "white",
+    color: Colors.destructiveForeground,
     fontWeight: "700",
     fontSize: 12,
     letterSpacing: 0.5,
   },
   viewerCount: {
-    color: "white",
+    color: Colors.foreground,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -668,7 +678,7 @@ const styles = StyleSheet.create({
   },
   highlightedName: {
     flex: 1,
-    color: "white",
+    color: Colors.foreground,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -696,7 +706,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   auctionBid: {
-    color: "white",
+    color: Colors.foreground,
     fontSize: 22,
     fontWeight: "700",
   },
@@ -710,7 +720,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
   },
   endAuctionText: {
-    color: "white",
+    color: Colors.destructiveForeground,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -744,7 +754,7 @@ const styles = StyleSheet.create({
   },
   startBtnDisabled: { opacity: 0.5 },
   startBtnText: {
-    color: "white",
+    color: Colors.destructiveForeground,
     fontSize: 16,
     fontWeight: "700",
   },
@@ -772,7 +782,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
   },
   controlBtnText: {
-    color: "white",
+    color: Colors.foreground,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -838,6 +848,14 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  productSummaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  productSummaryInfo: {
+    flex: 1,
     gap: Spacing.xs,
   },
   productSummaryName: {
@@ -901,5 +919,19 @@ const styles = StyleSheet.create({
     color: Colors.primaryForeground,
     fontSize: Typography.fontSize.base,
     fontWeight: "700",
+  },
+  terminateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: Colors.destructive,
+  },
+  terminateBtnText: {
+    color: Colors.destructive,
   },
 });

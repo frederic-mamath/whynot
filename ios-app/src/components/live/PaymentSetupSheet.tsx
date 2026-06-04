@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { CardField, useStripe, usePlatformPay, PlatformPay } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 
 type Props = { onSuccess: () => void };
 
@@ -92,7 +93,7 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={Colors.foreground} />
           ) : (
             <Text style={styles.platformPayText}>{platformPayLabel}</Text>
           )}
@@ -111,7 +112,7 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
       <CardField
         postalCodeEnabled={false}
         style={styles.cardField}
-        cardStyle={{ backgroundColor: "#F9FAFB", textColor: "#111827", borderRadius: 10 }}
+        cardStyle={{ backgroundColor: Colors.input, textColor: Colors.foreground, borderRadius: 10 }}
       />
       {error && <Text style={styles.error}>{error}</Text>}
       <Pressable
@@ -120,7 +121,7 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={Colors.primaryForeground} />
         ) : (
           <Text style={styles.buttonText}>Enregistrer la carte</Text>
         )}
@@ -134,29 +135,30 @@ const styles = StyleSheet.create({
   platformPayButton: {
     height: 50,
     borderRadius: 10,
-    backgroundColor: "#000",
+    // Apple Pay brand guidelines require a black button on iOS
+    backgroundColor: Colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
-  platformPayText: { color: "#fff", fontSize: 17, fontWeight: "600" },
+  platformPayText: { color: Colors.foreground, fontSize: 17, fontWeight: "600" },
   divider: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginVertical: 4,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: "#E5E7EB" },
-  dividerText: { fontSize: 13, color: "#9CA3AF" },
-  label: { fontSize: 13, color: "#6B7280", fontWeight: "500" },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { fontSize: 13, color: Colors.mutedForeground },
+  label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500" },
   cardField: { height: 50, marginVertical: 4 },
-  error: { fontSize: 13, color: "#EF4444" },
+  error: { fontSize: 13, color: Colors.destructive },
   button: {
     height: 44,
     borderRadius: 10,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  buttonText: { color: Colors.primaryForeground, fontSize: 15, fontWeight: "600" },
 });

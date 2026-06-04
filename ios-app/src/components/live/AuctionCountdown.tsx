@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Text, StyleSheet } from "react-native";
+import { Colors } from "@/theme/tokens";
 
 type Props = { endsAt: string };
 
@@ -27,9 +28,9 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#fff",
+    color: Colors.foreground,
   },
   urgent: {
-    color: "#EF4444",
+    color: Colors.destructive,
   },
 });

@@ -1,4 +1,5 @@
 import { View, Text, Modal, Pressable, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { Colors } from "@/theme/tokens";
 import { trpc } from "@/lib/trpc";
 import { useTrack } from "@/lib/analytics";
 import { PersonalInfoForm } from "./PersonalInfoForm";
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   sheet: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 20,
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: Colors.border,
     alignSelf: "center",
     marginTop: 10,
     marginBottom: 16,
@@ -127,13 +128,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
     marginBottom: 4,
   },
   amount: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#7C3AED",
+    color: Colors.primary,
     marginBottom: 16,
   },
   scroll: { flexGrow: 0 },
@@ -141,11 +142,11 @@ const styles = StyleSheet.create({
   section: { gap: 10 },
   sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
   check: { fontSize: 16, fontWeight: "700", width: 20 },
-  sectionTitle: { fontSize: 15, fontWeight: "600", color: "#111827" },
-  sectionDone: { color: "#10B981" },
+  sectionTitle: { fontSize: 15, fontWeight: "600", color: Colors.foreground },
+  sectionDone: { color: Colors.success },
   error: {
     fontSize: 13,
-    color: "#EF4444",
+    color: Colors.destructive,
     marginTop: 8,
     textAlign: "center",
   },

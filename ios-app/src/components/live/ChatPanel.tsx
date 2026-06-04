@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  FlatList,
+  ScrollView,
   Pressable,
   StyleSheet,
   Keyboard,
@@ -11,8 +11,17 @@ import {
   Platform,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { Colors } from "@/theme/tokens";
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
+
+// Keep the message buffer bounded. The list is rendered as a plain ScrollView
+// (FlatList caused the "VirtualizedList nested in same-orientation ScrollView"
+// warning from the outer paged pager in app/live/[liveId].tsx — same root cause
+// as the LiveProductList fix). Without virtualization, every row stays mounted,
+// so a long live could blow up memory if we kept appending forever. Trim from
+// the head — newest messages stay visible at the bottom.
+const MAX_MESSAGES = 200;
 
 type MessageUser = {
   id: number;
@@ -39,7 +48,7 @@ export function ChatPanel({ channelId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<ScrollView>(null);
 
   const { data: initial } = trpc.message.list.useQuery({ channelId, limit: 50 });
   const sendMutation = trpc.message.send.useMutation();
@@ -65,8 +74,12 @@ export function ChatPanel({ channelId }: Props) {
     { channelId },
     {
       onData: (msg) => {
-        console.log("[message.subscribe] onData", (msg as Message)?.id);
-        setMessages((prev) => [...prev, msg as Message]);
+        setMessages((prev) => {
+          const next = [...prev, msg as Message];
+          return next.length > MAX_MESSAGES
+            ? next.slice(next.length - MAX_MESSAGES)
+            : next;
+        });
         listRef.current?.scrollToEnd({ animated: true });
       },
       onError: (err) => {
@@ -85,21 +98,22 @@ export function ChatPanel({ channelId }: Props) {
   return (
     <>
       <View style={[styles.container, { bottom: keyboardHeight }]}>
-        <FlatList
+        <ScrollView
           ref={listRef}
-          data={messages}
-          keyExtractor={(m) => String(m.id)}
           style={styles.list}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-          renderItem={({ item }) => (
-            <View style={styles.messageRow}>
+          onContentSizeChange={() =>
+            listRef.current?.scrollToEnd({ animated: false })
+          }
+        >
+          {messages.map((item) => (
+            <View key={item.id} style={styles.messageRow}>
               <Text style={styles.name}>{displayName(item.user)} </Text>
               <Text style={styles.content}>{item.content}</Text>
             </View>
-          )}
-        />
+          ))}
+        </ScrollView>
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
@@ -153,12 +167,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   name: {
-    color: "#A78BFA",
+    color: Colors.primary,
     fontSize: 13,
     fontWeight: "700",
   },
   content: {
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 13,
   },
   inputRow: {
@@ -174,24 +188,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.15)",
     paddingHorizontal: 14,
-    color: "#fff",
+    color: Colors.foreground,
     fontSize: 14,
   },
   sendButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   sendText: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontSize: 18,
     fontWeight: "700",
   },
   accessory: {
-    backgroundColor: "#1C1C1E",
+    backgroundColor: Colors.card,
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.1)",
     paddingHorizontal: 16,
@@ -203,7 +217,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   dismissText: {
-    color: "#A78BFA",
+    color: Colors.primary,
     fontSize: 15,
     fontWeight: "600",
   },

@@ -11,6 +11,7 @@ import { useStripe } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
 import { useTrack } from "@/lib/analytics";
 import { OrderCard } from "@/components/OrderCard";
+import { Colors } from "@/theme/tokens";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
 
@@ -130,13 +131,13 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: Colors.background,
     paddingTop: 60,
   },
   pageTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
     paddingHorizontal: 16,
     marginBottom: 16,
   },
@@ -150,21 +151,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: Colors.muted,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
   },
   tabActive: {
-    backgroundColor: "#7C3AED",
-    borderColor: "#7C3AED",
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   tabText: {
     fontSize: 13,
-    color: "#374151",
+    color: Colors.foreground,
     fontWeight: "500",
   },
   tabTextActive: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontWeight: "600",
   },
   list: {
@@ -180,11 +181,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
+    color: Colors.foreground,
   },
   emptySub: {
     fontSize: 14,
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     textAlign: "center",
   },
 });

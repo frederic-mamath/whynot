@@ -1,5 +1,6 @@
 import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { Colors } from "@/theme/tokens";
 
 type Props = {
   visible: boolean;
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.card,
     borderRadius: 20,
     padding: 28,
     alignItems: "center",
@@ -79,24 +80,24 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emoji: { fontSize: 48 },
-  title: { fontSize: 22, fontWeight: "700", color: "#111827", textAlign: "center" },
-  body: { fontSize: 16, color: "#374151", textAlign: "center" },
-  sub: { fontSize: 13, color: "#6B7280", textAlign: "center" },
+  title: { fontSize: 22, fontWeight: "700", color: Colors.foreground, textAlign: "center" },
+  body: { fontSize: 16, color: Colors.foreground, textAlign: "center" },
+  sub: { fontSize: 13, color: Colors.mutedForeground, textAlign: "center" },
   primaryButton: {
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
     marginTop: 8,
   },
-  primaryButtonText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  primaryButtonText: { color: Colors.primaryForeground, fontSize: 16, fontWeight: "700" },
   secondaryButton: {
     height: 44,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
   },
-  secondaryButtonText: { color: "#6B7280", fontSize: 15 },
+  secondaryButtonText: { color: Colors.mutedForeground, fontSize: 15 },
 });

@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrack } from "@/lib/analytics";
 import { SocialAuthButtons } from "@/components/SocialAuthButtons";
+import { Colors } from "@/theme/tokens";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={Colors.inputHint}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -76,7 +77,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder="Mot de passe"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={Colors.inputHint}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -93,7 +94,7 @@ export default function LoginScreen() {
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={Colors.primaryForeground} />
             ) : (
               <Text style={styles.buttonText}>Se connecter</Text>
             )}
@@ -114,7 +115,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background,
   },
   back: {
     paddingTop: 60,
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   backText: {
-    color: "#7C3AED",
+    color: Colors.primary,
     fontSize: 16,
   },
   content: {
@@ -134,34 +135,34 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "700",
-    color: "#111827",
+    color: Colors.foreground,
   },
   divider: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: "#E5E7EB" },
-  dividerText: { fontSize: 13, color: "#9CA3AF" },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { fontSize: 13, color: Colors.mutedForeground },
   form: {
     gap: 12,
   },
   input: {
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#111827",
-    backgroundColor: "#F9FAFB",
+    color: Colors.foreground,
+    backgroundColor: Colors.input,
   },
   error: {
-    color: "#EF4444",
+    color: Colors.destructive,
     fontSize: 14,
   },
   button: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",
@@ -171,17 +172,17 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
+    color: Colors.primaryForeground,
     fontSize: 16,
     fontWeight: "600",
   },
   switchText: {
     textAlign: "center",
-    color: "#6B7280",
+    color: Colors.mutedForeground,
     fontSize: 15,
   },
   switchLink: {
-    color: "#7C3AED",
+    color: Colors.primary,
     fontWeight: "600",
   },
 });

@@ -1,12 +1,13 @@
 import { Stack } from "expo-router";
+import { Colors } from "@/theme/tokens";
 
 export default function AddressLayout() {
   return (
     <Stack
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#111827",
+        headerStyle: { backgroundColor: Colors.background },
+        headerTintColor: Colors.foreground,
         headerTitleStyle: { fontWeight: "700" },
       }}
     >
