@@ -908,7 +908,7 @@ export const liveRouter = router({
           ]),
         ]),
       )
-      .orderBy("lives.starts_at", "asc")
+      .orderBy("lives.created_at", "desc")
       .execute();
 
     // Fetch categories for all lives in a single query
