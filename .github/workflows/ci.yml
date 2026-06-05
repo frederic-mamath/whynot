@@ -30,9 +30,19 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: ios-app/package-lock.json
+          cache-dependency-path: |
+            app/package-lock.json
+            ios-app/package-lock.json
 
-      - name: Install dependencies
+      # ios-app's tsconfig maps `@server/*` to `../app/src/*` so the AppRouter
+      # type can be imported by the tRPC client. tsc follows that import into
+      # the backend source files, which need kysely / pg / @trpc/server / zod
+      # installed locally. Install backend deps before installing ios-app.
+      - name: Install backend dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Install ios-app dependencies
         run: npm ci
 
       - name: TypeScript check
