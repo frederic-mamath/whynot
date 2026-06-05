@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ImagePlus, Trash2 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import { PhotoSourceSheet } from "@/components/PhotoSourceSheet";
 import { trpc } from "@/lib/trpc";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
@@ -37,6 +38,7 @@ export default function SellerProductEditScreen() {
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,10 +79,9 @@ export default function SellerProductEditScreen() {
     },
   });
 
-  const pickImage = async () => {
+  const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return;
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true,
@@ -88,7 +89,22 @@ export default function SellerProductEditScreen() {
       quality: 0.7,
       base64: true,
     });
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+      setImageBase64(result.assets[0].base64 ?? null);
+    }
+  };
 
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") return;
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: "images",
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+      base64: true,
+    });
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
       setImageBase64(result.assets[0].base64 ?? null);
@@ -193,7 +209,7 @@ export default function SellerProductEditScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView contentContainerStyle={styles.container}>
-          <Pressable onPress={pickImage} style={styles.imageBox}>
+          <Pressable onPress={() => setPhotoSheetOpen(true)} style={styles.imageBox}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.image} />
             ) : (
@@ -286,6 +302,14 @@ export default function SellerProductEditScreen() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PhotoSourceSheet
+        visible={photoSheetOpen}
+        onClose={() => setPhotoSheetOpen(false)}
+        onTakePhoto={takePhoto}
+        onPickFromLibrary={pickFromLibrary}
+        title="Photo du produit"
+      />
     </SafeAreaView>
   );
 }
