@@ -4,7 +4,7 @@
 
 Stand up a GitHub Actions workflow that runs on every pull request touching `ios-app/`. Execute the existing correctness gates — `npx tsc --noEmit` and `npm run arch:test` — so no PR can merge with a TypeScript error or an architecture-rule violation.
 
-This ticket creates the pipeline. ESLint (T-002), R5/R6/R7 (T-003), knip + jscpd (T-004) are added as later stages in their respective tickets.
+This ticket creates the pipeline. ESLint (T-002), R7/R8/R9 (T-003), knip + jscpd (T-004) are added as later stages in their respective tickets.
 
 ## Acceptance Criteria
 

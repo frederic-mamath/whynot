@@ -52,7 +52,7 @@ After the feature lands, `ios-app/CLAUDE.md` shrinks by ~30%: cache strategy, de
 |---|-------|-------|------|
 | 001 | 1 — Foundations | GitHub Actions CI (typecheck + arch:test) | 1 |
 | 002 | 1 — Foundations | ESLint with strict ruleset | 1 |
-| 003 | 1 — Foundations | arch-test R5/R6/R7 (fetch, Alert, design tokens) | 1 |
+| 003 | 1 — Foundations | arch-test R7/R8/R9 (fetch, Alert, design tokens) | 1 |
 | 004 | 1 — Foundations | knip + jscpd in CI | 1 |
 | 005 | 2 — High-risk fixes | useErrorBanner + useMutationWithToast hooks | 1 |
 | 006 | 2 — High-risk fixes | Migrate all mutations to error-surfacing hooks | 2 |
@@ -80,6 +80,6 @@ After this feature ships, the following sections in `ios-app/CLAUDE.md` move fro
 | Today (prose) | Tomorrow (enforced) |
 |---|---|
 | "Cache Update Strategy" section | Codified in `optimisticUpdate()` helper (T-010) |
-| "Styling" section on hardcoded values | R7 in `arch-test.mjs` (T-003) |
-| "Do not call fetch directly" | R5 in `arch-test.mjs` (T-003) |
-| "Architecture Tests" table grows from R4 only to R4–R7 | Updated reference table |
+| "Styling" section on hardcoded values | R9 in `arch-test.mjs` (T-003) |
+| "Do not call fetch directly" | R7 in `arch-test.mjs` (T-003) |
+| "Architecture Tests" table grows from R2–R4 to R2–R4, R7–R9 | Updated reference table |
