@@ -7,6 +7,7 @@
     "design-tokens": "node ../design-tokens/generate.mjs",
     "arch:test": "node ../scripts/arch-test.mjs",
     "predev": "node ../scripts/arch-test.mjs",
+    "lint": "eslint . --max-warnings 0",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -52,8 +53,14 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "eslint": "9.39.4",
+    "eslint-config-prettier": "9.1.2",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "globals": "15.15.0",
     "react-test-renderer": "19.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "typescript-eslint": "8.60.1"
   },
   "private": true
 }

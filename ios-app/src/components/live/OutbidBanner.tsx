@@ -20,6 +20,7 @@ export function OutbidBanner({ productName, newBid, onDismiss, onBidAgain }: Pro
       tension: 80,
       friction: 10,
     }).start();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (translateY missing from deps; Animated.Value is stable in practice)
   }, []);
 
   const dismiss = () => {

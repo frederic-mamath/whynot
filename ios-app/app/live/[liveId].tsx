@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
 import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -130,6 +131,7 @@ export default function LiveScreen() {
     return () => {
       cleanup();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: removed by ticket-007 (useAgoraSession)
   }, []);
 
   useEffect(() => {
@@ -187,6 +189,7 @@ export default function LiveScreen() {
           engine.setClientRole(ClientRoleType!.ClientRoleAudience);
           engine.enableVideo();
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: removed by ticket-007 (useAgoraSession will type the listener)
           engine.addListener("onUserJoined", (_: any, uid: number) => {
             setRemoteUid(uid);
           });
@@ -207,6 +210,7 @@ export default function LiveScreen() {
         },
       }
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: removed by ticket-007 (useAgoraSession)
   }, [liveQuery.data, liveQuery.error, user, channelId]);
 
   useEffect(() => {
@@ -214,6 +218,7 @@ export default function LiveScreen() {
     if (liveQuery.data.channel.host_id === user.id) {
       router.replace(`/seller-live/${channelId}`);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (router missing from deps)
   }, [liveQuery.data, user, channelId]);
 
   const handleBack = async () => {

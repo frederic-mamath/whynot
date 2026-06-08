@@ -19,6 +19,7 @@ export function AuctionWidget({ channelId, forceOpen, onForceOpenHandled }: Prop
       setSheetOpen(true);
       onForceOpenHandled?.();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (onForceOpenHandled missing from deps)
   }, [forceOpen]);
 
   const { data: auction } = trpc.auction.getActive.useQuery(

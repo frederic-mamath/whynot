@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
 import { useState, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { CardField, useStripe, usePlatformPay, PlatformPay } from "@stripe/stripe-react-native";

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { usePostHog } from "posthog-react-native";
 import { trpc } from "@/lib/trpc";

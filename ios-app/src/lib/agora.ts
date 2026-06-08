@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, no-console -- TODO: JSI bridge boundary; L1 follow-up will type the public surface */
 // Native Agora viewer module — wraps AgoraRtcEngine_iOS directly, bypassing
 // the react-native-agora XCFramework that is incompatible with iOS 26 on device.
 

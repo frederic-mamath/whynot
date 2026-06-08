@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { trpc } from "@/lib/trpc";

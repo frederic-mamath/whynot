@@ -19,6 +19,7 @@ export default function LivesScreen() {
 
   const { data, isLoading, isFetching } = trpc.live.listDiscovery.useQuery();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (wrap in useMemo to stabilize reference)
   const lives = data ?? [];
 
   const categories = useMemo(() => {

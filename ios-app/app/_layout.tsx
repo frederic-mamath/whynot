@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -82,6 +83,7 @@ function RootNavigator() {
     // before we navigate, avoiding the "(auth) not handled" dev warning.
     const t = setTimeout(redirect, 0);
     return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (router missing from deps)
   }, [user, isLoading, profileQuery.data?.hasCompletedOnboarding, segments]);
 
   if (isLoading) return null;

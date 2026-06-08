@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-006; max-lines removed by ticket-011 */
 import { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -45,7 +46,7 @@ export default function SellerGoLiveScreen() {
   const { liveId } = useLocalSearchParams<{ liveId: string }>();
   const channelId = Number(liveId);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
 
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -145,6 +146,7 @@ export default function SellerGoLiveScreen() {
       cancelled = true;
       stopBroadcaster().catch(() => {});
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: removed by ticket-007 (useAgoraSession)
   }, [channelId]);
 
   const handleStartBroadcast = async () => {

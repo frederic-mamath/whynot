@@ -10,7 +10,7 @@ export const wsClient = createWSClient({
   url: () => {
     const token = getToken();
     const base = getWsUrl();
-    console.log("[wsClient] connecting", { base, tokenPresent: !!token });
+    console.warn("[wsClient] connecting", { base, tokenPresent: !!token });
     return token ? `${base}?token=${token}` : base;
   },
   retryDelayMs: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),

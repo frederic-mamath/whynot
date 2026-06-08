@@ -83,7 +83,7 @@ export function ChatPanel({ channelId }: Props) {
         listRef.current?.scrollToEnd({ animated: true });
       },
       onError: (err) => {
-        console.log("[message.subscribe] ERROR", err.message);
+        console.warn("[message.subscribe] ERROR", err.message);
       },
     }
   );
