@@ -20,6 +20,7 @@ import { ChevronLeft, ImagePlus, Trash2 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { PhotoSourceSheet } from "@/components/PhotoSourceSheet";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 export default function SellerProductEditScreen() {
@@ -52,33 +53,35 @@ export default function SellerProductEditScreen() {
     }
   }, [productQuery.data]);
 
-  const updateMutation = trpc.product.update.useMutation();
-  const uploadMutation = trpc.image.upload.useMutation();
-  const deleteMutation = trpc.product.delete.useMutation();
+  const updateMutation = trpc.product.update.useMutation(useMutationWithToast());
+  const uploadMutation = trpc.image.upload.useMutation(useMutationWithToast());
+  const deleteMutation = trpc.product.delete.useMutation(useMutationWithToast());
 
-  const toggleActiveMutation = trpc.product.update.useMutation({
-    onMutate: async (input) => {
-      if (shopId === undefined) return;
-      await utils.product.list.cancel({ shopId });
-      const previous = utils.product.list.getData({ shopId });
-      utils.product.list.setData({ shopId }, (old) =>
-        old?.map((p) =>
-          p.id === input.productId
-            ? { ...p, isActive: input.isActive ?? p.isActive }
-            : p,
-        ),
-      );
-      return { previous };
-    },
-    onError: (_err, _input, ctx) => {
-      if (shopId !== undefined && ctx?.previous) {
-        utils.product.list.setData({ shopId }, ctx.previous);
-      }
-    },
-    onSettled: () => {
-      if (shopId !== undefined) utils.product.list.invalidate({ shopId });
-    },
-  });
+  const toggleActiveMutation = trpc.product.update.useMutation(
+    useMutationWithToast({
+      onMutate: async (input) => {
+        if (shopId === undefined) return;
+        await utils.product.list.cancel({ shopId });
+        const previous = utils.product.list.getData({ shopId });
+        utils.product.list.setData({ shopId }, (old) =>
+          old?.map((p) =>
+            p.id === input.productId
+              ? { ...p, isActive: input.isActive ?? p.isActive }
+              : p,
+          ),
+        );
+        return { previous };
+      },
+      onError: (_err, _input, ctx) => {
+        if (shopId !== undefined && ctx?.previous) {
+          utils.product.list.setData({ shopId }, ctx.previous);
+        }
+      },
+      onSettled: () => {
+        if (shopId !== undefined) utils.product.list.invalidate({ shopId });
+      },
+    }),
+  );
 
   const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();

@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { useErrorBanner } from "@/hooks/useErrorBanner";
 import { Colors } from "@/theme/tokens";
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
@@ -49,6 +50,7 @@ export function ChatPanel({ channelId }: Props) {
   const [text, setText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const listRef = useRef<ScrollView>(null);
+  const { showError } = useErrorBanner();
 
   const { data: initial } = trpc.message.list.useQuery({ channelId, limit: 50 });
   const sendMutation = trpc.message.send.useMutation();
@@ -83,7 +85,7 @@ export function ChatPanel({ channelId }: Props) {
         listRef.current?.scrollToEnd({ animated: true });
       },
       onError: (err) => {
-        console.warn("[message.subscribe] ERROR", err.message);
+        showError(err.message);
       },
     }
   );

@@ -17,6 +17,7 @@ import { ChevronLeft, ImagePlus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { PhotoSourceSheet } from "@/components/PhotoSourceSheet";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 export default function SellerProductNewScreen() {
@@ -35,9 +36,9 @@ export default function SellerProductNewScreen() {
   const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createMutation = trpc.product.create.useMutation();
-  const uploadMutation = trpc.image.upload.useMutation();
-  const addImageMutation = trpc.product.addImage.useMutation();
+  const createMutation = trpc.product.create.useMutation(useMutationWithToast());
+  const uploadMutation = trpc.image.upload.useMutation(useMutationWithToast());
+  const addImageMutation = trpc.product.addImage.useMutation(useMutationWithToast());
 
   const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();

@@ -30,6 +30,7 @@ import {
   Check,
 } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 const MONTHS_FR = [
@@ -92,36 +93,32 @@ export default function SellerLiveDetailScreen() {
     { enabled: shopId !== undefined },
   );
 
-  const associateMutation = trpc.product.associateToChannel.useMutation({
-    onSuccess: () => {
-      utils.product.listByChannel.invalidate(attachedKey);
-    },
-    onError: (err) => {
-      // Surface the failure instead of swallowing it. CONFLICT used to slip
-      // through silently when the cache disagreed with the server about
-      // association state — the includeInactive fix above prevents that, but
-      // the alert is the safety net for any future drift.
-      Alert.alert("Impossible d'ajouter ce produit", err.message);
-    },
-  });
-  const removeMutation = trpc.product.removeFromChannel.useMutation({
-    onMutate: async ({ productId }) => {
-      await utils.product.listByChannel.cancel(attachedKey);
-      const previous = utils.product.listByChannel.getData(attachedKey);
-      utils.product.listByChannel.setData(attachedKey, (old) =>
-        old?.filter((p) => p.id !== productId),
-      );
-      return { previous };
-    },
-    onError: (err, _i, ctx) => {
-      if (ctx?.previous) {
-        utils.product.listByChannel.setData(attachedKey, ctx.previous);
-      }
-      Alert.alert("Impossible de retirer ce produit", err.message);
-    },
-    onSettled: () => utils.product.listByChannel.invalidate(attachedKey),
-  });
-  const deleteLiveMutation = trpc.live.delete.useMutation();
+  const associateMutation = trpc.product.associateToChannel.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.product.listByChannel.invalidate(attachedKey);
+      },
+    }),
+  );
+  const removeMutation = trpc.product.removeFromChannel.useMutation(
+    useMutationWithToast({
+      onMutate: async ({ productId }) => {
+        await utils.product.listByChannel.cancel(attachedKey);
+        const previous = utils.product.listByChannel.getData(attachedKey);
+        utils.product.listByChannel.setData(attachedKey, (old) =>
+          old?.filter((p) => p.id !== productId),
+        );
+        return { previous };
+      },
+      onError: (_err, _i, ctx) => {
+        if (ctx?.previous) {
+          utils.product.listByChannel.setData(attachedKey, ctx.previous);
+        }
+      },
+      onSettled: () => utils.product.listByChannel.invalidate(attachedKey),
+    }),
+  );
+  const deleteLiveMutation = trpc.live.delete.useMutation(useMutationWithToast());
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -411,7 +408,7 @@ function EditLiveModal({
     if (picked) setStartsAt((prev) => withTime(prev, picked));
   };
 
-  const updateMutation = trpc.live.update.useMutation();
+  const updateMutation = trpc.live.update.useMutation(useMutationWithToast());
 
   const handleSave = async () => {
     setError(null);

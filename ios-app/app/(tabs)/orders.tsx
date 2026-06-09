@@ -12,6 +12,8 @@ import { useStripe } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
 import { useTrack } from "@/lib/analytics";
 import { OrderCard } from "@/components/OrderCard";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useErrorBanner } from "@/hooks/useErrorBanner";
 import { Colors } from "@/theme/tokens";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
@@ -30,10 +32,13 @@ export default function OrdersScreen() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const utils = trpc.useUtils();
   const track = useTrack();
+  const { showError } = useErrorBanner();
 
   const { data, isLoading, isFetching } = trpc.order.getMyOrders.useQuery({});
 
-  const createPaymentIntent = trpc.order.createPaymentIntent.useMutation();
+  const createPaymentIntent = trpc.order.createPaymentIntent.useMutation(
+    useMutationWithToast(),
+  );
 
   const orders = data ?? [];
 
@@ -62,13 +67,20 @@ export default function OrdersScreen() {
       });
 
       if (initResult.error) {
+        showError(initResult.error.message);
         setPayingOrderId(null);
         return;
       }
 
       track({ name: "checkout_started", orderId, amount });
       const result = await presentPaymentSheet();
-      if (!result.error) {
+      if (result.error) {
+        // Stripe surfaces a "canceled" error when the user dismisses the sheet
+        // — that's not an error to show. Anything else, surface.
+        if (result.error.code !== "Canceled") {
+          showError(result.error.message);
+        }
+      } else {
         track({ name: "purchase_completed", orderId, amount });
         utils.order.getMyOrders.invalidate();
       }

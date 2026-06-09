@@ -18,6 +18,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { PaymentSetupSheet } from "@/components/live/PaymentSetupSheet";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
@@ -34,46 +35,52 @@ export default function ProfileScreen() {
   const [lastName, setLastName] = useState("");
   const [showCardSetup, setShowCardSetup] = useState(false);
 
-  const updateMutation = trpc.profile.update.useMutation({
-    onSuccess: (_, input) => {
-      utils.profile.me.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              firstName: input.firstName ?? old.firstName,
-              lastName: input.lastName ?? old.lastName,
-            }
-          : old,
-      );
-      utils.profile.me.invalidate();
-      setEditingName(false);
-    },
-  });
-
-  const deleteMutation = trpc.payment.deletePaymentMethod.useMutation({
-    onSuccess: (_, input) => {
-      utils.payment.getPaymentStatus.setData(undefined, (old) => {
-        if (!old) return old;
-        const filtered = old.paymentMethods.filter(
-          (pm) => pm.id !== input.paymentMethodId,
+  const updateMutation = trpc.profile.update.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        utils.profile.me.setData(undefined, (old) =>
+          old
+            ? {
+                ...old,
+                firstName: input.firstName ?? old.firstName,
+                lastName: input.lastName ?? old.lastName,
+              }
+            : old,
         );
-        return {
-          ...old,
-          paymentMethods: filtered,
-          hasPaymentMethod: filtered.length > 0,
-        };
-      });
-      utils.payment.getPaymentStatus.invalidate();
-    },
-  });
+        utils.profile.me.invalidate();
+        setEditingName(false);
+      },
+    }),
+  );
+
+  const deleteMutation = trpc.payment.deletePaymentMethod.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        utils.payment.getPaymentStatus.setData(undefined, (old) => {
+          if (!old) return old;
+          const filtered = old.paymentMethods.filter(
+            (pm) => pm.id !== input.paymentMethodId,
+          );
+          return {
+            ...old,
+            paymentMethods: filtered,
+            hasPaymentMethod: filtered.length > 0,
+          };
+        });
+        utils.payment.getPaymentStatus.invalidate();
+      },
+    }),
+  );
 
   const deletionBlockers = trpc.auth.deletionBlockers.useQuery(undefined, {
     enabled: false,
   });
 
-  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation({
-    onSuccess: () => logout(),
-  });
+  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation(
+    useMutationWithToast({
+      onSuccess: () => logout(),
+    }),
+  );
 
   const handleDeleteAccount = () => {
     Alert.alert(

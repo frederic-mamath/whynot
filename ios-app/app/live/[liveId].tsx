@@ -11,6 +11,7 @@ import {
   ClientRoleType,
 } from "@/lib/agora";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { LiveBadge } from "@/components/live/LiveBadge";
 import { ChatPanel } from "@/components/live/ChatPanel";
 import { HighlightedProduct } from "@/components/live/HighlightedProduct";
@@ -61,15 +62,17 @@ export default function LiveScreen() {
     { enabled: liveStatus === "active" },
   );
   const utils = trpc.useUtils();
-  const toggleInterestMutation = trpc.product.toggleInterest.useMutation({
-    onSuccess: () => {
-      utils.product.listByChannel.invalidate({ channelId });
-    },
-  });
+  const toggleInterestMutation = trpc.product.toggleInterest.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.product.listByChannel.invalidate({ channelId });
+      },
+    }),
+  );
 
   const liveQuery = trpc.live.get.useQuery({ channelId });
-  const joinMutation = trpc.live.join.useMutation();
-  const leaveMutation = trpc.live.leave.useMutation();
+  const joinMutation = trpc.live.join.useMutation(useMutationWithToast());
+  const leaveMutation = trpc.live.leave.useMutation(useMutationWithToast());
 
   trpc.live.subscribeToEvents.useSubscription(
     { channelId },

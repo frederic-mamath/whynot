@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors } from "@/theme/tokens";
 
 export default function RelayPickerScreen() {
@@ -25,16 +26,15 @@ export default function RelayPickerScreen() {
     { enabled: false, retry: false },
   );
 
-  const saveMutation = trpc.profile.addresses.saveRelayPoint.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.invalidate();
-      router.back();
-    },
-    onError: (e) => {
-      Alert.alert("Échec de l'enregistrement", e.message);
-    },
-  });
+  const saveMutation = trpc.profile.addresses.saveRelayPoint.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.profile.addresses.list.invalidate();
+        utils.profile.me.invalidate();
+        router.back();
+      },
+    }),
+  );
 
   const canSearch = /^\d{5}$/.test(postcode);
   const isLoading = searchQuery.isFetching;

@@ -11,6 +11,7 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors } from "@/theme/tokens";
 
 export default function EditAddressScreen() {
@@ -23,47 +24,53 @@ export default function EditAddressScreen() {
   const { data, isLoading } = trpc.profile.addresses.list.useQuery();
   const address = data?.find((a) => a.id === addressId);
 
-  const updateMutation = trpc.profile.addresses.update.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.invalidate();
-      router.back();
-    },
-    onError: (e) => setError(e.message),
-  });
+  const updateMutation = trpc.profile.addresses.update.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.profile.addresses.list.invalidate();
+        utils.profile.me.invalidate();
+        router.back();
+      },
+      onError: (e) => setError(e.message),
+    }),
+  );
 
-  const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation({
-    onSuccess: (_, input) => {
-      utils.profile.addresses.list.setData(undefined, (old) =>
-        old
-          ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
-          : old,
-      );
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              addresses: old.addresses.map((a) => ({
-                ...a,
-                isDefault: a.id === input.id,
-              })),
-            }
-          : old,
-      );
-      utils.profile.me.invalidate();
-    },
-    onError: (e) => setError(e.message),
-  });
+  const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        utils.profile.addresses.list.setData(undefined, (old) =>
+          old
+            ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
+            : old,
+        );
+        utils.profile.addresses.list.invalidate();
+        utils.profile.me.setData(undefined, (old) =>
+          old
+            ? {
+                ...old,
+                addresses: old.addresses.map((a) => ({
+                  ...a,
+                  isDefault: a.id === input.id,
+                })),
+              }
+            : old,
+        );
+        utils.profile.me.invalidate();
+      },
+      onError: (e) => setError(e.message),
+    }),
+  );
 
-  const deleteMutation = trpc.profile.addresses.delete.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.invalidate();
-      router.back();
-    },
-    onError: (e) => setError(e.message),
-  });
+  const deleteMutation = trpc.profile.addresses.delete.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.profile.addresses.list.invalidate();
+        utils.profile.me.invalidate();
+        router.back();
+      },
+      onError: (e) => setError(e.message),
+    }),
+  );
 
   if (isLoading) {
     return (

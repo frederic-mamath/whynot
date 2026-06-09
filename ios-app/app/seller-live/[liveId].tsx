@@ -18,6 +18,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { X, Radio, Tag, Plus, Square } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useErrorBanner } from "@/hooks/useErrorBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   isAgoraAvailable,
@@ -47,6 +49,7 @@ export default function SellerGoLiveScreen() {
   const channelId = Number(liveId);
   const router = useRouter();
   const { user: _user } = useAuth();
+  const { showError } = useErrorBanner();
 
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
@@ -59,12 +62,12 @@ export default function SellerGoLiveScreen() {
   const [sheet, setSheet] = useState<"highlight" | "auction" | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
 
-  const startMutation = trpc.live.start.useMutation();
-  const endMutation = trpc.live.end.useMutation();
-  const highlightMutation = trpc.live.highlightProduct.useMutation();
-  const unhighlightMutation = trpc.live.unhighlightProduct.useMutation();
-  const startAuctionMutation = trpc.auction.start.useMutation();
-  const closeAuctionMutation = trpc.auction.close.useMutation();
+  const startMutation = trpc.live.start.useMutation(useMutationWithToast());
+  const endMutation = trpc.live.end.useMutation(useMutationWithToast());
+  const highlightMutation = trpc.live.highlightProduct.useMutation(useMutationWithToast());
+  const unhighlightMutation = trpc.live.unhighlightProduct.useMutation(useMutationWithToast());
+  const startAuctionMutation = trpc.auction.start.useMutation(useMutationWithToast());
+  const closeAuctionMutation = trpc.auction.close.useMutation(useMutationWithToast());
 
   const productsQuery = trpc.product.listByChannel.useQuery({ channelId });
   const activeAuctionQuery = trpc.auction.getActive.useQuery(
@@ -134,8 +137,7 @@ export default function SellerGoLiveScreen() {
           setHasInitialized(true);
         }
       } catch (e) {
-        Alert.alert(
-          "Erreur",
+        showError(
           e instanceof Error ? e.message : "Impossible d'initialiser le live",
         );
         router.back();
@@ -159,8 +161,7 @@ export default function SellerGoLiveScreen() {
       );
       setIsBroadcasting(true);
     } catch (e) {
-      Alert.alert(
-        "Erreur",
+      showError(
         e instanceof Error ? e.message : "Impossible de démarrer la diffusion",
       );
     }
@@ -176,12 +177,11 @@ export default function SellerGoLiveScreen() {
           text: "Terminer",
           style: "destructive",
           onPress: async () => {
-            try {
-              await endMutation.mutateAsync({ channelId });
-            } catch {
-              // Server may have already ended; carry on
-            }
-            await stopBroadcaster().catch(() => {});
+            // endMutation is wrapped with useMutationWithToast — the banner
+            // surfaces server-side errors. A reject just means the server
+            // already ended the live, so we still stop broadcasting and exit.
+            await endMutation.mutateAsync({ channelId }).catch(() => null);
+            await stopBroadcaster().catch(() => null);
             router.back();
           },
         },
@@ -199,22 +199,15 @@ export default function SellerGoLiveScreen() {
     setHighlightedProductId(productId);
     try {
       await highlightMutation.mutateAsync({ channelId, productId });
-    } catch (e) {
+    } catch {
+      // Roll back the optimistic state; useMutationWithToast already showed the banner.
       setHighlightedProductId(null);
-      Alert.alert(
-        "Erreur",
-        e instanceof Error ? e.message : "Impossible de mettre en avant",
-      );
     }
   };
 
   const handleUnhighlight = async () => {
     setHighlightedProductId(null);
-    try {
-      await unhighlightMutation.mutateAsync({ channelId });
-    } catch {
-      // ignore
-    }
+    await unhighlightMutation.mutateAsync({ channelId }).catch(() => null);
   };
 
   const handleCloseAuction = async () => {
@@ -223,11 +216,8 @@ export default function SellerGoLiveScreen() {
     try {
       await closeAuctionMutation.mutateAsync({ auctionId: auction.id });
       utils.auction.getActive.invalidate({ channelId });
-    } catch (e) {
-      Alert.alert(
-        "Erreur",
-        e instanceof Error ? e.message : "Impossible de terminer l'enchère",
-      );
+    } catch {
+      // useMutationWithToast already surfaced the error.
     }
   };
 
@@ -394,11 +384,8 @@ export default function SellerGoLiveScreen() {
             });
             setSheet(null);
             utils.auction.getActive.invalidate({ channelId });
-          } catch (e) {
-            Alert.alert(
-              "Erreur",
-              e instanceof Error ? e.message : "Impossible de lancer l'enchère",
-            );
+          } catch {
+            // useMutationWithToast already surfaced the error.
           }
         }}
         isSubmitting={startAuctionMutation.isPending}

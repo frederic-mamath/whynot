@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 type Live = {
@@ -51,25 +52,27 @@ export default function SellerLivesScreen() {
   const utils = trpc.useUtils();
 
   const livesQuery = trpc.live.listByHost.useQuery();
-  const deleteMutation = trpc.live.delete.useMutation({
-    onMutate: async ({ liveId }) => {
-      await utils.live.listByHost.cancel();
-      const previous = utils.live.listByHost.getData();
-      utils.live.listByHost.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              upcoming: old.upcoming.filter((l) => l.id !== liveId),
-            }
-          : old,
-      );
-      return { previous };
-    },
-    onError: (_err, _input, ctx) => {
-      if (ctx?.previous) utils.live.listByHost.setData(undefined, ctx.previous);
-    },
-    onSettled: () => utils.live.listByHost.invalidate(),
-  });
+  const deleteMutation = trpc.live.delete.useMutation(
+    useMutationWithToast({
+      onMutate: async ({ liveId }) => {
+        await utils.live.listByHost.cancel();
+        const previous = utils.live.listByHost.getData();
+        utils.live.listByHost.setData(undefined, (old) =>
+          old
+            ? {
+                ...old,
+                upcoming: old.upcoming.filter((l) => l.id !== liveId),
+              }
+            : old,
+        );
+        return { previous };
+      },
+      onError: (_err, _input, ctx) => {
+        if (ctx?.previous) utils.live.listByHost.setData(undefined, ctx.previous);
+      },
+      onSettled: () => utils.live.listByHost.invalidate(),
+    }),
+  );
 
   const confirmDelete = (liveId: number, name: string) => {
     Alert.alert(

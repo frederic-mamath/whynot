@@ -21,6 +21,8 @@ import {
   Wallet,
 } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useErrorBanner } from "@/hooks/useErrorBanner";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 type PackageStatus =
@@ -66,6 +68,7 @@ export default function SellerDeliveryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { showError } = useErrorBanner();
 
   const packagesQuery = trpc.package.getPackagesForSeller.useQuery();
   const pkg = (() => {
@@ -86,27 +89,33 @@ export default function SellerDeliveryDetailScreen() {
     labelUrl: string;
   } | null>(null);
 
-  const generateMutation = trpc.package.generateLabel.useMutation({
-    onSuccess: (data) => {
-      setLabelInfo({
-        trackingNumber: data.trackingNumber,
-        labelUrl: data.labelUrl,
-      });
-      utils.package.getPackagesForSeller.invalidate();
-    },
-  });
-  const refreshMutation = trpc.package.refreshStatus.useMutation({
-    onSuccess: () => {
-      utils.package.getPackagesForSeller.invalidate();
-    },
-  });
-  const payoutMutation = trpc.package.requestPayouts.useMutation();
-  const markShippedMutation = trpc.package.markShippedManually.useMutation({
-    onSuccess: async () => {
-      await utils.package.getPackagesForSeller.invalidate();
-      router.back();
-    },
-  });
+  const generateMutation = trpc.package.generateLabel.useMutation(
+    useMutationWithToast({
+      onSuccess: (data) => {
+        setLabelInfo({
+          trackingNumber: data.trackingNumber,
+          labelUrl: data.labelUrl,
+        });
+        utils.package.getPackagesForSeller.invalidate();
+      },
+    }),
+  );
+  const refreshMutation = trpc.package.refreshStatus.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.package.getPackagesForSeller.invalidate();
+      },
+    }),
+  );
+  const payoutMutation = trpc.package.requestPayouts.useMutation(useMutationWithToast());
+  const markShippedMutation = trpc.package.markShippedManually.useMutation(
+    useMutationWithToast({
+      onSuccess: async () => {
+        await utils.package.getPackagesForSeller.invalidate();
+        router.back();
+      },
+    }),
+  );
 
   if (packagesQuery.isLoading) {
     return (
@@ -144,34 +153,16 @@ export default function SellerDeliveryDetailScreen() {
   const handleGenerate = async () => {
     const grams = parseInt(weight.trim(), 10);
     if (!Number.isFinite(grams) || grams < 1 || grams > 30000) {
-      Alert.alert(
-        "Poids invalide",
-        "Entrez un poids en grammes (entre 1 et 30 000).",
-      );
+      showError("Poids invalide. Entrez un poids en grammes (entre 1 et 30 000).");
       return;
     }
-    try {
-      await generateMutation.mutateAsync({
-        packageId: pkg.id,
-        weightGrams: grams,
-      });
-    } catch (e) {
-      Alert.alert(
-        "Erreur",
-        e instanceof Error ? e.message : "Impossible de générer l'étiquette",
-      );
-    }
+    await generateMutation
+      .mutateAsync({ packageId: pkg.id, weightGrams: grams })
+      .catch(() => null);
   };
 
   const handleRefresh = async () => {
-    try {
-      await refreshMutation.mutateAsync({ packageId: pkg.id });
-    } catch (e) {
-      Alert.alert(
-        "Erreur",
-        e instanceof Error ? e.message : "Impossible d'actualiser",
-      );
-    }
+    await refreshMutation.mutateAsync({ packageId: pkg.id }).catch(() => null);
   };
 
   const handleMarkShipped = async () => {
@@ -200,11 +191,8 @@ export default function SellerDeliveryDetailScreen() {
         "Demande envoyée",
         "Votre demande de paiement a bien été enregistrée.",
       );
-    } catch (e) {
-      Alert.alert(
-        "Erreur",
-        e instanceof Error ? e.message : "Impossible de demander le paiement",
-      );
+    } catch {
+      // useMutationWithToast already surfaced the error via the banner.
     }
   };
 
