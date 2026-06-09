@@ -17,7 +17,3 @@ export async function setToken(token: string): Promise<void> {
 export async function removeToken(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
-
-export function isAuthenticated(): boolean {
-  return !!getToken();
-}

@@ -86,8 +86,6 @@ export const RtcLocalView = NativeViewManager
 // Stub constants — values unused in new implementation but kept for compatibility.
 export const ChannelProfileType = { ChannelProfileLiveBroadcasting: 1 };
 export const ClientRoleType = { ClientRoleAudience: 2, ClientRoleBroadcaster: 1 };
-export const ClientRoleBroadcaster = 1;
-export const ClientRoleAudience = 2;
 
 // Broadcaster (host) APIs — separate from createAgoraRtcEngine which targets audience.
 export async function initializeBroadcaster(appId: string): Promise<void> {
