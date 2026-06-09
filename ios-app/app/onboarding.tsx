@@ -14,6 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { trpc } from "@/lib/trpc";
+import { optimisticUpdate } from "@/lib/optimisticUpdate";
 import { Colors } from "@/theme/tokens";
 
 export default function OnboardingScreen() {
@@ -27,8 +28,17 @@ export default function OnboardingScreen() {
   const uploadMutation = trpc.image.upload.useMutation();
 
   const onboardingMutation = trpc.profile.completeOnboarding.useMutation({
-    onSuccess: async () => {
-      await utils.profile.me.invalidate();
+    onSuccess: (_, input) => {
+      optimisticUpdate(utils.profile.me, (old) =>
+        old
+          ? {
+              ...old,
+              nickname: input.nickname,
+              avatarUrl: input.avatarUrl ?? null,
+              hasCompletedOnboarding: true,
+            }
+          : old,
+      );
       router.replace("/(tabs)");
     },
     onError: (err) => {

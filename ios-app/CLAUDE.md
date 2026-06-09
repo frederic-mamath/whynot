@@ -72,24 +72,9 @@ ios-app/
 
 ## Cache Update Strategy
 
-After any mutation that updates data **immediately visible on screen**, use `setData()` to patch the cache instantly, then `invalidate()` in the background to sync with the server:
+Use `optimisticUpdate(query, updater)` from `src/lib/optimisticUpdate.ts` after every non-live-session mutation that touches data visible on screen — it patches the tRPC cache, then invalidates in the background. The helper covers no-input queries; for input-taking queries (e.g. `product.list({ shopId })`) write the `setData` + `invalidate` pair inline.
 
-```ts
-const utils = trpc.useUtils();
-
-const updateMutation = trpc.profile.update.useMutation({
-  onSuccess: (_, input) => {
-    utils.profile.me.setData(undefined, (old) =>
-      old ? { ...old, firstName: input.firstName, lastName: input.lastName } : old
-    );
-    utils.profile.me.invalidate();
-  },
-});
-```
-
-This eliminates the post-save lag (200–500ms of stale data) without a loader.
-
-**Exception — live screen (`app/live/[liveId].tsx` and `src/components/live/`):** do NOT use `setData()` for mutations inside the live session. Multiple buyers bid concurrently — optimistic updates would show stale state if another buyer's action lands between your mutation and the server response. The server is the source of truth there. The live screen will have its own custom cache strategy (feature 067 follow-up).
+**Exception — live screen (`app/live/[liveId].tsx`, `app/seller-live/[liveId].tsx`, `src/hooks/useAgoraSession.ts`):** do NOT patch the cache. Multiple buyers bid concurrently — optimistic updates would show stale state if another buyer's action lands between the mutation and the server response. The server is the source of truth for the live session.
 
 ## Architecture Tests
 

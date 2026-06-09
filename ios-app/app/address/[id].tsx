@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useState } from "react";
 import {
   View,
@@ -12,6 +12,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { optimisticUpdate, removeById, updateById } from "@/lib/optimisticUpdate";
 import { Colors } from "@/theme/tokens";
 
 export default function EditAddressScreen() {
@@ -26,8 +27,18 @@ export default function EditAddressScreen() {
 
   const updateMutation = trpc.profile.addresses.update.useMutation(
     useMutationWithToast({
-      onSuccess: () => {
-        utils.profile.addresses.list.invalidate();
+      onSuccess: (_, input) => {
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          updateById(old, input.id, {
+            label: input.label,
+            street: input.street,
+            street2: input.street2 ?? null,
+            city: input.city,
+            state: input.state,
+            zipCode: input.zipCode,
+            country: input.country,
+          }),
+        );
         utils.profile.me.invalidate();
         router.back();
       },
@@ -63,8 +74,10 @@ export default function EditAddressScreen() {
 
   const deleteMutation = trpc.profile.addresses.delete.useMutation(
     useMutationWithToast({
-      onSuccess: () => {
-        utils.profile.addresses.list.invalidate();
+      onSuccess: (_, input) => {
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          removeById(old, input.id),
+        );
         utils.profile.me.invalidate();
         router.back();
       },

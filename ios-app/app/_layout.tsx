@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";

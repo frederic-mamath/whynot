@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useState } from "react";
 import {
   View,
@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { optimisticUpdate } from "@/lib/optimisticUpdate";
 import { Colors } from "@/theme/tokens";
 
 export default function RelayPickerScreen() {
@@ -28,8 +29,29 @@ export default function RelayPickerScreen() {
 
   const saveMutation = trpc.profile.addresses.saveRelayPoint.useMutation(
     useMutationWithToast({
-      onSuccess: () => {
-        utils.profile.addresses.list.invalidate();
+      onSuccess: (data, input) => {
+        // Server-side: drops any existing relay point, unsets isDefault on
+        // every other address, then inserts this one as default. Mirror that.
+        optimisticUpdate(utils.profile.addresses.list, (old) => {
+          const newRelay = {
+            id: data.addressId,
+            label: `Point Relais — ${input.name}`,
+            street: input.street,
+            street2: null,
+            city: input.city,
+            state: input.city,
+            zipCode: input.zipCode,
+            country: input.country ?? "FR",
+            isDefault: true,
+            mondialRelayPointId: input.relayPointId,
+            createdAt: new Date().toISOString(),
+          };
+          const withoutOldRelays = (old ?? []).filter(
+            (a) => a.mondialRelayPointId === null,
+          );
+          const cleared = withoutOldRelays.map((a) => ({ ...a, isDefault: false }));
+          return [newRelay, ...cleared];
+        });
         utils.profile.me.invalidate();
         router.back();
       },

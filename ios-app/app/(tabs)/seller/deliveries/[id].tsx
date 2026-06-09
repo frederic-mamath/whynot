@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-006; max-lines tracked separately (file >400 lines, decompose) */
+/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-010; max-lines tracked separately (file >400 lines, decompose) */
 import { useState } from "react";
 import {
   View,

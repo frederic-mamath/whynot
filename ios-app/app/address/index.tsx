@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { optimisticUpdate, removeById } from "@/lib/optimisticUpdate";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function AddressListScreen() {
@@ -25,13 +26,10 @@ export default function AddressListScreen() {
   const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation(
     useMutationWithToast({
       onSuccess: (_, input) => {
-        utils.profile.addresses.list.setData(undefined, (old) =>
-          old
-            ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
-            : old,
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          old?.map((a) => ({ ...a, isDefault: a.id === input.id })),
         );
-        utils.profile.addresses.list.invalidate();
-        utils.profile.me.setData(undefined, (old) =>
+        optimisticUpdate(utils.profile.me, (old) =>
           old
             ? {
                 ...old,
@@ -42,7 +40,6 @@ export default function AddressListScreen() {
               }
             : old,
         );
-        utils.profile.me.invalidate();
       },
     }),
   );
@@ -50,11 +47,10 @@ export default function AddressListScreen() {
   const deleteMutation = trpc.profile.addresses.delete.useMutation(
     useMutationWithToast({
       onSuccess: (_, input) => {
-        utils.profile.addresses.list.setData(undefined, (old) =>
-          old ? old.filter((a) => a.id !== input.id) : old,
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          removeById(old, input.id),
         );
-        utils.profile.addresses.list.invalidate();
-        utils.profile.me.setData(undefined, (old) =>
+        optimisticUpdate(utils.profile.me, (old) =>
           old
             ? {
                 ...old,
@@ -62,7 +58,6 @@ export default function AddressListScreen() {
               }
             : old,
         );
-        utils.profile.me.invalidate();
       },
     }),
   );

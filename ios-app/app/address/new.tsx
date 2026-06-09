@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
+import { optimisticUpdate } from "@/lib/optimisticUpdate";
 
 export default function NewAddressScreen() {
   const router = useRouter();
@@ -10,8 +11,15 @@ export default function NewAddressScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const createMutation = trpc.profile.addresses.create.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
+    onSuccess: (data) => {
+      optimisticUpdate(utils.profile.addresses.list, (old) => {
+        const created = {
+          ...data.address,
+          mondialRelayPointId: null,
+          createdAt: new Date().toISOString(),
+        };
+        return old ? [created, ...old] : [created];
+      });
       utils.profile.me.invalidate();
       router.back();
     },
