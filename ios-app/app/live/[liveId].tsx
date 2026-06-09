@@ -12,7 +12,6 @@ import { ChatPanel } from "@/components/live/ChatPanel";
 import { HighlightedProduct } from "@/components/live/HighlightedProduct";
 import { AuctionWidget } from "@/components/live/AuctionWidget";
 import { AuctionEndModal } from "@/components/live/AuctionEndModal";
-import { OutbidBanner } from "@/components/live/OutbidBanner";
 import { LiveProductList } from "@/components/live/LiveProductList";
 import { Colors } from "@/theme/tokens";
 import { useTrack } from "@/lib/analytics";
@@ -41,7 +40,6 @@ export default function LiveScreen() {
 
   const [highlightedProduct, setHighlightedProduct] = useState<HighlightedProductData | null>(null);
   const [auctionEndInfo, setAuctionEndInfo] = useState<AuctionEndInfo | null>(null);
-  const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
   const [openBidSheet, setOpenBidSheet] = useState(false);
   const track = useTrack();
   const liveViewedRef = useRef(false);
@@ -74,42 +72,41 @@ export default function LiveScreen() {
     {
       enabled: liveStatus === "active",
       onData: (event) => {
-        const e = event as {
-          type: string;
-          product?: HighlightedProductData;
-          winnerUsername?: string | null;
-          winnerId?: number | null;
-          finalPrice?: number;
-          hasWinner?: boolean;
-          auctionId?: string;
-          outbidUserId?: number;
-          productName?: string;
-          currentBid?: number;
-        };
-        if (e.type === "PRODUCT_HIGHLIGHTED" && e.product) {
-          setHighlightedProduct(e.product);
-        } else if (e.type === "PRODUCT_UNHIGHLIGHTED") {
-          setHighlightedProduct(null);
-        } else if (e.type === "auction:ended") {
-          setAuctionEndInfo({
-            isWinner: !!(e.winnerId && user?.id === e.winnerId),
-            productName: highlightedProduct?.name ?? "Produit",
-            finalPrice: e.finalPrice ?? 0,
-            winnerUsername: e.winnerUsername ?? null,
-          });
-          if (e.winnerId && user?.id === e.winnerId && e.auctionId) {
-            track({
-              name: "auction_won",
-              auctionId: e.auctionId,
-              liveId: channelId,
-              finalPrice: e.finalPrice ?? 0,
+        switch (event.type) {
+          case "PRODUCT_HIGHLIGHTED":
+            setHighlightedProduct({
+              id: event.product.id,
+              name: event.product.name,
+              price: event.product.price,
+              imageUrl: event.product.imageUrl,
             });
+            return;
+          case "PRODUCT_UNHIGHLIGHTED":
+            setHighlightedProduct(null);
+            return;
+          case "auction:ended": {
+            const isWinner =
+              event.winnerId !== null && user?.id === event.winnerId;
+            setAuctionEndInfo({
+              isWinner,
+              productName: highlightedProduct?.name ?? "Produit",
+              finalPrice: event.finalPrice,
+              winnerUsername: event.winnerUsername,
+            });
+            if (isWinner) {
+              track({
+                name: "auction_won",
+                auctionId: event.auctionId,
+                liveId: channelId,
+                finalPrice: event.finalPrice,
+              });
+            }
+            return;
           }
-        } else if (e.type === "auction:outbid" && e.outbidUserId === user?.id) {
-          setOutbidBanner({
-            productName: e.productName ?? "",
-            newBid: e.currentBid ?? 0,
-          });
+          default: {
+            const _exhaustive: never = event;
+            return _exhaustive;
+          }
         }
       },
     }
@@ -224,16 +221,6 @@ export default function LiveScreen() {
               channelId={channelId}
               forceOpen={openBidSheet}
               onForceOpenHandled={() => setOpenBidSheet(false)}
-            />
-          )}
-
-          {/* Outbid banner — overlays the top of the screen */}
-          {outbidBanner && (
-            <OutbidBanner
-              productName={outbidBanner.productName}
-              newBid={outbidBanner.newBid}
-              onDismiss={() => setOutbidBanner(null)}
-              onBidAgain={() => setOpenBidSheet(true)}
             />
           )}
 

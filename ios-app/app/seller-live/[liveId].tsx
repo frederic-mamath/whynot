@@ -49,7 +49,6 @@ export default function SellerGoLiveScreen() {
     });
 
   const [sheet, setSheet] = useState<"highlight" | "auction" | null>(null);
-  const [participantCount, setParticipantCount] = useState(0);
 
   const endMutation = trpc.live.end.useMutation(useMutationWithToast());
   const highlightMutation = trpc.live.highlightProduct.useMutation(useMutationWithToast());
@@ -83,21 +82,20 @@ export default function SellerGoLiveScreen() {
     {
       enabled: isBroadcasting,
       onData: (event) => {
-        const e = event as {
-          type: string;
-          product?: { id: number };
-          participantCount?: number;
-        };
-        if (e.type === "PRODUCT_HIGHLIGHTED" && e.product) {
-          setHighlightedProductId(e.product.id);
-        } else if (e.type === "PRODUCT_UNHIGHLIGHTED") {
-          setHighlightedProductId(null);
-        } else if (e.type === "PARTICIPANT_COUNT_CHANGED" && typeof e.participantCount === "number") {
-          setParticipantCount(e.participantCount);
-        } else if (e.type === "auction:bid") {
-          utils.auction.getActive.invalidate({ channelId });
-        } else if (e.type === "auction:ended") {
-          utils.auction.getActive.invalidate({ channelId });
+        switch (event.type) {
+          case "PRODUCT_HIGHLIGHTED":
+            setHighlightedProductId(event.product.id);
+            return;
+          case "PRODUCT_UNHIGHLIGHTED":
+            setHighlightedProductId(null);
+            return;
+          case "auction:ended":
+            utils.auction.getActive.invalidate({ channelId });
+            return;
+          default: {
+            const _exhaustive: never = event;
+            return _exhaustive;
+          }
         }
       },
     },
@@ -188,7 +186,6 @@ export default function SellerGoLiveScreen() {
             <View style={styles.liveBadge}>
               <View style={styles.liveDot} />
               <Text style={styles.liveBadgeText}>LIVE</Text>
-              <Text style={styles.viewerCount}>· {participantCount}</Text>
             </View>
           )}
           <View style={styles.iconBtn} />
