@@ -1,99 +1,38 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
-import { useState, useEffect } from "react";
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
-import { CardField, useStripe, usePlatformPay, PlatformPay } from "@stripe/stripe-react-native";
-import { trpc } from "@/lib/trpc";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { CardField } from "@stripe/stripe-react-native";
+import { usePopupSetupIntent } from "@/lib/stripe";
 import { Colors } from "@/theme/tokens";
 
 type Props = { onSuccess: () => void };
 
 export function PaymentSetupSheet({ onSuccess }: Props) {
-  const { confirmSetupIntent } = useStripe();
-  const { isPlatformPaySupported, confirmPlatformPaySetupIntent } = usePlatformPay();
-  const [platformPayAvailable, setPlatformPayAvailable] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const {
+    saveCard,
+    saveWithPlatformPay,
+    isPlatformPayAvailable,
+    platformPayLabel,
+    isLoading,
+  } = usePopupSetupIntent();
 
-  const utils = trpc.useUtils();
-  const createSetupIntent = trpc.payment.createSetupIntent.useMutation();
-
-  useEffect(() => {
-    isPlatformPaySupported().then(setPlatformPayAvailable);
-  }, [isPlatformPaySupported]);
-
-  const platformPayLabel = Platform.OS === "ios" ? "Payer avec Apple Pay" : "Payer avec Google Pay";
-
-  const saveWithPlatformPay = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const { clientSecret } = await createSetupIntent.mutateAsync();
-      const { error: platformPayError } =
-        Platform.OS === "ios"
-          ? await confirmPlatformPaySetupIntent(clientSecret, {
-              applePay: {
-                merchantCountryCode: "FR",
-                currencyCode: "EUR",
-                cartItems: [
-                  {
-                    paymentType: PlatformPay.PaymentType.Immediate,
-                    label: "Popup",
-                    amount: "0.00",
-                  },
-                ],
-              },
-            })
-          : await confirmPlatformPaySetupIntent(clientSecret, {
-              googlePay: {
-                testEnv: __DEV__,
-                merchantName: "Popup",
-                merchantCountryCode: "FR",
-                currencyCode: "EUR",
-              },
-            });
-      if (platformPayError) {
-        setError(platformPayError.message ?? "Paiement annulé.");
-      } else {
-        utils.payment.getPaymentStatus.invalidate();
-        onSuccess();
-      }
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSaveCard = async () => {
+    const { success } = await saveCard();
+    if (success) onSuccess();
   };
 
-  const saveWithCard = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const { clientSecret } = await createSetupIntent.mutateAsync();
-      const result = await confirmSetupIntent(clientSecret, {
-        paymentMethodType: "Card",
-      });
-      if (result.error) {
-        setError(result.error.message ?? "Erreur lors de l'enregistrement.");
-      } else {
-        utils.payment.getPaymentStatus.invalidate();
-        onSuccess();
-      }
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSaveWithPlatformPay = async () => {
+    const { success } = await saveWithPlatformPay();
+    if (success) onSuccess();
   };
 
   return (
     <View style={styles.container}>
-      {platformPayAvailable && (
+      {isPlatformPayAvailable && (
         <Pressable
-          style={[styles.platformPayButton, loading && styles.buttonDisabled]}
-          onPress={saveWithPlatformPay}
-          disabled={loading}
+          style={[styles.platformPayButton, isLoading && styles.buttonDisabled]}
+          onPress={handleSaveWithPlatformPay}
+          disabled={isLoading}
         >
-          {loading ? (
+          {isLoading ? (
             <ActivityIndicator color={Colors.foreground} />
           ) : (
             <Text style={styles.platformPayText}>{platformPayLabel}</Text>
@@ -101,7 +40,7 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
         </Pressable>
       )}
 
-      {platformPayAvailable && (
+      {isPlatformPayAvailable && (
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>ou</Text>
@@ -115,13 +54,12 @@ export function PaymentSetupSheet({ onSuccess }: Props) {
         style={styles.cardField}
         cardStyle={{ backgroundColor: Colors.input, textColor: Colors.foreground, borderRadius: 10 }}
       />
-      {error && <Text style={styles.error}>{error}</Text>}
       <Pressable
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={saveWithCard}
-        disabled={loading}
+        style={[styles.button, isLoading && styles.buttonDisabled]}
+        onPress={handleSaveCard}
+        disabled={isLoading}
       >
-        {loading ? (
+        {isLoading ? (
           <ActivityIndicator color={Colors.primaryForeground} />
         ) : (
           <Text style={styles.buttonText}>Enregistrer la carte</Text>
@@ -152,7 +90,6 @@ const styles = StyleSheet.create({
   dividerText: { fontSize: 13, color: Colors.mutedForeground },
   label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500" },
   cardField: { height: 50, marginVertical: 4 },
-  error: { fontSize: 13, color: Colors.destructive },
   button: {
     height: 44,
     borderRadius: 10,

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useState } from "react";
 import {
   View,
@@ -8,12 +7,9 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import { useStripe } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
-import { useTrack } from "@/lib/analytics";
 import { OrderCard } from "@/components/OrderCard";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { useErrorBanner } from "@/hooks/useErrorBanner";
+import { usePopupCheckout } from "@/lib/stripe";
 import { Colors } from "@/theme/tokens";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
@@ -29,16 +25,10 @@ export default function OrdersScreen() {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
 
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const utils = trpc.useUtils();
-  const track = useTrack();
-  const { showError } = useErrorBanner();
+  const { pay } = usePopupCheckout();
 
   const { data, isLoading, isFetching } = trpc.order.getMyOrders.useQuery({});
-
-  const createPaymentIntent = trpc.order.createPaymentIntent.useMutation(
-    useMutationWithToast(),
-  );
 
   const orders = data ?? [];
 
@@ -55,35 +45,7 @@ export default function OrdersScreen() {
     const order = orders.find((o) => o.id === orderId);
     const amount = order?.finalPrice ?? 0;
     try {
-      const { clientSecret, customerId, ephemeralKey } =
-        await createPaymentIntent.mutateAsync({ orderId });
-
-      const initResult = await initPaymentSheet({
-        paymentIntentClientSecret: clientSecret ?? "",
-        merchantDisplayName: "Popup",
-        ...(customerId && ephemeralKey
-          ? { customerId, customerEphemeralKeySecret: ephemeralKey }
-          : {}),
-      });
-
-      if (initResult.error) {
-        showError(initResult.error.message);
-        setPayingOrderId(null);
-        return;
-      }
-
-      track({ name: "checkout_started", orderId, amount });
-      const result = await presentPaymentSheet();
-      if (result.error) {
-        // Stripe surfaces a "canceled" error when the user dismisses the sheet
-        // — that's not an error to show. Anything else, surface.
-        if (result.error.code !== "Canceled") {
-          showError(result.error.message);
-        }
-      } else {
-        track({ name: "purchase_completed", orderId, amount });
-        utils.order.getMyOrders.invalidate();
-      }
+      await pay(orderId, amount);
     } finally {
       setPayingOrderId(null);
     }
