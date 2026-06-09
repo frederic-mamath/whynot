@@ -53,3 +53,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Dead code
+        run: npm run dead-code
+
+      - name: Duplication
+        run: npm run duplication
