@@ -74,6 +74,8 @@ function RootNavigator() {
     const inOnboarding = segments[0] === "onboarding";
     const hasOnboarded = profileQuery.data?.hasCompletedOnboarding ?? false;
 
+    // 401 recovery lands here: when authBus → AuthContext.logout() sets
+    // user to null, this effect re-fires and routes to (auth)/welcome.
     const redirect = () => {
       if (!user && !inAuthGroup) {
         router.replace("/(auth)/welcome");

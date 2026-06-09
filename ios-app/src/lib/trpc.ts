@@ -1,11 +1,24 @@
 import { createTRPCReact } from "@trpc/react-query";
-import { httpBatchLink, splitLink, createWSClient, wsLink } from "@trpc/client";
+import {
+  httpBatchLink,
+  splitLink,
+  createWSClient,
+  wsLink,
+  TRPCClientError,
+  type TRPCLink,
+} from "@trpc/client";
+import { observable } from "@trpc/server/observable";
 import type { AppRouter } from "@server/routers";
 import { getToken } from "./auth";
+import { requestLogout } from "./authBus";
 import { getApiUrl, getWsUrl } from "./config";
 
 export const trpc = createTRPCReact<AppRouter>();
 
+// `url` is a function, so it's called on every WebSocket (re)connect. After a
+// 401 + logout the user is on the welcome screen; lazy.closeMs tears the
+// socket down. The next subscription (after re-login) reopens with a fresh
+// token read from expo-secure-store.
 export const wsClient = createWSClient({
   url: () => {
     const token = getToken();
@@ -22,9 +35,42 @@ export const wsClient = createWSClient({
   lazy: { enabled: true, closeMs: 1000 },
 });
 
+// Detect 401 / UNAUTHORIZED responses and fire the logout bus. AuthContext
+// subscribes and tears down the session — the user lands on (auth)/welcome.
+// The error still propagates to the original caller so per-query error
+// handling (banner, etc.) still fires.
+const unauthorizedLink: TRPCLink<AppRouter> = () => {
+  return ({ op, next }) => {
+    return observable((observer) => {
+      const subscription = next(op).subscribe({
+        next(value) {
+          observer.next(value);
+        },
+        error(err) {
+          if (err instanceof TRPCClientError) {
+            const code = err.data?.code;
+            const status = err.data?.httpStatus;
+            if (code === "UNAUTHORIZED" || status === 401) {
+              requestLogout();
+            }
+          }
+          observer.error(err);
+        },
+        complete() {
+          observer.complete();
+        },
+      });
+      return () => {
+        subscription.unsubscribe();
+      };
+    });
+  };
+};
+
 export function createTRPCClient() {
   return trpc.createClient({
     links: [
+      unauthorizedLink,
       splitLink({
         condition: (op) => op.type === "subscription",
         true: wsLink({ client: wsClient }),

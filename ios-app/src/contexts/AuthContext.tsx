@@ -1,8 +1,16 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { usePostHog } from "posthog-react-native";
 import { trpc } from "@/lib/trpc";
 import { getToken, setToken, removeToken } from "@/lib/auth";
+import { onLogoutRequested } from "@/lib/authBus";
 
 export type AuthUser = {
   id: number;
@@ -78,13 +86,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     posthog?.identify(loginUser.id.toString());
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await removeToken();
     setHasToken(false);
     setUser(null);
     identifiedWithRoleRef.current = null;
     posthog?.reset();
-  };
+  }, [posthog]);
+
+  // 401 recovery: tRPC's unauthorizedLink calls authBus.requestLogout() when
+  // the server returns UNAUTHORIZED. The root layout reacts to user == null
+  // by redirecting to (auth)/welcome.
+  useEffect(() => {
+    return onLogoutRequested(() => {
+      void logout();
+    });
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout }}>
