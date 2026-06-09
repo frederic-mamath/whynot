@@ -258,6 +258,10 @@ const R9_EXCLUDE = new Set([
   "ios-app/src/components/LiveCard.tsx",
   "ios-app/src/components/OrderCard.tsx",
   "ios-app/src/components/SocialAuthButtons.tsx",
+  "ios-app/src/components/seller-live/BroadcasterTopBar.tsx",
+  "ios-app/src/components/seller-live/BroadcasterBottomBar.tsx",
+  "ios-app/src/components/seller-live/HighlightSheet.tsx",
+  "ios-app/src/components/seller-live/AuctionSheet.tsx",
 ]);
 
 for (const dir of [
