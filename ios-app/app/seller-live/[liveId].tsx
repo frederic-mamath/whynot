@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-006; max-lines removed by ticket-011 */
-import { useEffect, useRef, useState } from "react";
+/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-010; max-lines removed by ticket-011 */
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,20 +19,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { X, Radio, Tag, Plus, Square } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { useErrorBanner } from "@/hooks/useErrorBanner";
+import { useAgoraBroadcaster } from "@/hooks/useAgoraSession";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  isAgoraAvailable,
-  initializeBroadcaster,
-  joinChannelAsBroadcaster,
-  stopBroadcaster,
-  RtcLocalView,
-} from "@/lib/agora";
+import { isAgoraAvailable, RtcLocalView } from "@/lib/agora";
 import { ChatPanel } from "@/components/live/ChatPanel";
 import { AuctionCountdown } from "@/components/live/AuctionCountdown";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
-
-type ChannelData = { id: number };
 
 const DURATION_PRESETS: ReadonlyArray<{
   label: string;
@@ -49,20 +41,16 @@ export default function SellerGoLiveScreen() {
   const channelId = Number(liveId);
   const router = useRouter();
   const { user: _user } = useAuth();
-  const { showError } = useErrorBanner();
 
-  const [hasInitialized, setHasInitialized] = useState(false);
-  const [isBroadcasting, setIsBroadcasting] = useState(false);
-  const [joinData, setJoinData] = useState<{
-    token: string;
-    appId: string;
-    uid: number;
-    channel: ChannelData;
-  } | null>(null);
+  const { hasInitialized, isBroadcasting, startBroadcast, stopBroadcast } =
+    useAgoraBroadcaster({
+      channelId,
+      onInitializationFailed: () => router.back(),
+    });
+
   const [sheet, setSheet] = useState<"highlight" | "auction" | null>(null);
   const [participantCount, setParticipantCount] = useState(0);
 
-  const startMutation = trpc.live.start.useMutation(useMutationWithToast());
   const endMutation = trpc.live.end.useMutation(useMutationWithToast());
   const highlightMutation = trpc.live.highlightProduct.useMutation(useMutationWithToast());
   const unhighlightMutation = trpc.live.unhighlightProduct.useMutation(useMutationWithToast());
@@ -115,58 +103,6 @@ export default function SellerGoLiveScreen() {
     },
   );
 
-  const initializingRef = useRef(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (initializingRef.current) return;
-    initializingRef.current = true;
-
-    (async () => {
-      try {
-        const data = await startMutation.mutateAsync({ channelId });
-        if (cancelled) return;
-        setJoinData({
-          token: data.token,
-          appId: data.appId,
-          uid: data.uid,
-          channel: data.channel,
-        });
-        if (isAgoraAvailable) {
-          await initializeBroadcaster(data.appId);
-          setHasInitialized(true);
-        }
-      } catch (e) {
-        showError(
-          e instanceof Error ? e.message : "Impossible d'initialiser le live",
-        );
-        router.back();
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      stopBroadcaster().catch(() => {});
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: removed by ticket-007 (useAgoraSession)
-  }, [channelId]);
-
-  const handleStartBroadcast = async () => {
-    if (!joinData) return;
-    try {
-      await joinChannelAsBroadcaster(
-        joinData.token,
-        joinData.channel.id.toString(),
-        joinData.uid,
-      );
-      setIsBroadcasting(true);
-    } catch (e) {
-      showError(
-        e instanceof Error ? e.message : "Impossible de démarrer la diffusion",
-      );
-    }
-  };
-
   const handleEndLive = () => {
     Alert.alert(
       "Terminer le live",
@@ -181,7 +117,7 @@ export default function SellerGoLiveScreen() {
             // surfaces server-side errors. A reject just means the server
             // already ended the live, so we still stop broadcasting and exit.
             await endMutation.mutateAsync({ channelId }).catch(() => null);
-            await stopBroadcaster().catch(() => null);
+            await stopBroadcast();
             router.back();
           },
         },
@@ -190,7 +126,7 @@ export default function SellerGoLiveScreen() {
   };
 
   const handleLeave = async () => {
-    await stopBroadcaster().catch(() => {});
+    await stopBroadcast();
     router.back();
   };
 
@@ -309,12 +245,12 @@ export default function SellerGoLiveScreen() {
               style={({ pressed }) => [
                 styles.startBtn,
                 pressed && styles.pressed,
-                (!joinData || startMutation.isPending) && styles.startBtnDisabled,
+                !hasInitialized && styles.startBtnDisabled,
               ]}
-              onPress={handleStartBroadcast}
-              disabled={!joinData || startMutation.isPending}
+              onPress={startBroadcast}
+              disabled={!hasInitialized}
             >
-              {startMutation.isPending || !joinData ? (
+              {!hasInitialized ? (
                 <ActivityIndicator color={Colors.destructiveForeground} />
               ) : (
                 <>

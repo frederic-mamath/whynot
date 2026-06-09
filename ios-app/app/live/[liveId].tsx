@@ -1,17 +1,12 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-006 */
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  isAgoraAvailable,
-  createAgoraRtcEngine,
-  RtcSurfaceView,
-  ChannelProfileType,
-  ClientRoleType,
-} from "@/lib/agora";
+import { isAgoraAvailable, RtcSurfaceView } from "@/lib/agora";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useAgoraAudience } from "@/hooks/useAgoraSession";
 import { LiveBadge } from "@/components/live/LiveBadge";
 import { ChatPanel } from "@/components/live/ChatPanel";
 import { HighlightedProduct } from "@/components/live/HighlightedProduct";
@@ -44,18 +39,22 @@ export default function LiveScreen() {
   const { user } = useAuth();
   const channelId = Number(liveId);
 
-  const engineRef = useRef<ReturnType<typeof createAgoraRtcEngine> | null>(null);
-  const [remoteUid, setRemoteUid] = useState<number | null>(null);
-  const [joined, setJoined] = useState(false);
-  const [liveStatus, setLiveStatus] = useState<"loading" | "upcoming" | "active" | "ended">("loading");
   const [highlightedProduct, setHighlightedProduct] = useState<HighlightedProductData | null>(null);
   const [auctionEndInfo, setAuctionEndInfo] = useState<AuctionEndInfo | null>(null);
   const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
   const [openBidSheet, setOpenBidSheet] = useState(false);
-  const [isHost, setIsHost] = useState(false);
   const track = useTrack();
   const liveViewedRef = useRef(false);
-  const joinedRef = useRef(false);
+
+  const liveQuery = trpc.live.get.useQuery({ channelId });
+  const isViewerHost =
+    user != null && liveQuery.data?.channel.host_id === user.id;
+  const canJoin = liveQuery.data != null && !isViewerHost;
+
+  const { liveStatus, joined, remoteUid } = useAgoraAudience({
+    channelId,
+    enabled: canJoin,
+  });
 
   const productsQuery = trpc.product.listByChannel.useQuery(
     { channelId },
@@ -69,10 +68,6 @@ export default function LiveScreen() {
       },
     }),
   );
-
-  const liveQuery = trpc.live.get.useQuery({ channelId });
-  const joinMutation = trpc.live.join.useMutation(useMutationWithToast());
-  const leaveMutation = trpc.live.leave.useMutation(useMutationWithToast());
 
   trpc.live.subscribeToEvents.useSubscription(
     { channelId },
@@ -120,116 +115,35 @@ export default function LiveScreen() {
     }
   );
 
-  const cleanup = async () => {
-    const engine = engineRef.current;
-    if (!engine) return;
-    engine.removeAllListeners();
-    await engine.leaveChannel();
-    engine.release();
-    engineRef.current = null;
-    leaveMutation.mutate({ channelId });
-  };
-
+  // Hosts open the broadcaster screen instead — redirect once liveQuery resolves.
   useEffect(() => {
-    return () => {
-      cleanup();
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: removed by ticket-007 (useAgoraSession)
-  }, []);
-
-  useEffect(() => {
-    if (joinedRef.current) return;
-    if (liveQuery.data == null && liveQuery.error == null) return;
-    if (user != null && liveQuery.data?.channel.host_id === user.id) return;
-    joinedRef.current = true;
-
-    joinMutation.mutate(
-      { channelId },
-      {
-        onSuccess: async (data) => {
-          if (data.liveStatus !== "active") {
-            setLiveStatus(data.liveStatus as "upcoming" | "ended");
-            return;
-          }
-
-          setLiveStatus("active");
-
-          const channelData = data as { liveStatus: "active"; channel?: { host_id?: number } };
-          const hostId = channelData.channel?.host_id;
-          const isViewerHost = hostId != null && hostId === user?.id;
-          if (hostId != null) {
-            setIsHost(isViewerHost);
-          }
-
-          if (!liveViewedRef.current && hostId != null) {
-            liveViewedRef.current = true;
-            track({
-              name: "live_viewed",
-              liveId: channelId,
-              hostId,
-              isSellerView: isViewerHost,
-            });
-          }
-
-          if (!isAgoraAvailable || !createAgoraRtcEngine) return;
-
-          const { token, appId, uid, channel } = data as {
-            liveStatus: "active";
-            token: string;
-            appId: string;
-            uid: number;
-            channel: { id: number };
-          };
-
-          const engine = createAgoraRtcEngine();
-          engineRef.current = engine;
-
-          engine.initialize({
-            appId,
-            channelProfile: ChannelProfileType!.ChannelProfileLiveBroadcasting,
-          });
-
-          engine.setClientRole(ClientRoleType!.ClientRoleAudience);
-          engine.enableVideo();
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: removed by ticket-007 (useAgoraSession will type the listener)
-          engine.addListener("onUserJoined", (_: any, uid: number) => {
-            setRemoteUid(uid);
-          });
-
-          engine.addListener("onUserOffline", () => {
-            setRemoteUid(null);
-          });
-
-          await engine.joinChannel(token, channel.id.toString(), uid, {
-            autoSubscribeVideo: true,
-            autoSubscribeAudio: true,
-          });
-
-          setJoined(true);
-        },
-        onError: () => {
-          setLiveStatus("ended");
-        },
-      }
-    );
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: removed by ticket-007 (useAgoraSession)
-  }, [liveQuery.data, liveQuery.error, user, channelId]);
-
-  useEffect(() => {
-    if (user == null || liveQuery.data == null) return;
-    if (liveQuery.data.channel.host_id === user.id) {
+    if (isViewerHost) {
       router.replace(`/seller-live/${channelId}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (router missing from deps)
-  }, [liveQuery.data, user, channelId]);
+  }, [isViewerHost, channelId]);
 
-  const handleBack = async () => {
-    await cleanup();
+  // Fire live_viewed once, when the audience hook reports the live is active.
+  useEffect(() => {
+    if (liveStatus !== "active") return;
+    if (liveViewedRef.current) return;
+    const hostId = liveQuery.data?.channel.host_id;
+    if (hostId == null) return;
+    liveViewedRef.current = true;
+    track({
+      name: "live_viewed",
+      liveId: channelId,
+      hostId,
+      isSellerView: false,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (track ref stability)
+  }, [liveStatus, liveQuery.data, channelId]);
+
+  const handleBack = () => {
     router.back();
   };
 
-  if (user != null && liveQuery.data?.channel.host_id === user.id) {
+  if (isViewerHost) {
     return null;
   }
 
@@ -339,7 +253,7 @@ export default function LiveScreen() {
           <LiveProductList
             products={products}
             isLoading={productsQuery.isLoading}
-            isSellerView={isHost}
+            isSellerView={false}
             onToggleInterest={(productId, { onError }) =>
               toggleInterestMutation.mutate(
                 { productId, liveId: channelId },
