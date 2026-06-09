@@ -8,6 +8,8 @@ import { PostHogProvider } from "posthog-react-native";
 import { TRPCProvider } from "@/providers/TRPCProvider";
 import { StripeProvider } from "@/providers/StripeProvider";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ErrorBannerProvider } from "@/contexts/ErrorBannerContext";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { trpc } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
@@ -23,7 +25,10 @@ export default function RootLayout() {
       <TRPCProvider>
         <StripeProvider>
           <AuthProvider>
-            <RootNavigator />
+            <ErrorBannerProvider>
+              <RootNavigator />
+              <ErrorBanner />
+            </ErrorBannerProvider>
           </AuthProvider>
         </StripeProvider>
       </TRPCProvider>
