@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { trpc } from "@/lib/trpc";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Props = {
   channelId: number;
@@ -34,25 +34,25 @@ const styles = StyleSheet.create({
   },
   livePill: {
     backgroundColor: Colors.destructive,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   liveText: {
     color: Colors.destructiveForeground,
-    fontSize: 11,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
   countPill: {
     backgroundColor: "rgba(0,0,0,0.5)",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   countText: {
     color: Colors.foreground,
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "500",
   },
 });

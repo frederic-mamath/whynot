@@ -13,7 +13,7 @@ import { HighlightedProduct } from "@/components/live/HighlightedProduct";
 import { AuctionWidget } from "@/components/live/AuctionWidget";
 import { AuctionEndModal } from "@/components/live/AuctionEndModal";
 import { LiveProductList } from "@/components/live/LiveProductList";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 import { useTrack } from "@/lib/analytics";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -283,14 +283,14 @@ const styles = StyleSheet.create({
   backButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: Radius["2xl"],
     backgroundColor: "rgba(0,0,0,0.5)",
     alignItems: "center",
     justifyContent: "center",
   },
   backText: {
     color: Colors.foreground,
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
   },
   center: {
@@ -301,20 +301,20 @@ const styles = StyleSheet.create({
   },
   waitText: {
     color: "rgba(255,255,255,0.7)",
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
   },
   statusEmoji: {
-    fontSize: 40,
+    fontSize: Typography.fontSize["3xl"],
   },
   statusTitle: {
     color: Colors.foreground,
-    fontSize: 18,
+    fontSize: Typography.fontSize.lg,
     fontWeight: "700",
     textAlign: "center",
   },
   statusSub: {
     color: "rgba(255,255,255,0.6)",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   noVideoOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -324,9 +324,9 @@ const styles = StyleSheet.create({
   },
   noVideoText: {
     color: "rgba(255,255,255,0.4)",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     textAlign: "center",
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing["2xl"],
   },
   swipeCue: {
     position: "absolute",
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   swipeCueText: {
     color: "rgba(255,255,255,0.45)",
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "600",
     letterSpacing: 0.3,
   },

@@ -14,7 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrack } from "@/lib/analytics";
 import { SocialAuthButtons } from "@/components/SocialAuthButtons";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -119,21 +119,21 @@ const styles = StyleSheet.create({
   },
   back: {
     paddingTop: 60,
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
     paddingBottom: 12,
   },
   backText: {
     color: Colors.primary,
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
     paddingTop: 24,
     gap: 32,
   },
   title: {
-    fontSize: 32,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.foreground,
   },
@@ -143,28 +143,28 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
-  dividerText: { fontSize: 13, color: Colors.mutedForeground },
+  dividerText: { fontSize: Typography.fontSize.xs, color: Colors.mutedForeground },
   form: {
     gap: 12,
   },
   input: {
     borderWidth: 1.5,
     borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    fontSize: Typography.fontSize.base,
     color: Colors.foreground,
     backgroundColor: Colors.input,
   },
   error: {
     color: Colors.destructive,
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   button: {
     backgroundColor: Colors.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
     marginTop: 8,
   },
@@ -173,13 +173,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.primaryForeground,
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
   },
   switchText: {
     textAlign: "center",
     color: Colors.mutedForeground,
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
   },
   switchLink: {
     color: Colors.primary,

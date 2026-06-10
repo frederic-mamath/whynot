@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { optimisticUpdate, removeById, updateById } from "@/lib/optimisticUpdate";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function EditAddressScreen() {
   const router = useRouter();
@@ -196,9 +196,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: Colors.background,
   },
-  notFound: { fontSize: 15, color: Colors.mutedForeground },
+  notFound: { fontSize: Typography.fontSize.sm, color: Colors.mutedForeground },
   actions: {
-    padding: 16,
+    padding: Spacing.lg,
     gap: 10,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -206,21 +206,21 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryText: { color: Colors.primary, fontSize: 15, fontWeight: "600" },
+  secondaryText: { color: Colors.primary, fontSize: Typography.fontSize.sm, fontWeight: "600" },
   deleteButton: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.destructive,
     alignItems: "center",
     justifyContent: "center",
   },
-  deleteText: { color: Colors.destructive, fontSize: 15, fontWeight: "600" },
+  deleteText: { color: Colors.destructive, fontSize: Typography.fontSize.sm, fontWeight: "600" },
   disabled: { opacity: 0.5 },
 });

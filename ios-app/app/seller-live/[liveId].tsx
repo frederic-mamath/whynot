@@ -14,7 +14,7 @@ import { AuctionSheet } from "@/components/seller-live/AuctionSheet";
 import { BroadcasterBottomBar } from "@/components/seller-live/BroadcasterBottomBar";
 import { BroadcasterTopBar } from "@/components/seller-live/BroadcasterTopBar";
 import { HighlightSheet } from "@/components/seller-live/HighlightSheet";
-import { Colors, Radius, Spacing } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function SellerGoLiveScreen() {
   const { liveId } = useLocalSearchParams<{ liveId: string }>();
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   cameraFallbackText: {
     color: Colors.mutedForeground,
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   highlightedBanner: {
     position: "absolute",
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.foreground,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   auctionPanel: {
     position: "absolute",
@@ -286,14 +286,14 @@ const styles = StyleSheet.create({
   },
   auctionLabel: {
     color: "rgba(255,255,255,0.7)",
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   auctionBid: {
     color: Colors.foreground,
-    fontSize: 22,
+    fontSize: Typography.fontSize.xl,
     fontWeight: "700",
   },
   endAuctionBtn: {
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   endAuctionText: {
     color: Colors.destructiveForeground,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   chatWrap: {
     position: "absolute",

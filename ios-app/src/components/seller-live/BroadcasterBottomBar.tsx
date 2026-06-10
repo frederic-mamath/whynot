@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Plus, Radio, Square, Tag } from "lucide-react-native";
-import { Colors, Radius, Spacing } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Props = {
   isBroadcasting: boolean;
@@ -115,12 +115,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.destructive,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.lg,
-    borderRadius: 999,
+    borderRadius: Radius.pill,
   },
   startBtnDisabled: { opacity: 0.5 },
   startBtnText: {
     color: Colors.destructiveForeground,
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "700",
   },
   controlsRow: {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   controlBtnText: {
     color: Colors.foreground,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   pressed: { opacity: 0.7 },
   terminateBtn: {

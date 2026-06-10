@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Text, StyleSheet } from "react-native";
-import { Colors } from "@/theme/tokens";
+import { Colors, Typography } from "@/theme/tokens";
 
 type Props = { endsAt: string };
 
@@ -26,7 +26,7 @@ export function AuctionCountdown({ endsAt }: Props) {
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 20,
+    fontSize: Typography.fontSize.xl,
     fontWeight: "700",
     color: Colors.foreground,
   },

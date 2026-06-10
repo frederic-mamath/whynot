@@ -224,45 +224,7 @@ const R9_PATTERNS = [
   /\bpadding:\s*\d/,
 ];
 
-// TODO: removed by ticket-014 (Spacing/Radius/Typography token sweep)
-const R9_EXCLUDE = new Set([
-  "ios-app/app/(auth)/login.tsx",
-  "ios-app/app/(auth)/register.tsx",
-  "ios-app/app/(auth)/welcome.tsx",
-  "ios-app/app/(tabs)/index.tsx",
-  "ios-app/app/(tabs)/lives.tsx",
-  "ios-app/app/(tabs)/orders.tsx",
-  "ios-app/app/(tabs)/profile.tsx",
-  "ios-app/app/(tabs)/seller/lives/index.tsx",
-  "ios-app/app/(tabs)/seller/products/index.tsx",
-  "ios-app/app/+not-found.tsx",
-  "ios-app/app/address/[id].tsx",
-  "ios-app/app/address/index.tsx",
-  "ios-app/app/address/relay.tsx",
-  "ios-app/app/live/[liveId].tsx",
-  "ios-app/app/onboarding.tsx",
-  "ios-app/app/seller-live/[liveId].tsx",
-  "ios-app/src/components/AddressForm.tsx",
-  "ios-app/src/components/live/AuctionCountdown.tsx",
-  "ios-app/src/components/live/AuctionEndModal.tsx",
-  "ios-app/src/components/live/AuctionWidget.tsx",
-  "ios-app/src/components/live/BidRequirementsSheet.tsx",
-  "ios-app/src/components/live/ChatPanel.tsx",
-  "ios-app/src/components/live/HighlightedProduct.tsx",
-  "ios-app/src/components/live/LiveBadge.tsx",
-  "ios-app/src/components/live/LiveProductCard.tsx",
-  "ios-app/src/components/live/OutbidBanner.tsx",
-  "ios-app/src/components/live/PaymentSetupSheet.tsx",
-  "ios-app/src/components/live/PersonalInfoForm.tsx",
-  "ios-app/src/components/live/SwipeToConfirm.tsx",
-  "ios-app/src/components/LiveCard.tsx",
-  "ios-app/src/components/OrderCard.tsx",
-  "ios-app/src/components/SocialAuthButtons.tsx",
-  "ios-app/src/components/seller-live/BroadcasterTopBar.tsx",
-  "ios-app/src/components/seller-live/BroadcasterBottomBar.tsx",
-  "ios-app/src/components/seller-live/HighlightSheet.tsx",
-  "ios-app/src/components/seller-live/AuctionSheet.tsx",
-]);
+const R9_EXCLUDE = new Set();
 
 for (const dir of [
   path.join(ROOT, "ios-app/app"),

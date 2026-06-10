@@ -10,7 +10,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { OrderCard } from "@/components/OrderCard";
 import { usePopupCheckout } from "@/lib/stripe";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
 
@@ -110,22 +110,22 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.foreground,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     marginBottom: 16,
   },
   tabs: {
     flexDirection: "row",
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     gap: 8,
     marginBottom: 16,
   },
   tab: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius["2xl"],
     backgroundColor: Colors.muted,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   tabText: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     color: Colors.foreground,
     fontWeight: "500",
   },
@@ -150,16 +150,16 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: "center",
     paddingTop: 60,
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing["2xl"],
     gap: 8,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
     color: Colors.foreground,
   },
   emptySub: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     color: Colors.mutedForeground,
     textAlign: "center",
   },

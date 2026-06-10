@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { trpc } from "@/lib/trpc";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 import { AuctionCountdown } from "./AuctionCountdown";
 import { BidRequirementsSheet } from "./BidRequirementsSheet";
 
@@ -76,15 +76,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.75)",
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
     gap: 12,
     borderWidth: 1,
     borderColor: "rgba(224,255,0,0.3)",
   },
   info: { flex: 1, gap: 4 },
   productName: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "700",
     color: Colors.foreground,
   },
@@ -93,17 +93,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  bidLabel: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
-  bidAmount: { fontSize: 18, fontWeight: "700", color: Colors.foreground },
-  bidder: { fontSize: 11, color: "rgba(255,255,255,0.5)" },
+  bidLabel: { fontSize: Typography.fontSize.xs, color: "rgba(255,255,255,0.6)" },
+  bidAmount: { fontSize: Typography.fontSize.lg, fontWeight: "700", color: Colors.foreground },
+  bidder: { fontSize: Typography.fontSize.xs, color: "rgba(255,255,255,0.5)" },
   bidButton: {
     backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     alignItems: "center",
     minWidth: 80,
   },
-  bidButtonText: { color: Colors.primaryForeground, fontSize: 13, fontWeight: "700" },
-  bidButtonSub: { color: Colors.primaryForeground, fontSize: 12, marginTop: 1 },
+  bidButtonText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.xs, fontWeight: "700" },
+  bidButtonSub: { color: Colors.primaryForeground, fontSize: Typography.fontSize.xs, marginTop: 1 },
 });

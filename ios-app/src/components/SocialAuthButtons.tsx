@@ -16,6 +16,7 @@ import {
   signInWithGoogle,
   SocialAuthCanceledError,
 } from "@/lib/socialAuth";
+import { Radius, Typography } from "@/theme/tokens";
 
 type Loading = "apple" | "google" | null;
 
@@ -121,15 +122,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     height: 50,
-    borderRadius: 14,
+    borderRadius: Radius.xl,
   },
   appleButton: { backgroundColor: "#000" },
   appleLogo: {
     color: "#fff",
-    fontSize: 20,
+    fontSize: Typography.fontSize.xl,
     marginTop: -2,
   },
-  appleText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  appleText: { color: "#fff", fontSize: Typography.fontSize.base, fontWeight: "600" },
   googleButton: {
     backgroundColor: "#fff",
     borderWidth: 1.5,
@@ -137,9 +138,9 @@ const styles = StyleSheet.create({
   },
   googleLogo: {
     color: "#4285F4",
-    fontSize: 20,
+    fontSize: Typography.fontSize.xl,
     fontWeight: "700",
   },
-  googleText: { color: "#111827", fontSize: 16, fontWeight: "600" },
+  googleText: { color: "#111827", fontSize: Typography.fontSize.base, fontWeight: "600" },
   disabled: { opacity: 0.6 },
 });

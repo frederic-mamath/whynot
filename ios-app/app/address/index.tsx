@@ -212,13 +212,13 @@ const styles = StyleSheet.create({
   },
   badge: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.md,
   },
   badgeDefault: { backgroundColor: Colors.accent },
-  badgeDefaultText: { fontSize: 11, color: Colors.accentForeground, fontWeight: Typography.fontWeight.bold },
+  badgeDefaultText: { fontSize: Typography.fontSize.xs, color: Colors.accentForeground, fontWeight: Typography.fontWeight.bold },
   badgeRelay: { backgroundColor: Colors.warning },
-  badgeRelayText: { fontSize: 11, color: Colors.warningForeground, fontWeight: Typography.fontWeight.bold },
+  badgeRelayText: { fontSize: Typography.fontSize.xs, color: Colors.warningForeground, fontWeight: Typography.fontWeight.bold },
   empty: {
     paddingTop: 60,
     alignItems: "center",
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     height: 50,
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   fabText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.base, fontWeight: Typography.fontWeight.semibold },
   relayButton: {
     height: 44,
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.primary,
     backgroundColor: Colors.background,

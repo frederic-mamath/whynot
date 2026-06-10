@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { X } from "lucide-react-native";
-import { Colors, Radius, Spacing } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Props = {
   isBroadcasting: boolean;
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: Radius["2xl"],
     backgroundColor: "rgba(0,0,0,0.5)",
     alignItems: "center",
     justifyContent: "center",
@@ -62,13 +62,13 @@ const styles = StyleSheet.create({
   liveDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: Radius.sm,
     backgroundColor: Colors.destructiveForeground,
   },
   liveBadgeText: {
     color: Colors.destructiveForeground,
     fontWeight: "700",
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     letterSpacing: 0.5,
   },
 });

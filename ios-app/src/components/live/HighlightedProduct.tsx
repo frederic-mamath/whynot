@@ -1,5 +1,5 @@
 import { View, Text, Image, StyleSheet } from "react-native";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Product = {
   id: number;
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     right: 16,
     flexDirection: "row",
     backgroundColor: "rgba(0,0,0,0.75)",
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.15)",
@@ -53,23 +53,23 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    padding: 10,
+    padding: Spacing.md,
     justifyContent: "center",
     gap: 2,
   },
   label: {
-    fontSize: 10,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "700",
     color: Colors.accentForeground,
     letterSpacing: 0.5,
   },
   name: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "600",
     color: Colors.foreground,
   },
   price: {
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "700",
     color: Colors.foreground,
     marginTop: 2,

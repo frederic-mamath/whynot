@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { trpc } from "@/lib/trpc";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Props = { onSuccess: () => void };
 
@@ -61,26 +61,26 @@ export function PersonalInfoForm({ onSuccess }: Props) {
 
 const styles = StyleSheet.create({
   container: { gap: 6 },
-  label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500" },
+  label: { fontSize: Typography.fontSize.xs, color: Colors.mutedForeground, fontWeight: "500" },
   input: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: 12,
-    fontSize: 15,
+    paddingHorizontal: Spacing.md,
+    fontSize: Typography.fontSize.sm,
     color: Colors.foreground,
     backgroundColor: Colors.input,
   },
-  error: { fontSize: 13, color: Colors.destructive },
+  error: { fontSize: Typography.fontSize.xs, color: Colors.destructive },
   button: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: Colors.primaryForeground, fontSize: 15, fontWeight: "600" },
+  buttonText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.sm, fontWeight: "600" },
 });

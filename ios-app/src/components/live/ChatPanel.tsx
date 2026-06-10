@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { useErrorBanner } from "@/hooks/useErrorBanner";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
 
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingTop: 8,
     justifyContent: "flex-end",
   },
@@ -170,12 +170,12 @@ const styles = StyleSheet.create({
   },
   name: {
     color: Colors.primary,
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "700",
   },
   content: {
     color: Colors.foreground,
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
   },
   inputRow: {
     flexDirection: "row",
@@ -187,40 +187,40 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 38,
-    borderRadius: 20,
+    borderRadius: Radius["2xl"],
     backgroundColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.lg,
     color: Colors.foreground,
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   sendButton: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Radius["2xl"],
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   sendText: {
     color: Colors.primaryForeground,
-    fontSize: 18,
+    fontSize: Typography.fontSize.lg,
     fontWeight: "700",
   },
   accessory: {
     backgroundColor: Colors.card,
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     alignItems: "flex-end",
   },
   dismissButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
   },
   dismissText: {
     color: Colors.primary,
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "600",
   },
 });

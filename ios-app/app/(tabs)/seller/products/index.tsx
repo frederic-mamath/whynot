@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     right: Spacing.xl,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: Radius["4xl"],
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",

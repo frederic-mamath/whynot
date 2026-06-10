@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 const ALL = "Tous";
 
@@ -117,10 +117,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.foreground,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     marginBottom: 16,
   },
   chipsScroll: {
@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   chips: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     gap: 8,
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius["2xl"],
     backgroundColor: Colors.muted,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipText: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     color: Colors.foreground,
     fontWeight: "500",
   },
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   grid: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingBottom: 24,
     gap: 8,
   },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     color: Colors.mutedForeground,
   },
 });

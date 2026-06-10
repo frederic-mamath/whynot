@@ -1,6 +1,6 @@
 import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Props = {
   visible: boolean;
@@ -69,35 +69,35 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.7)",
     alignItems: "center",
     justifyContent: "center",
-    padding: 24,
+    padding: Spacing.xl,
   },
   card: {
     backgroundColor: Colors.card,
-    borderRadius: 20,
-    padding: 28,
+    borderRadius: Radius["2xl"],
+    padding: Spacing.xl,
     alignItems: "center",
     width: "100%",
     gap: 10,
   },
-  emoji: { fontSize: 48 },
-  title: { fontSize: 22, fontWeight: "700", color: Colors.foreground, textAlign: "center" },
-  body: { fontSize: 16, color: Colors.foreground, textAlign: "center" },
-  sub: { fontSize: 13, color: Colors.mutedForeground, textAlign: "center" },
+  emoji: { fontSize: Typography.fontSize["3xl"] },
+  title: { fontSize: Typography.fontSize.xl, fontWeight: "700", color: Colors.foreground, textAlign: "center" },
+  body: { fontSize: Typography.fontSize.base, color: Colors.foreground, textAlign: "center" },
+  sub: { fontSize: Typography.fontSize.xs, color: Colors.mutedForeground, textAlign: "center" },
   primaryButton: {
     height: 50,
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
     marginTop: 8,
   },
-  primaryButtonText: { color: Colors.primaryForeground, fontSize: 16, fontWeight: "700" },
+  primaryButtonText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.base, fontWeight: "700" },
   secondaryButton: {
     height: 44,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
   },
-  secondaryButtonText: { color: Colors.mutedForeground, fontSize: 15 },
+  secondaryButtonText: { color: Colors.mutedForeground, fontSize: Typography.fontSize.sm },
 });

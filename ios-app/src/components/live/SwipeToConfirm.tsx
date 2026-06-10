@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   thumbArrow: {
-    fontSize: 24,
+    fontSize: Typography.fontSize["2xl"],
     color: Colors.primary,
     fontWeight: Typography.fontWeight.bold,
     lineHeight: 28,

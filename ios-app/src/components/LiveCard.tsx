@@ -1,7 +1,7 @@
 import { Pressable, View, Text, Image, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { Users } from "lucide-react-native";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export type LiveCardData = {
   id: number;
@@ -53,7 +53,7 @@ export function LiveCard({ live }: { live: LiveCardData }) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     overflow: "hidden",
     backgroundColor: Colors.card,
   },
@@ -76,13 +76,13 @@ const styles = StyleSheet.create({
     top: 8,
     left: 8,
     backgroundColor: Colors.destructive,
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
   liveBadgeText: {
     color: Colors.destructiveForeground,
-    fontSize: 11,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "700",
     letterSpacing: 0.5,
   },
@@ -91,30 +91,30 @@ const styles = StyleSheet.create({
     bottom: 8,
     left: 8,
     backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
   },
   viewerText: {
     color: Colors.foreground,
-    fontSize: 11,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "600",
   },
   info: {
-    padding: 8,
+    padding: Spacing.sm,
     gap: 2,
   },
   name: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "600",
     color: Colors.foreground,
     lineHeight: 18,
   },
   host: {
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
   },
 });
