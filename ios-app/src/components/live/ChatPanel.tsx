@@ -11,8 +11,21 @@ import {
   Platform,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
 import { useErrorBanner } from "@/hooks/useErrorBanner";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
+
+const CHAT_PALETTE = [
+  Colors.chat1,
+  Colors.chat2,
+  Colors.chat3,
+  Colors.chat4,
+  Colors.chat5,
+];
+
+function colorForUser(id: number): string {
+  return CHAT_PALETTE[Math.abs(id) % CHAT_PALETTE.length];
+}
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
 
@@ -46,6 +59,7 @@ function displayName(user: MessageUser): string {
 type Props = { channelId: number };
 
 export function ChatPanel({ channelId }: Props) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -109,12 +123,25 @@ export function ChatPanel({ channelId }: Props) {
             listRef.current?.scrollToEnd({ animated: false })
           }
         >
-          {messages.map((item) => (
-            <View key={item.id} style={styles.messageRow}>
-              <Text style={styles.name}>{displayName(item.user)} </Text>
-              <Text style={styles.content}>{item.content}</Text>
-            </View>
-          ))}
+          {messages.map((item) => {
+            const isOwn = user != null && item.user.id === user.id;
+            return (
+              <View key={item.id} style={styles.messageRow}>
+                {isOwn ? (
+                  <View style={styles.ownNamePill}>
+                    <Text style={styles.ownNameText}>Toi</Text>
+                  </View>
+                ) : (
+                  <Text
+                    style={[styles.name, { color: colorForUser(item.user.id) }]}
+                  >
+                    {displayName(item.user)}
+                  </Text>
+                )}
+                <Text style={styles.content}> {item.content}</Text>
+              </View>
+            );
+          })}
         </ScrollView>
         <View style={styles.inputRow}>
           <TextInput
@@ -166,10 +193,22 @@ const styles = StyleSheet.create({
   messageRow: {
     flexDirection: "row",
     flexWrap: "wrap",
+    alignItems: "center",
     marginBottom: 4,
   },
   name: {
     color: Colors.primary,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: "700",
+  },
+  ownNamePill: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.pill,
+  },
+  ownNameText: {
+    color: Colors.primaryForeground,
     fontSize: Typography.fontSize.xs,
     fontWeight: "700",
   },
