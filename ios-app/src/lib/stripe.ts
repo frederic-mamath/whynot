@@ -21,6 +21,9 @@ import { useTrack } from "@/lib/analytics";
 export const MERCHANT_NAME = "Popup";
 export const MERCHANT_COUNTRY = "FR";
 export const MERCHANT_CURRENCY = "EUR";
+// Deep-link Stripe uses to bring the user back after a 3DS / SCA redirect.
+// Must match the `scheme` declared in app.config.ts.
+const RETURN_URL = "popup://stripe-redirect";
 
 export type PayResult = { success: boolean; error?: string };
 
@@ -50,6 +53,7 @@ export function usePopupCheckout() {
     const initResult = await initPaymentSheet({
       paymentIntentClientSecret: clientSecret ?? "",
       merchantDisplayName: MERCHANT_NAME,
+      returnURL: RETURN_URL,
       ...(customerId && ephemeralKey
         ? { customerId, customerEphemeralKeySecret: ephemeralKey }
         : {}),
