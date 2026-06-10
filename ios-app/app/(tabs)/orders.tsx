@@ -10,6 +10,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { OrderCard } from "@/components/OrderCard";
 import { usePopupCheckout } from "@/lib/stripe";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
@@ -28,7 +29,10 @@ export default function OrdersScreen() {
   const utils = trpc.useUtils();
   const { pay } = usePopupCheckout();
 
-  const { data, isLoading, isFetching } = trpc.order.getMyOrders.useQuery({});
+  const { data, isLoading } = trpc.order.getMyOrders.useQuery({});
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: () => utils.order.getMyOrders.invalidate(),
+  });
 
   const orders = data ?? [];
 
@@ -76,10 +80,7 @@ export default function OrdersScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={isFetching && !isLoading}
-            onRefresh={() => utils.order.getMyOrders.invalidate()}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           !isLoading ? (

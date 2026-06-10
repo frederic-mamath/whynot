@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -14,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Pencil, Plus, Radio, Trash2 } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { AttachedProductsList } from "@/components/seller-lives/AttachedProductsList";
 import { EditLiveModal } from "@/components/seller-lives/EditLiveModal";
 import { ProductPickerModal } from "@/components/seller-lives/ProductPickerModal";
@@ -85,24 +85,18 @@ export default function SellerLiveDetailScreen() {
   const attachedIds = new Set(attached.map((p) => p.id));
   const isUpcoming = !!live && new Date(live.starts_at).getTime() > Date.now();
 
+  const confirmDelete = useConfirm({
+    title: "Supprimer ce live",
+    message: live ? `"${live.name}" sera supprimé définitivement.` : "",
+  });
+
   const handleDelete = () => {
     if (!live) return;
-    Alert.alert(
-      "Supprimer ce live",
-      `"${live.name}" sera supprimé définitivement.`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            await deleteLiveMutation.mutateAsync({ liveId });
-            await utils.live.listByHost.invalidate();
-            router.back();
-          },
-        },
-      ],
-    );
+    void confirmDelete(async () => {
+      await deleteLiveMutation.mutateAsync({ liveId });
+      await utils.live.listByHost.invalidate();
+      router.back();
+    });
   };
 
   if (liveQuery.isLoading || !live) {

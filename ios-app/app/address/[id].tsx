@@ -6,12 +6,12 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { optimisticUpdate, removeById, updateById } from "@/lib/optimisticUpdate";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
@@ -85,6 +85,13 @@ export default function EditAddressScreen() {
     }),
   );
 
+  const confirmDelete = useConfirm({
+    title: "Supprimer l'adresse",
+    message: address
+      ? `Supprimer définitivement « ${address.label} » ?`
+      : "",
+  });
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -121,18 +128,7 @@ export default function EditAddressScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Supprimer l'adresse",
-      `Supprimer définitivement « ${address.label} » ?`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => deleteMutation.mutate({ id: address.id }),
-        },
-      ],
-    );
+    confirmDelete(() => deleteMutation.mutate({ id: address.id }));
   };
 
   const anyPending =

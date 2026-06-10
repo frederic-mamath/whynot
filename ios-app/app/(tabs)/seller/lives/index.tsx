@@ -6,13 +6,13 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 type Live = {
@@ -74,19 +74,13 @@ export default function SellerLivesScreen() {
     }),
   );
 
-  const confirmDelete = (liveId: number, name: string) => {
-    Alert.alert(
-      "Supprimer ce live",
-      `"${name}" sera supprimé définitivement.`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => deleteMutation.mutate({ liveId }),
-        },
-      ],
-    );
+  const askDelete = useConfirm({
+    title: "Supprimer ce live",
+    message: "Le live sera supprimé définitivement.",
+  });
+
+  const confirmDelete = (liveId: number) => {
+    void askDelete(() => deleteMutation.mutate({ liveId }));
   };
 
   const upcoming = (livesQuery.data?.upcoming ?? [])
@@ -130,7 +124,7 @@ export default function SellerLivesScreen() {
                   key={live.id}
                   live={live}
                   canDelete
-                  onDelete={() => confirmDelete(live.id, live.name)}
+                  onDelete={() => confirmDelete(live.id)}
                   onPress={() => router.push(`/seller/lives/${live.id}`)}
                 />
               ))}

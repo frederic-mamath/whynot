@@ -184,22 +184,7 @@ for (const dir of [
 
 const R8_PATTERN = [/\bAlert\.alert\(/];
 
-// TODO: files below contain Alert.alert() calls that will be migrated.
-// Most are removed by ticket-006 (mutation sweep). The destructive-confirm
-// sites collapse into useConfirm() in ticket-015. SocialAuthButtons keeps
-// the native Alert for the platform-specific auth error path.
-const R8_EXCLUDE = new Set([
-  "ios-app/app/(tabs)/profile.tsx",
-  "ios-app/app/(tabs)/seller/deliveries/[id].tsx",
-  "ios-app/app/(tabs)/seller/lives/[id].tsx",
-  "ios-app/app/(tabs)/seller/lives/index.tsx",
-  "ios-app/app/(tabs)/seller/products/[id].tsx",
-  "ios-app/app/address/[id].tsx",
-  "ios-app/app/address/index.tsx",
-  "ios-app/app/address/relay.tsx",
-  "ios-app/app/seller-live/[liveId].tsx",
-  "ios-app/src/components/SocialAuthButtons.tsx",
-]);
+const R8_EXCLUDE = new Set();
 
 for (const dir of [
   path.join(ROOT, "ios-app/app"),

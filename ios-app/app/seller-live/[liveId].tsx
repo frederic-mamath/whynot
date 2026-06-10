@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useEffect, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Square, Tag, X } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { useAgoraBroadcaster } from "@/hooks/useAgoraSession";
 import { useAuth } from "@/contexts/AuthContext";
 import { isAgoraAvailable, RtcLocalView } from "@/lib/agora";
@@ -86,26 +87,21 @@ export default function SellerGoLiveScreen() {
     },
   );
 
+  const confirmEndLive = useConfirm({
+    title: "Terminer le live",
+    message: "La diffusion sera arrêtée et le live marqué comme terminé.",
+    destructiveLabel: "Terminer",
+  });
+
   const handleEndLive = () => {
-    Alert.alert(
-      "Terminer le live",
-      "La diffusion sera arrêtée et le live marqué comme terminé.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Terminer",
-          style: "destructive",
-          onPress: async () => {
-            // endMutation is wrapped with useMutationWithToast — the banner
-            // surfaces server-side errors. A reject just means the server
-            // already ended the live, so we still stop broadcasting and exit.
-            await endMutation.mutateAsync({ channelId }).catch(() => null);
-            await stopBroadcast();
-            router.back();
-          },
-        },
-      ],
-    );
+    confirmEndLive(async () => {
+      // endMutation is wrapped with useMutationWithToast — the banner
+      // surfaces server-side errors. A reject just means the server
+      // already ended the live, so we still stop broadcasting and exit.
+      await endMutation.mutateAsync({ channelId }).catch(() => null);
+      await stopBroadcast();
+      router.back();
+    });
   };
 
   const handleLeave = async () => {

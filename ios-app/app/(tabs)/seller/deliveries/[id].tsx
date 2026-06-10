@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Image,
   Linking,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -23,6 +22,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useErrorBanner } from "@/hooks/useErrorBanner";
+import { notify } from "@/lib/alerts";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 type PackageStatus =
@@ -187,10 +187,10 @@ export default function SellerDeliveryDetailScreen() {
   const handlePayout = async () => {
     try {
       await payoutMutation.mutateAsync({ packageId: pkg.id });
-      Alert.alert(
-        "Demande envoyée",
-        "Votre demande de paiement a bien été enregistrée.",
-      );
+      notify({
+        title: "Demande envoyée",
+        message: "Votre demande de paiement a bien été enregistrée.",
+      });
     } catch {
       // useMutationWithToast already surfaced the error via the banner.
     }

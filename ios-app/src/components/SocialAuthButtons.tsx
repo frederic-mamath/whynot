@@ -6,11 +6,11 @@ import {
   StyleSheet,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrack } from "@/lib/analytics";
+import { notify } from "@/lib/alerts";
 import {
   signInWithApple,
   signInWithGoogle,
@@ -44,10 +44,10 @@ export function SocialAuthButtons() {
       });
     } catch (err) {
       if (!(err instanceof SocialAuthCanceledError)) {
-        Alert.alert(
-          "Connexion impossible",
-          "La connexion avec Apple a échoué. Réessaie plus tard.",
-        );
+        notify({
+          title: "Connexion impossible",
+          message: "La connexion avec Apple a échoué. Réessaie plus tard.",
+        });
       }
     } finally {
       setLoading(null);
@@ -66,10 +66,10 @@ export function SocialAuthButtons() {
       });
     } catch (err) {
       if (!(err instanceof SocialAuthCanceledError)) {
-        Alert.alert(
-          "Connexion impossible",
-          "La connexion avec Google a échoué. Réessaie plus tard.",
-        );
+        notify({
+          title: "Connexion impossible",
+          message: "La connexion avec Google a échoué. Réessaie plus tard.",
+        });
       }
     } finally {
       setLoading(null);

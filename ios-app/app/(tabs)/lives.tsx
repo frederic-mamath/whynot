@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 const ALL = "Tous";
@@ -17,7 +18,10 @@ export default function LivesScreen() {
   const utils = trpc.useUtils();
   const [selectedCategory, setSelectedCategory] = useState(ALL);
 
-  const { data, isLoading, isFetching } = trpc.live.listDiscovery.useQuery();
+  const { data, isLoading } = trpc.live.listDiscovery.useQuery();
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: () => utils.live.listDiscovery.invalidate(),
+  });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (wrap in useMemo to stabilize reference)
   const lives = data ?? [];
@@ -34,8 +38,6 @@ export default function LivesScreen() {
     if (selectedCategory === ALL) return lives;
     return lives.filter((l) => l.categories.includes(selectedCategory));
   }, [lives, selectedCategory]);
-
-  const onRefresh = () => utils.live.listDiscovery.invalidate();
 
   return (
     <View style={styles.container}>
@@ -78,7 +80,7 @@ export default function LivesScreen() {
         columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           !isLoading ? (

@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Switch,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -21,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import { PhotoSourceSheet } from "@/components/PhotoSourceSheet";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 export default function SellerProductEditScreen() {
@@ -157,36 +157,30 @@ export default function SellerProductEditScreen() {
     }
   };
 
+  const confirmDelete = useConfirm({
+    title: "Supprimer ce produit",
+    message: "Cette action est irréversible.",
+  });
+
   const handleDelete = () => {
-    Alert.alert(
-      "Supprimer ce produit",
-      "Cette action est irréversible.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            if (shopId !== undefined) {
-              utils.product.list.setData({ shopId }, (old) =>
-                old?.filter((p) => p.id !== productId),
-              );
-            }
-            try {
-              await deleteMutation.mutateAsync({ productId });
-              if (shopId !== undefined) {
-                utils.product.list.invalidate({ shopId });
-              }
-              router.back();
-            } catch {
-              if (shopId !== undefined) {
-                utils.product.list.invalidate({ shopId });
-              }
-            }
-          },
-        },
-      ],
-    );
+    confirmDelete(async () => {
+      if (shopId !== undefined) {
+        utils.product.list.setData({ shopId }, (old) =>
+          old?.filter((p) => p.id !== productId),
+        );
+      }
+      try {
+        await deleteMutation.mutateAsync({ productId });
+        if (shopId !== undefined) {
+          utils.product.list.invalidate({ shopId });
+        }
+        router.back();
+      } catch {
+        if (shopId !== undefined) {
+          utils.product.list.invalidate({ shopId });
+        }
+      }
+    });
   };
 
   if (productQuery.isLoading) {

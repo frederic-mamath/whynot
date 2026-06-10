@@ -8,11 +8,11 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { actionSheet } from "@/lib/alerts";
 import { optimisticUpdate } from "@/lib/optimisticUpdate";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
@@ -72,13 +72,13 @@ export default function RelayPickerScreen() {
   };
 
   const handleSelect = (point: (typeof results)[number]) => {
-    Alert.alert(
-      "Choisir ce point relais ?",
-      `${point.name}\n${point.address}\n${point.zipCode} ${point.city}`,
-      [
-        { text: "Annuler", style: "cancel" },
+    actionSheet({
+      title: "Choisir ce point relais ?",
+      message: `${point.name}\n${point.address}\n${point.zipCode} ${point.city}`,
+      buttons: [
+        { label: "Annuler", style: "cancel" },
         {
-          text: "Confirmer",
+          label: "Confirmer",
           onPress: () =>
             saveMutation.mutate({
               relayPointId: point.id,
@@ -90,7 +90,7 @@ export default function RelayPickerScreen() {
             }),
         },
       ],
-    );
+    });
   };
 
   return (

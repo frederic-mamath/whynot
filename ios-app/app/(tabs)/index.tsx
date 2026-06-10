@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function HomeScreen() {
@@ -21,16 +22,14 @@ export default function HomeScreen() {
   const nextQuery = trpc.live.nextScheduled.useQuery();
   const sellersQuery = trpc.shop.listSellers.useQuery({ limit: 6 });
 
-  const isRefreshing =
-    livesQuery.isFetching || nextQuery.isFetching || sellersQuery.isFetching;
-
-  const onRefresh = async () => {
-    await Promise.all([
-      utils.live.list.invalidate(),
-      utils.live.nextScheduled.invalidate(),
-      utils.shop.listSellers.invalidate(),
-    ]);
-  };
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: () =>
+      Promise.all([
+        utils.live.list.invalidate(),
+        utils.live.nextScheduled.invalidate(),
+        utils.shop.listSellers.invalidate(),
+      ]),
+  });
 
   const lives = livesQuery.data?.lives ?? [];
   const next = nextQuery.data;
@@ -55,7 +54,7 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       <Text style={styles.pageTitle}>Popup</Text>

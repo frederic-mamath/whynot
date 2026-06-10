@@ -13,12 +13,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
+import { notify } from "@/lib/alerts";
 import { PaymentSetupSheet } from "@/components/live/PaymentSetupSheet";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
@@ -82,19 +83,15 @@ export default function ProfileScreen() {
     }),
   );
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Supprimer mon compte",
+  const confirmDeleteAccount = useConfirm({
+    title: "Supprimer mon compte",
+    message:
       "Cette action est irréversible. Toutes tes données seront supprimées définitivement.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer définitivement",
-          style: "destructive",
-          onPress: () => deleteAccountMutation.mutate(),
-        },
-      ],
-    );
+    destructiveLabel: "Supprimer définitivement",
+  });
+
+  const handleDeleteAccount = () => {
+    confirmDeleteAccount(() => deleteAccountMutation.mutate());
   };
 
   const reasonLabel = (reason: string) => {
@@ -110,9 +107,7 @@ export default function ProfileScreen() {
       const message = blockers
         .map((b) => `${b.productName} — ${reasonLabel(b.reason)}`)
         .join("\n");
-      Alert.alert("Suppression impossible", message, [
-        { text: "Compris", style: "cancel" },
-      ]);
+      notify({ title: "Suppression impossible", message, buttonLabel: "Compris" });
     } else {
       handleDeleteAccount();
     }

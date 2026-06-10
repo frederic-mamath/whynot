@@ -2,9 +2,6 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": ["app/**/*.{ts,tsx}"],
   "project": ["app/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"],
-  "ignore": [
-    "src/lib/alerts.ts"
-  ],
   "ignoreExportsUsedInFile": true,
   "ignoreDependencies": [
     "@expo/vector-icons",

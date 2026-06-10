@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import {
   View,
   Text,
@@ -7,19 +6,27 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
+import { useConfirm } from "@/hooks/useConfirm";
+import { actionSheet } from "@/lib/alerts";
 import { optimisticUpdate, removeById } from "@/lib/optimisticUpdate";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function AddressListScreen() {
   const router = useRouter();
   const utils = trpc.useUtils();
-  const { data, isLoading, isFetching, refetch } =
+  const { data, isLoading, refetch } =
     trpc.profile.addresses.list.useQuery();
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: async () => {
+      await utils.profile.addresses.list.invalidate();
+      await refetch();
+    },
+  });
 
   const addresses = data ?? [];
 
@@ -62,41 +69,26 @@ export default function AddressListScreen() {
     }),
   );
 
-  const onRefresh = () => {
-    utils.profile.addresses.list.invalidate();
-    refetch();
-  };
-
-  const confirmDeleteRelay = (id: number, label: string) => {
-    Alert.alert("Supprimer ce point relais ?", label, [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Supprimer",
-        style: "destructive",
-        onPress: () => deleteMutation.mutate({ id }),
-      },
-    ]);
-  };
+  const confirmDeleteRelay = useConfirm({
+    title: "Supprimer ce point relais ?",
+    message: "",
+  });
 
   const handleRelayPress = (id: number, label: string, isDefault: boolean) => {
-    const buttons: {
-      text: string;
-      style?: "cancel" | "destructive";
-      onPress?: () => void;
-    }[] = [];
+    const buttons: Parameters<typeof actionSheet>[0]["buttons"] = [];
     if (!isDefault) {
       buttons.push({
-        text: "Définir par défaut",
+        label: "Définir par défaut",
         onPress: () => setDefaultMutation.mutate({ id }),
       });
     }
     buttons.push({
-      text: "Supprimer",
+      label: "Supprimer",
       style: "destructive",
-      onPress: () => confirmDeleteRelay(id, label),
+      onPress: () => confirmDeleteRelay(() => deleteMutation.mutate({ id })),
     });
-    buttons.push({ text: "Annuler", style: "cancel" });
-    Alert.alert(label, "Que souhaitez-vous faire ?", buttons);
+    buttons.push({ label: "Annuler", style: "cancel" });
+    actionSheet({ title: label, message: "Que souhaitez-vous faire ?", buttons });
   };
 
   if (isLoading) {
@@ -114,7 +106,7 @@ export default function AddressListScreen() {
         keyExtractor={(a) => String(a.id)}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           <View style={styles.empty}>

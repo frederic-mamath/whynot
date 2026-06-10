@@ -24,3 +24,37 @@ export function confirm({
     ]);
   });
 }
+
+type NotifyOptions = {
+  title: string;
+  message: string;
+  buttonLabel?: string;
+};
+
+export function notify({ title, message, buttonLabel = "OK" }: NotifyOptions): void {
+  Alert.alert(title, message, [{ text: buttonLabel, style: "cancel" }]);
+}
+
+type ActionButton = {
+  label: string;
+  style?: "default" | "cancel" | "destructive";
+  onPress?: () => void;
+};
+
+type ActionSheetOptions = {
+  title: string;
+  message?: string;
+  buttons: ActionButton[];
+};
+
+export function actionSheet({ title, message, buttons }: ActionSheetOptions): void {
+  Alert.alert(
+    title,
+    message,
+    buttons.map((b) => ({
+      text: b.label,
+      style: b.style,
+      onPress: b.onPress,
+    })),
+  );
+}
