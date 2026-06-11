@@ -49,6 +49,13 @@ export function usePopupCheckout() {
     }
 
     const { clientSecret, customerId, ephemeralKey } = intent;
+    console.warn("[Stripe pay] intent", {
+      hasClientSecret: typeof clientSecret === "string" && clientSecret.length > 0,
+      clientSecretPrefix: clientSecret?.slice(0, 8),
+      hasCustomerId: !!customerId,
+      customerIdPrefix: customerId?.slice(0, 8),
+      hasEphemeralKey: typeof ephemeralKey === "string" && ephemeralKey.length > 0,
+    });
 
     const initResult = await initPaymentSheet({
       paymentIntentClientSecret: clientSecret ?? "",
@@ -59,6 +66,7 @@ export function usePopupCheckout() {
         : {}),
     });
     if (initResult.error) {
+      console.error("[Stripe initPaymentSheet]", initResult.error);
       showError(initResult.error.message);
       return { success: false, error: initResult.error.message };
     }
@@ -69,6 +77,7 @@ export function usePopupCheckout() {
       // Stripe surfaces a "Canceled" error when the user dismisses the sheet —
       // that's not an error to show.
       if (result.error.code !== "Canceled") {
+        console.error("[Stripe presentPaymentSheet]", result.error);
         showError(result.error.message);
         return { success: false, error: result.error.message };
       }
@@ -116,6 +125,7 @@ export function usePopupSetupIntent() {
         paymentMethodType: "Card",
       });
       if (result.error) {
+        console.error("[Stripe confirmSetupIntent]", result.error);
         showError(result.error.message ?? "Erreur lors de l'enregistrement.");
         return { success: false };
       }
@@ -159,6 +169,7 @@ export function usePopupSetupIntent() {
               },
             });
       if (platformPayError) {
+        console.error("[Stripe confirmPlatformPaySetupIntent]", platformPayError);
         showError(platformPayError.message ?? "Paiement annulé.");
         return { success: false };
       }
