@@ -11,7 +11,21 @@ import {
   Platform,
 } from "react-native";
 import { trpc } from "@/lib/trpc";
-import { Colors } from "@/theme/tokens";
+import { useAuth } from "@/contexts/AuthContext";
+import { useErrorBanner } from "@/hooks/useErrorBanner";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
+
+const CHAT_PALETTE = [
+  Colors.chat1,
+  Colors.chat2,
+  Colors.chat3,
+  Colors.chat4,
+  Colors.chat5,
+];
+
+function colorForUser(id: number): string {
+  return CHAT_PALETTE[Math.abs(id) % CHAT_PALETTE.length];
+}
 
 const INPUT_ACCESSORY_ID = "chat-dismiss";
 
@@ -45,10 +59,12 @@ function displayName(user: MessageUser): string {
 type Props = { channelId: number };
 
 export function ChatPanel({ channelId }: Props) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const listRef = useRef<ScrollView>(null);
+  const { showError } = useErrorBanner();
 
   const { data: initial } = trpc.message.list.useQuery({ channelId, limit: 50 });
   const sendMutation = trpc.message.send.useMutation();
@@ -83,7 +99,7 @@ export function ChatPanel({ channelId }: Props) {
         listRef.current?.scrollToEnd({ animated: true });
       },
       onError: (err) => {
-        console.log("[message.subscribe] ERROR", err.message);
+        showError(err.message);
       },
     }
   );
@@ -107,12 +123,25 @@ export function ChatPanel({ channelId }: Props) {
             listRef.current?.scrollToEnd({ animated: false })
           }
         >
-          {messages.map((item) => (
-            <View key={item.id} style={styles.messageRow}>
-              <Text style={styles.name}>{displayName(item.user)} </Text>
-              <Text style={styles.content}>{item.content}</Text>
-            </View>
-          ))}
+          {messages.map((item) => {
+            const isOwn = user != null && item.user.id === user.id;
+            return (
+              <View key={item.id} style={styles.messageRow}>
+                {isOwn ? (
+                  <View style={styles.ownNamePill}>
+                    <Text style={styles.ownNameText}>Toi</Text>
+                  </View>
+                ) : (
+                  <Text
+                    style={[styles.name, { color: colorForUser(item.user.id) }]}
+                  >
+                    {displayName(item.user)}
+                  </Text>
+                )}
+                <Text style={styles.content}> {item.content}</Text>
+              </View>
+            );
+          })}
         </ScrollView>
         <View style={styles.inputRow}>
           <TextInput
@@ -157,23 +186,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingTop: 8,
     justifyContent: "flex-end",
   },
   messageRow: {
     flexDirection: "row",
     flexWrap: "wrap",
+    alignItems: "center",
     marginBottom: 4,
   },
   name: {
     color: Colors.primary,
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: "700",
+  },
+  ownNamePill: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.pill,
+  },
+  ownNameText: {
+    color: Colors.primaryForeground,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "700",
   },
   content: {
     color: Colors.foreground,
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
   },
   inputRow: {
     flexDirection: "row",
@@ -185,40 +226,40 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 38,
-    borderRadius: 20,
+    borderRadius: Radius["2xl"],
     backgroundColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.lg,
     color: Colors.foreground,
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   sendButton: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Radius["2xl"],
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   sendText: {
     color: Colors.primaryForeground,
-    fontSize: 18,
+    fontSize: Typography.fontSize.lg,
     fontWeight: "700",
   },
   accessory: {
     backgroundColor: Colors.card,
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     alignItems: "flex-end",
   },
   dismissButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
   },
   dismissText: {
     color: Colors.primary,
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "600",
   },
 });

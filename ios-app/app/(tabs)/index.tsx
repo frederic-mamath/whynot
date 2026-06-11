@@ -11,7 +11,8 @@ import {
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
-import { Colors } from "@/theme/tokens";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,16 +22,14 @@ export default function HomeScreen() {
   const nextQuery = trpc.live.nextScheduled.useQuery();
   const sellersQuery = trpc.shop.listSellers.useQuery({ limit: 6 });
 
-  const isRefreshing =
-    livesQuery.isFetching || nextQuery.isFetching || sellersQuery.isFetching;
-
-  const onRefresh = async () => {
-    await Promise.all([
-      utils.live.list.invalidate(),
-      utils.live.nextScheduled.invalidate(),
-      utils.shop.listSellers.invalidate(),
-    ]);
-  };
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: () =>
+      Promise.all([
+        utils.live.list.invalidate(),
+        utils.live.nextScheduled.invalidate(),
+        utils.shop.listSellers.invalidate(),
+      ]),
+  });
 
   const lives = livesQuery.data?.lives ?? [];
   const next = nextQuery.data;
@@ -55,7 +54,7 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       <Text style={styles.pageTitle}>Popup</Text>
@@ -164,23 +163,23 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.primary,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     letterSpacing: -0.5,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: Typography.fontSize.lg,
     fontWeight: "700",
     color: Colors.foreground,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     marginBottom: 12,
   },
   liveGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     gap: 8,
   },
   liveGridItem: {
@@ -188,7 +187,7 @@ const styles = StyleSheet.create({
   },
   nextBanner: {
     marginHorizontal: 16,
-    borderRadius: 16,
+    borderRadius: Radius["2xl"],
     overflow: "hidden",
     backgroundColor: Colors.card,
     borderWidth: 1,
@@ -205,11 +204,11 @@ const styles = StyleSheet.create({
   },
   nextInfo: {
     flex: 1,
-    padding: 12,
+    padding: Spacing.md,
     gap: 2,
   },
   nextLabel: {
-    fontSize: 11,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "700",
     color: Colors.primary,
     textTransform: "uppercase",
@@ -217,37 +216,37 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   nextName: {
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "600",
     color: Colors.foreground,
   },
   nextTime: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
     marginTop: 4,
   },
   nextHost: {
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
   },
   empty: {
     alignItems: "center",
-    paddingHorizontal: 32,
-    paddingVertical: 24,
+    paddingHorizontal: Spacing["2xl"],
+    paddingVertical: Spacing.xl,
     gap: 8,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
     color: Colors.foreground,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     color: Colors.mutedForeground,
     textAlign: "center",
   },
   sellersList: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     gap: 16,
   },
   sellerItem: {
@@ -258,7 +257,7 @@ const styles = StyleSheet.create({
   sellerAvatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: Radius["4xl"],
   },
   sellerAvatarFallback: {
     backgroundColor: Colors.muted,
@@ -266,12 +265,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   sellerAvatarInitial: {
-    fontSize: 20,
+    fontSize: Typography.fontSize.xl,
     fontWeight: "600",
     color: Colors.mutedForeground,
   },
   sellerName: {
-    fontSize: 11,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
     textAlign: "center",
   },

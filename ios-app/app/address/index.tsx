@@ -6,98 +6,89 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
+import { useConfirm } from "@/hooks/useConfirm";
+import { actionSheet } from "@/lib/alerts";
+import { optimisticUpdate, removeById } from "@/lib/optimisticUpdate";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function AddressListScreen() {
   const router = useRouter();
   const utils = trpc.useUtils();
-  const { data, isLoading, isFetching, refetch } =
+  const { data, isLoading, refetch } =
     trpc.profile.addresses.list.useQuery();
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: async () => {
+      await utils.profile.addresses.list.invalidate();
+      await refetch();
+    },
+  });
 
   const addresses = data ?? [];
 
-  const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation({
-    onSuccess: (_, input) => {
-      utils.profile.addresses.list.setData(undefined, (old) =>
-        old
-          ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
-          : old,
-      );
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              addresses: old.addresses.map((a) => ({
-                ...a,
-                isDefault: a.id === input.id,
-              })),
-            }
-          : old,
-      );
-      utils.profile.me.invalidate();
-    },
-    onError: (e) => Alert.alert("Erreur", e.message),
-  });
-
-  const deleteMutation = trpc.profile.addresses.delete.useMutation({
-    onSuccess: (_, input) => {
-      utils.profile.addresses.list.setData(undefined, (old) =>
-        old ? old.filter((a) => a.id !== input.id) : old,
-      );
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              addresses: old.addresses.filter((a) => a.id !== input.id),
-            }
-          : old,
-      );
-      utils.profile.me.invalidate();
-    },
-    onError: (e) => Alert.alert("Erreur", e.message),
-  });
-
-  const onRefresh = () => {
-    utils.profile.addresses.list.invalidate();
-    refetch();
-  };
-
-  const confirmDeleteRelay = (id: number, label: string) => {
-    Alert.alert("Supprimer ce point relais ?", label, [
-      { text: "Annuler", style: "cancel" },
-      {
-        text: "Supprimer",
-        style: "destructive",
-        onPress: () => deleteMutation.mutate({ id }),
+  const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          old?.map((a) => ({ ...a, isDefault: a.id === input.id })),
+        );
+        optimisticUpdate(utils.profile.me, (old) =>
+          old
+            ? {
+                ...old,
+                addresses: old.addresses.map((a) => ({
+                  ...a,
+                  isDefault: a.id === input.id,
+                })),
+              }
+            : old,
+        );
       },
-    ]);
-  };
+    }),
+  );
+
+  const deleteMutation = trpc.profile.addresses.delete.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          removeById(old, input.id),
+        );
+        optimisticUpdate(utils.profile.me, (old) =>
+          old
+            ? {
+                ...old,
+                addresses: old.addresses.filter((a) => a.id !== input.id),
+              }
+            : old,
+        );
+      },
+    }),
+  );
+
+  const confirmDeleteRelay = useConfirm({
+    title: "Supprimer ce point relais ?",
+    message: "",
+  });
 
   const handleRelayPress = (id: number, label: string, isDefault: boolean) => {
-    const buttons: {
-      text: string;
-      style?: "cancel" | "destructive";
-      onPress?: () => void;
-    }[] = [];
+    const buttons: Parameters<typeof actionSheet>[0]["buttons"] = [];
     if (!isDefault) {
       buttons.push({
-        text: "Définir par défaut",
+        label: "Définir par défaut",
         onPress: () => setDefaultMutation.mutate({ id }),
       });
     }
     buttons.push({
-      text: "Supprimer",
+      label: "Supprimer",
       style: "destructive",
-      onPress: () => confirmDeleteRelay(id, label),
+      onPress: () => confirmDeleteRelay(() => deleteMutation.mutate({ id })),
     });
-    buttons.push({ text: "Annuler", style: "cancel" });
-    Alert.alert(label, "Que souhaitez-vous faire ?", buttons);
+    buttons.push({ label: "Annuler", style: "cancel" });
+    actionSheet({ title: label, message: "Que souhaitez-vous faire ?", buttons });
   };
 
   if (isLoading) {
@@ -115,7 +106,7 @@ export default function AddressListScreen() {
         keyExtractor={(a) => String(a.id)}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -213,13 +204,13 @@ const styles = StyleSheet.create({
   },
   badge: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.md,
   },
   badgeDefault: { backgroundColor: Colors.accent },
-  badgeDefaultText: { fontSize: 11, color: Colors.accentForeground, fontWeight: Typography.fontWeight.bold },
+  badgeDefaultText: { fontSize: Typography.fontSize.xs, color: Colors.accentForeground, fontWeight: Typography.fontWeight.bold },
   badgeRelay: { backgroundColor: Colors.warning },
-  badgeRelayText: { fontSize: 11, color: Colors.warningForeground, fontWeight: Typography.fontWeight.bold },
+  badgeRelayText: { fontSize: Typography.fontSize.xs, color: Colors.warningForeground, fontWeight: Typography.fontWeight.bold },
   empty: {
     paddingTop: 60,
     alignItems: "center",
@@ -241,7 +232,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     height: 50,
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -249,7 +240,7 @@ const styles = StyleSheet.create({
   fabText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.base, fontWeight: Typography.fontWeight.semibold },
   relayButton: {
     height: 44,
-    borderRadius: 12,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.primary,
     backgroundColor: Colors.background,

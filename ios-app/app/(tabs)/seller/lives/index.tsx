@@ -6,12 +6,13 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react-native";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 type Live = {
@@ -51,39 +52,35 @@ export default function SellerLivesScreen() {
   const utils = trpc.useUtils();
 
   const livesQuery = trpc.live.listByHost.useQuery();
-  const deleteMutation = trpc.live.delete.useMutation({
-    onMutate: async ({ liveId }) => {
-      await utils.live.listByHost.cancel();
-      const previous = utils.live.listByHost.getData();
-      utils.live.listByHost.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              upcoming: old.upcoming.filter((l) => l.id !== liveId),
-            }
-          : old,
-      );
-      return { previous };
-    },
-    onError: (_err, _input, ctx) => {
-      if (ctx?.previous) utils.live.listByHost.setData(undefined, ctx.previous);
-    },
-    onSettled: () => utils.live.listByHost.invalidate(),
+  const deleteMutation = trpc.live.delete.useMutation(
+    useMutationWithToast({
+      onMutate: async ({ liveId }) => {
+        await utils.live.listByHost.cancel();
+        const previous = utils.live.listByHost.getData();
+        utils.live.listByHost.setData(undefined, (old) =>
+          old
+            ? {
+                ...old,
+                upcoming: old.upcoming.filter((l) => l.id !== liveId),
+              }
+            : old,
+        );
+        return { previous };
+      },
+      onError: (_err, _input, ctx) => {
+        if (ctx?.previous) utils.live.listByHost.setData(undefined, ctx.previous);
+      },
+      onSettled: () => utils.live.listByHost.invalidate(),
+    }),
+  );
+
+  const askDelete = useConfirm({
+    title: "Supprimer ce live",
+    message: "Le live sera supprimé définitivement.",
   });
 
-  const confirmDelete = (liveId: number, name: string) => {
-    Alert.alert(
-      "Supprimer ce live",
-      `"${name}" sera supprimé définitivement.`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => deleteMutation.mutate({ liveId }),
-        },
-      ],
-    );
+  const confirmDelete = (liveId: number) => {
+    void askDelete(() => deleteMutation.mutate({ liveId }));
   };
 
   const upcoming = (livesQuery.data?.upcoming ?? [])
@@ -127,7 +124,7 @@ export default function SellerLivesScreen() {
                   key={live.id}
                   live={live}
                   canDelete
-                  onDelete={() => confirmDelete(live.id, live.name)}
+                  onDelete={() => confirmDelete(live.id)}
                   onPress={() => router.push(`/seller/lives/${live.id}`)}
                 />
               ))}
@@ -297,7 +294,7 @@ const styles = StyleSheet.create({
     right: Spacing.xl,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: Radius["4xl"],
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",

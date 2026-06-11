@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { LiveCard } from "@/components/LiveCard";
-import { Colors } from "@/theme/tokens";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 const ALL = "Tous";
 
@@ -17,8 +18,12 @@ export default function LivesScreen() {
   const utils = trpc.useUtils();
   const [selectedCategory, setSelectedCategory] = useState(ALL);
 
-  const { data, isLoading, isFetching } = trpc.live.listDiscovery.useQuery();
+  const { data, isLoading } = trpc.live.listDiscovery.useQuery();
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: () => utils.live.listDiscovery.invalidate(),
+  });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (wrap in useMemo to stabilize reference)
   const lives = data ?? [];
 
   const categories = useMemo(() => {
@@ -33,8 +38,6 @@ export default function LivesScreen() {
     if (selectedCategory === ALL) return lives;
     return lives.filter((l) => l.categories.includes(selectedCategory));
   }, [lives, selectedCategory]);
-
-  const onRefresh = () => utils.live.listDiscovery.invalidate();
 
   return (
     <View style={styles.container}>
@@ -77,7 +80,7 @@ export default function LivesScreen() {
         columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           !isLoading ? (
@@ -116,10 +119,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.foreground,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     marginBottom: 16,
   },
   chipsScroll: {
@@ -128,13 +131,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   chips: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     gap: 8,
   },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius["2xl"],
     backgroundColor: Colors.muted,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -144,7 +147,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipText: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     color: Colors.foreground,
     fontWeight: "500",
   },
@@ -153,7 +156,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   grid: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingBottom: 24,
     gap: 8,
   },
@@ -169,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     color: Colors.mutedForeground,
   },
 });

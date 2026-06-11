@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -7,6 +8,8 @@ import { PostHogProvider } from "posthog-react-native";
 import { TRPCProvider } from "@/providers/TRPCProvider";
 import { StripeProvider } from "@/providers/StripeProvider";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ErrorBannerProvider } from "@/contexts/ErrorBannerContext";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { trpc } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
@@ -22,7 +25,10 @@ export default function RootLayout() {
       <TRPCProvider>
         <StripeProvider>
           <AuthProvider>
-            <RootNavigator />
+            <ErrorBannerProvider>
+              <RootNavigator />
+              <ErrorBanner />
+            </ErrorBannerProvider>
           </AuthProvider>
         </StripeProvider>
       </TRPCProvider>
@@ -68,6 +74,8 @@ function RootNavigator() {
     const inOnboarding = segments[0] === "onboarding";
     const hasOnboarded = profileQuery.data?.hasCompletedOnboarding ?? false;
 
+    // 401 recovery lands here: when authBus → AuthContext.logout() sets
+    // user to null, this effect re-fires and routes to (auth)/welcome.
     const redirect = () => {
       if (!user && !inAuthGroup) {
         router.replace("/(auth)/welcome");
@@ -82,6 +90,7 @@ function RootNavigator() {
     // before we navigate, avoiding the "(auth) not handled" dev warning.
     const t = setTimeout(redirect, 0);
     return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (router missing from deps)
   }, [user, isLoading, profileQuery.data?.hasCompletedOnboarding, segments]);
 
   if (isLoading) return null;

@@ -19,10 +19,20 @@ import {
 } from "../websocket/broadcast";
 import { EventEmitter } from "events";
 import { observable } from "@trpc/server/observable";
+import type { LiveEvent } from "../types/live-events";
 
 // Event emitter for live events (shared with channel router alias)
 export const liveEvents = new EventEmitter();
 liveEvents.setMaxListeners(100);
+
+/**
+ * Type-safe wrapper around `liveEvents.emit()` for the events that flow
+ * through `subscribeToEvents`. Any event delivered to iOS via the tRPC
+ * subscription must satisfy `LiveEvent`.
+ */
+export function emitLiveEvent(channelId: number, event: LiveEvent): void {
+  liveEvents.emit(`channel:${channelId}:events`, event);
+}
 
 async function isLiveHost(liveId: number, userId: number): Promise<boolean> {
   return liveRepository.isHost(liveId, userId);
@@ -659,7 +669,7 @@ export const liveRouter = router({
       };
 
       broadcastToChannel(input.channelId, highlightMessage);
-      liveEvents.emit(`channel:${input.channelId}:events`, highlightMessage);
+      emitLiveEvent(input.channelId, highlightMessage);
 
       return {
         success: true,
@@ -742,7 +752,7 @@ export const liveRouter = router({
       };
 
       broadcastToChannel(input.channelId, unhighlightMessage);
-      liveEvents.emit(`channel:${input.channelId}:events`, unhighlightMessage);
+      emitLiveEvent(input.channelId, unhighlightMessage);
 
       return { success: true };
     }),
@@ -809,10 +819,10 @@ export const liveRouter = router({
         `📡 User ${ctx.userId || "anonymous"} subscribed to live events: ${input.channelId}`,
       );
 
-      return observable<any>((emit) => {
+      return observable<LiveEvent>((emit) => {
         const eventName = `channel:${input.channelId}:events`;
 
-        const handler = (data: any) => {
+        const handler = (data: LiveEvent) => {
           console.log(`[subscribeToEvents] → channel ${input.channelId}: type=${data.type}`);
           emit.next(data);
         };
@@ -829,7 +839,7 @@ export const liveRouter = router({
               .where("id", "=", input.channelId)
               .executeTakeFirst();
 
-            if (live?.highlighted_product_id) {
+            if (live?.highlighted_product_id && live.highlighted_at) {
               const product = await db
                 .selectFrom("products")
                 .selectAll()
@@ -847,7 +857,7 @@ export const liveRouter = router({
                     description: product.description ?? "",
                     imageUrl: product.image_url,
                   },
-                  highlightedAt: live.highlighted_at?.toISOString(),
+                  highlightedAt: live.highlighted_at.toISOString(),
                 });
               }
             }
@@ -908,7 +918,7 @@ export const liveRouter = router({
           ]),
         ]),
       )
-      .orderBy("lives.starts_at", "asc")
+      .orderBy("lives.created_at", "desc")
       .execute();
 
     // Fetch categories for all lives in a single query

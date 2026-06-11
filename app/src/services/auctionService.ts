@@ -2,7 +2,7 @@ import { db } from "../db";
 import { sql } from "kysely";
 import { auctionRepository } from "../repositories";
 import { broadcastToChannel } from "../websocket/broadcast";
-import { liveEvents } from "../routers/live";
+import { emitLiveEvent, liveEvents } from "../routers/live";
 import { calculatePlatformFee, calculateSellerPayout } from "../utils/fees";
 
 /**
@@ -108,14 +108,14 @@ export async function closeAuction(auctionId: string): Promise<{
       broadcastToChannel(auction.channel_id, auctionEndedMsg);
       const listenerCount = liveEvents.listenerCount(`channel:${auction.channel_id}:events`);
       console.log(`[auctionService] liveEvents.emit auction:ended → channel ${auction.channel_id} (${listenerCount} listeners)`);
-      liveEvents.emit(`channel:${auction.channel_id}:events`, auctionEndedMsg);
+      emitLiveEvent(auction.channel_id, auctionEndedMsg);
 
       const unhighlightMsg = {
         type: "PRODUCT_UNHIGHLIGHTED" as const,
         channelId: auction.channel_id,
       };
       broadcastToChannel(auction.channel_id, unhighlightMsg);
-      liveEvents.emit(`channel:${auction.channel_id}:events`, unhighlightMsg);
+      emitLiveEvent(auction.channel_id, unhighlightMsg);
     }, 0);
 
     console.log(

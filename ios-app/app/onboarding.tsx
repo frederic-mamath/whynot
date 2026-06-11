@@ -14,7 +14,8 @@ import {
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { trpc } from "@/lib/trpc";
-import { Colors } from "@/theme/tokens";
+import { optimisticUpdate } from "@/lib/optimisticUpdate";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -27,8 +28,17 @@ export default function OnboardingScreen() {
   const uploadMutation = trpc.image.upload.useMutation();
 
   const onboardingMutation = trpc.profile.completeOnboarding.useMutation({
-    onSuccess: async () => {
-      await utils.profile.me.invalidate();
+    onSuccess: (_, input) => {
+      optimisticUpdate(utils.profile.me, (old) =>
+        old
+          ? {
+              ...old,
+              nickname: input.nickname,
+              avatarUrl: input.avatarUrl ?? null,
+              hasCompletedOnboarding: true,
+            }
+          : old,
+      );
       router.replace("/(tabs)");
     },
     onError: (err) => {
@@ -147,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   content: {
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
     paddingTop: 80,
     paddingBottom: 40,
     gap: 32,
@@ -158,20 +168,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.foreground,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     color: Colors.mutedForeground,
     textAlign: "center",
   },
   avatarPicker: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: Radius.pill,
     overflow: "hidden",
   },
   avatar: {
@@ -181,7 +191,7 @@ const styles = StyleSheet.create({
   avatarPlaceholder: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: Radius.pill,
     backgroundColor: Colors.muted,
     borderWidth: 2,
     borderColor: Colors.border,
@@ -191,10 +201,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   avatarPlaceholderText: {
-    fontSize: 24,
+    fontSize: Typography.fontSize["2xl"],
   },
   avatarPlaceholderLabel: {
-    fontSize: 11,
+    fontSize: Typography.fontSize.xs,
     color: Colors.inputHint,
     textAlign: "center",
   },
@@ -205,27 +215,27 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1.5,
     borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    fontSize: Typography.fontSize.base,
     color: Colors.foreground,
     backgroundColor: Colors.input,
   },
   hint: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     color: Colors.inputHint,
-    paddingHorizontal: 4,
+    paddingHorizontal: Spacing.xs,
   },
   error: {
     color: Colors.destructive,
-    fontSize: 14,
-    paddingHorizontal: 4,
+    fontSize: Typography.fontSize.sm,
+    paddingHorizontal: Spacing.xs,
   },
   button: {
     backgroundColor: Colors.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
     marginTop: 8,
   },
@@ -234,7 +244,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.primaryForeground,
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
   },
 });

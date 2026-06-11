@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-006; max-lines tracked separately (file >400 lines, decompose) */
 import { useEffect, useState } from "react";
 import {
   View,
@@ -11,13 +12,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Switch,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ImagePlus, Trash2 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import { PhotoSourceSheet } from "@/components/PhotoSourceSheet";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 export default function SellerProductEditScreen() {
@@ -37,6 +40,7 @@ export default function SellerProductEditScreen() {
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,38 +53,39 @@ export default function SellerProductEditScreen() {
     }
   }, [productQuery.data]);
 
-  const updateMutation = trpc.product.update.useMutation();
-  const uploadMutation = trpc.image.upload.useMutation();
-  const deleteMutation = trpc.product.delete.useMutation();
+  const updateMutation = trpc.product.update.useMutation(useMutationWithToast());
+  const uploadMutation = trpc.image.upload.useMutation(useMutationWithToast());
+  const deleteMutation = trpc.product.delete.useMutation(useMutationWithToast());
 
-  const toggleActiveMutation = trpc.product.update.useMutation({
-    onMutate: async (input) => {
-      if (shopId === undefined) return;
-      await utils.product.list.cancel({ shopId });
-      const previous = utils.product.list.getData({ shopId });
-      utils.product.list.setData({ shopId }, (old) =>
-        old?.map((p) =>
-          p.id === input.productId
-            ? { ...p, isActive: input.isActive ?? p.isActive }
-            : p,
-        ),
-      );
-      return { previous };
-    },
-    onError: (_err, _input, ctx) => {
-      if (shopId !== undefined && ctx?.previous) {
-        utils.product.list.setData({ shopId }, ctx.previous);
-      }
-    },
-    onSettled: () => {
-      if (shopId !== undefined) utils.product.list.invalidate({ shopId });
-    },
-  });
+  const toggleActiveMutation = trpc.product.update.useMutation(
+    useMutationWithToast({
+      onMutate: async (input) => {
+        if (shopId === undefined) return;
+        await utils.product.list.cancel({ shopId });
+        const previous = utils.product.list.getData({ shopId });
+        utils.product.list.setData({ shopId }, (old) =>
+          old?.map((p) =>
+            p.id === input.productId
+              ? { ...p, isActive: input.isActive ?? p.isActive }
+              : p,
+          ),
+        );
+        return { previous };
+      },
+      onError: (_err, _input, ctx) => {
+        if (shopId !== undefined && ctx?.previous) {
+          utils.product.list.setData({ shopId }, ctx.previous);
+        }
+      },
+      onSettled: () => {
+        if (shopId !== undefined) utils.product.list.invalidate({ shopId });
+      },
+    }),
+  );
 
-  const pickImage = async () => {
+  const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return;
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true,
@@ -88,7 +93,22 @@ export default function SellerProductEditScreen() {
       quality: 0.7,
       base64: true,
     });
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+      setImageBase64(result.assets[0].base64 ?? null);
+    }
+  };
 
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") return;
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: "images",
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+      base64: true,
+    });
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
       setImageBase64(result.assets[0].base64 ?? null);
@@ -137,36 +157,30 @@ export default function SellerProductEditScreen() {
     }
   };
 
+  const confirmDelete = useConfirm({
+    title: "Supprimer ce produit",
+    message: "Cette action est irréversible.",
+  });
+
   const handleDelete = () => {
-    Alert.alert(
-      "Supprimer ce produit",
-      "Cette action est irréversible.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: async () => {
-            if (shopId !== undefined) {
-              utils.product.list.setData({ shopId }, (old) =>
-                old?.filter((p) => p.id !== productId),
-              );
-            }
-            try {
-              await deleteMutation.mutateAsync({ productId });
-              if (shopId !== undefined) {
-                utils.product.list.invalidate({ shopId });
-              }
-              router.back();
-            } catch {
-              if (shopId !== undefined) {
-                utils.product.list.invalidate({ shopId });
-              }
-            }
-          },
-        },
-      ],
-    );
+    confirmDelete(async () => {
+      if (shopId !== undefined) {
+        utils.product.list.setData({ shopId }, (old) =>
+          old?.filter((p) => p.id !== productId),
+        );
+      }
+      try {
+        await deleteMutation.mutateAsync({ productId });
+        if (shopId !== undefined) {
+          utils.product.list.invalidate({ shopId });
+        }
+        router.back();
+      } catch {
+        if (shopId !== undefined) {
+          utils.product.list.invalidate({ shopId });
+        }
+      }
+    });
   };
 
   if (productQuery.isLoading) {
@@ -193,7 +207,7 @@ export default function SellerProductEditScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView contentContainerStyle={styles.container}>
-          <Pressable onPress={pickImage} style={styles.imageBox}>
+          <Pressable onPress={() => setPhotoSheetOpen(true)} style={styles.imageBox}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.image} />
             ) : (
@@ -286,6 +300,14 @@ export default function SellerProductEditScreen() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PhotoSourceSheet
+        visible={photoSheetOpen}
+        onClose={() => setPhotoSheetOpen(false)}
+        onTakePhoto={takePhoto}
+        onPickFromLibrary={pickFromLibrary}
+        title="Photo du produit"
+      />
     </SafeAreaView>
   );
 }

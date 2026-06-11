@@ -7,11 +7,11 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import { useStripe } from "@stripe/stripe-react-native";
 import { trpc } from "@/lib/trpc";
-import { useTrack } from "@/lib/analytics";
 import { OrderCard } from "@/components/OrderCard";
-import { Colors } from "@/theme/tokens";
+import { usePopupCheckout } from "@/lib/stripe";
+import { useRefreshControl } from "@/hooks/useRefreshControl";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type FilterTab = "all" | "pending" | "paid" | "shipped";
 
@@ -26,13 +26,13 @@ export default function OrdersScreen() {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
 
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const utils = trpc.useUtils();
-  const track = useTrack();
+  const { pay } = usePopupCheckout();
 
-  const { data, isLoading, isFetching } = trpc.order.getMyOrders.useQuery({});
-
-  const createPaymentIntent = trpc.order.createPaymentIntent.useMutation();
+  const { data, isLoading } = trpc.order.getMyOrders.useQuery({});
+  const { refreshing, onRefresh } = useRefreshControl({
+    refetch: () => utils.order.getMyOrders.invalidate(),
+  });
 
   const orders = data ?? [];
 
@@ -49,28 +49,7 @@ export default function OrdersScreen() {
     const order = orders.find((o) => o.id === orderId);
     const amount = order?.finalPrice ?? 0;
     try {
-      const { clientSecret, customerId, ephemeralKey } =
-        await createPaymentIntent.mutateAsync({ orderId });
-
-      const initResult = await initPaymentSheet({
-        paymentIntentClientSecret: clientSecret ?? "",
-        merchantDisplayName: "Popup",
-        ...(customerId && ephemeralKey
-          ? { customerId, customerEphemeralKeySecret: ephemeralKey }
-          : {}),
-      });
-
-      if (initResult.error) {
-        setPayingOrderId(null);
-        return;
-      }
-
-      track({ name: "checkout_started", orderId, amount });
-      const result = await presentPaymentSheet();
-      if (!result.error) {
-        track({ name: "purchase_completed", orderId, amount });
-        utils.order.getMyOrders.invalidate();
-      }
+      await pay(orderId, amount);
     } finally {
       setPayingOrderId(null);
     }
@@ -101,10 +80,7 @@ export default function OrdersScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={isFetching && !isLoading}
-            onRefresh={() => utils.order.getMyOrders.invalidate()}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
           !isLoading ? (
@@ -135,22 +111,22 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: "700",
     color: Colors.foreground,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     marginBottom: 16,
   },
   tabs: {
     flexDirection: "row",
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     gap: 8,
     marginBottom: 16,
   },
   tab: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius["2xl"],
     backgroundColor: Colors.muted,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -160,7 +136,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   tabText: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     color: Colors.foreground,
     fontWeight: "500",
   },
@@ -175,16 +151,16 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: "center",
     paddingTop: 60,
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing["2xl"],
     gap: 8,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
     color: Colors.foreground,
   },
   emptySub: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     color: Colors.mutedForeground,
     textAlign: "center",
   },

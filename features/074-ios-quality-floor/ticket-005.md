@@ -6,7 +6,7 @@ Ship the two primitives that ticket 006 will use to sweep the codebase: a global
 
 No call sites are migrated in this ticket — that's T-006. The point is to ship the infrastructure first so the sweep in T-006 is purely mechanical.
 
-This ticket also creates `src/lib/alerts.ts` — the canonical wrapper for destructive confirmation dialogs and the one place R6 allows `Alert.alert` to live.
+This ticket also creates `src/lib/alerts.ts` — the canonical wrapper for destructive confirmation dialogs and the one place R8 allows `Alert.alert` to live.
 
 ## Acceptance Criteria
 
@@ -36,7 +36,7 @@ This ticket also creates `src/lib/alerts.ts` — the canonical wrapper for destr
 - Frontend / Alerts
   - `ios-app/src/lib/alerts.ts`
     - `confirm(opts: { title: string; message: string; destructiveLabel?: string; cancelLabel?: string }): Promise<boolean>`
-    - Implementation uses `Alert.alert` (the ONE allowed call site per R6)
+    - Implementation uses `Alert.alert` (the ONE allowed call site per R8)
 - Wire-up
   - `ios-app/app/_layout.tsx`
     - Wrap existing provider stack with `<ErrorBannerProvider>`

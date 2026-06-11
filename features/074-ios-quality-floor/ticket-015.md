@@ -4,7 +4,7 @@
 
 Two small hooks that close out the remaining audit M items. Each unifies a pattern that's reinvented per-screen today.
 
-After this ticket, `Alert.alert` is fully gated by R6 — only `src/lib/alerts.ts` remains in `R6_EXCLUDE`.
+After this ticket, `Alert.alert` is fully gated by R8 — only `src/lib/alerts.ts` remains in `R8_EXCLUDE`.
 
 ## Acceptance Criteria
 
@@ -12,7 +12,7 @@ After this ticket, `Alert.alert` is fully gated by R6 — only `src/lib/alerts.t
 - As a user, when I confirm a destructive action (delete address, product, live, payment method), the dialog wording and style is consistent across the app
 - As a developer, `useRefreshControl(query)` is the only entry point for `<RefreshControl>` setup
 - As a developer, `useConfirm({...})` (backed by `src/lib/alerts.ts` from T-005) is the only confirmation dialog entry point
-- As a developer, `npm run arch:test` passes with R6 enforced
+- As a developer, `npm run arch:test` passes with R8 enforced
 
 ## Technical Strategy
 
@@ -36,7 +36,7 @@ After this ticket, `Alert.alert` is fully gated by R6 — only `src/lib/alerts.t
   - `ios-app/app/(tabs)/seller/lives/[id].tsx` — delete-live, end-live confirms
   - `ios-app/app/seller-live/[liveId].tsx` — end-live confirm (if present)
 - Arch-test cleanup
-  - `scripts/arch-test.mjs` — `R6_EXCLUDE` is now `["ios-app/src/lib/alerts.ts"]` only
+  - `scripts/arch-test.mjs` — `R8_EXCLUDE` is now `["ios-app/src/lib/alerts.ts"]` only
 
 ## Verification
 

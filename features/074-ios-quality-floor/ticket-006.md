@@ -4,7 +4,7 @@
 
 Sweep every `useMutation` call site in `ios-app/` to use `useMutationWithToast` from T-005. Replace the three current error-display patterns (`Alert.alert`, inline `<Text>`, silently dropped) with the single banner convention — with one exception: **form screens keep inline errors** (`PersonalInfoForm`, `AddressForm`, login, register) because inline beside the field is correct UX.
 
-After this ticket, `Alert.alert` only appears in `src/lib/alerts.ts`. The R6 arch rule from T-003 enforces this going forward (most exclusions are removed from `R6_EXCLUDE`).
+After this ticket, `Alert.alert` only appears in `src/lib/alerts.ts`. The R8 arch rule from T-003 enforces this going forward (most exclusions are removed from `R8_EXCLUDE`).
 
 ## Acceptance Criteria
 
@@ -13,7 +13,7 @@ After this ticket, `Alert.alert` only appears in `src/lib/alerts.ts`. The R6 arc
 - As a buyer, when I save an address and it fails, the form shows the inline error AND the banner appears (defense in depth)
 - As a seller, when highlighting / unhighlighting a product fails, I see why (today it's silently dropped — `// ignore`)
 - As a seller, when ending an auction or ending a live fails, I see why
-- As a developer, `npm run arch:test` passes with R6 effectively enforced (only `src/lib/alerts.ts` left in `R6_EXCLUDE`)
+- As a developer, `npm run arch:test` passes with R8 effectively enforced (only `src/lib/alerts.ts` left in `R8_EXCLUDE`)
 
 ## Technical Strategy
 
@@ -30,7 +30,7 @@ After this ticket, `Alert.alert` only appears in `src/lib/alerts.ts`. The R6 arc
 - Logging cleanup
   - `ios-app/src/components/live/ChatPanel.tsx` — remove `console.log("[message.subscribe] ERROR", ...)`, surface via banner
 - Arch-test cleanup
-  - `scripts/arch-test.mjs` — shrink `R6_EXCLUDE` to `["ios-app/src/lib/alerts.ts"]` once all sweeps land
+  - `scripts/arch-test.mjs` — shrink `R8_EXCLUDE` to `["ios-app/src/lib/alerts.ts"]` once all sweeps land
 
 ## Verification
 

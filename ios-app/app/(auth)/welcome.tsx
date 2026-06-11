@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   logo: {
-    fontSize: 48,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: Typography.fontWeight.bold,
     color: Colors.primary,
     letterSpacing: -1,
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.xs,
   },
   dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
-  dividerText: { fontSize: 13, color: Colors.inputHint },
+  dividerText: { fontSize: Typography.fontSize.xs, color: Colors.inputHint },
   primaryButton: {
     backgroundColor: Colors.primary,
     borderRadius: Radius.xl,

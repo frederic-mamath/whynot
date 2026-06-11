@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, no-console -- TODO: JSI bridge boundary; L1 follow-up will type the public surface */
 // Native Agora viewer module — wraps AgoraRtcEngine_iOS directly, bypassing
 // the react-native-agora XCFramework that is incompatible with iOS 26 on device.
 
@@ -85,8 +86,6 @@ export const RtcLocalView = NativeViewManager
 // Stub constants — values unused in new implementation but kept for compatibility.
 export const ChannelProfileType = { ChannelProfileLiveBroadcasting: 1 };
 export const ClientRoleType = { ClientRoleAudience: 2, ClientRoleBroadcaster: 1 };
-export const ClientRoleBroadcaster = 1;
-export const ClientRoleAudience = 2;
 
 // Broadcaster (host) APIs — separate from createAgoraRtcEngine which targets audience.
 export async function initializeBroadcaster(appId: string): Promise<void> {

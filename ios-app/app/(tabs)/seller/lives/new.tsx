@@ -20,6 +20,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { Colors, Spacing, Radius, Typography } from "@/theme/tokens";
 
 /**
@@ -59,8 +60,8 @@ export default function SellerLiveNewScreen() {
   const [coverSheetOpen, setCoverSheetOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const scheduleMutation = trpc.live.schedule.useMutation();
-  const uploadMutation = trpc.image.upload.useMutation();
+  const scheduleMutation = trpc.live.schedule.useMutation(useMutationWithToast());
+  const uploadMutation = trpc.image.upload.useMutation(useMutationWithToast());
 
   const onChangeDate = (_: DateTimePickerEvent, picked?: Date) => {
     if (picked) setStartsAt((prev) => withDate(prev, picked));

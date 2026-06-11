@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useState } from "react";
 import {
   View,
@@ -7,11 +8,13 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
-import { Colors } from "@/theme/tokens";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { actionSheet } from "@/lib/alerts";
+import { optimisticUpdate } from "@/lib/optimisticUpdate";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function RelayPickerScreen() {
   const router = useRouter();
@@ -24,16 +27,36 @@ export default function RelayPickerScreen() {
     { enabled: false, retry: false },
   );
 
-  const saveMutation = trpc.profile.addresses.saveRelayPoint.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.invalidate();
-      router.back();
-    },
-    onError: (e) => {
-      Alert.alert("Échec de l'enregistrement", e.message);
-    },
-  });
+  const saveMutation = trpc.profile.addresses.saveRelayPoint.useMutation(
+    useMutationWithToast({
+      onSuccess: (data, input) => {
+        // Server-side: drops any existing relay point, unsets isDefault on
+        // every other address, then inserts this one as default. Mirror that.
+        optimisticUpdate(utils.profile.addresses.list, (old) => {
+          const newRelay = {
+            id: data.addressId,
+            label: `Point Relais — ${input.name}`,
+            street: input.street,
+            street2: null,
+            city: input.city,
+            state: input.city,
+            zipCode: input.zipCode,
+            country: input.country ?? "FR",
+            isDefault: true,
+            mondialRelayPointId: input.relayPointId,
+            createdAt: new Date().toISOString(),
+          };
+          const withoutOldRelays = (old ?? []).filter(
+            (a) => a.mondialRelayPointId === null,
+          );
+          const cleared = withoutOldRelays.map((a) => ({ ...a, isDefault: false }));
+          return [newRelay, ...cleared];
+        });
+        utils.profile.me.invalidate();
+        router.back();
+      },
+    }),
+  );
 
   const canSearch = /^\d{5}$/.test(postcode);
   const isLoading = searchQuery.isFetching;
@@ -49,13 +72,13 @@ export default function RelayPickerScreen() {
   };
 
   const handleSelect = (point: (typeof results)[number]) => {
-    Alert.alert(
-      "Choisir ce point relais ?",
-      `${point.name}\n${point.address}\n${point.zipCode} ${point.city}`,
-      [
-        { text: "Annuler", style: "cancel" },
+    actionSheet({
+      title: "Choisir ce point relais ?",
+      message: `${point.name}\n${point.address}\n${point.zipCode} ${point.city}`,
+      buttons: [
+        { label: "Annuler", style: "cancel" },
         {
-          text: "Confirmer",
+          label: "Confirmer",
           onPress: () =>
             saveMutation.mutate({
               relayPointId: point.id,
@@ -67,7 +90,7 @@ export default function RelayPickerScreen() {
             }),
         },
       ],
-    );
+    });
   };
 
   return (
@@ -168,40 +191,40 @@ export default function RelayPickerScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   searchBar: {
-    padding: 16,
+    padding: Spacing.lg,
     backgroundColor: Colors.card,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
     gap: 8,
   },
-  label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500" },
+  label: { fontSize: Typography.fontSize.xs, color: Colors.mutedForeground, fontWeight: "500" },
   searchRow: { flexDirection: "row", gap: 8 },
   input: {
     flex: 1,
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: 12,
-    fontSize: 15,
+    paddingHorizontal: Spacing.md,
+    fontSize: Typography.fontSize.sm,
     color: Colors.foreground,
     backgroundColor: Colors.input,
   },
   searchButton: {
     height: 44,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   searchDisabled: { backgroundColor: Colors.muted },
-  searchButtonText: { color: Colors.primaryForeground, fontSize: 15, fontWeight: "600" },
-  list: { padding: 16, gap: 12 },
+  searchButtonText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.sm, fontWeight: "600" },
+  list: { padding: Spacing.lg, gap: 12 },
   card: {
     backgroundColor: Colors.card,
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.border,
     gap: 4,
@@ -213,47 +236,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 4,
   },
-  cardName: { fontSize: 16, fontWeight: "700", color: Colors.foreground, flex: 1 },
-  cardLine: { fontSize: 14, color: Colors.mutedForeground },
+  cardName: { fontSize: Typography.fontSize.base, fontWeight: "700", color: Colors.foreground, flex: 1 },
+  cardLine: { fontSize: Typography.fontSize.sm, color: Colors.mutedForeground },
   distanceBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.accent,
   },
-  distanceText: { fontSize: 12, color: Colors.accentForeground, fontWeight: "700" },
+  distanceText: { fontSize: Typography.fontSize.xs, color: Colors.accentForeground, fontWeight: "700" },
   empty: {
     paddingTop: 60,
     alignItems: "center",
     gap: 6,
   },
-  emptyTitle: { fontSize: 16, fontWeight: "700", color: Colors.foreground },
+  emptyTitle: { fontSize: Typography.fontSize.base, fontWeight: "700", color: Colors.foreground },
   emptySub: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     color: Colors.mutedForeground,
     textAlign: "center",
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing["2xl"],
   },
   errorBanner: {
     margin: 16,
-    padding: 16,
-    borderRadius: 12,
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.card,
     borderWidth: 1,
     borderColor: Colors.destructive,
     gap: 8,
   },
-  errorTitle: { fontSize: 15, fontWeight: "700", color: Colors.destructive },
-  errorText: { fontSize: 14, color: Colors.foreground, lineHeight: 20 },
+  errorTitle: { fontSize: Typography.fontSize.sm, fontWeight: "700", color: Colors.destructive },
+  errorText: { fontSize: Typography.fontSize.sm, color: Colors.foreground, lineHeight: 20 },
   errorButton: {
     height: 40,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.destructive,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
   },
-  errorButtonText: { color: Colors.destructiveForeground, fontSize: 14, fontWeight: "600" },
+  errorButtonText: { color: Colors.destructiveForeground, fontSize: Typography.fontSize.sm, fontWeight: "600" },
   savingOverlay: {
     // Translucent scrim over the screen while saving — standard iOS pattern,
     // works against any palette.
@@ -263,6 +286,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 12,
   },
-  savingText: { color: Colors.foreground, fontSize: 15, fontWeight: "600" },
+  savingText: { color: Colors.foreground, fontSize: Typography.fontSize.sm, fontWeight: "600" },
   disabled: { opacity: 0.6 },
 });

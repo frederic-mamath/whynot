@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useState } from "react";
 import {
   View,
@@ -5,12 +6,14 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { AddressForm, AddressFormValues } from "@/components/AddressForm";
-import { Colors } from "@/theme/tokens";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
+import { optimisticUpdate, removeById, updateById } from "@/lib/optimisticUpdate";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export default function EditAddressScreen() {
   const router = useRouter();
@@ -22,46 +25,71 @@ export default function EditAddressScreen() {
   const { data, isLoading } = trpc.profile.addresses.list.useQuery();
   const address = data?.find((a) => a.id === addressId);
 
-  const updateMutation = trpc.profile.addresses.update.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.invalidate();
-      router.back();
-    },
-    onError: (e) => setError(e.message),
-  });
+  const updateMutation = trpc.profile.addresses.update.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          updateById(old, input.id, {
+            label: input.label,
+            street: input.street,
+            street2: input.street2 ?? null,
+            city: input.city,
+            state: input.state,
+            zipCode: input.zipCode,
+            country: input.country,
+          }),
+        );
+        utils.profile.me.invalidate();
+        router.back();
+      },
+      onError: (e) => setError(e.message),
+    }),
+  );
 
-  const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation({
-    onSuccess: (_, input) => {
-      utils.profile.addresses.list.setData(undefined, (old) =>
-        old
-          ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
-          : old,
-      );
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              addresses: old.addresses.map((a) => ({
-                ...a,
-                isDefault: a.id === input.id,
-              })),
-            }
-          : old,
-      );
-      utils.profile.me.invalidate();
-    },
-    onError: (e) => setError(e.message),
-  });
+  const setDefaultMutation = trpc.profile.addresses.setDefault.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        utils.profile.addresses.list.setData(undefined, (old) =>
+          old
+            ? old.map((a) => ({ ...a, isDefault: a.id === input.id }))
+            : old,
+        );
+        utils.profile.addresses.list.invalidate();
+        utils.profile.me.setData(undefined, (old) =>
+          old
+            ? {
+                ...old,
+                addresses: old.addresses.map((a) => ({
+                  ...a,
+                  isDefault: a.id === input.id,
+                })),
+              }
+            : old,
+        );
+        utils.profile.me.invalidate();
+      },
+      onError: (e) => setError(e.message),
+    }),
+  );
 
-  const deleteMutation = trpc.profile.addresses.delete.useMutation({
-    onSuccess: () => {
-      utils.profile.addresses.list.invalidate();
-      utils.profile.me.invalidate();
-      router.back();
-    },
-    onError: (e) => setError(e.message),
+  const deleteMutation = trpc.profile.addresses.delete.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        optimisticUpdate(utils.profile.addresses.list, (old) =>
+          removeById(old, input.id),
+        );
+        utils.profile.me.invalidate();
+        router.back();
+      },
+      onError: (e) => setError(e.message),
+    }),
+  );
+
+  const confirmDelete = useConfirm({
+    title: "Supprimer l'adresse",
+    message: address
+      ? `Supprimer définitivement « ${address.label} » ?`
+      : "",
   });
 
   if (isLoading) {
@@ -100,18 +128,7 @@ export default function EditAddressScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Supprimer l'adresse",
-      `Supprimer définitivement « ${address.label} » ?`,
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer",
-          style: "destructive",
-          onPress: () => deleteMutation.mutate({ id: address.id }),
-        },
-      ],
-    );
+    confirmDelete(() => deleteMutation.mutate({ id: address.id }));
   };
 
   const anyPending =
@@ -175,9 +192,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: Colors.background,
   },
-  notFound: { fontSize: 15, color: Colors.mutedForeground },
+  notFound: { fontSize: Typography.fontSize.sm, color: Colors.mutedForeground },
   actions: {
-    padding: 16,
+    padding: Spacing.lg,
     gap: 10,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
@@ -185,21 +202,21 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondaryText: { color: Colors.primary, fontSize: 15, fontWeight: "600" },
+  secondaryText: { color: Colors.primary, fontSize: Typography.fontSize.sm, fontWeight: "600" },
   deleteButton: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.destructive,
     alignItems: "center",
     justifyContent: "center",
   },
-  deleteText: { color: Colors.destructive, fontSize: 15, fontWeight: "600" },
+  deleteText: { color: Colors.destructive, fontSize: Typography.fontSize.sm, fontWeight: "600" },
   disabled: { opacity: 0.5 },
 });

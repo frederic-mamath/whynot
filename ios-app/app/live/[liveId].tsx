@@ -1,23 +1,19 @@
+/* eslint-disable @typescript-eslint/no-floating-promises -- TODO: removed by ticket-010 (cache strategy sweep) */
 import { useEffect, useRef, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  isAgoraAvailable,
-  createAgoraRtcEngine,
-  RtcSurfaceView,
-  ChannelProfileType,
-  ClientRoleType,
-} from "@/lib/agora";
+import { isAgoraAvailable, RtcSurfaceView } from "@/lib/agora";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useAgoraAudience } from "@/hooks/useAgoraSession";
 import { LiveBadge } from "@/components/live/LiveBadge";
 import { ChatPanel } from "@/components/live/ChatPanel";
 import { HighlightedProduct } from "@/components/live/HighlightedProduct";
 import { AuctionWidget } from "@/components/live/AuctionWidget";
 import { AuctionEndModal } from "@/components/live/AuctionEndModal";
-import { OutbidBanner } from "@/components/live/OutbidBanner";
 import { LiveProductList } from "@/components/live/LiveProductList";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 import { useTrack } from "@/lib/analytics";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -42,186 +38,109 @@ export default function LiveScreen() {
   const { user } = useAuth();
   const channelId = Number(liveId);
 
-  const engineRef = useRef<ReturnType<typeof createAgoraRtcEngine> | null>(null);
-  const [remoteUid, setRemoteUid] = useState<number | null>(null);
-  const [joined, setJoined] = useState(false);
-  const [liveStatus, setLiveStatus] = useState<"loading" | "upcoming" | "active" | "ended">("loading");
   const [highlightedProduct, setHighlightedProduct] = useState<HighlightedProductData | null>(null);
   const [auctionEndInfo, setAuctionEndInfo] = useState<AuctionEndInfo | null>(null);
-  const [outbidBanner, setOutbidBanner] = useState<{ productName: string; newBid: number } | null>(null);
   const [openBidSheet, setOpenBidSheet] = useState(false);
-  const [isHost, setIsHost] = useState(false);
   const track = useTrack();
   const liveViewedRef = useRef(false);
-  const joinedRef = useRef(false);
+
+  const liveQuery = trpc.live.get.useQuery({ channelId });
+  const isViewerHost =
+    user != null && liveQuery.data?.channel.host_id === user.id;
+  const canJoin = liveQuery.data != null && !isViewerHost;
+
+  const { liveStatus, joined, remoteUid } = useAgoraAudience({
+    channelId,
+    enabled: canJoin,
+  });
 
   const productsQuery = trpc.product.listByChannel.useQuery(
     { channelId },
     { enabled: liveStatus === "active" },
   );
   const utils = trpc.useUtils();
-  const toggleInterestMutation = trpc.product.toggleInterest.useMutation({
-    onSuccess: () => {
-      utils.product.listByChannel.invalidate({ channelId });
-    },
-  });
-
-  const liveQuery = trpc.live.get.useQuery({ channelId });
-  const joinMutation = trpc.live.join.useMutation();
-  const leaveMutation = trpc.live.leave.useMutation();
+  const toggleInterestMutation = trpc.product.toggleInterest.useMutation(
+    useMutationWithToast({
+      onSuccess: () => {
+        utils.product.listByChannel.invalidate({ channelId });
+      },
+    }),
+  );
 
   trpc.live.subscribeToEvents.useSubscription(
     { channelId },
     {
       enabled: liveStatus === "active",
       onData: (event) => {
-        const e = event as {
-          type: string;
-          product?: HighlightedProductData;
-          winnerUsername?: string | null;
-          winnerId?: number | null;
-          finalPrice?: number;
-          hasWinner?: boolean;
-          auctionId?: string;
-          outbidUserId?: number;
-          productName?: string;
-          currentBid?: number;
-        };
-        if (e.type === "PRODUCT_HIGHLIGHTED" && e.product) {
-          setHighlightedProduct(e.product);
-        } else if (e.type === "PRODUCT_UNHIGHLIGHTED") {
-          setHighlightedProduct(null);
-        } else if (e.type === "auction:ended") {
-          setAuctionEndInfo({
-            isWinner: !!(e.winnerId && user?.id === e.winnerId),
-            productName: highlightedProduct?.name ?? "Produit",
-            finalPrice: e.finalPrice ?? 0,
-            winnerUsername: e.winnerUsername ?? null,
-          });
-          if (e.winnerId && user?.id === e.winnerId && e.auctionId) {
-            track({
-              name: "auction_won",
-              auctionId: e.auctionId,
-              liveId: channelId,
-              finalPrice: e.finalPrice ?? 0,
+        switch (event.type) {
+          case "PRODUCT_HIGHLIGHTED":
+            setHighlightedProduct({
+              id: event.product.id,
+              name: event.product.name,
+              price: event.product.price,
+              imageUrl: event.product.imageUrl,
             });
+            return;
+          case "PRODUCT_UNHIGHLIGHTED":
+            setHighlightedProduct(null);
+            return;
+          case "auction:ended": {
+            const isWinner =
+              event.winnerId !== null && user?.id === event.winnerId;
+            setAuctionEndInfo({
+              isWinner,
+              productName: highlightedProduct?.name ?? "Produit",
+              finalPrice: event.finalPrice,
+              winnerUsername: event.winnerUsername,
+            });
+            if (isWinner) {
+              track({
+                name: "auction_won",
+                auctionId: event.auctionId,
+                liveId: channelId,
+                finalPrice: event.finalPrice,
+              });
+            }
+            return;
           }
-        } else if (e.type === "auction:outbid" && e.outbidUserId === user?.id) {
-          setOutbidBanner({
-            productName: e.productName ?? "",
-            newBid: e.currentBid ?? 0,
-          });
+          default: {
+            const _exhaustive: never = event;
+            return _exhaustive;
+          }
         }
       },
     }
   );
 
-  const cleanup = async () => {
-    const engine = engineRef.current;
-    if (!engine) return;
-    engine.removeAllListeners();
-    await engine.leaveChannel();
-    engine.release();
-    engineRef.current = null;
-    leaveMutation.mutate({ channelId });
-  };
-
+  // Hosts open the broadcaster screen instead — redirect once liveQuery resolves.
   useEffect(() => {
-    return () => {
-      cleanup();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (joinedRef.current) return;
-    if (liveQuery.data == null && liveQuery.error == null) return;
-    if (user != null && liveQuery.data?.channel.host_id === user.id) return;
-    joinedRef.current = true;
-
-    joinMutation.mutate(
-      { channelId },
-      {
-        onSuccess: async (data) => {
-          if (data.liveStatus !== "active") {
-            setLiveStatus(data.liveStatus as "upcoming" | "ended");
-            return;
-          }
-
-          setLiveStatus("active");
-
-          const channelData = data as { liveStatus: "active"; channel?: { host_id?: number } };
-          const hostId = channelData.channel?.host_id;
-          const isViewerHost = hostId != null && hostId === user?.id;
-          if (hostId != null) {
-            setIsHost(isViewerHost);
-          }
-
-          if (!liveViewedRef.current && hostId != null) {
-            liveViewedRef.current = true;
-            track({
-              name: "live_viewed",
-              liveId: channelId,
-              hostId,
-              isSellerView: isViewerHost,
-            });
-          }
-
-          if (!isAgoraAvailable || !createAgoraRtcEngine) return;
-
-          const { token, appId, uid, channel } = data as {
-            liveStatus: "active";
-            token: string;
-            appId: string;
-            uid: number;
-            channel: { id: number };
-          };
-
-          const engine = createAgoraRtcEngine();
-          engineRef.current = engine;
-
-          engine.initialize({
-            appId,
-            channelProfile: ChannelProfileType!.ChannelProfileLiveBroadcasting,
-          });
-
-          engine.setClientRole(ClientRoleType!.ClientRoleAudience);
-          engine.enableVideo();
-
-          engine.addListener("onUserJoined", (_: any, uid: number) => {
-            setRemoteUid(uid);
-          });
-
-          engine.addListener("onUserOffline", () => {
-            setRemoteUid(null);
-          });
-
-          await engine.joinChannel(token, channel.id.toString(), uid, {
-            autoSubscribeVideo: true,
-            autoSubscribeAudio: true,
-          });
-
-          setJoined(true);
-        },
-        onError: () => {
-          setLiveStatus("ended");
-        },
-      }
-    );
-  }, [liveQuery.data, liveQuery.error, user, channelId]);
-
-  useEffect(() => {
-    if (user == null || liveQuery.data == null) return;
-    if (liveQuery.data.channel.host_id === user.id) {
+    if (isViewerHost) {
       router.replace(`/seller-live/${channelId}`);
     }
-  }, [liveQuery.data, user, channelId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (router missing from deps)
+  }, [isViewerHost, channelId]);
 
-  const handleBack = async () => {
-    await cleanup();
+  // Fire live_viewed once, when the audience hook reports the live is active.
+  useEffect(() => {
+    if (liveStatus !== "active") return;
+    if (liveViewedRef.current) return;
+    const hostId = liveQuery.data?.channel.host_id;
+    if (hostId == null) return;
+    liveViewedRef.current = true;
+    track({
+      name: "live_viewed",
+      liveId: channelId,
+      hostId,
+      isSellerView: false,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO: L3 follow-up (track ref stability)
+  }, [liveStatus, liveQuery.data, channelId]);
+
+  const handleBack = () => {
     router.back();
   };
 
-  if (user != null && liveQuery.data?.channel.host_id === user.id) {
+  if (isViewerHost) {
     return null;
   }
 
@@ -305,16 +224,6 @@ export default function LiveScreen() {
             />
           )}
 
-          {/* Outbid banner — overlays the top of the screen */}
-          {outbidBanner && (
-            <OutbidBanner
-              productName={outbidBanner.productName}
-              newBid={outbidBanner.newBid}
-              onDismiss={() => setOutbidBanner(null)}
-              onBidAgain={() => setOpenBidSheet(true)}
-            />
-          )}
-
           {/* Chat panel — only when active */}
           {liveStatus === "active" && <ChatPanel channelId={channelId} />}
 
@@ -331,7 +240,7 @@ export default function LiveScreen() {
           <LiveProductList
             products={products}
             isLoading={productsQuery.isLoading}
-            isSellerView={isHost}
+            isSellerView={false}
             onToggleInterest={(productId, { onError }) =>
               toggleInterestMutation.mutate(
                 { productId, liveId: channelId },
@@ -374,14 +283,14 @@ const styles = StyleSheet.create({
   backButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: Radius["2xl"],
     backgroundColor: "rgba(0,0,0,0.5)",
     alignItems: "center",
     justifyContent: "center",
   },
   backText: {
     color: Colors.foreground,
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "600",
   },
   center: {
@@ -392,20 +301,20 @@ const styles = StyleSheet.create({
   },
   waitText: {
     color: "rgba(255,255,255,0.7)",
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
   },
   statusEmoji: {
-    fontSize: 40,
+    fontSize: Typography.fontSize["3xl"],
   },
   statusTitle: {
     color: Colors.foreground,
-    fontSize: 18,
+    fontSize: Typography.fontSize.lg,
     fontWeight: "700",
     textAlign: "center",
   },
   statusSub: {
     color: "rgba(255,255,255,0.6)",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
   },
   noVideoOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -415,9 +324,9 @@ const styles = StyleSheet.create({
   },
   noVideoText: {
     color: "rgba(255,255,255,0.4)",
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     textAlign: "center",
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing["2xl"],
   },
   swipeCue: {
     position: "absolute",
@@ -428,7 +337,7 @@ const styles = StyleSheet.create({
   },
   swipeCueText: {
     color: "rgba(255,255,255,0.45)",
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "600",
     letterSpacing: 0.3,
   },

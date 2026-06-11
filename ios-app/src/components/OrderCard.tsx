@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 type Order = {
   id: string;
@@ -89,8 +89,8 @@ export function OrderCard({ order, onPayNow, isPaying }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.card,
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
     marginHorizontal: 16,
     marginBottom: 12,
     borderWidth: 1,
@@ -105,12 +105,12 @@ const styles = StyleSheet.create({
   },
   productName: {
     flex: 1,
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "600",
     color: Colors.foreground,
   },
   price: {
-    fontSize: 16,
+    fontSize: Typography.fontSize.base,
     fontWeight: "700",
     color: Colors.foreground,
   },
@@ -118,12 +118,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius["2xl"],
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     fontWeight: "600",
   },
   footer: {
@@ -132,25 +132,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deadline: {
-    fontSize: 12,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
   },
   payButton: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius["2xl"],
   },
   payButtonDisabled: {
     opacity: 0.6,
   },
   payButtonText: {
     color: Colors.primaryForeground,
-    fontSize: 14,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "700",
   },
   meta: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
   },
 });

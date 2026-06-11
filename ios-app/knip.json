@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["app/**/*.{ts,tsx}"],
+  "project": ["app/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": [
+    "@expo/vector-icons",
+    "expo-font",
+    "expo-image",
+    "expo-web-browser",
+    "expo-system-ui",
+    "react-test-renderer",
+    "agora-viewer",
+    "expo-modules-core"
+  ],
+  "ignoreBinaries": ["open"]
+}

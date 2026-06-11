@@ -9,7 +9,7 @@ import {
   Switch,
   ScrollView,
 } from "react-native";
-import { Colors } from "@/theme/tokens";
+import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
 export type AddressFormValues = {
   label: string;
@@ -142,15 +142,15 @@ export function AddressForm({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16, gap: 8 },
-  label: { fontSize: 13, color: Colors.mutedForeground, fontWeight: "500", marginTop: 8 },
+  content: { padding: Spacing.lg, gap: 8 },
+  label: { fontSize: Typography.fontSize.xs, color: Colors.mutedForeground, fontWeight: "500", marginTop: 8 },
   input: {
     height: 44,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: 12,
-    fontSize: 15,
+    paddingHorizontal: Spacing.md,
+    fontSize: Typography.fontSize.sm,
     color: Colors.foreground,
     backgroundColor: Colors.input,
   },
@@ -158,24 +158,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: Colors.muted,
   },
-  disabledFieldText: { fontSize: 15, color: Colors.mutedForeground },
+  disabledFieldText: { fontSize: Typography.fontSize.sm, color: Colors.mutedForeground },
   toggleRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
     marginTop: 8,
   },
-  toggleLabel: { fontSize: 15, color: Colors.foreground, fontWeight: "500" },
-  error: { fontSize: 13, color: Colors.destructive, marginTop: 4 },
+  toggleLabel: { fontSize: Typography.fontSize.sm, color: Colors.foreground, fontWeight: "500" },
+  error: { fontSize: Typography.fontSize.xs, color: Colors.destructive, marginTop: 4 },
   submitButton: {
     height: 48,
-    borderRadius: 10,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
   },
   submitDisabled: { opacity: 0.6 },
-  submitText: { color: Colors.primaryForeground, fontSize: 16, fontWeight: "600" },
+  submitText: { color: Colors.primaryForeground, fontSize: Typography.fontSize.base, fontWeight: "600" },
 });

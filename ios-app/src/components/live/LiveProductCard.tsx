@@ -138,6 +138,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   interestIcon: {
-    fontSize: 18,
+    fontSize: Typography.fontSize.lg,
   },
 });

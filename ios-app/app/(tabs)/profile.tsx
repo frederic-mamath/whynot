@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises, max-lines -- TODO: floating-promises removed by ticket-006; max-lines tracked separately (file >400 lines, decompose) */
 import { useState } from "react";
 import {
   View,
@@ -12,11 +13,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { trpc } from "@/lib/trpc";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useConfirm } from "@/hooks/useConfirm";
+import { notify } from "@/lib/alerts";
 import { PaymentSetupSheet } from "@/components/live/PaymentSetupSheet";
 import { Colors, Radius, Spacing, Typography } from "@/theme/tokens";
 
@@ -33,60 +36,62 @@ export default function ProfileScreen() {
   const [lastName, setLastName] = useState("");
   const [showCardSetup, setShowCardSetup] = useState(false);
 
-  const updateMutation = trpc.profile.update.useMutation({
-    onSuccess: (_, input) => {
-      utils.profile.me.setData(undefined, (old) =>
-        old
-          ? {
-              ...old,
-              firstName: input.firstName ?? old.firstName,
-              lastName: input.lastName ?? old.lastName,
-            }
-          : old,
-      );
-      utils.profile.me.invalidate();
-      setEditingName(false);
-    },
-  });
-
-  const deleteMutation = trpc.payment.deletePaymentMethod.useMutation({
-    onSuccess: (_, input) => {
-      utils.payment.getPaymentStatus.setData(undefined, (old) => {
-        if (!old) return old;
-        const filtered = old.paymentMethods.filter(
-          (pm) => pm.id !== input.paymentMethodId,
+  const updateMutation = trpc.profile.update.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        utils.profile.me.setData(undefined, (old) =>
+          old
+            ? {
+                ...old,
+                firstName: input.firstName ?? old.firstName,
+                lastName: input.lastName ?? old.lastName,
+              }
+            : old,
         );
-        return {
-          ...old,
-          paymentMethods: filtered,
-          hasPaymentMethod: filtered.length > 0,
-        };
-      });
-      utils.payment.getPaymentStatus.invalidate();
-    },
-  });
+        utils.profile.me.invalidate();
+        setEditingName(false);
+      },
+    }),
+  );
+
+  const deleteMutation = trpc.payment.deletePaymentMethod.useMutation(
+    useMutationWithToast({
+      onSuccess: (_, input) => {
+        utils.payment.getPaymentStatus.setData(undefined, (old) => {
+          if (!old) return old;
+          const filtered = old.paymentMethods.filter(
+            (pm) => pm.id !== input.paymentMethodId,
+          );
+          return {
+            ...old,
+            paymentMethods: filtered,
+            hasPaymentMethod: filtered.length > 0,
+          };
+        });
+        utils.payment.getPaymentStatus.invalidate();
+      },
+    }),
+  );
 
   const deletionBlockers = trpc.auth.deletionBlockers.useQuery(undefined, {
     enabled: false,
   });
 
-  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation({
-    onSuccess: () => logout(),
+  const deleteAccountMutation = trpc.auth.deleteAccount.useMutation(
+    useMutationWithToast({
+      onSuccess: () => logout(),
+    }),
+  );
+
+  const confirmDeleteAccount = useConfirm({
+    title: "Supprimer mon compte",
+    message:
+      "Cette action est irréversible. Toutes tes données seront supprimées définitivement.",
+    destructiveLabel: "Supprimer définitivement",
   });
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Supprimer mon compte",
-      "Cette action est irréversible. Toutes tes données seront supprimées définitivement.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Supprimer définitivement",
-          style: "destructive",
-          onPress: () => deleteAccountMutation.mutate(),
-        },
-      ],
-    );
+    confirmDeleteAccount(() => deleteAccountMutation.mutate());
   };
 
   const reasonLabel = (reason: string) => {
@@ -102,9 +107,7 @@ export default function ProfileScreen() {
       const message = blockers
         .map((b) => `${b.productName} — ${reasonLabel(b.reason)}`)
         .join("\n");
-      Alert.alert("Suppression impossible", message, [
-        { text: "Compris", style: "cancel" },
-      ]);
+      notify({ title: "Suppression impossible", message, buttonLabel: "Compris" });
     } else {
       handleDeleteAccount();
     }
@@ -333,7 +336,7 @@ const rowStyles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 10,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.muted,
   },
@@ -358,7 +361,7 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: Typography.fontWeight.bold,
     color: Colors.foreground,
     paddingHorizontal: Spacing.lg,
@@ -379,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.foreground,
   },
@@ -396,7 +399,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 60,
     height: 60,
-    borderRadius: 30,
+    borderRadius: Radius["4xl"],
   },
   avatarFallback: {
     backgroundColor: Colors.accent,
@@ -426,11 +429,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     paddingHorizontal: Spacing.md,
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     color: Colors.foreground,
     backgroundColor: Colors.input,
   },
-  errorText: { fontSize: 13, color: Colors.destructive },
+  errorText: { fontSize: Typography.fontSize.xs, color: Colors.destructive },
   nameActions: {
     flexDirection: "row",
     gap: 10,
@@ -445,7 +448,7 @@ const styles = StyleSheet.create({
   },
   cancelText: { fontSize: Typography.fontSize.sm, color: Colors.mutedForeground },
   saveButton: {
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
     backgroundColor: Colors.primary,
@@ -460,7 +463,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   cardBrand: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.foreground,
     letterSpacing: 0.5,
@@ -484,7 +487,7 @@ const styles = StyleSheet.create({
   },
   addCardText: {
     color: Colors.primaryForeground,
-    fontSize: 15,
+    fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.semibold,
   },
   modalOverlay: {
@@ -499,13 +502,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
+    padding: Spacing.xl,
     paddingBottom: 40,
   },
   modalHandle: {
     width: 40,
     height: 4,
-    borderRadius: 2,
+    borderRadius: Radius.sm,
     backgroundColor: Colors.border,
     alignSelf: "center",
     marginBottom: Spacing.lg,
@@ -524,13 +527,13 @@ const styles = StyleSheet.create({
   modalClose: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: Radius.xl,
     backgroundColor: Colors.muted,
     alignItems: "center",
     justifyContent: "center",
   },
   modalCloseText: {
-    fontSize: 13,
+    fontSize: Typography.fontSize.xs,
     color: Colors.mutedForeground,
     fontWeight: Typography.fontWeight.semibold,
   },
@@ -540,14 +543,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deliveryTextWrap: { gap: 2, flex: 1 },
-  deliverySub: { fontSize: 13, color: Colors.mutedForeground },
-  chevron: { fontSize: 22, color: Colors.inputHint, fontWeight: Typography.fontWeight.regular },
+  deliverySub: { fontSize: Typography.fontSize.xs, color: Colors.mutedForeground },
+  chevron: { fontSize: Typography.fontSize["3xl"], color: Colors.inputHint, fontWeight: Typography.fontWeight.regular },
   logoutButton: {
     marginHorizontal: Spacing.lg,
     borderWidth: 1.5,
     borderColor: Colors.destructive,
     borderRadius: Radius.xl,
-    paddingVertical: 14,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
   },
   logoutText: {
@@ -557,7 +560,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     marginHorizontal: Spacing.lg,
-    paddingVertical: 14,
+    paddingVertical: Spacing.lg,
     alignItems: "center",
     minHeight: 44,
     justifyContent: "center",
